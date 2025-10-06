@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProviderCard from "@/components/provider-card";
 import CallRequestModal from "@/components/call-request-modal";
-import { ArrowLeft, Wrench, Droplets, Toilet, ShowerHead, ChevronRight } from "lucide-react";
+import { ArrowLeft, Wrench, Droplets, Aperture, ShowerHead, ChevronRight } from "lucide-react";
 
 const problemCategories = [
   {
@@ -24,7 +24,7 @@ const problemCategories = [
   {
     id: "blockage",
     name: "Drain Blockage",
-    icon: Toilet,
+    icon: Aperture,
     subcategories: [
       "Kitchen Sink Block",
       "Bathroom Drain Block", 

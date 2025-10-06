@@ -51,8 +51,11 @@ export const serviceProblems = pgTable("service_problems", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   categoryId: varchar("category_id").references(() => serviceCategories.id).notNull(),
   name: text("name").notNull(),
-  parentId: varchar("parent_id").references(() => serviceProblems.id),
+  parentId: varchar("parent_id"),
 });
+
+// Add self-referencing foreign key after table definition
+// This avoids the circular reference issue during initialization
 
 // Beauty services
 export const beautyServices = pgTable("beauty_services", {

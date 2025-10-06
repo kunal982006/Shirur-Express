@@ -114,7 +114,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getServiceProviders(categorySlug?: string, latitude?: number, longitude?: number, radius?: number) {
-    let query = db
+    const conditions = [eq(serviceProviders.isAvailable, true)];
+    
+    if (categorySlug) {
+      conditions.push(eq(serviceCategories.slug, categorySlug));
+    }
+
+    // Add distance-based filtering if coordinates provided
+    if (latitude && longitude && radius) {
+      conditions.push(
+        sql`(
+          6371 * acos(
+            cos(radians(${latitude})) 
+            * cos(radians(${serviceProviders.latitude})) 
+            * cos(radians(${serviceProviders.longitude}) - radians(${longitude}))
+            + sin(radians(${latitude})) 
+            * sin(radians(${serviceProviders.latitude}))
+          )
+        ) <= ${radius}`
+      );
+    }
+
+    const results = await db
       .select({
         id: serviceProviders.id,
         userId: serviceProviders.userId,
@@ -138,28 +159,10 @@ export class DatabaseStorage implements IStorage {
       .from(serviceProviders)
       .leftJoin(users, eq(serviceProviders.userId, users.id))
       .leftJoin(serviceCategories, eq(serviceProviders.categoryId, serviceCategories.id))
-      .where(eq(serviceProviders.isAvailable, true));
+      .where(and(...conditions))
+      .orderBy(desc(serviceProviders.rating));
 
-    if (categorySlug) {
-      query = query.where(eq(serviceCategories.slug, categorySlug));
-    }
-
-    // Add distance-based filtering if coordinates provided
-    if (latitude && longitude && radius) {
-      query = query.where(
-        sql`(
-          6371 * acos(
-            cos(radians(${latitude})) 
-            * cos(radians(${serviceProviders.latitude})) 
-            * cos(radians(${serviceProviders.longitude}) - radians(${longitude}))
-            + sin(radians(${latitude})) 
-            * sin(radians(${serviceProviders.latitude}))
-          )
-        ) <= ${radius}`
-      );
-    }
-
-    return query.orderBy(desc(serviceProviders.rating));
+    return results as any;
   }
 
   async getServiceProvider(id: string) {
@@ -189,7 +192,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(serviceCategories, eq(serviceProviders.categoryId, serviceCategories.id))
       .where(eq(serviceProviders.id, id));
 
-    return result;
+    return result as any;
   }
 
   async createServiceProvider(provider: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider> {
@@ -216,15 +219,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getServiceProblems(categoryId: string, parentId?: string): Promise<ServiceProblem[]> {
-    let query = db.select().from(serviceProblems).where(eq(serviceProblems.categoryId, categoryId));
+    const conditions = [eq(serviceProblems.categoryId, categoryId)];
     
     if (parentId) {
-      query = query.where(eq(serviceProblems.parentId, parentId));
+      conditions.push(eq(serviceProblems.parentId, parentId));
     } else {
-      query = query.where(sql`${serviceProblems.parentId} IS NULL`);
+      conditions.push(sql`${serviceProblems.parentId} IS NULL`);
     }
 
-    return query;
+    return db.select().from(serviceProblems).where(and(...conditions));
   }
 
   async getBeautyServices(providerId: string): Promise<BeautyService[]> {
@@ -236,17 +239,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getGroceryProducts(category?: string, search?: string): Promise<GroceryProduct[]> {
-    let query = db.select().from(groceryProducts).where(eq(groceryProducts.inStock, true));
+    const conditions = [eq(groceryProducts.inStock, true)];
 
     if (category) {
-      query = query.where(eq(groceryProducts.category, category));
+      conditions.push(eq(groceryProducts.category, category));
     }
 
     if (search) {
-      query = query.where(sql`${groceryProducts.name} ILIKE ${`%${search}%`}`);
+      conditions.push(sql`${groceryProducts.name} ILIKE ${`%${search}%`}`);
     }
 
-    return query.orderBy(asc(groceryProducts.name));
+    return db.select().from(groceryProducts).where(and(...conditions)).orderBy(asc(groceryProducts.name));
   }
 
   async getGroceryProduct(id: string): Promise<GroceryProduct | undefined> {
@@ -261,7 +264,25 @@ export class DatabaseStorage implements IStorage {
     furnishing?: string;
     locality?: string;
   }) {
-    let query = db
+    const conditions = [eq(rentalProperties.isAvailable, true)];
+
+    if (filters.propertyType) {
+      conditions.push(eq(rentalProperties.propertyType, filters.propertyType));
+    }
+    if (filters.minRent) {
+      conditions.push(sql`${rentalProperties.rent} >= ${filters.minRent}`);
+    }
+    if (filters.maxRent) {
+      conditions.push(sql`${rentalProperties.rent} <= ${filters.maxRent}`);
+    }
+    if (filters.furnishing) {
+      conditions.push(eq(rentalProperties.furnishing, filters.furnishing));
+    }
+    if (filters.locality) {
+      conditions.push(sql`${rentalProperties.locality} ILIKE ${`%${filters.locality}%`}`);
+    }
+
+    const results = await db
       .select({
         id: rentalProperties.id,
         ownerId: rentalProperties.ownerId,
@@ -285,25 +306,10 @@ export class DatabaseStorage implements IStorage {
       })
       .from(rentalProperties)
       .leftJoin(users, eq(rentalProperties.ownerId, users.id))
-      .where(eq(rentalProperties.isAvailable, true));
+      .where(and(...conditions))
+      .orderBy(desc(rentalProperties.createdAt));
 
-    if (filters.propertyType) {
-      query = query.where(eq(rentalProperties.propertyType, filters.propertyType));
-    }
-    if (filters.minRent) {
-      query = query.where(sql`${rentalProperties.rent} >= ${filters.minRent}`);
-    }
-    if (filters.maxRent) {
-      query = query.where(sql`${rentalProperties.rent} <= ${filters.maxRent}`);
-    }
-    if (filters.furnishing) {
-      query = query.where(eq(rentalProperties.furnishing, filters.furnishing));
-    }
-    if (filters.locality) {
-      query = query.where(sql`${rentalProperties.locality} ILIKE ${`%${filters.locality}%`}`);
-    }
-
-    return query.orderBy(desc(rentalProperties.createdAt));
+    return results as any;
   }
 
   async getRentalProperty(id: string) {
@@ -333,7 +339,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(rentalProperties.ownerId, users.id))
       .where(eq(rentalProperties.id, id));
 
-    return result;
+    return result as any;
   }
 
   async createRentalProperty(property: InsertRentalProperty & { ownerId: string }): Promise<RentalProperty> {
@@ -370,7 +376,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(serviceProviders, eq(bookings.providerId, serviceProviders.id))
       .where(eq(bookings.id, id));
 
-    return result;
+    return result as any;
   }
 
   async updateBookingStatus(id: string, status: string, providerId?: string): Promise<Booking> {
@@ -388,7 +394,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserBookings(userId: string) {
-    return db
+    const results = await db
       .select({
         id: bookings.id,
         userId: bookings.userId,
@@ -409,10 +415,12 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(serviceProviders, eq(bookings.providerId, serviceProviders.id))
       .where(eq(bookings.userId, userId))
       .orderBy(desc(bookings.createdAt));
+
+    return results as any;
   }
 
   async getProviderBookings(providerId: string) {
-    return db
+    const results = await db
       .select({
         id: bookings.id,
         userId: bookings.userId,
@@ -433,6 +441,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(bookings.userId, users.id))
       .where(eq(bookings.providerId, providerId))
       .orderBy(desc(bookings.createdAt));
+
+    return results as any;
   }
 
   async createGroceryOrder(order: InsertGroceryOrder & { userId: string }): Promise<GroceryOrder> {
@@ -470,7 +480,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProviderReviews(providerId: string) {
-    return db
+    const results = await db
       .select({
         id: reviews.id,
         userId: reviews.userId,
@@ -485,6 +495,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(reviews.userId, users.id))
       .where(eq(reviews.providerId, providerId))
       .orderBy(desc(reviews.createdAt));
+
+    return results as any;
   }
 }
 

@@ -10,10 +10,13 @@ import {
   insertUserSchema 
 } from "@shared/schema";
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
+// Initialize Stripe (only if API key is available)
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-11-20.acacia",
+  });
+}
 
 // Twilio for call routing (if available)
 let twilioClient: any = null;
@@ -285,6 +288,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment intent for grocery orders
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
+      if (!stripe) {
+        return res.status(503).json({ 
+          message: "Payment service not configured. Please add Stripe API keys." 
+        });
+      }
+
       const { amount, orderId, currency = 'inr' } = req.body;
       
       const paymentIntent = await stripe.paymentIntents.create({
