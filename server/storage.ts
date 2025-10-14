@@ -208,7 +208,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createServiceProvider(provider: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider> {
-    const [newProvider] = await db.insert(serviceProviders).values(provider).returning();
+    const [newProvider] = await db.insert(serviceProviders).values([provider]).returning();
     return newProvider;
   }
 
@@ -355,12 +355,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createRentalProperty(property: InsertRentalProperty & { ownerId: string }): Promise<RentalProperty> {
-    const [newProperty] = await db.insert(rentalProperties).values(property).returning();
+    const [newProperty] = await db.insert(rentalProperties).values([property]).returning();
     return newProperty;
   }
 
   async createBooking(booking: InsertBooking & { userId: string; providerId?: string }): Promise<Booking> {
-    const [newBooking] = await db.insert(bookings).values(booking).returning();
+    const [newBooking] = await db.insert(bookings).values([booking]).returning();
     return newBooking;
   }
 
@@ -458,7 +458,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createGroceryOrder(order: InsertGroceryOrder & { userId: string }): Promise<GroceryOrder> {
-    const [newOrder] = await db.insert(groceryOrders).values(order).returning();
+    const [newOrder] = await db.insert(groceryOrders).values([order]).returning();
     return newOrder;
   }
 
