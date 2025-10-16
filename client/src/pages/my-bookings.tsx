@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,8 @@ import {
 } from "lucide-react";
 
 export default function MyBookings() {
-  // TODO: Get actual user ID from authentication
-  const userId = "mock-user-id";
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ["/api/bookings/user", userId],

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,9 +18,15 @@ import {
 export default function ProviderDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  // TODO: Get actual provider ID from authentication
-  const providerId = "mock-provider-id";
+  // Get provider profile to get providerId
+  const { data: providerProfile } = useQuery({
+    queryKey: ["/api/provider/profile"],
+    enabled: !!user,
+  });
+
+  const providerId = providerProfile?.id;
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ["/api/bookings/provider", providerId],

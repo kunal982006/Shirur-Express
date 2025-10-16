@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,7 @@ export default function BookingSlotForm({
 }: BookingSlotFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -74,7 +76,7 @@ export default function BookingSlotForm({
   const createBookingMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
       const bookingData = {
-        userId: "mock-user-id", // TODO: Get from authentication
+        userId: user?.id || "",
         providerId,
         serviceType: "electrician",
         problemId,
