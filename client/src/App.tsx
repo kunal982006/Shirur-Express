@@ -15,6 +15,8 @@ import Rental from "@/pages/rental";
 import StreetFood from "@/pages/street-food";
 import Restaurants from "@/pages/restaurants";
 import Checkout from "@/pages/checkout";
+import ProviderDashboard from "@/pages/provider-dashboard";
+import MyBookings from "@/pages/my-bookings";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -32,6 +34,8 @@ function Router() {
       <Route path="/street-food" component={StreetFood} />
       <Route path="/restaurants" component={Restaurants} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/provider-dashboard" component={ProviderDashboard} />
+      <Route path="/my-bookings" component={MyBookings} />
       <Route component={NotFound} />
     </Switch>
   );

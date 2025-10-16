@@ -10,6 +10,22 @@ The application is built as a modern full-stack web application with a React-bas
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates
+
+### Electrician Booking System (Added: 2025-10-16)
+- **Problem Categories**: Updated with 6 device categories (AC, Refrigerator, TV, Water Heater, Washing Machine, Microwave) and 40+ specific problems
+- **Search & Filter**: Electrician listing page with search bar and appliance/problem filters
+- **Provider Profiles**: Detailed electrician pages showing all problems they can fix
+- **Slot Booking**: Complete booking system with date/time slot selection
+- **Notification System**: Provider dashboard for accepting/declining bookings, customer booking status page
+- **Routes Added**: `/electrician/:id`, `/provider-dashboard`, `/my-bookings`
+
+### Twilio Integration Status
+- **Status**: Deferred - User dismissed Twilio connector setup
+- **Note**: Phone notification infrastructure is in place (routes `/api/call-request`, `/api/call-webhook`, `/api/call-response`)
+- **To Activate**: Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_PHONE_NUMBER` environment variables
+- **Alternative**: System currently uses in-app notifications (provider dashboard + customer bookings page)
+
 ## System Architecture
 
 ### Frontend Architecture

@@ -22,9 +22,9 @@ export default function Header() {
 
   const navigation = [
     { name: "Services", href: "/#services" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "Offers", href: "/#offers" },
-    { name: "Contact", href: "/#contact" }
+    { name: "My Bookings", href: "/my-bookings" },
+    { name: "Provider Dashboard", href: "/provider-dashboard" },
+    { name: "Offers", href: "/#offers" }
   ];
 
   return (

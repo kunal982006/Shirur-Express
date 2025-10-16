@@ -202,6 +202,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/bookings/provider/:providerId", async (req, res) => {
+    try {
+      const bookings = await storage.getProviderBookings(req.params.providerId);
+      res.json(bookings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/bookings/user/:userId", async (req, res) => {
+    try {
+      const bookings = await storage.getUserBookings(req.params.userId);
+      res.json(bookings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Call request system (with Twilio integration)
   app.post("/api/call-request", async (req, res) => {
     try {
