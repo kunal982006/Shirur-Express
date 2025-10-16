@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import BookingSlotForm from "@/components/booking-slot-form";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -18,7 +19,7 @@ import {
 export default function ElectricianDetail() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/electrician/:id");
-  const [selectedProblem, setSelectedProblem] = useState("");
+  const [selectedProblem, setSelectedProblem] = useState<{id: string; name: string} | null>(null);
   const [showBooking, setShowBooking] = useState(false);
 
   const providerId = params?.id;
@@ -54,8 +55,8 @@ export default function ElectricianDetail() {
     },
   });
 
-  const handleProblemSelect = (problemId: string) => {
-    setSelectedProblem(problemId);
+  const handleProblemSelect = (problemId: string, problemName: string) => {
+    setSelectedProblem({ id: problemId, name: problemName });
     setShowBooking(true);
   };
 
@@ -195,7 +196,7 @@ export default function ElectricianDetail() {
                         key={appliance.id}
                         appliance={appliance}
                         electricianCategoryId={electricianCategory?.id}
-                        selectedProblem={selectedProblem}
+                        selectedProblemId={selectedProblem?.id || ""}
                         onProblemSelect={handleProblemSelect}
                       />
                     ))}
@@ -218,9 +219,15 @@ export default function ElectricianDetail() {
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Booking system will be implemented in the next step
-                  </p>
+                  <BookingSlotForm
+                    providerId={providerId!}
+                    problemId={selectedProblem.id}
+                    problemName={selectedProblem.name}
+                    onSuccess={() => {
+                      setShowBooking(false);
+                      setSelectedProblem(null);
+                    }}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -235,13 +242,13 @@ export default function ElectricianDetail() {
 function ApplianceProblems({
   appliance,
   electricianCategoryId,
-  selectedProblem,
+  selectedProblemId,
   onProblemSelect,
 }: {
   appliance: any;
   electricianCategoryId: string;
-  selectedProblem: string;
-  onProblemSelect: (problemId: string) => void;
+  selectedProblemId: string;
+  onProblemSelect: (problemId: string, problemName: string) => void;
 }) {
   const { data: problems } = useQuery({
     queryKey: [
@@ -261,9 +268,9 @@ function ApplianceProblems({
         {problems?.map((problem: any) => (
           <Button
             key={problem.id}
-            variant={selectedProblem === problem.id ? "default" : "outline"}
+            variant={selectedProblemId === problem.id ? "default" : "outline"}
             className="justify-start"
-            onClick={() => onProblemSelect(problem.id)}
+            onClick={() => onProblemSelect(problem.id, problem.name)}
             data-testid={`button-problem-${problem.id}`}
           >
             {problem.name}
