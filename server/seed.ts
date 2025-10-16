@@ -10,8 +10,8 @@ async function seed() {
   console.log("🌱 Seeding database...");
 
   try {
-    // Create service categories
-    const categories = await db.insert(serviceCategories).values([
+    // Create service categories (if they don't exist)
+    await db.insert(serviceCategories).values([
       { name: "Electrician", slug: "electrician", description: "Professional electrical services" },
       { name: "Plumber", slug: "plumber", description: "Expert plumbing solutions" },
       { name: "Beauty Parlor", slug: "beauty", description: "Beauty and grooming services" },
@@ -20,14 +20,16 @@ async function seed() {
       { name: "Rental", slug: "rental", description: "No brokerage property rentals" },
       { name: "Street Food", slug: "street-food", description: "Delicious street food vendors" },
       { name: "Restaurants", slug: "restaurants", description: "Dine-in and table reservations" },
-    ]).onConflictDoNothing().returning();
+    ]).onConflictDoNothing();
 
-    console.log(`✅ Created ${categories.length} service categories`);
+    // Fetch all categories
+    const categories = await db.select().from(serviceCategories);
+    console.log(`✅ Found ${categories.length} service categories`);
 
     const hashedPassword = await bcrypt.hash("password123", 10);
 
-    // Create sample users for all service providers
-    const sampleUsers = await db.insert(users).values([
+    // Try to create sample users (ignore if they already exist)
+    await db.insert(users).values([
       // Electricians
       { username: "rajesh_electrician", email: "rajesh.electrician@example.com", password: hashedPassword, role: "provider", phone: "+919876543210" },
       { username: "amit_electrical", email: "amit.electrical@example.com", password: hashedPassword, role: "provider", phone: "+919876543211" },
@@ -52,9 +54,27 @@ async function seed() {
       // Restaurants
       { username: "punjabi_dhaba", email: "punjabi.dhaba@example.com", password: hashedPassword, role: "provider", phone: "+919876543221" },
       { username: "chinese_wok", email: "chinese.wok@example.com", password: hashedPassword, role: "provider", phone: "+919876543222" },
-    ]).onConflictDoNothing().returning();
+    ]).onConflictDoNothing();
 
-    console.log(`✅ Created ${sampleUsers.length} sample users`);
+    // Fetch the users (whether just created or already existing)
+    const usernames = [
+      "rajesh_electrician", "amit_electrical", "suresh_repairs",
+      "vikram_plumber", "rahul_plumbing",
+      "priya_beauty", "sonal_salon",
+      "sweetdreams_cakes", "cakehub_delights",
+      "chacha_chaat", "momos_king",
+      "punjabi_dhaba", "chinese_wok"
+    ];
+    
+    const sampleUsers = [];
+    for (const username of usernames) {
+      const user = await db.select().from(users).where(sql`${users.username} = ${username}`).limit(1);
+      if (user.length > 0) {
+        sampleUsers.push(user[0]);
+      }
+    }
+
+    console.log(`✅ Found ${sampleUsers.length} sample users`);
 
     // Get category IDs
     const electricianCat = categories.find(c => c.slug === "electrician");
