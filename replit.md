@@ -30,6 +30,28 @@ Preferred communication style: Simple, everyday language.
 - **Technical**: Custom `server/twilio-client.ts` utility using Replit Twilio connection
 - **Fallback**: In-app notifications available on provider dashboard and customer bookings page
 
+### Authentication System (Added: 2025-10-16)
+- **Session-Based Authentication**: Implemented with Express sessions and PostgreSQL session store
+- **User Management**: 
+  - Login and signup flows with email/username/password
+  - Bcrypt password hashing for security
+  - Role-based access control (customer/provider/admin)
+- **Provider Onboarding**: Two-step registration process
+  - Step 1: Create user account with role selection
+  - Step 2: Complete business profile (for providers only)
+- **Auth Context**: React context (`useAuth` hook) provides global auth state
+  - User info available throughout the app
+  - Automatic redirect to login for unauthenticated users
+  - Role-based UI rendering (provider dashboard, customer bookings)
+- **Header Integration**: Dynamic user menu with login/signup or user dropdown
+  - Dropdown shows username, role-specific links (Provider Dashboard, My Bookings)
+  - Logout functionality clears session and redirects
+- **Protected Routes**: All booking and dashboard features use real authenticated user IDs
+  - Booking form uses `user.id` instead of mock IDs
+  - Provider dashboard fetches bookings by provider profile ID
+  - Customer bookings page shows user-specific bookings
+- **Routes**: `/login`, `/signup`, `/provider-onboarding`
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -49,6 +71,7 @@ Preferred communication style: Simple, everyday language.
 **State Management Strategy**
 - Zustand for client-side cart state with persistence middleware
 - React Query for all server-state (service providers, products, bookings)
+- React Context for global authentication state (`AuthProvider` + `useAuth` hook)
 - Custom hooks for geolocation (`useLocation`) and responsive design (`useIsMobile`)
 
 **Key Design Patterns**
@@ -112,11 +135,20 @@ Preferred communication style: Simple, everyday language.
 - Express session with PostgreSQL store (`connect-pg-simple`)
 - Session-based authentication (cookie credentials included in fetch requests)
 - Role-based access control (customer, provider, admin roles)
+- Session secret stored securely in environment variables
 
-**Security Considerations**
-- Password hashing implementation expected (currently shows placeholder "hashed_password")
-- Secure session configuration for production deployment
+**Security Implementation**
+- Bcrypt password hashing with salt rounds (10)
+- Secure session configuration with httpOnly cookies
 - HTTPS enforcement expected in production environment
+- Auth middleware validates session on protected routes
+
+**Auth Flow**
+- `/api/auth/signup` - Creates new user with hashed password
+- `/api/auth/login` - Validates credentials and creates session
+- `/api/auth/logout` - Destroys session and clears cookies
+- `/api/auth/me` - Returns current user info if authenticated
+- `/api/provider/profile` - Returns provider profile for authenticated providers
 
 ### Payment Processing
 
