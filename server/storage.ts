@@ -23,6 +23,7 @@ export interface IStorage {
   // Service provider operations
   getServiceProviders(categorySlug?: string, latitude?: number, longitude?: number, radius?: number): Promise<(ServiceProvider & { user: User; category: ServiceCategory })[]>;
   getServiceProvider(id: string): Promise<(ServiceProvider & { user: User; category: ServiceCategory }) | undefined>;
+  getProviderByUserId(userId: string): Promise<ServiceProvider | undefined>;
   createServiceProvider(provider: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider>;
   updateProviderRating(providerId: string, newRating: number, reviewCount: number): Promise<ServiceProvider>;
 
@@ -205,6 +206,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(serviceProviders.id, id));
 
     return result as any;
+  }
+
+  async getProviderByUserId(userId: string): Promise<ServiceProvider | undefined> {
+    const [provider] = await db
+      .select()
+      .from(serviceProviders)
+      .where(eq(serviceProviders.userId, userId));
+    return provider;
   }
 
   async createServiceProvider(provider: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider> {
