@@ -10,11 +10,12 @@ import Electrician from "@/pages/electrician";
 import ElectricianDetail from "@/pages/electrician-detail";
 import Plumber from "@/pages/plumber";
 import Beauty from "@/pages/beauty";
-import BeautyDetail from "@/pages/BeautyDetail"; // <-- Assuming this component name is correct
+import BeautyDetail from "@/pages/BeautyDetail";
 import CakeShop from "@/pages/cake-shop";
 import Grocery from "@/pages/grocery";
 import Rental from "@/pages/rental";
 import StreetFood from "@/pages/street-food";
+import StreetFoodDetail from "@/pages/StreetFoodDetail"; // <-- YEH LINE ADD KARO
 import Restaurants from "@/pages/restaurants";
 import Checkout from "@/pages/checkout";
 import ProviderDashboard from "@/pages/provider-dashboard";
@@ -45,6 +46,7 @@ return (
 <Route path="/grocery" component={Grocery} />
 <Route path="/rental" component={Rental} />
 <Route path="/street-food" component={StreetFood} />
+        <Route path="/street-food/:vendorId" component={StreetFoodDetail} />
 <Route path="/restaurants" component={Restaurants} />
 <Route path="/checkout" component={Checkout} />
 <Route path="/provider-dashboard" component={ProviderDashboard} />

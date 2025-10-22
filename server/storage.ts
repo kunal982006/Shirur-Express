@@ -532,12 +532,22 @@ user: users,
 return results as any;
 }
 
-async getStreetFoodItems(providerId?: string): Promise<StreetFoodItem[]> {
-if (providerId) {
-return db.select().from(streetFoodItems).where(eq(streetFoodItems.providerId, providerId));
-}
-return db.select().from(streetFoodItems).where(eq(streetFoodItems.isAvailable, true));
-}
+    async getStreetFoodItems(providerId?: string, search?: string): Promise<StreetFoodItem[]> {
+        const conditions = [eq(streetFoodItems.isAvailable, true)];
+
+        if (providerId) {
+            conditions.push(eq(streetFoodItems.providerId, providerId));
+        }
+
+        // Yahan hai search ka jaadu! Agar search term hai, toh filter karo
+        if (search) {
+            // ILIKE case-insensitive search ke liye hai
+            conditions.push(sql`${streetFoodItems.name} ILIKE ${`%${search}%`}`);
+        }
+
+        // Ab conditions ke saath query chalao
+        return db.select().from(streetFoodItems).where(and(...conditions));
+    }
 
 async getRestaurantMenuItems(providerId?: string): Promise<RestaurantMenuItem[]> {
 if (providerId) {
@@ -568,6 +578,43 @@ return booking;
 async getUserTableBookings(userId: string): Promise<TableBooking[]> {
 return db.select().from(tableBookings).where(eq(tableBookings.userId, userId)).orderBy(desc(tableBookings.createdAt));
 }
+
+    // in server/storage.ts -> inside the DatabaseStorage class
+
+    // ... (baaki saare functions ke baad) ...
+
+      async createMenuItem(itemData: Omit<StreetFoodItem, 'id' | 'createdAt' | 'providerId'>, providerId: string): Promise<StreetFoodItem> {
+        const [newItem] = await db.insert(streetFoodItems).values({ ...itemData, providerId }).returning();
+        return newItem;
+      }
+
+      async updateMenuItem(itemId: string, providerId: string, updates: Partial<StreetFoodItem>): Promise<StreetFoodItem | null> {
+        // Pehle check karo ki item isi provider ka hai ya nahi (Security Check)
+        const [itemToUpdate] = await db.select().from(streetFoodItems).where(
+          and(eq(streetFoodItems.id, itemId), eq(streetFoodItems.providerId, providerId))
+        );
+
+        if (!itemToUpdate) {
+          return null; // Agar item nahi mila ya provider galat hai, toh null return karo
+        }
+
+        const [updatedItem] = await db.update(streetFoodItems).set(updates).where(eq(streetFoodItems.id, itemId)).returning();
+        return updatedItem;
+      }
+
+      async deleteMenuItem(itemId: string, providerId: string): Promise<{ id: string } | null> {
+        // Delete karne se pehle bhi ownership check karo (Security Check)
+        const [itemToDelete] = await db.select().from(streetFoodItems).where(
+          and(eq(streetFoodItems.id, itemId), eq(streetFoodItems.providerId, providerId))
+        );
+
+        if (!itemToDelete) {
+          return null;
+        }
+
+        const [deletedItem] = await db.delete(streetFoodItems).where(eq(streetFoodItems.id, itemId)).returning({ id: streetFoodItems.id });
+        return deletedItem;
+      }
 }
 
 export const storage = new DatabaseStorage();

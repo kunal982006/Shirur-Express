@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sandwich, Flame, Leaf, MapPin, Star, Phone } from "lucide-react";
 
 const foodCategories = [
@@ -28,17 +29,32 @@ export default function StreetFood() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSpiceLevel, setSelectedSpiceLevel] = useState("all");
   const [vegOnly, setVegOnly] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // === YAHAN PAR GALTI THEEK KI HAI ===
   const { data: providers, isLoading: loadingProviders } = useQuery<any[]>({
     queryKey: ["/api/service-providers", "street-food"],
+    queryFn: async () => {
+      const res = await fetch("/api/service-providers?category=street-food");
+      if (!res.ok) {
+        throw new Error('Failed to fetch vendors');
+      }
+      return res.json();
+    },
   });
 
-  const { data: allItems, isLoading: loadingItems } = useQuery<any[]>({
-    queryKey: ["/api/street-food-items"],
+  const { data: items, isLoading: loadingItems } = useQuery<any[]>({
+    queryKey: ["/api/street-food-items", searchTerm],
+    queryFn: async () => {
+      const res = await fetch(`/api/street-food-items?search=${searchTerm}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch street food items');
+      }
+      return res.json();
+    },
   });
 
-  // Filter items based on selections
-  const filteredItems = allItems?.filter((item) => {
+  const filteredItems = items?.filter((item) => {
     if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
     if (selectedSpiceLevel !== "all" && item.spicyLevel !== selectedSpiceLevel) return false;
     if (vegOnly && !item.isVeg) return false;
@@ -47,31 +63,31 @@ export default function StreetFood() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-12">
+      <section className="py-8 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/">
-            <Button variant="ghost" className="mb-4 text-white hover:bg-white/20" data-testid="button-back">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-          
-          <div className="flex items-center gap-3 mb-4">
-            <Sandwich className="h-12 w-12" />
-            <h1 className="text-4xl md:text-5xl font-bold">Street Food</h1>
-          </div>
-          <p className="text-lg md:text-xl opacity-90 max-w-3xl">
-            Discover authentic street food from local vendors. Fresh, tasty, and affordable!
-          </p>
-        </div>
-      </section>
 
-      {/* Filters Section */}
-      <section className="bg-muted/30 py-6 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Street Food</h1>
+            <Link href="/">
+              <Button variant="outline" data-testid="button-back">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </Link>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 w-full">
+              <Input
+                type="text"
+                placeholder="Search for momos, chaat, etc..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+                data-testid="input-search"
+              />
+            </div>
+            <div className="flex-1 w-full">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger data-testid="select-category">
                   <SelectValue placeholder="Category" />
@@ -85,8 +101,7 @@ export default function StreetFood() {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <Select value={selectedSpiceLevel} onValueChange={setSelectedSpiceLevel}>
                 <SelectTrigger data-testid="select-spice">
                   <SelectValue placeholder="Spice Level" />
@@ -100,7 +115,6 @@ export default function StreetFood() {
                 </SelectContent>
               </Select>
             </div>
-
             <Button
               variant={vegOnly ? "default" : "outline"}
               onClick={() => setVegOnly(!vegOnly)}
@@ -118,7 +132,7 @@ export default function StreetFood() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-8">Popular Vendors Near You</h2>
-          
+
           {loadingProviders ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
@@ -151,13 +165,13 @@ export default function StreetFood() {
                         </div>
                       )}
                     </div>
-                    
+
                     {vendor.description && (
                       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                         {vendor.description}
                       </p>
                     )}
-                    
+
                     <div className="flex gap-2 mb-4">
                       {vendor.specializations?.slice(0, 3).map((spec: string, idx: number) => (
                         <Badge key={idx} variant="secondary" className="text-xs">
@@ -167,9 +181,14 @@ export default function StreetFood() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button className="flex-1" data-testid={`button-menu-${vendor.id}`}>
-                        View Menu
-                      </Button>
+                      
+                      {/* Button ko <Link> se wrap kiya */}
+                      <Link href={`/street-food/${vendor.id}`}>
+                        <Button as="a" className="flex-1" data-testid={`button-menu-${vendor.id}`}>
+                          View Menu
+                        </Button>
+                        
+                      </Link>
                       <Button variant="outline" size="icon" data-testid={`button-call-${vendor.id}`}>
                         <Phone className="h-4 w-4" />
                       </Button>
@@ -194,7 +213,7 @@ export default function StreetFood() {
       <section className="py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-8">Popular Items</h2>
-          
+
           {loadingItems ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((i) => (
@@ -236,13 +255,13 @@ export default function StreetFood() {
                         )}
                       </div>
                     </div>
-                    
+
                     {item.description && (
                       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {item.description}
                       </p>
                     )}
-                    
+
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xl font-bold text-primary">₹{item.price}</span>
                       {item.spicyLevel && (
@@ -255,7 +274,7 @@ export default function StreetFood() {
                         </Badge>
                       )}
                     </div>
-                    
+
                     {item.category && (
                       <Badge variant="outline" className="text-xs mb-3">
                         {item.category}
@@ -277,7 +296,7 @@ export default function StreetFood() {
             <Card>
               <CardContent className="p-12 text-center">
                 <p className="text-lg text-muted-foreground">No items match your filters</p>
-                <p className="text-sm text-muted-foreground mt-2">Try adjusting your category or spice level</p>
+                <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters</p>
               </CardContent>
             </Card>
           )}

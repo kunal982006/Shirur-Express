@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, integer, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { createId } from "@paralleldrive/cuid2"; // <-- YEH WALI LINE ADD KARO
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -63,6 +64,7 @@ export const beautyServices = pgTable("beauty_services", {
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
+  imageUrl: text("image_url"),
   duration: integer("duration_minutes"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   category: text("category"), // Hair, Facial, Makeup, Spa, Bridal
@@ -153,16 +155,17 @@ export const groceryOrders = pgTable("grocery_orders", {
 
 // Street food menu items
 export const streetFoodItems = pgTable("street_food_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  providerId: text("provider_id").notNull().references(() => serviceProviders.id),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category"), // Chaat, Rolls, Momos, Beverages, etc.
-  imageUrl: text("image_url"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  imageUrl: text("image_url"), // <-- YEH NAYI LINE ADD KARO
+  category: text("category"),
+  price: text("price").notNull(),
   isVeg: boolean("is_veg").default(true),
   isAvailable: boolean("is_available").default(true),
   spicyLevel: text("spicy_level"), // Mild, Medium, Hot
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Restaurant menu items
