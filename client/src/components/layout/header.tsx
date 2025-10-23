@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/hooks/use-cart";
+// --- BADLAV: useCart ki jagah useCartStore import kiya ---
+import { useCartStore } from "@/hooks/use-cart-store";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -12,11 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Network, 
-  ShoppingCart, 
-  User, 
-  Menu, 
+import {
+  Network,
+  ShoppingCart,
+  User,
+  Menu,
   X,
   LogOut,
   Settings
@@ -25,10 +26,14 @@ import {
 export default function Header() {
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { items } = useCart();
+
+  // --- BADLAV: useCart ki jagah useCartStore use kiya ---
+  const itemCount = useCartStore((state) => state.getItemCount());
   const { user, isAuthenticated, logout } = useAuth();
 
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+  // --- BADLAV: totalItems ki calculation ab useCartStore se aayegi ---
+  // const totalItems = items.reduce((total, item) => total + item.quantity, 0); // Is line ki ab zaroorat nahi
+  const totalItems = itemCount; // useCartStore se direct itemCount use kiya
 
   const navigation = [
     { name: "Services", href: "/#services" },
@@ -44,7 +49,8 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center text-2xl font-bold text-primary">
               <Network className="h-6 w-6 mr-2" />
-              ServiceHub
+              {/* --- BADLAV: Logo ka text 'Shirur Express' kiya --- */}
+              Shirur Express
             </Link>
           </div>
 
@@ -81,17 +87,18 @@ export default function Header() {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Cart Icon */}
-            <Link href="/grocery">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+            {/* --- BADLAV: Cart icon ka link /checkout kiya --- */}
+            <Link href="/checkout">
+              <Button
+                variant="ghost"
+                size="icon"
                 className="relative"
                 data-testid="button-cart"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs cart-badge bg-accent text-accent-foreground"
                   >
                     {totalItems}
@@ -104,8 +111,8 @@ export default function Header() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="hidden sm:flex items-center space-x-2"
                     data-testid="button-user-menu"
                   >
@@ -137,14 +144,14 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <div className="hidden sm:flex items-center space-x-2">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => setLocation("/login")}
                   data-testid="button-login"
                 >
                   Login
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setLocation("/signup")}
                   data-testid="button-signup"
                 >
@@ -196,7 +203,7 @@ export default function Header() {
             )}
             <div className="px-3 py-2">
               {isAuthenticated ? (
-                <Button 
+                <Button
                   className="w-full flex items-center space-x-2"
                   onClick={() => { logout(); setMobileMenuOpen(false); }}
                   variant="outline" // Changed variant for logout button
@@ -205,7 +212,7 @@ export default function Header() {
                   <span>Logout ({user?.username})</span>
                 </Button>
               ) : (
-                <Button 
+                <Button
                   className="w-full flex items-center space-x-2"
                   onClick={() => { setLocation("/login"); setMobileMenuOpen(false); }}
                 >

@@ -8,6 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sandwich, Flame, Leaf, MapPin, Star, Phone } from "lucide-react";
 
+// --- YEH NAYE IMPORTS ADD KIYE HAIN ---
+import { useCartStore } from "@/hooks/use-cart-store";
+import { useToast } from "@/hooks/use-toast";
+
 const foodCategories = [
   { value: "all", label: "All Items" },
   { value: "Chaat", label: "Chaat" },
@@ -31,7 +35,24 @@ export default function StreetFood() {
   const [vegOnly, setVegOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // === YAHAN PAR GALTI THEEK KI HAI ===
+  // --- YEH NAYI LINES ADD KI HAIN ---
+  const { toast } = useToast();
+  const addItemToCart = useCartStore((state) => state.addItem);
+
+  const handleOrderNow = (item: any) => {
+    addItemToCart({
+      id: item.id,
+      name: item.name,
+      price: parseFloat(item.price), // Price ko number me convert kiya
+      imageUrl: item.imageUrl,
+    });
+    toast({
+      title: "✅ Added to Cart!",
+      description: `${item.name} has been added to your cart.`,
+    });
+  };
+  // --- END OF NEW LINES ---
+
   const { data: providers, isLoading: loadingProviders } = useQuery<any[]>({
     queryKey: ["/api/service-providers", "street-food"],
     queryFn: async () => {
@@ -65,7 +86,6 @@ export default function StreetFood() {
     <div className="min-h-screen bg-background">
       <section className="py-8 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Street Food</h1>
             <Link href="/">
@@ -181,13 +201,10 @@ export default function StreetFood() {
                     </div>
 
                     <div className="flex gap-2">
-                      
-                      {/* Button ko <Link> se wrap kiya */}
                       <Link href={`/street-food/${vendor.id}`}>
                         <Button as="a" className="flex-1" data-testid={`button-menu-${vendor.id}`}>
                           View Menu
                         </Button>
-                        
                       </Link>
                       <Button variant="outline" size="icon" data-testid={`button-call-${vendor.id}`}>
                         <Phone className="h-4 w-4" />
@@ -232,8 +249,8 @@ export default function StreetFood() {
                 <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-item-${item.id}`}>
                   {item.imageUrl && (
                     <div className="h-48 overflow-hidden">
-                      <img 
-                        src={item.imageUrl} 
+                      <img
+                        src={item.imageUrl}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
@@ -266,7 +283,7 @@ export default function StreetFood() {
                       <span className="text-xl font-bold text-primary">₹{item.price}</span>
                       {item.spicyLevel && (
                         <Badge variant={
-                          item.spicyLevel === 'Hot' ? 'destructive' : 
+                          item.spicyLevel === 'Hot' ? 'destructive' :
                           item.spicyLevel === 'Medium' ? 'default' : 'secondary'
                         } className="flex items-center gap-1">
                           <Flame className="h-3 w-3" />
@@ -281,10 +298,11 @@ export default function StreetFood() {
                       </Badge>
                     )}
 
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       disabled={!item.isAvailable}
                       data-testid={`button-order-${item.id}`}
+                      onClick={() => handleOrderNow(item)} // <-- YEH LINE ADD KI HAI
                     >
                       {item.isAvailable ? 'Order Now' : 'Out of Stock'}
                     </Button>
