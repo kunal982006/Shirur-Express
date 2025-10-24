@@ -1,3 +1,4 @@
+// client/src/pages/Grocery.tsx
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -5,37 +6,62 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import ProductCard from "@/components/grocery/product-card";
-import CartSummary from "@/components/grocery/cart-summary";
-import { useCart } from "@/hooks/use-cart";
-import { 
-  ArrowLeft, 
-  Search, 
+// --- BADLAV: CartSummary ko hata diya, ab inline summary hai ---
+// import CartSummary from "@/components/grocery/cart-summary";
+// --- BADLAV: useCart ki jagah useCartStore import kiya ---
+import { useCartStore } from "@/hooks/use-cart-store";
+import { useToast } from "@/hooks/use-toast"; // Toast ko bhi import kiya
+
+import {
+  ArrowLeft,
+  Search,
   Filter,
   Apple,
   Carrot,
   Milk,
   Croissant,
   Cookie,
-  Coffee
+  Coffee,
+  ShoppingBag,
+  Sparkles,// Naya icon add kiya
 } from "lucide-react";
 
+
+// --- YEH WALA 'categories' ARRAY UPDATE KARO ---
 const categories = [
   { name: "Fruits", icon: Apple, slug: "fruits" },
   { name: "Vegetables", icon: Carrot, slug: "vegetables" },
   { name: "Dairy", icon: Milk, slug: "dairy" },
   { name: "Bakery", icon: Croissant, slug: "bakery" },
   { name: "Snacks", icon: Cookie, slug: "snacks" },
-  { name: "Beverages", icon: Coffee, slug: "beverages" }
+  { name: "Beverages", icon: Coffee, slug: "beverages" },
+  { name: "Staples", icon: ShoppingBag, slug: "staples" }, // Nayi category
+  { name: "Toiletries", icon: Sparkles, slug: "toiletries" }, // Nayi category
+  { name: "Personal Care", icon: Sparkles, slug: "personal-care" }, // Nayi category (Sparkles icon use kiya, aap badal sakte ho)
 ];
+
+// API function to fetch grocery products (queryKey ko deconstruct karke use kiya)
+const fetchGroceryProducts = async ({ queryKey }: { queryKey: (string | { category: string, search: string })[] }) => {
+  const [, { category, search }] = queryKey;
+  const url = `/api/grocery-products?${category ? `category=${category}` : ''}${search ? `&search=${search}` : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('Failed to fetch grocery products');
+  }
+  return res.json();
+};
 
 export default function Grocery() {
   const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const { items, addItem, updateQuantity } = useCart();
+  // --- BADLAV: useCart ki jagah useCartStore se items, addItem, updateQuantity, getTotalPrice liya ---
+  const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
+  const { toast } = useToast(); // useToast ko use karenge
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["/api/grocery-products", { category: selectedCategory, search: searchQuery }],
+    queryKey: ["groceryProducts", { category: selectedCategory, search: searchQuery }],
+    queryFn: fetchGroceryProducts, // fetchGroceryProducts ko directly pass kiya
   });
 
   const handleCategorySelect = (categorySlug: string) => {
@@ -43,22 +69,36 @@ export default function Grocery() {
   };
 
   const handleAddToCart = (product: any) => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: parseFloat(product.price),
-      weight: product.weight,
-      imageUrl: product.imageUrl
-    });
+    // Check if the item is already in the cart. If yes, update quantity instead of adding new.
+    const existingItem = items.find(item => item.id === product.id);
+    if (existingItem) {
+      updateQuantity(product.id, 1); // Increase quantity by 1
+      toast({
+        title: "➕ Quantity Updated!",
+        description: `${product.name} quantity increased to ${existingItem.quantity + 1}.`,
+      });
+    } else {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        // --- BADLAV: `weight` prop ko ab bhi yahan se remove kiya hai,
+        //             kyunki useCartStore me weight nahi hai.
+        //             Agar chahiye, toh useCartStore ke CartItem type me add karna hoga.
+        // weight: product.weight,
+        imageUrl: product.imageUrl,
+      });
+      toast({
+        title: "✅ Added to Cart!",
+        description: `${product.name} has been added to your cart.`,
+      });
+    }
   };
 
-  const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0);
-  };
 
-  const getSubtotal = () => {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  // --- BADLAV: getTotalItems aur getSubtotal ki ab zaroorat nahi, useCartStore ke functions use honge ---
+  // const getTotalItems = () => { /* ... */ };
+  // const getSubtotal = () => { /* ... */ };
 
   return (
     <div className="py-16 bg-background">
@@ -98,13 +138,13 @@ export default function Grocery() {
                   data-testid={`category-${category.slug}`}
                 >
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                    selectedCategory === category.slug 
-                      ? "bg-primary-foreground" 
+                    selectedCategory === category.slug
+                      ? "bg-primary-foreground"
                       : "bg-secondary/10"
                   }`}>
                     <category.icon className={`h-6 w-6 ${
-                      selectedCategory === category.slug 
-                        ? "text-primary" 
+                      selectedCategory === category.slug
+                        ? "text-primary"
                         : "text-secondary"
                     }`} />
                   </div>
@@ -137,6 +177,7 @@ export default function Grocery() {
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {isLoading ? (
+            // Loading Skeletons
             [...Array(8)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <div className="aspect-square bg-muted"></div>
@@ -151,6 +192,7 @@ export default function Grocery() {
               </Card>
             ))
           ) : products?.length === 0 ? (
+            // No Products Found Message
             <Card className="col-span-full">
               <CardContent className="p-8 text-center">
                 <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -161,23 +203,36 @@ export default function Grocery() {
               </CardContent>
             </Card>
           ) : (
+            // Actual Product Cards
             products?.map((product: any) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 onAddToCart={() => handleAddToCart(product)}
+                // --- BADLAV: Quantity prop add kiya ProductCard me ---
+                quantity={items.find(item => item.id === product.id)?.quantity || 0}
+                onIncreaseQuantity={() => updateQuantity(product.id, 1)}
+                onDecreaseQuantity={() => updateQuantity(product.id, -1)}
               />
             ))
           )}
         </div>
 
-        {/* Cart Summary (Fixed Bottom) */}
+        {/* --- BADLAV: Cart Summary Component (Inline) --- */}
+        {/* Ab hum useCartStore ke items aur functions ko use karenge */}
         {items.length > 0 && (
-          <CartSummary
-            items={items}
-            onUpdateQuantity={updateQuantity}
-            onProceedToCheckout={() => setLocation("/checkout")}
-          />
+          <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-lg border-t z-50">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">{items.reduce((total, item) => total + item.quantity, 0)} Items</p>
+                <p className="text-xl font-bold">₹{getTotalPrice().toFixed(2)}</p>
+              </div>
+              <Button onClick={() => setLocation("/checkout")}>
+                Proceed to Checkout
+                <ShoppingBag className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

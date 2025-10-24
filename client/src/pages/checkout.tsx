@@ -1,141 +1,59 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// --- BADLAV: Stripe ke imports hata diye ---
+// import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
+// import { loadStripe } from '@stripe/stripe-js';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-// --- BADLAV: useCart ki jagah useCartStore import kiya ---
 import { useCartStore } from "@/hooks/use-cart-store";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-// --- NAYE ICONS IMPORT KIYE HAIN ---
-import { ArrowLeft, ShoppingCart, Truck, CreditCard, Minus, Plus, Trash2 } from "lucide-react";
+// --- BADLAV: apiRequest aur useToast imports rehne diye, par use nahi honge abhi ---
+// import { apiRequest } from "@/lib/queryClient"; // Abhi iski zaroorat nahi
+import { useToast } from "@/hooks/use-toast"; // Toast abhi bhi kaam aayega
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_dummy');
+// --- Naye Icons import kiye hain (Agar pehle se nahi hain) ---
+import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2 } from "lucide-react";
 
-const CheckoutForm = () => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { toast } = useToast();
-  // --- BADLAV: useCart ki jagah useCartStore se items aur clearCart liya ---
-  const { items, clearCart } = useCartStore();
-  const [, setLocation] = useLocation();
-  const [processing, setProcessing] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+// --- BADLAV: CheckoutForm component ko hata diya hai ---
+// const CheckoutForm = () => { /* ... */ };
 
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setProcessing(true);
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: window.location.origin + '/order-success',
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Payment Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Payment Successful",
-        description: "Thank you for your order! Your groceries will be delivered soon.",
-      });
-      clearCart(); // Cart ko clear kiya payment ke baad
-      setLocation('/');
-    }
-
-    setProcessing(false);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5" />
-            <span>Payment Details</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PaymentElement />
-        </CardContent>
-      </Card>
-
-      <Button
-        type="submit"
-        className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-        disabled={!stripe || !elements || processing || items.length === 0}
-        data-testid="button-place-order"
-      >
-        {processing ? "Processing..." : "Place Order"}
-      </Button>
-    </form>
-  );
-};
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
-  // --- BADLAV: useCart ki jagah useCartStore se items, removeItem, increaseQuantity, decreaseQuantity liya ---
-  const { items, removeItem, increaseQuantity, decreaseQuantity, getTotalPrice } = useCartStore();
-  const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { items, removeItem, increaseQuantity, decreaseQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { toast } = useToast(); // Toast ko use karenge "Order Placed" message ke liye
 
-  // --- BADLAV: subtotal calculation ab getTotalPrice() function se aayega ---
+  // Fees calculation
   const subtotal = getTotalPrice();
-  const platformFee = subtotal * 0.01; // 1% platform fee
+  const platformFee = subtotal * 0.01;
   const deliveryFee = 24.50; // Mock delivery fee
   const total = subtotal + platformFee + deliveryFee;
 
   useEffect(() => {
+    // Agar cart empty hai, toh user ko shopping page par bhej do
     if (items.length === 0) {
-      setLocation('/street-food'); // Cart empty hone par street-food page par redirect
-      return;
+      setLocation('/street-food');
     }
+    // Dependency array me `items.length` bhi add kiya, taaki cart empty hone par redirect ho
+  }, [items.length, setLocation]);
 
-    // Create payment intent
-    const createPaymentIntent = async () => {
-      try {
-        const response = await apiRequest("POST", "/api/create-payment-intent", {
-          amount: Math.round(total * 100), // Stripe expects amount in cents/paise
-          currency: 'inr'
-        });
-        const data = await response.json();
-        setClientSecret(data.clientSecret);
-      } catch (error) {
-        console.error('Error creating payment intent:', error);
-        // Optionally show a toast error
-        // toast({ title: "Error", description: "Could not initialize payment.", variant: "destructive" });
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    createPaymentIntent();
-  }, [items, total, setLocation]);
+  // --- BADLAV: handlePlaceOrder function banaya hai ---
+  const handlePlaceOrder = () => {
+    // Yahan hum fake order place karenge aur success dikhayenge
+    toast({
+      title: "🎉 Order Placed!",
+      description: "Your order has been placed successfully. You will receive a confirmation shortly.",
+    });
+    clearCart(); // Cart ko khaali kar do order place hone ke baad
+    setLocation("/order-success"); // Order success page par redirect
+  };
 
-  if (loading || !clientSecret) {
-    return (
-      <div className="min-h-screen bg-background py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading"/>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
+  // --- BADLAV: Loading state aur clientSecret ki ab zaroorat nahi hai ---
+  // if (loading || !clientSecret) { /* ... */ }
 
   return (
     <div className="min-h-screen bg-background py-16">
@@ -144,7 +62,7 @@ export default function Checkout() {
         <Button
           variant="ghost"
           className="mb-6 flex items-center space-x-2"
-          onClick={() => setLocation("/street-food")} // --- BADLAV: Back to /street-food ---
+          onClick={() => setLocation("/street-food")}
           data-testid="button-back"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -154,13 +72,13 @@ export default function Checkout() {
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Order Summary */}
+          {/* Order Summary / Cart Items List */}
           <div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <ShoppingCart className="h-5 w-5" />
-                  <span>Your Cart Items</span> {/* --- BADLAV: Title changed to be more specific --- */}
+                  <span>Your Cart Items</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -178,18 +96,16 @@ export default function Checkout() {
                         )}
                         <div>
                           <p className="font-medium">{item.name}</p>
-                          {/* item.weight removed as it's not in our cart item structure */}
-                          {/* <p className="text-sm text-muted-foreground">{item.weight}</p> */}
-                          <p className="text-sm text-muted-foreground">₹{item.price.toFixed(2)} / item</p> {/* Individual item price */}
+                          <p className="text-sm text-muted-foreground">₹{item.price.toFixed(2)} / item</p>
                         </div>
                       </div>
-                      <div className="text-right flex items-center space-x-2"> {/* --- BADLAV: Quantity controls added --- */}
+                      <div className="text-right flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => decreaseQuantity(item.id)}
-                          disabled={item.quantity <= 1} // 1 se kam nahi hoga
+                          disabled={item.quantity <= 1}
                           aria-label="Decrease quantity"
                         >
                           <Minus className="h-4 w-4" />
@@ -246,15 +162,22 @@ export default function Checkout() {
                   </div>
                 </div>
               </CardContent>
+              <CardFooter>
+                {/* --- BADLAV: Place Order button --- */}
+                <Button
+                  className="w-full"
+                  onClick={handlePlaceOrder}
+                  disabled={items.length === 0}
+                  data-testid="button-place-order"
+                >
+                  Place Order (₹{total.toFixed(2)})
+                </Button>
+              </CardFooter>
             </Card>
           </div>
 
-          {/* Payment Form */}
-          <div>
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <CheckoutForm />
-            </Elements>
-          </div>
+          {/* --- BADLAV: Payment Form Section ko hata diya --- */}
+          {/* Ab yahan koi payment form nahi hai */}
         </div>
       </div>
     </div>

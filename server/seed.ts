@@ -484,68 +484,128 @@ async function seed() {
     }
 
     // Add grocery products
+    // server/seed.ts (partial code)
+    // ... existing imports ...
+    // ... existing users, serviceCategories, serviceProviders creation ...
+
+    // Add grocery products (YAHAN SE CODE REPLACE KARO)
     const groceryItems = await db.insert(groceryProducts).values([
       {
         name: "Fresh Bananas",
         description: "Premium quality ripe bananas",
-        category: "Fruits",
-        price: "40",
+        category: "fruits", // Slug use karein
+        price: "60.00", // String format
         weight: "1 dozen",
         unit: "dozen",
         inStock: true,
         stockQuantity: 50,
+        imageUrl: 'https://m.media-amazon.com/images/I/51eb+Yc523L._SL1000_.jpg', // Image URL add kiya
       },
       {
         name: "Fresh Apples",
         description: "Crisp and juicy red apples",
-        category: "Fruits",
-        price: "120",
+        category: "fruits",
+        price: "150.00",
         weight: "1 kg",
         unit: "kg",
         inStock: true,
         stockQuantity: 30,
+        imageUrl: 'https://cdn.shopify.com/s/files/1/0530/2369/products/FreshApples.jpg?v=1604130099', // Image URL add kiya
       },
       {
         name: "Whole Wheat Bread",
         description: "Freshly baked whole wheat bread",
-        category: "Bakery",
-        price: "45",
+        category: "bakery",
+        price: "45.00",
         weight: "400g",
         unit: "pack",
         inStock: true,
         stockQuantity: 30,
+        imageUrl: 'https://img.etimg.com/thumb/msid-68194451,width-1200,height-900,resizemode-4/.jpg', // Image URL add kiya
       },
       {
         name: "Toned Milk",
         description: "Fresh toned milk",
-        category: "Dairy",
-        price: "56",
+        category: "dairy",
+        price: "56.00",
         weight: "1L",
         unit: "liter",
         inStock: true,
         stockQuantity: 100,
+        imageUrl: 'https://media.istockphoto.com/id/1179754291/photo/milk-glass-and-bottle-with-milk-splashes-clip-art-milk-illustration-isolated-on-white.jpg?s=612x612&w=0&k=20&c=L_Jj9S_MhQdM-v3G1I_UvK27n-l894DqK4_kR36qR1w=', // Image URL add kiya
       },
       {
         name: "Basmati Rice",
         description: "Premium long grain basmati rice",
-        category: "Staples",
-        price: "180",
+        category: "staples", // Nayi category slug (Frontend me bhi add karenge)
+        price: "180.00",
         weight: "1 kg",
         unit: "kg",
         inStock: true,
         stockQuantity: 40,
+        imageUrl: 'https://m.media-amazon.com/images/I/71u9yH0K2WL.jpg', // Example image URL
       },
       {
         name: "Fresh Tomatoes",
         description: "Farm fresh red tomatoes",
-        category: "Vegetables",
-        price: "35",
+        category: "vegetables",
+        price: "35.00",
         weight: "500g",
         unit: "pack",
         inStock: true,
         stockQuantity: 60,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Tomato_je.jpg', // Image URL add kiya
       },
-    ]).onConflictDoNothing().returning();
+      {
+        id: 'groc9',
+        name: 'Detergent Soap',
+        description: 'Lifebuoy Total 10 for germ protection',
+        category: 'toiletries', // Nayi category slug
+        price: '90.00',
+        weight: '125g',
+        unit: 'bar',
+        imageUrl: 'https://www.jiomart.com/images/product/original/491410756/lifebuoy-total-10-bathing-soap-125-g-product-images-o491410756-p590059341-0-202302281831.jpeg?im=Resize=(1000,1000)',
+        inStock: true,
+        stockQuantity: 50,
+      },
+      {
+        id: 'groc10',
+        name: 'Colgate Toothpaste',
+        description: 'For strong teeth and fresh breath',
+        category: 'toiletries',
+        price: '110.00',
+        weight: '150g',
+        unit: 'tube',
+        imageUrl: 'https://www.colgate.com/content/dam/cp-sites/oral-care/oral-care-center/en-us/product-detail-pages/toothpaste/colgate-total-plaque-pro-release-paste-product.jpg',
+        inStock: true,
+        stockQuantity: 40,
+      },
+      {
+        id: 'groc11',
+        name: 'Dettol Handwash',
+        description: 'Protects from 100 illness-causing germs',
+        category: 'personal-care', // Nayi category slug
+        price: '180.00',
+        weight: '250ml',
+        unit: 'bottle',
+        imageUrl: 'https://www.godrejprotekt.com/cdn/shop/products/3-min_8b4172f3-c5f1-460d-a06f-12c8b827e8a9.jpg?v=1661858599',
+        inStock: true,
+        stockQuantity: 60,
+      },
+      {
+        id: 'groc12',
+        name: 'Dove Shampoo',
+        description: 'For smooth and shiny hair',
+        category: 'personal-care',
+        price: '300.00',
+        weight: '360ml',
+        unit: 'bottle',
+        imageUrl: 'https://m.media-amazon.com/images/I/61N+p2uL7GL._SL1500_.jpg',
+        inStock: true,
+        stockQuantity: 35,
+      },
+    ]).onConflictDoNothing().returning(); // Yahan tak replace karo
+
 
     console.log(`✅ Created ${groceryItems.length} grocery items`);
 

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, boolean, timestamp, serial, jsonb } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2"; // <-- YEH WALI LINE ADD KARO
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -84,20 +84,26 @@ export const cakeProducts = pgTable("cake_products", {
 });
 
 // Grocery products
+// shared/schema.ts (partial code)
+
+// ... existing imports and other schemas ...
+
 export const groceryProducts = pgTable("grocery_products", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 256 }).notNull(),
   description: text("description"),
-  category: text("category").notNull(),
-  subcategory: text("subcategory"),
-  imageUrl: text("image_url"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
-  weight: text("weight"),
-  unit: text("unit"),
-  inStock: boolean("in_stock").default(true),
-  stockQuantity: integer("stock_quantity").default(0),
+  category: varchar("category", { length: 256 }).notNull(), // Category slug (e.g., "fruits")
+  price: varchar("price", { length: 50 }).notNull(), // Price as string to handle currency symbols easily
+  weight: varchar("weight", { length: 100 }), // e.g., "1 kg", "500g"
+  unit: varchar("unit", { length: 50 }), // e.g., "kg", "dozen", "pack"
+  inStock: boolean("in_stock").default(true).notNull(),
+  stockQuantity: integer("stock_quantity").default(0).notNull(),
+  imageUrl: varchar("image_url", { length: 256 }), // --- NAYA FIELD ADD KIYA ---
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// ... rest of the schema file ...
 
 // Rental properties
 export const rentalProperties = pgTable("rental_properties", {

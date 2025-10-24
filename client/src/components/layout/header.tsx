@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-// --- BADLAV: useCart ki jagah useCartStore import kiya ---
-import { useCartStore } from "@/hooks/use-cart-store";
-import { useAuth } from "@/hooks/use-auth";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,217 +10,216 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Network,
-  ShoppingCart,
-  User,
-  Menu,
-  X,
-  LogOut,
-  Settings
-} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu, Home, Settings, LogOut, Package, User, LayoutDashboard } from "lucide-react"; // LayoutDashboard icon add kiya
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+
+const navItems = [
+  { name: "Home", href: "/", icon: Home },
+  { name: "My Bookings", href: "/my-bookings", icon: Package },
+  // Settings link ko user-specific settings ke liye rakha hai
+  // Provider Dashboard ka link alag se handle kiya gaya hai
+];
 
 export default function Header() {
-  const [location, setLocation] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [, setLocation] = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, isLoading, logout } = useAuth();
+  const { toast } = useToast();
 
-  // --- BADLAV: useCart ki jagah useCartStore use kiya ---
-  const itemCount = useCartStore((state) => state.getItemCount());
-  const { user, isAuthenticated, logout } = useAuth();
-
-  // --- BADLAV: totalItems ki calculation ab useCartStore se aayegi ---
-  // const totalItems = items.reduce((total, item) => total + item.quantity, 0); // Is line ki ab zaroorat nahi
-  const totalItems = itemCount; // useCartStore se direct itemCount use kiya
-
-  const navigation = [
-    { name: "Services", href: "/#services" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "Offers", href: "/#offers" }
-  ];
+  const handleLogout = async () => {
+    await logout();
+    toast({
+      title: "👋 Logged Out!",
+      description: "You have been successfully logged out.",
+    });
+    setLocation("/login");
+  };
 
   return (
-    <header className="bg-card shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center text-2xl font-bold text-primary">
-              <Network className="h-6 w-6 mr-2" />
-              {/* --- BADLAV: Logo ka text 'Shirur Express' kiya --- */}
-              Shirur Express
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className={`font-medium transition ${
-                  location === item.href
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                {item.name}
-              </a>
-            ))}
-            {/* NEW: My Bookings Link for Authenticated Users */}
-            {isAuthenticated && (
-              <Link
-                href="/my-bookings"
-                className={`font-medium transition ${
-                  location === "/my-bookings"
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                My Bookings
-              </Link>
-            )}
-          </nav>
-
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Cart Icon */}
-            {/* --- BADLAV: Cart icon ka link /checkout kiya --- */}
-            <Link href="/checkout">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                data-testid="button-cart"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {totalItems > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs cart-badge bg-accent text-accent-foreground"
-                  >
-                    {totalItems}
-                  </Badge>
-                )}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b h-16 flex items-center px-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
+        <div className="flex items-center gap-4">
+          {/* Mobile Navigation */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle Menu</span>
               </Button>
-            </Link>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64">
+              <nav className="flex flex-col gap-4 py-6">
+                {navItems.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="ghost"
+                    className="justify-start px-4 py-2 text-lg font-medium"
+                    onClick={() => {
+                      setLocation(item.href);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </Button>
+                ))}
 
-            {/* User Menu */}
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                {/* Mobile: Provider Dashboard link */}
+                {user?.role === 'provider' && (
                   <Button
                     variant="ghost"
-                    className="hidden sm:flex items-center space-x-2"
-                    data-testid="button-user-menu"
+                    className="justify-start px-4 py-2 text-lg font-medium"
+                    onClick={() => {
+                      setLocation("/provider/dashboard");
+                      setIsOpen(false);
+                    }}
                   >
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-primary-foreground" />
-                    </div>
-                    <span className="text-sm font-medium">{user?.username}</span>
+                    <LayoutDashboard className="mr-3 h-5 w-5" />
+                    Provider Dashboard
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {user?.role === "provider" && (
-                    <DropdownMenuItem onClick={() => setLocation("/provider-dashboard")}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Provider Dashboard
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={() => setLocation("/my-bookings")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    My Bookings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} data-testid="button-logout">
-                    <LogOut className="mr-2 h-4 w-4" />
+                )}
+                 {/* Mobile: Settings link */}
+                 {user && ( // Settings sirf logged-in user ke liye
+                    <Button
+                      variant="ghost"
+                      className="justify-start px-4 py-2 text-lg font-medium"
+                      onClick={() => {
+                        setLocation("/settings");
+                        setIsOpen(false);
+                      }}
+                    >
+                      <Settings className="mr-3 h-5 w-5" />
+                      Settings
+                    </Button>
+                 )}
+
+                {/* Mobile: Logout / Login Button */}
+                {user ? (
+                  <Button
+                    variant="ghost"
+                    className="justify-start px-4 py-2 text-lg font-medium text-red-500 hover:text-red-600"
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="mr-3 h-5 w-5" />
                     Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <div className="hidden sm:flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setLocation("/login")}
-                  data-testid="button-login"
-                >
-                  Login
-                </Button>
-                <Button
-                  onClick={() => setLocation("/signup")}
-                  data-testid="button-signup"
-                >
-                  Sign Up
-                </Button>
-              </div>
-            )}
+                  </Button>
+                ) : (
+                  !isLoading && (
+                    <Button
+                      variant="ghost"
+                      className="justify-start px-4 py-2 text-lg font-medium"
+                      onClick={() => {
+                        setLocation("/login");
+                        setIsOpen(false);
+                      }}
+                    >
+                      <User className="mr-3 h-5 w-5" />
+                      Login
+                    </Button>
+                  )
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
 
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              data-testid="button-mobile-menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
+          {/* Logo / Home link */}
+          <Button variant="ghost" className="text-xl font-bold" onClick={() => setLocation("/")}>
+            ServiceConnect
+          </Button>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-card border-t">
-            {navigation.map((item) => (
-              <a
+          {/* Desktop Navigation (optional, if needed) */}
+          <nav className="hidden md:flex items-center space-x-4">
+            {navItems.map((item) => (
+              <Button
                 key={item.name}
-                href={item.href}
-                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
+                variant="ghost"
+                onClick={() => setLocation(item.href)}
+                className="text-sm font-medium"
               >
                 {item.name}
-              </a>
+              </Button>
             ))}
-            {isAuthenticated && (
-              <Link
-                href="/my-bookings"
-                className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-muted rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                My Bookings
-              </Link>
+             {user?.role === 'provider' && (
+                <Button
+                    variant="ghost"
+                    onClick={() => setLocation("/provider/dashboard")}
+                    className="text-sm font-medium"
+                >
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
+                    Provider Dashboard
+                </Button>
             )}
-            <div className="px-3 py-2">
-              {isAuthenticated ? (
+             {user && (
                 <Button
-                  className="w-full flex items-center space-x-2"
-                  onClick={() => { logout(); setMobileMenuOpen(false); }}
-                  variant="outline" // Changed variant for logout button
+                    variant="ghost"
+                    onClick={() => setLocation("/settings")}
+                    className="text-sm font-medium"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout ({user?.username})</span>
+                    <Settings className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
+                    Settings
                 </Button>
-              ) : (
-                <Button
-                  className="w-full flex items-center space-x-2"
-                  onClick={() => { setLocation("/login"); setMobileMenuOpen(false); }}
-                >
-                  <User className="h-4 w-4" />
-                  <span>Sign In</span>
-                </Button>
-              )}
-            </div>
-          </div>
+            )}
+          </nav>
         </div>
-      )}
+
+        {/* User Dropdown / Login Button */}
+        <div className="flex items-center space-x-2">
+          {isLoading ? (
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div> // Loading state for avatar
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src="/placeholder-user.jpg" alt="User Avatar" />
+                    <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.username}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLocation("/my-bookings")}>
+                  <Package className="mr-2 h-4 w-4" />
+                  <span>My Bookings</span>
+                </DropdownMenuItem>
+                {/* Desktop Dropdown: Provider Dashboard link */}
+                {user.role === 'provider' && (
+                  <DropdownMenuItem onClick={() => setLocation("/provider/dashboard")}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Provider Dashboard</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => setLocation("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-600 focus:bg-red-50">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button onClick={() => setLocation("/login")}>
+              Login / Signup
+            </Button>
+          )}
+        </div>
+      </div>
     </header>
   );
 }
