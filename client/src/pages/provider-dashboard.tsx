@@ -12,13 +12,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MenuItemForm } from "@/components/forms/MenuItemForm";
 import { CheckCircle, XCircle, Clock, Phone, MapPin, AlertCircle, PlusCircle, Edit, Trash2 } from "lucide-react";
 
-// API function to fetch the provider's own menu (Adjust API endpoint if needed)
-const fetchMyMenu = async (providerId: string | undefined) => {
-  // If provider has different item types (e.g., street food, cakes),
-  // you might need to fetch based on provider's category or fetch all item types.
-  // For now, assuming street food items as default.
-  if (!providerId) return [];
-  const res = await fetch(`/api/street-food-items?providerId=${providerId}`); // Assuming street food for now
+// API function to fetch the provider's own menu (category-aware)
+const fetchMyMenu = async () => {
+  // Fetch menu items based on provider's category
+  const res = await fetch(`/api/provider/menu`); 
   if (!res.ok) throw new Error("Aapka menu fetch nahi ho paaya.");
   return res.json();
 };
@@ -86,7 +83,7 @@ export default function ProviderDashboard() {
   // Fetch menu items for the provider
   const { data: menuItems, isLoading: isLoadingMenu } = useQuery({
     queryKey: ['myMenu', providerId],
-    queryFn: () => fetchMyMenu(providerId),
+    queryFn: fetchMyMenu,
     enabled: !!providerId,
   });
 

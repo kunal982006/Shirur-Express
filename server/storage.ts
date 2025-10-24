@@ -583,37 +583,64 @@ return db.select().from(tableBookings).where(eq(tableBookings.userId, userId)).o
 
     // ... (baaki saare functions ke baad) ...
 
-      async createMenuItem(itemData: Omit<StreetFoodItem, 'id' | 'createdAt' | 'providerId'>, providerId: string): Promise<StreetFoodItem> {
-        const [newItem] = await db.insert(streetFoodItems).values({ ...itemData, providerId }).returning();
+      // Helper to get the correct menu table and fields based on category slug
+      private getMenuTableInfo(categorySlug: string) {
+        switch (categorySlug) {
+          case 'beauty':
+            return { table: beautyServices, idField: beautyServices.id, providerIdField: beautyServices.providerId };
+          case 'cake-shop':
+            return { table: cakeProducts, idField: cakeProducts.id, providerIdField: cakeProducts.providerId };
+          case 'street-food':
+            return { table: streetFoodItems, idField: streetFoodItems.id, providerIdField: streetFoodItems.providerId };
+          case 'restaurants':
+            return { table: restaurantMenuItems, idField: restaurantMenuItems.id, providerIdField: restaurantMenuItems.providerId };
+          default:
+            return { table: streetFoodItems, idField: streetFoodItems.id, providerIdField: streetFoodItems.providerId };
+        }
+      }
+
+      async createMenuItem(itemData: any, providerId: string, categorySlug: string): Promise<any> {
+        const { table } = this.getMenuTableInfo(categorySlug);
+        const [newItem] = await db.insert(table).values({ ...itemData, providerId }).returning();
         return newItem;
       }
 
-      async updateMenuItem(itemId: string, providerId: string, updates: Partial<StreetFoodItem>): Promise<StreetFoodItem | null> {
-        // Pehle check karo ki item isi provider ka hai ya nahi (Security Check)
-        const [itemToUpdate] = await db.select().from(streetFoodItems).where(
-          and(eq(streetFoodItems.id, itemId), eq(streetFoodItems.providerId, providerId))
+      async updateMenuItem(itemId: string, providerId: string, categorySlug: string, updates: any): Promise<any | null> {
+        const { table, idField, providerIdField } = this.getMenuTableInfo(categorySlug);
+        
+        // Security check: verify ownership
+        const [itemToUpdate] = await db.select().from(table).where(
+          and(eq(idField, itemId), eq(providerIdField, providerId))
         );
 
         if (!itemToUpdate) {
-          return null; // Agar item nahi mila ya provider galat hai, toh null return karo
+          return null;
         }
 
-        const [updatedItem] = await db.update(streetFoodItems).set(updates).where(eq(streetFoodItems.id, itemId)).returning();
+        const [updatedItem] = await db.update(table).set(updates).where(eq(idField, itemId)).returning();
         return updatedItem;
       }
 
-      async deleteMenuItem(itemId: string, providerId: string): Promise<{ id: string } | null> {
-        // Delete karne se pehle bhi ownership check karo (Security Check)
-        const [itemToDelete] = await db.select().from(streetFoodItems).where(
-          and(eq(streetFoodItems.id, itemId), eq(streetFoodItems.providerId, providerId))
+      async deleteMenuItem(itemId: string, providerId: string, categorySlug: string): Promise<{ id: string } | null> {
+        const { table, idField, providerIdField } = this.getMenuTableInfo(categorySlug);
+        
+        // Security check: verify ownership
+        const [itemToDelete] = await db.select().from(table).where(
+          and(eq(idField, itemId), eq(providerIdField, providerId))
         );
 
         if (!itemToDelete) {
           return null;
         }
 
-        const [deletedItem] = await db.delete(streetFoodItems).where(eq(streetFoodItems.id, itemId)).returning({ id: streetFoodItems.id });
+        const [deletedItem] = await db.delete(table).where(eq(idField, itemId)).returning({ id: idField });
         return deletedItem;
+      }
+
+      // Method to get menu items for a provider based on their category
+      async getProviderMenuItems(providerId: string, categorySlug: string): Promise<any[]> {
+        const { table, providerIdField } = this.getMenuTableInfo(categorySlug);
+        return db.select().from(table).where(eq(providerIdField, providerId));
       }
 }
 

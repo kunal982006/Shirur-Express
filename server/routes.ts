@@ -330,11 +330,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get provider's menu items (category-aware)
+  app.get("/api/provider/menu", isProvider, async (req: any, res) => {
+    try {
+      const provider = req.provider;
+      const category = await storage.getServiceCategory(provider.categoryId);
+      if (!category) {
+        return res.status(400).json({ message: "Provider category not found" });
+      }
+      const menuItems = await storage.getProviderMenuItems(provider.id, category.slug);
+      res.json(menuItems);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/menu-items", isProvider, async (req: any, res) => {
     try {
       const newItemData = req.body;
       const provider = req.provider;
-      const newItem = await storage.createMenuItem(newItemData, provider.id);
+      
+      // Get provider's category to determine which table to use
+      const providerWithCategory = await storage.getServiceProvider(provider.id);
+      if (!providerWithCategory) {
+        return res.status(400).json({ message: "Provider not found" });
+      }
+      
+      const newItem = await storage.createMenuItem(newItemData, provider.id, providerWithCategory.category.slug);
       res.status(201).json(newItem);
     } catch (error: any) {
       res.status(400).json({ message: "Item add nahi ho paaya: " + error.message });
@@ -346,7 +368,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { itemId } = req.params;
       const updates = req.body;
       const provider = req.provider;
-      const updatedItem = await storage.updateMenuItem(itemId, provider.id, updates);
+      
+      // Get provider's category
+      const providerWithCategory = await storage.getServiceProvider(provider.id);
+      if (!providerWithCategory) {
+        return res.status(400).json({ message: "Provider not found" });
+      }
+      
+      const updatedItem = await storage.updateMenuItem(itemId, provider.id, providerWithCategory.category.slug, updates);
       if (!updatedItem) return res.status(404).json({ message: "Menu item nahi mila ya aap iske maalik nahi hain." });
       res.json(updatedItem);
     } catch (error: any) {
@@ -358,7 +387,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { itemId } = req.params;
       const provider = req.provider;
-      const deletedItem = await storage.deleteMenuItem(itemId, provider.id);
+      
+      // Get provider's category
+      const providerWithCategory = await storage.getServiceProvider(provider.id);
+      if (!providerWithCategory) {
+        return res.status(400).json({ message: "Provider not found" });
+      }
+      
+      const deletedItem = await storage.deleteMenuItem(itemId, provider.id, providerWithCategory.category.slug);
       if (!deletedItem) return res.status(404).json({ message: "Menu item nahi mila ya aap iske maalik nahi hain." });
       res.json({ message: "Menu item successfully delete ho gaya." });
     } catch (error: any) {
