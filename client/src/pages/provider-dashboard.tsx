@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import { ServiceProvider } from "@shared/schema";
+import api from "@/lib/api"; // CORRECTED: Path to API instance
+import { ServiceProvider } from "shared/schema.ts"; // CORRECTED: Path to schema
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import MenuItemForm from "@/components/forms/MenuItemForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // CORRECTED: Path to useToast hook
 
 const ProviderDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -26,7 +26,7 @@ const ProviderDashboard: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const providerCategorySlug = providerProfile.data?.category?.slug;
+  const providerCategorySlug = providerProfile.data?.categoryId;
 
   const { data: menuItems, isLoading: isLoadingMenuItems, isError: isErrorMenuItems, refetch: refetchMenuItems } = useQuery<any[]>({
     queryKey: ['providerMenuItems', providerCategorySlug],
@@ -48,7 +48,7 @@ const ProviderDashboard: React.FC = () => {
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Menu item deleted successfully." });
-      queryClient.invalidateQueries({ queryKey: ['providerMenuItems', providerCategorySlug] }); // Invalidate specific query
+      queryClient.invalidateQueries({ queryKey: ['providerMenuItems', providerCategorySlug] });
     },
     onError: (error: any) => {
       console.error("Error deleting menu item:", error);
@@ -74,45 +74,75 @@ const ProviderDashboard: React.FC = () => {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingItem(null);
-    refetchMenuItems(); // Menu items ko refetch karo changes ke baad
+    refetchMenuItems();
   };
 
-  if (providerProfile.isLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading provider profile...</div>;
-  if (providerProfile.isError) return <div className="text-red-500 text-center mt-10">Error loading provider profile.</div>;
-  if (!providerProfile.data) return <div className="text-center mt-10 text-muted-foreground">No provider profile found. Please complete your <a href="/provider-onboarding" className="text-blue-500 underline">onboarding</a>.</div>;
+  // --- Visibility Checks ---
+  // 1. Loading Provider Profile
+  if (providerProfile.isLoading) {
+    console.log("ProviderDashboard: Loading provider profile...");
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading provider profile...</div>;
+  }
+  // 2. Error Loading Provider Profile
+  if (providerProfile.isError) {
+    console.error("ProviderDashboard: Error loading provider profile.", providerProfile.error);
+    return <div className="text-red-500 text-center mt-10">Error loading provider profile.</div>;
+  }
+  // 3. No Provider Profile Found (User not onboarded or not a provider)
+  // client/src/pages/provider-dashboard.tsx (partial code)
 
-  if (!providerCategorySlug) return <div className="text-center mt-10 text-muted-foreground">Provider category not determined.</div>;
+  // ... (existing imports and other code) ...
 
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Provider Dashboard</h1>
+    if (!providerProfile.data) {
+      console.log("ProviderDashboard: No provider profile data found for user:", user?.id);
+      return (
+        <div className="text-center mt-10 text-muted-foreground">
+          No provider profile found. Please complete your <a href="/provider-onboarding" className="text-blue-500 underline">onboarding</a>.
+        </div>
+      );
+    }
+    // 4. Provider Profile Found, but Category Slug is Missing
+    if (!providerCategorySlug) {
+      console.log("ProviderDashboard: Provider profile found, but category slug is missing for user:", user?.id);
+      return <div className="text-center mt-10 text-muted-foreground">Provider category not determined. Please check your profile.</div>;
+    }
+    // --- END Visibility Checks ---
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">My Menu Items ({providerCategorySlug.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')})</h2> {/* Category slug ko user-friendly banaya */}
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsFormOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editingItem ? "Edit Menu Item" : "Add New Menu Item"}</DialogTitle>
-            </DialogHeader>
-            <MenuItemForm
-              providerId={user.id}
-              categorySlug={providerCategorySlug}
-              initialData={editingItem}
-              onSuccess={handleFormClose}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+
+    return (
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-6">Provider Dashboard</h1>
+
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">
+            My Menu Items ({providerCategorySlug.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')})
+          </h2>
+          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setIsFormOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{editingItem ? "Edit Menu Item" : "Add New Menu Item"}</DialogTitle>
+              </DialogHeader>
+              <MenuItemForm
+                providerId={user?.id || ""} // CORRECTED: Safely access user.id or provide a fallback empty string
+                categorySlug={providerCategorySlug}
+                initialData={editingItem}
+                onSuccess={handleFormClose}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+  // ... (rest of the code) ...
 
       {isLoadingMenuItems && <div className="flex justify-center items-center"><Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading menu items...</div>}
       {isErrorMenuItems && <div className="text-red-500 text-center mt-4">Error loading menu items.</div>}
 
-      {menuItems?.length === 0 && !isLoadingMenuItems && <p className="col-span-full text-center text-muted-foreground mt-4">No menu items found for this category.</p>}
+      {menuItems?.length === 0 && !isLoadingMenuItems && <p className="col-span-full text-center text-muted-foreground mt-4">No menu items found for this category. Add a new item to get started!</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {menuItems?.map((item) => (
@@ -123,8 +153,8 @@ const ProviderDashboard: React.FC = () => {
             <h3 className="text-lg font-semibold">{item.name}</h3>
             <p className="text-sm text-muted-foreground">{item.description}</p>
             <p className="text-sm font-medium">Price: ₹{item.price}</p>
-            {item.category && <p className="text-xs">Category: {item.category.replace(/_/g, ' ')}</p>} {/* Category slug ko user-friendly banaya */}
-            {item.subCategory && <p className="text-xs">Sub-Category: {item.subCategory.replace(/_/g, ' ')}</p>} {/* Sub-Category slug ko user-friendly banaya */}
+            {item.category && <p className="text-xs">Category: {item.category.replace(/_/g, ' ')}</p>}
+            {item.subCategory && <p className="text-xs">Sub-Category: {item.subCategory.replace(/_/g, ' ')}</p>}
             {item.duration_minutes && <p className="text-xs">Duration: {item.duration_minutes} mins</p>}
             {item.isVeg !== undefined && <p className="text-xs">{item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}</p>}
             {item.spicyLevel && <p className="text-xs">Spicy Level: {item.spicyLevel}</p>}

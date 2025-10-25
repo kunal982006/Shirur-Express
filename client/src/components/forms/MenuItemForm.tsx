@@ -1,4 +1,4 @@
-// client/src/components/forms/MenuItemForm.tsx (poora code, thoda bada hoga)
+// client/src/components/forms/MenuItemForm.tsx
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import api from "@/lib/api";
+import { useToast } from "@/hooks/use-toast"; // Correct path
+import api from "@/lib/api"; // Correct path
 import {
   Form,
   FormControl,
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox"; // Assuming Checkbox is needed for isVeg
+// Removed: import { Checkbox } from "@/components/ui/checkbox"; // Not used, so removed
 
 // --- Define Category-Specific Schemas and Options ---
 const beautyCategories = [
@@ -32,11 +32,12 @@ const beautyCategories = [
   { value: "Spa", label: "Spa & Massage" },
   { value: "Bridal", label: "Bridal Services" },
 ];
+
 const beautySubCategories = {
   Hair: [{ value: "Haircut_Men", label: "Haircut (Men)" }, { value: "Haircut_Women", label: "Haircut (Women)" }, { value: "Hair_Spa", label: "Hair Spa" }, { value: "Hair_Color", label: "Hair Color" }],
   Skin: [{ value: "Facial_Gold", label: "Facial (Gold)" }, { value: "Facial_Fruit", label: "Facial (Fruit)" }, { value: "Cleanup", label: "Cleanup" }, { value: "Bleach", label: "Bleach" }],
   Nails: [{ value: "Manicure", label: "Manicure" }, { value: "Pedicure", label: "Pedicure" }],
-  // ... add more as needed
+  // Add more as needed, ensure these match your schema and UI
 };
 
 const foodCategories = [
@@ -57,6 +58,7 @@ const cakeCategories = [
   { value: "Anniversary", label: "Anniversary Cakes" },
   { value: "Wedding", label: "Wedding Cakes" },
   { value: "Custom", label: "Custom Cakes" },
+  { value: "Cupcakes", label: "Cupcakes & Pastries" },
 ];
 
 const restaurantCategories = [
@@ -64,6 +66,7 @@ const restaurantCategories = [
   { value: "Main_Course", label: "Main Course" },
   { value: "Desserts", label: "Desserts" },
   { value: "Beverages", label: "Beverages" },
+  { value: "Soups", label: "Soups" },
 ];
 
 
@@ -79,7 +82,7 @@ const baseSchema = z.object({
 const beautySchema = baseSchema.extend({
   duration: z.string().regex(/^\d+$/, { message: "Duration must be a number in minutes." }).optional().or(z.literal("")),
   category: z.enum(beautyCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
-  subCategory: z.string().optional(), // Will be dynamically validated
+  subCategory: z.string().optional(), // Will be dynamically validated based on selected category
 });
 
 const foodSchema = baseSchema.extend({
@@ -90,28 +93,28 @@ const foodSchema = baseSchema.extend({
 
 const cakeSchema = baseSchema.extend({
   category: z.enum(cakeCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
-  // For cakes, basePrice is usually the core price, add weightOptions if needed
-  // basePrice: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: "Invalid base price format" }),
-  // weightOptions: z.array(z.object({ weight: z.string(), price: z.number() })).optional(),
 });
 
 const restaurantSchema = baseSchema.extend({
   isVeg: z.boolean().default(true).optional(),
   category: z.enum(restaurantCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
-  cuisine: z.string().optional(), // e.g., Indian, Chinese
+  cuisine: z.string().optional(), // e.g., Indian, Chinese, Italian
 });
 
 
+// Combined type for form values (for defaultValues and onSubmit)
+type FormValues = z.infer<typeof beautySchema> | z.infer<typeof foodSchema> | z.infer<typeof cakeSchema> | z.infer<typeof restaurantSchema>;
+
 type MenuItemFormProps = {
   providerId: string;
-  categorySlug: string; // Add this prop
-  initialData?: any; // Type this better later
+  categorySlug: string;
+  initialData?: any; // Consider typing this more strictly if possible
   onSuccess: () => void;
 };
 
 const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, initialData, onSuccess }) => {
   const { toast } = useToast();
-  const [currentSubCategories, setCurrentSubCategories] = useState([]);
+  const [currentSubCategories, setCurrentSubCategories] = useState<{value: string; label: string;}[]>([]);
 
   // Dynamically select schema based on categorySlug
   const getSchema = () => {
@@ -120,105 +123,103 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       case "street-food": return foodSchema;
       case "cake-shop": return cakeSchema;
       case "restaurants": return restaurantSchema;
-      default: return baseSchema; // Fallback
+      default: return baseSchema; // Fallback, though a specific category should always be present
     }
   };
 
-  const form = useForm<z.infer<typeof beautySchema | typeof foodSchema | typeof cakeSchema | typeof restaurantSchema>>({
-    resolver: zodResolver(getSchema()),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(getSchema()), // Resolver will re-evaluate when getSchema's dependencies change
     defaultValues: {
       name: initialData?.name || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl || "",
       price: initialData?.price?.toString() || "",
-      // Category specific defaults
-      duration: initialData?.duration_minutes?.toString() || "", // Beauty
+      duration: initialData?.duration_minutes?.toString() || "",
       category: initialData?.category || "",
-      subCategory: initialData?.subCategory || "", // Beauty
-      isVeg: initialData?.isVeg ?? true, // Food/Restaurant
-      spicyLevel: initialData?.spicyLevel || "", // Food
-      cuisine: initialData?.cuisine || "", // Restaurant
+      subCategory: initialData?.subCategory || "",
+      isVeg: initialData?.isVeg ?? true,
+      spicyLevel: initialData?.spicyLevel || "",
+      cuisine: initialData?.cuisine || "",
     },
   });
 
   useEffect(() => {
     if (initialData) {
-      // Reset form with initialData, especially useful for category-specific fields
       form.reset({
         name: initialData.name || "",
         description: initialData.description || "",
         imageUrl: initialData.imageUrl || "",
         price: initialData.price?.toString() || "",
-        duration: initialData.duration_minutes?.toString() || "", // Beauty
+        duration: initialData.duration_minutes?.toString() || "",
         category: initialData.category || "",
-        subCategory: initialData.subCategory || "", // Beauty
-        isVeg: initialData.isVeg ?? true, // Food/Restaurant
-        spicyLevel: initialData.spicyLevel || "", // Food
-        cuisine: initialData.cuisine || "", // Restaurant
+        subCategory: initialData.subCategory || "",
+        isVeg: initialData.isVeg ?? true,
+        spicyLevel: initialData.spicyLevel || "",
+        cuisine: initialData.cuisine || "",
       });
-      // Set sub-categories if editing
       if (categorySlug === "beauty" && initialData.category) {
-        setCurrentSubCategories(beautySubCategories[initialData.category] || []);
+        setCurrentSubCategories(beautySubCategories[initialData.category as keyof typeof beautySubCategories] || []);
       }
     } else {
       form.reset({
         name: "", description: "", imageUrl: "", price: "",
         duration: "", category: "", subCategory: "", isVeg: true, spicyLevel: "", cuisine: ""
-      });
-      setCurrentSubCategories([]); // Clear subcategories on new item
+      } as FormValues);
+      setCurrentSubCategories([]);
     }
-    // Update resolver when categorySlug changes (e.g., if provider type changes, although unlikely in single session)
-    form.setResolver(zodResolver(getSchema()));
-  }, [initialData, categorySlug, form, getSchema]);
+    // No need to setResolver here directly, as it's handled by `useForm` when `getSchema()`'s deps change.
+  }, [initialData, categorySlug, form]); // `getSchema` itself is not a dependency of useEffect, but `categorySlug` is.
 
   const selectedCategory = form.watch("category");
   useEffect(() => {
     if (categorySlug === "beauty" && selectedCategory) {
-      setCurrentSubCategories(beautySubCategories[selectedCategory] || []);
+      setCurrentSubCategories(beautySubCategories[selectedCategory as keyof typeof beautySubCategories] || []);
     } else {
       setCurrentSubCategories([]);
     }
-    form.setValue("subCategory", ""); // Clear subCategory when category changes
+    // Clear subCategory when main category changes (unless it's already the selected one)
+    if (form.getValues("category") !== selectedCategory) {
+        form.setValue("subCategory", "");
+    }
   }, [selectedCategory, categorySlug, form]);
 
-  const onSubmit = async (values: any) => { // Type as any for now, refine later based on actual schema
+  const onSubmit = async (values: FormValues) => {
     try {
       const payload: any = {
         providerId,
         name: values.name,
-        description: values.description,
-        imageUrl: values.imageUrl || null, // Ensure empty string becomes null for optional fields
+        description: values.description || null,
+        imageUrl: values.imageUrl || null,
         price: parseFloat(values.price),
-        category: values.category,
+        category: values.category || null,
       };
 
-      // Category-specific fields for payload
       if (categorySlug === "beauty") {
-        payload.duration_minutes = values.duration ? parseInt(values.duration) : null;
-        payload.subCategory = values.subCategory || null;
+        const beautyValues = values as z.infer<typeof beautySchema>;
+        payload.duration_minutes = beautyValues.duration ? parseInt(beautyValues.duration) : null;
+        payload.subCategory = beautyValues.subCategory || null;
       } else if (categorySlug === "street-food" || categorySlug === "restaurants") {
-        payload.isVeg = values.isVeg;
+        const foodOrRestaurantValues = values as z.infer<typeof foodSchema | typeof restaurantSchema>;
+        payload.isVeg = foodOrRestaurantValues.isVeg;
         if (categorySlug === "street-food") {
-          payload.spicyLevel = values.spicyLevel || null;
+          payload.spicyLevel = (foodOrRestaurantValues as z.infer<typeof foodSchema>).spicyLevel || null;
         }
         if (categorySlug === "restaurants") {
-          payload.cuisine = values.cuisine || null;
+          payload.cuisine = (foodOrRestaurantValues as z.infer<typeof restaurantSchema>).cuisine || null;
         }
       }
-      // Cake shop might have basePrice, weightOptions etc.
+      // For cake-shop, add specific fields here if needed.
 
       let res;
       if (initialData) {
-        // Update existing item
         res = await api.patch(`/api/menu-items/${initialData.id}`, { categorySlug, ...payload });
         toast({ title: "Success", description: "Menu item updated successfully." });
       } else {
-        // Create new item
         res = await api.post(`/api/menu-items`, { categorySlug, ...payload });
         toast({ title: "Success", description: "Menu item added successfully." });
       }
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving menu item:", error);
       toast({
         title: "Error",

@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+// client/src/pages/login.tsx
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api"; // Correct API path
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -15,136 +16,107 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { Network } from "lucide-react";
+import { Link, useLocation } from "wouter"; // Import useLocation from wouter
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth to get user info after login
 
 const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email({ message: "Invalid email address." }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function Login() {
-  const [, setLocation] = useLocation();
+const Login: React.FC = () => {
   const { toast } = useToast();
+  const [, setLocation] = useLocation(); // wouter's setLocation
+  const { login: authLogin } = useAuth(); // Get the login function from AuthContext
 
-  const form = useForm<LoginFormValues>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormValues) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
-      return response.json();
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Welcome back!",
-        description: `Logged in as ${data.user.username}`,
-      });
-      
-      // Redirect based on user role
-      if (data.user.role === "provider") {
-        setLocation("/provider-dashboard");
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const res = await api.post("/api/auth/login", data);
+
+      // Assuming res.data.user contains the logged-in user object from the backend
+      // and it matches the User interface in use-auth.ts
+      const loggedInUser = res.data.user;
+
+      if (loggedInUser) {
+        authLogin(loggedInUser); // Update AuthContext with user data
+        toast({ title: "Success", description: "Logged in successfully!" });
+
+        // Redirect based on user role
+        if (loggedInUser.role === 'provider') {
+          setLocation("/provider/dashboard"); // Redirect providers to their dashboard
+        } else {
+          setLocation("/"); // Redirect regular users to home
+        }
       } else {
-        setLocation("/");
+         throw new Error("User data not returned after login.");
       }
-    },
-    onError: (error: any) => {
+
+    } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        description: error.response?.data?.message || "Invalid credentials.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate(data);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Network className="h-10 w-10 text-primary" />
-          </div>
-          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to your ServiceHub account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your username"
-                        {...field}
-                        data-testid="input-username"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                        data-testid="input-password"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loginMutation.isPending}
-                data-testid="button-login"
-              >
-                {loginMutation.isPending ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-          </Form>
-
-          <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Button
-              variant="link"
-              className="p-0 h-auto font-semibold"
-              onClick={() => setLocation("/signup")}
-              data-testid="link-signup"
-            >
-              Sign up
+    <div className="flex items-center justify-center min-h-[calc(100vh-theme(spacing.16))]">
+      <div className="w-full max-w-md p-8 space-y-6 bg-card text-card-foreground rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-center">Login</h2>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </form>
+        </Form>
+        <div className="text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Link href="/signup" className="text-primary hover:underline">
+            Sign Up
+          </Link>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Login;
