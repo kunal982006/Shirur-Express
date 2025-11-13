@@ -1,0 +1,111 @@
+Title: Refactor and Build the Complete "Technician" Service Flow: Customer Booking, "My Bookings" Page, and Invoice Payment
+
+Prompt:
+
+Hello Agent,
+
+My "Technician/Electrician" service flow is broken and provides a confusing user experience. I need to refactor it into a seamless, professional flow, covering the entire process from the initial booking to the final OTP verification and billing.
+
+My backend is already configured for this flow (including provider-dashboard.tsx), but the client-side UI/UX is failing.
+
+Tech Stack: React, TypeScript, ShadCN UI, @tanstack/react-query, wouter, axios (aliased as api).
+
+Phase 1: Fix the Confusing Booking Experience
+File 1: client/src/pages/electrician.tsx (The List Page)
+
+Problem: This page uses a ProviderCard component that incorrectly displays "Call Now" and "Schedule" buttons, which is confusing.
+
+Task: Modify the ProviderCard component (or its implementation on this page):
+
+Remove the "Call Now" and "Schedule" buttons.
+
+Make the entire <Card> component a single clickable link that navigates the user to the detail page: href={/electrician/${provider.id}}.
+
+File 2: client/src/pages/electrician-detail.tsx (The Detail Page)
+
+Problem: This page has a "Contact Technician" button (with a Phone icon) that is non-functional and distracts from the real booking flow.
+
+Task:
+
+Delete the entire "Contact Technician" <Button> component (lines 168-173).
+
+The correct flow must be: User lands on the page -> scrolls to "Problems I Can Fix" -> selects a problem -> the booking form (BookingSlotForm) appears below.
+
+File 3: client/src/components/booking-slot-form.tsx (Create/Fix this form)
+
+Problem: The form submission (onSuccess) just closes the form, leaving the user confused and thinking the booking failed.
+
+Task (Critical):
+
+Validate the form (fields: userAddress, userPhone, scheduledAt, isUrgent) using react-hook-form and zod.
+
+On submit, use useMutation to call POST /api/bookings.
+
+On Success:
+
+Show a "Booking Successful!" message using useToast().
+
+Redirect the user to the "My Bookings" page using setLocation("/my-bookings").
+
+Phase 2: Create the Customer's "My Bookings" Page
+This page will be the customer's main dashboard for tracking their service requests.
+
+File 1: client/src/pages/my-bookings.tsx (Create/Fix this file)
+
+Fetch Data: On page load, use useQuery to call GET /api/customer/my-bookings and fetch all bookings for the logged-in user.
+
+Display Bookings: List all bookings using ShadCN <Card> components.
+
+Conditional UI (Most Important): The UI for each booking card must change based on the booking.status:
+
+pending: Show "Waiting for provider to accept..."
+
+accepted: Show "Provider has accepted! They are on their way."
+
+in_progress: Show "Service is currently in progress."
+
+declined / cancelled: Show "This request was declined/cancelled."
+
+pending_payment:
+
+Show text: "Job complete! Your final bill is ready."
+
+Display the total amount from the invoice: Total Bill: ₹{booking.invoice.totalAmount}.
+
+Show a "Pay Now" <Button> that navigates the user to /pay/invoice/${booking.invoice.id}.
+
+File 2: server/routes.ts (Ensure this route exists)
+
+Add this new route to fetch bookings for the customer:
+
+TypeScript
+
+app.get("/api/customer/my-bookings", isLoggedIn, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const bookings = await storage.getUserBookings(userId);
+    res.json(bookings);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+});
+Phase 3: Create the Invoice Payment Flow
+File: client/src/pages/InvoicePayment.tsx (Create this new page)
+
+Route: Create a new route /pay/invoice/:id that renders this component.
+
+Logic: This component will be similar to the existing checkout.tsx but simplified for a single invoice.
+
+Data Fetch: Use useQuery to call GET /api/invoices/:id (using the ID from the URL). Display the bill details (Service Charge, Spare Parts, Total Amount).
+
+Payment Button: Show a "Pay Securely" button.
+
+Payment Logic (Razorpay):
+
+On button click, useMutation to call POST /api/invoices/:id/create-payment-order to get the Razorpay Order ID.
+
+Open the Razorpay payment modal (using the same logic as checkout.tsx).
+
+On successful payment, call POST /api/invoices/verify-payment.
+
+On successful verification, show a "Payment Successful!" toast and redirect the user back to /my-bookings.

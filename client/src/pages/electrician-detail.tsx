@@ -165,12 +165,6 @@ export default function ElectricianDetail() {
                     </div>
                   </div>
                 )}
-
-                {/* Contact Button */}
-                <Button className="w-full" disabled={!provider.isAvailable}>
-                  <Phone className="h-4 w-4 mr-2" />
-                  Contact Technician
-                </Button>
               </CardContent>
             </Card>
           </div>

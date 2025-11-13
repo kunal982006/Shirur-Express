@@ -94,7 +94,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@replit/vite-plugin-cartographer": "^0.3.1",
+    "@replit/vite-plugin-cartographer": "^0.4.3",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/typography": "^0.5.15",

@@ -243,9 +243,7 @@ export default function Electrician() {
                 <ProviderCard
                   key={provider.id}
                   provider={provider}
-                  // onClick handlers ko theek kiya
-                  onCallRequest={() => setLocation(`/electrician/${provider.id}`)}
-                  onSchedule={() => setLocation(`/electrician/${provider.id}`)}
+                  categorySlug="electrician"
                 />
               ))}
             </div>

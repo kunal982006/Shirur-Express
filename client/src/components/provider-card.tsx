@@ -1,13 +1,11 @@
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Star, 
   MapPin, 
   Clock, 
   Briefcase, 
-  Phone, 
-  Calendar,
   CheckCircle
 } from "lucide-react";
 
@@ -27,23 +25,22 @@ interface ProviderCardProps {
       email: string;
     };
   };
-  onCallRequest: () => void;
-  onSchedule: () => void;
+  categorySlug?: string;
 }
 
 export default function ProviderCard({ 
-  provider, 
-  onCallRequest, 
-  onSchedule 
+  provider,
+  categorySlug = "electrician"
 }: ProviderCardProps) {
   const rating = parseFloat(provider.rating);
   const distance = "2.3 km"; // Mock distance - in real app this would be calculated
 
   return (
-    <Card className="provider-card border border-border hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-start space-x-4 flex-1">
+    <Link href={`/${categorySlug}/${provider.id}`}>
+      <Card className="provider-card border border-border hover:shadow-lg transition-all cursor-pointer hover:border-primary">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-start space-x-4 flex-1">
             {/* Provider Image */}
             <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
               <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold">
@@ -118,30 +115,8 @@ export default function ProviderCard({
               )}
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex md:flex-col gap-2 md:w-auto">
-            <Button 
-              className="flex-1 md:flex-none bg-primary hover:bg-primary/90 flex items-center justify-center space-x-2"
-              onClick={onCallRequest}
-              data-testid="button-call-provider"
-              disabled={!provider.isAvailable}
-            >
-              <Phone className="h-4 w-4" />
-              <span>Call Now</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex-1 md:flex-none"
-              onClick={onSchedule}
-              data-testid="button-schedule-provider"
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              Schedule
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
