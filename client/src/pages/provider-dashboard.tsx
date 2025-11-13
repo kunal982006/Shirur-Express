@@ -139,7 +139,7 @@ const MenuItemsManager: React.FC<{
     queryFn: async () => {
       if (!providerCategorySlug) return [];
       const res = await api.get(
-        `/api/provider/menu-items/${providerCategorySlug}`
+        `/provider/menu-items/${providerCategorySlug}`
       );
       return res.data;
     },
@@ -151,7 +151,7 @@ const MenuItemsManager: React.FC<{
 
   const deleteMenuItemMutation = useMutation({
     mutationFn: (itemId: string) =>
-      api.delete(`/api/provider/menu-items/${providerCategorySlug}/${itemId}`),
+      api.delete(`/provider/menu-items/${providerCategorySlug}/${itemId}`),
     onSuccess: () => {
       toast({ title: "Success", description: "Menu item deleted." });
       queryClient.invalidateQueries({
@@ -320,8 +320,7 @@ const BookingsManager: React.FC<{
   >({
     queryKey: ["providerBookings"],
     queryFn: async () => {
-      // BUG FIX: Sahi API route call kar rahe hain
-      const res = await api.get("/api/provider/my-bookings");
+      const res = await api.get("/provider/my-bookings");
       return res.data;
     },
     // Har 30 second mein refresh karo (urgent bookings ke liye)
@@ -336,7 +335,7 @@ const BookingsManager: React.FC<{
     }: {
       bookingId: string;
       action: "accept" | "decline" | "start-job";
-    }) => api.patch(`/api/bookings/${bookingId}/${action}`), // Sahi API route
+    }) => api.patch(`/bookings/${bookingId}/${action}`),
     onSuccess: (data) => {
       toast({
         title: `Booking ${data.data.status}`,
@@ -459,15 +458,35 @@ const BookingsManager: React.FC<{
   );
 };
 
+// Helper function for badge colors
+const getBadgeColor = (status: string) => {
+  switch (status) {
+    case "pending":
+      return "secondary";
+    case "accepted":
+    case "in_progress":
+      return "default";
+    case "awaiting_otp":
+    case "awaiting_billing":
+      return "outline";
+    case "pending_payment":
+      return "outline";
+    case "declined":
+    case "cancelled":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
+
 // --- NAYA HELPER COMPONENT: BOOKING LIST ---
 const BookingList: React.FC<{
     bookings: FullBooking[];
     emptyMessage: string;
     mutations: {
         updateBookingStatusMutation: any;
-        // baaki mutations yahaan add honge
     }
-}> = ({ bookings, emptyMessage }) => {
+}> = ({ bookings, emptyMessage, mutations }) => {
 
     if (bookings.length === 0) {
         return (
@@ -542,7 +561,7 @@ const ProviderBookingActions: React.FC<{
   // --- Saare mutations (API calls) ---
   const generateOtpMutation = useMutation({
     mutationFn: (bookingId: string) =>
-      api.post(`/api/bookings/${bookingId}/generate-otp`),
+      api.post(`/bookings/${bookingId}/generate-otp`),
     onSuccess: () => {
       toast({
         title: "OTP Sent",
@@ -561,7 +580,7 @@ const ProviderBookingActions: React.FC<{
 
   const verifyOtpMutation = useMutation({
     mutationFn: (data: { bookingId: string, otp: string }) =>
-      api.post(`/api/bookings/${data.bookingId}/verify-otp`, { otp: data.otp }),
+      api.post(`/bookings/${data.bookingId}/verify-otp`, { otp: data.otp }),
     onSuccess: () => {
       toast({
         title: "OTP Verified!",
@@ -581,7 +600,7 @@ const ProviderBookingActions: React.FC<{
 
   const createInvoiceMutation = useMutation({
     mutationFn: (data: BillFormData) =>
-      api.post(`/api/bookings/${booking.id}/create-invoice`, data),
+      api.post(`/bookings/${booking.id}/create-invoice`, data),
     onSuccess: () => {
       toast({
         title: "Bill Created!",
@@ -902,7 +921,7 @@ const SpecializationsManager: React.FC<{
     queryKey: ["serviceProblems", providerProfile.category.slug],
     queryFn: async () => {
       const res = await api.get(
-        `/api/service-problems?category=${providerProfile.category.slug}`
+        `/service-problems?category=${providerProfile.category.slug}`
       );
       return res.data;
     },
@@ -911,7 +930,7 @@ const SpecializationsManager: React.FC<{
 
   const updateProfileMutation = useMutation({
     mutationFn: (specializations: string[]) =>
-      api.patch("/api/provider/profile", { specializations }),
+      api.patch("/provider/profile", { specializations }),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -1022,7 +1041,7 @@ const ProfileSettingsManager: React.FC<{
     mutationFn: (file: File) => {
       const formData = new FormData();
       formData.append("image", file);
-      return api.patch("/api/provider/profile/image", formData, {
+      return api.patch("/provider/profile/image", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
@@ -1047,7 +1066,7 @@ const ProfileSettingsManager: React.FC<{
       for (let i = 0; i < files.length; i++) {
         formData.append("images", files[i]);
       }
-      return api.post("/api/provider/profile/gallery", formData, {
+      return api.post("/provider/profile/gallery", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
@@ -1201,7 +1220,7 @@ const ProviderDashboard: React.FC = () => {
   } = useQuery<ProviderProfileWithCategory>({
     queryKey: ["providerProfile", user?.id],
     queryFn: async () => {
-      const res = await api.get("/api/provider/profile");
+      const res = await api.get("/provider/profile");
       return res.data;
     },
     enabled: !!user?.id,

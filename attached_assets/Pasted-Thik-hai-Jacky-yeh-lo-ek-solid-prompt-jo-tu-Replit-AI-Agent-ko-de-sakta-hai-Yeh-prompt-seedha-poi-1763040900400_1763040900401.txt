@@ -1,0 +1,106 @@
+Thik hai Jacky, yeh lo ek solid prompt jo tu Replit AI Agent ko de sakta hai.
+
+Yeh prompt seedha point par hai aur usse batata hai ki do alag-alag type ke dashboard banane hain, bilkul waisa jaisa apna backend setup hai.
+
+Replit AI Agent Ke Liye Prompt
+Title: Build a dynamic React Provider Dashboard with conditional UI for "Menu" and "Booking" based services.
+
+Prompt:
+
+Hello Agent,
+
+I need you to build the primary frontend component for my service marketplace app. This component, ProviderDashboard.tsx, must dynamically change its UI based on the type of service provider who is logged in.
+
+Tech Stack:
+
+React with TypeScript
+
+ShadCN UI components (<Tabs>, <Card>, <Button>, <Input>, <Dialog>, <Table>, <InputOTP>)
+
+@tanstack/react-query for data fetching and caching
+
+axios (aliased as api) for API calls
+
+Core Logic:
+
+On load, the component must fetch the provider's profile from GET /api/provider/profile.
+
+Read the provider.category.slug from this profile.
+
+Conditional UI:
+
+IF the slug is electrician or plumber, render the "Booking Workflow UI".
+
+IF the slug is grocery (GMart), cake-shop, beauty, street-food, or restaurants, render the "Menu Management UI".
+
+Always show a "Profile Settings" tab for image uploads (which calls POST /api/provider/profile/image and POST /api/provider/profile/gallery).
+
+1. Menu Management UI (For GMart, Cake Shops, etc.)
+This UI must allow providers to add and see their products.
+
+Component: MenuItemsManager
+
+Fetch & Display:
+
+Use useQuery to fetch all items from GET /api/provider/menu-items/:categorySlug.
+
+Display these items in a ShadCN <Table> showing Image, Name, Price, and Actions (Edit/Delete).
+
+Add New Item:
+
+Create an "Add New Item" <Button>.
+
+This button should open a <Dialog> containing a form (MenuItemForm).
+
+The form must have fields for name, price, description, category, and an Image Upload field.
+
+The form submit should use react-hook-form and call POST /api/provider/menu-items/:categorySlug with the form data.
+
+On success, use queryClient.invalidateQueries to refresh the table.
+
+2. Booking Workflow UI (For Electrician/Technician)
+This UI must handle the entire OTP and Billing flow.
+
+Component: BookingsManager
+
+Fetch & Display:
+
+Use useQuery to fetch all bookings from GET /api/provider/my-bookings.
+
+Use ShadCN <Tabs> to divide bookings:
+
+"New" Tab: status == 'pending'
+
+"Active" Tab: status is accepted, in_progress, awaiting_otp, awaiting_billing, pending_payment
+
+"Completed" Tab: status is completed, declined, cancelled
+
+Action Buttons (State Machine):
+
+Inside each booking <Card>, show buttons based on the current status:
+
+Status pending: Show "Accept" (PATCH /api/bookings/:id/accept) and "Decline" (PATCH /api/bookings/:id/decline) buttons.
+
+Status accepted: Show "Start Job" (PATCH /api/bookings/:id/start-job) button.
+
+Status in_progress: Show "Job Done (Get OTP)" (POST /api/bookings/:id/generate-otp) button.
+
+Status awaiting_otp: Show an <InputOTP> component and a "Verify OTP" button (POST /api/bookings/:id/verify-otp).
+
+Status awaiting_billing: Show a "Create Final Bill" button.
+
+Status pending_payment: Show "Waiting for Customer Payment" text.
+
+Create Bill Dialog:
+
+The "Create Final Bill" button must open a <Dialog>.
+
+This dialog must have a form with:
+
+An <Input> for serviceCharge (Number).
+
+A dynamic list (use useFieldArray) for spareParts, where each item has part (String) and cost (Number).
+
+A "Total" display (Service Charge + all Spare Parts).
+
+On submit, this form must call POST /api/bookings/:id/create-invoice with the data.
