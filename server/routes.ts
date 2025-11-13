@@ -274,6 +274,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
+  
+  app.get("/api/provider/my-bookings", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const bookings = await storage.getProviderBookings(providerId);
+      res.json(bookings);
+    } catch (error: any) {
+      console.error("Get provider bookings error:", error);
+      res.status(500).json({ message: error.message || "Error fetching provider bookings" });
+    }
+  });
 
   // --- GENERAL SERVICE ROUTES (No Change) ---
   app.get("/api/service-categories", async (_req: Request, res: Response) => {

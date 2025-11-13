@@ -1,4 +1,5 @@
-// client/src/pages/provider-dashboard.tsx (FINAL - With Image Uploads & Booking Logic)
+// client/src/pages/provider-dashboard.tsx
+// (POORA REBUILT CODE - BLUEPRINT KE HISAB SE)
 
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,6 +11,7 @@ import {
   ServiceProblem,
   Booking,
   Invoice,
+  User,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +28,7 @@ import {
   DollarSign,
   AlertTriangle,
   Home,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
@@ -81,49 +84,45 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form"; // FIX: Added useFieldArray
+import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 
-// --- TYPE UPDATE KIYA GAYA ---
+// --- TYPES ---
+
+// Provider profile API se jaisa aayega
 type ProviderProfileWithCategory = ServiceProvider & {
   category: ServiceCategory;
   profileImageUrl?: string | null;
   galleryImages?: string[] | null;
 };
 
-// --- NAYI TYPES ADD KI HAIN ---
-// Booking type jo humein API se milegi (user details ke saath)
+// Booking API se jaisi aayegi (user aur invoice ke saath)
 type FullBooking = Booking & {
-  user: {
-    id: string;
-    username: string;
-    phone: string;
-  };
-  invoice: Invoice | null; // Invoice bhi saath mein aa sakta hai
+  user: Pick<User, "id" | "username" | "phone">;
+  invoice: Invoice | null;
 };
 
-// Invoice bill create karne ka Zod schema
+// Bill/Invoice create karne ka Zod schema
 const billFormSchema = z.object({
+  serviceCharge: z.preprocess(
+    (val) => (val === "" ? 0 : parseFloat(z.string().parse(val))),
+    z.number().min(0, "Service charge is required")
+  ),
   spareParts: z.array(
     z.object({
-      name: z.string().min(1, "Part name is required"),
-      price: z.preprocess(
-        (val) => (val === "" ? 0 : parseFloat(z.string().parse(val))), // FIX: Handle empty string
+      part: z.string().min(1, "Part name is required"),
+      cost: z.preprocess(
+        (val) => (val === "" ? 0 : parseFloat(z.string().parse(val))),
         z.number().min(0, "Price must be positive")
       ),
     })
-  ),
-  serviceCharge: z.preprocess(
-    (val) => (val === "" ? 0 : parseFloat(z.string().parse(val))), // FIX: Handle empty string
-    z.number().min(0, "Service charge is required")
-  ),
-  notes: z.string().optional(),
+  ).optional(),
+  // notes: z.string().optional(), // Notes abhi form mein nahi hain, baad mein add kar sakte hain
 });
 
 type BillFormData = z.infer<typeof billFormSchema>;
-// --- NAYI TYPES KHATAM ---
 
-// --- COMPONENT 1: MENU MANAGER (Waise ka waisa) ---
+// --- COMPONENT 1: MENU MANAGER (Yeh waise ka waisa hai) ---
 const MenuItemsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
@@ -174,8 +173,6 @@ const MenuItemsManager: React.FC<{
   };
 
   const handleDelete = (itemId: string) => {
-    // NOTE: window.confirm() Replit/iframe mein shayad na dikhe
-    // Isko behtar UI modal se replace karna behtar hoga
     if (confirm("Are you sure you want to delete this item?")) {
       deleteMenuItemMutation.mutate(itemId);
     }
@@ -193,7 +190,9 @@ const MenuItemsManager: React.FC<{
         <div>
           <CardTitle>My Menu Items</CardTitle>
           <CardDescription>
-            Manage the items for your '{providerProfile.category.name}' service.
+            Manage the items for your '
+            {providerProfile.category ? providerProfile.category.name : "service"}
+            ' service.
           </CardDescription>
         </div>
         <Dialog
@@ -308,7 +307,7 @@ const MenuItemsManager: React.FC<{
   );
 };
 
-// --- COMPONENT 2: BOOKING MANAGER (POORA NAYA LOGIC) ---
+// --- COMPONENT 2: BOOKING MANAGER (POORA NAYA BANA HAI) ---
 const BookingsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
@@ -321,22 +320,23 @@ const BookingsManager: React.FC<{
   >({
     queryKey: ["providerBookings"],
     queryFn: async () => {
-      const res = await api.get("/api/provider/bookings");
+      // BUG FIX: Sahi API route call kar rahe hain
+      const res = await api.get("/api/provider/my-bookings");
       return res.data;
     },
     // Har 30 second mein refresh karo (urgent bookings ke liye)
     refetchInterval: 30000,
   });
 
-  // Action mutations
-  const updateBookingStatus = useMutation({
+  // Action mutations (Accept / Decline)
+  const updateBookingStatusMutation = useMutation({
     mutationFn: ({
       bookingId,
-      status,
+      action,
     }: {
       bookingId: string;
-      status: "accepted" | "declined" | "started" | "completed";
-    }) => api.patch(`/api/bookings/${bookingId}/status`, { status }),
+      action: "accept" | "decline" | "start-job";
+    }) => api.patch(`/api/bookings/${bookingId}/${action}`), // Sahi API route
     onSuccess: (data) => {
       toast({
         title: `Booking ${data.data.status}`,
@@ -354,6 +354,192 @@ const BookingsManager: React.FC<{
     },
   });
 
+  const getBadgeColor = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case "pending": return "default"; // Blue
+      case "accepted": return "secondary"; // Gray
+      case "in_progress": return "secondary"; // Gray
+      case "awaiting_otp": return "secondary"; // Gray
+      case "awaiting_billing": return "secondary"; // Gray
+      case "pending_payment": return "secondary"; // Gray
+      case "completed": return "default"; // Green (custom style se)
+      case "declined":
+      case "cancelled": return "destructive"; // Red
+      default: return "outline";
+    }
+  };
+
+  const filterBookings = (statusList: string[]) => {
+    if (!Array.isArray(bookings)) return [];
+    return bookings.filter(b => statusList.includes(b.status || 'pending'));
+  }
+
+  const newBookings = filterBookings(['pending']);
+  const activeBookings = filterBookings(['accepted', 'in_progress', 'awaiting_otp', 'awaiting_billing', 'pending_payment']);
+  const completedBookings = filterBookings(['completed', 'declined', 'cancelled']);
+
+  if (isLoadingBookings) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>My Bookings</CardTitle>
+                <CardDescription>
+                View and manage your upcoming bookings for '
+                {providerProfile.category ? providerProfile.category.name : 'your service'}
+                '.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex justify-center py-10">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading
+                    bookings...
+                </div>
+            </CardContent>
+        </Card>
+    );
+  }
+
+  // BUG FIX: Ab !Array.isArray check kar rahe hain
+  if (!Array.isArray(bookings)) {
+     return (
+        <Card>
+            <CardHeader>
+                <CardTitle>My Bookings</CardTitle>
+            </CardHeader>
+            <CardContent>
+                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                    <h3 className="text-xl font-semibold text-destructive">Error Loading Bookings</h3>
+                    <p className="text-muted-foreground mt-2">
+                    Could not fetch bookings. Please try refreshing.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+     )
+  }
+
+  return (
+    <Tabs defaultValue="new" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="new">
+                New ({newBookings.length})
+            </TabsTrigger>
+            <TabsTrigger value="active">
+                Active ({activeBookings.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+                Completed ({completedBookings.length})
+            </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="new" className="mt-6">
+            <BookingList 
+                bookings={newBookings} 
+                emptyMessage="You have no new booking requests."
+                mutations={{ updateBookingStatusMutation }}
+            />
+        </TabsContent>
+
+        <TabsContent value="active" className="mt-6">
+             <BookingList 
+                bookings={activeBookings} 
+                emptyMessage="You have no active jobs."
+                mutations={{ updateBookingStatusMutation }}
+            />
+        </TabsContent>
+
+        <TabsContent value="completed" className="mt-6">
+             <BookingList 
+                bookings={completedBookings} 
+                emptyMessage="You have no completed or declined jobs."
+                mutations={{ updateBookingStatusMutation }}
+            />
+        </TabsContent>
+    </Tabs>
+  );
+};
+
+// --- NAYA HELPER COMPONENT: BOOKING LIST ---
+const BookingList: React.FC<{
+    bookings: FullBooking[];
+    emptyMessage: string;
+    mutations: {
+        updateBookingStatusMutation: any;
+        // baaki mutations yahaan add honge
+    }
+}> = ({ bookings, emptyMessage }) => {
+
+    if (bookings.length === 0) {
+        return (
+             <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                <h3 className="text-xl font-semibold">{emptyMessage}</h3>
+                <p className="text-muted-foreground mt-2">
+                This tab will update automatically.
+                </p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-4">
+            {bookings.map((booking) => (
+              <Card key={booking.id} className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>Booking ID: ...{booking.id.slice(-6)}</span>
+                     <Badge 
+                        variant={booking.status === 'completed' ? 'default' : getBadgeColor(booking.status || 'pending')}
+                        className={booking.status === 'completed' ? 'bg-green-600' : ''}
+                    >
+                      {booking.status?.replace("_", " ").toUpperCase()}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Customer: {booking.user.username} | Phone:{" "}
+                    {booking.user.phone}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  <p>
+                    <strong>Address:</strong> {booking.userAddress}
+                  </p>
+                  <p>
+                    <strong>Scheduled:</strong>{" "}
+                    {booking.scheduledAt
+                      ? new Date(booking.scheduledAt).toLocaleString("en-IN")
+                      : "ASAP"}
+                  </p>
+                  {booking.isUrgent && <Badge variant="destructive">URGENT</Badge>}
+                  {booking.notes && (
+                    <p className="pt-2">
+                      <strong>Notes:</strong> {booking.notes}
+                    </p>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                  <ProviderBookingActions
+                    booking={booking}
+                    mutations={mutations}
+                  />
+                </CardFooter>
+              </Card>
+            ))}
+        </div>
+    )
+}
+
+// --- NAYA HELPER COMPONENT: BOOKING ACTIONS (SAARA LOGIC YAHAN HAI) ---
+const ProviderBookingActions: React.FC<{
+  booking: FullBooking;
+  mutations: { updateBookingStatusMutation: any; };
+}> = ({ booking, mutations }) => {
+  const { updateBookingStatusMutation } = mutations;
+  const [otp, setOtp] = useState("");
+  const [isBillOpen, setIsBillOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // --- Saare mutations (API calls) ---
   const generateOtpMutation = useMutation({
     mutationFn: (bookingId: string) =>
       api.post(`/api/bookings/${bookingId}/generate-otp`),
@@ -373,126 +559,9 @@ const BookingsManager: React.FC<{
     },
   });
 
-  // --- NAYE ACTION HANDLERS ---
-  const handleAccept = (booking: FullBooking) => {
-    updateBookingStatus.mutate({ bookingId: booking.id, status: "accepted" });
-  };
-
-  const handleDecline = (booking: FullBooking) => {
-    updateBookingStatus.mutate({ bookingId: booking.id, status: "declined" });
-  };
-
-  const handleStartJob = (booking: FullBooking) => {
-    updateBookingStatus.mutate({ bookingId: booking.id, status: "started" });
-  };
-
-  const handleJobDone = (booking: FullBooking) => {
-    generateOtpMutation.mutate(booking.id);
-  };
-
-  const getBadgeColor = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case "pending": return "default";
-      case "accepted": return "secondary";
-      case "started": return "secondary"; // FIX: Use existing variants
-      case "awaiting_otp": return "secondary"; // FIX: Use existing variants
-      case "awaiting_bill": return "secondary"; // FIX: Use existing variants
-      case "awaiting_payment": return "secondary"; // FIX: Use existing variants
-      case "completed": return "default"; // FIX: Use existing variants (like success)
-      case "declined":
-      case "cancelled": return "destructive";
-      default: return "outline";
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My Bookings</CardTitle>
-        <CardDescription>
-          View and manage your upcoming bookings for '
-          {providerProfile.category.name}'.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoadingBookings ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading
-            bookings...
-          </div>
-        ) : !bookings || bookings.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed rounded-lg">
-            <h3 className="text-xl font-semibold">No Bookings Yet</h3>
-            <p className="text-muted-foreground mt-2">
-              When a customer books your service, it will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {bookings.map((booking) => (
-              <Card key={booking.id} className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span>Booking ID: ...{booking.id.slice(-6)}</span>
-                     <Badge variant={getBadgeColor(booking.status || 'pending')}>
-                      {booking.status?.replace("_", " ").toUpperCase()}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>
-                    Customer: {booking.user.username} | Phone:{" "}
-                    {booking.user.phone}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>
-                    <strong>Address:</strong> {booking.userAddress}
-                  </p>
-                  <p>
-                    <strong>Scheduled:</strong>{" "}
-                    {booking.scheduledAt
-                      ? new Date(booking.scheduledAt).toLocaleString("en-IN")
-                      : "ASAP"}
-                  </p>
-                  {booking.notes && (
-                    <p>
-                      <strong>Notes:</strong> {booking.notes}
-                    </p>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  <ProviderBookingActions
-                    booking={booking}
-                    onAccept={() => handleAccept(booking)}
-                    onDecline={() => handleDecline(booking)}
-                    onStartJob={() => handleStartJob(booking)}
-                    onJobDone={() => handleJobDone(booking)}
-                  />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-// --- NAYA HELPER COMPONENT: BOOKING ACTIONS ---
-const ProviderBookingActions: React.FC<{
-  booking: FullBooking;
-  onAccept: () => void;
-  onDecline: () => void;
-  onStartJob: () => void;
-  onJobDone: () => void;
-}> = ({ booking, onAccept, onDecline, onStartJob, onJobDone }) => {
-  const [otp, setOtp] = useState("");
-  const [isBillOpen, setIsBillOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
   const verifyOtpMutation = useMutation({
-    mutationFn: (otp: string) =>
-      api.post(`/api/bookings/${booking.id}/verify-otp`, { otp }),
+    mutationFn: (data: { bookingId: string, otp: string }) =>
+      api.post(`/api/bookings/${data.bookingId}/verify-otp`, { otp: data.otp }),
     onSuccess: () => {
       toast({
         title: "OTP Verified!",
@@ -530,24 +599,48 @@ const ProviderBookingActions: React.FC<{
       });
     },
   });
+  // --- Mutations khatam ---
 
+  // --- Action Handlers ---
+  const handleAccept = () => {
+    updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "accept" });
+  };
+  const handleDecline = () => {
+    updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "decline" });
+  };
+  const handleStartJob = () => {
+    updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "start-job" });
+  };
+  const handleJobDone = () => {
+    generateOtpMutation.mutate(booking.id);
+  };
   const handleVerifyOtp = () => {
     if (otp.length === 6) {
-      verifyOtpMutation.mutate(otp);
+      verifyOtpMutation.mutate({ bookingId: booking.id, otp });
     }
   };
-
   const handleBillSubmit = (data: BillFormData) => {
     createInvoiceMutation.mutate(data);
   };
+  // --- Handlers khatam ---
 
+
+  // --- Logic ke hisaab se button dikhao ---
   if (booking.status === "pending") {
     return (
       <>
-        <Button variant="destructive" onClick={onDecline}>
+        <Button 
+            variant="destructive" 
+            onClick={handleDecline}
+            disabled={updateBookingStatusMutation.isPending}
+        >
           <X className="mr-2 h-4 w-4" /> Decline
         </Button>
-        <Button onClick={onAccept} className="bg-green-600 hover:bg-green-700">
+        <Button 
+            onClick={handleAccept} 
+            className="bg-green-600 hover:bg-green-700"
+            disabled={updateBookingStatusMutation.isPending}
+        >
           <Check className="mr-2 h-4 w-4" /> Accept
         </Button>
       </>
@@ -556,16 +649,25 @@ const ProviderBookingActions: React.FC<{
 
   if (booking.status === "accepted") {
     return (
-      <Button onClick={onStartJob} className="bg-blue-600 hover:bg-blue-700">
+      <Button 
+        onClick={handleStartJob} 
+        className="bg-blue-600 hover:bg-blue-700"
+        disabled={updateBookingStatusMutation.isPending}
+    >
         <Play className="mr-2 h-4 w-4" /> Start Job
       </Button>
     );
   }
 
-  if (booking.status === "started") {
+  if (booking.status === "in_progress") {
     return (
-      <Button onClick={onJobDone} className="bg-green-600 hover:bg-green-700">
-        <ClipboardCheck className="mr-2 h-4 w-4" /> Job Done (Get OTP)
+      <Button 
+        onClick={handleJobDone} 
+        className="bg-green-600 hover:bg-green-700"
+        disabled={generateOtpMutation.isPending}
+    >
+        {generateOtpMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ClipboardCheck className="mr-2 h-4 w-4" />}
+        Job Done (Get OTP)
       </Button>
     );
   }
@@ -614,7 +716,7 @@ const ProviderBookingActions: React.FC<{
     );
   }
 
-  if (booking.status === "awaiting_bill") {
+  if (booking.status === "awaiting_billing") {
     return (
       <>
         <Button
@@ -633,9 +735,9 @@ const ProviderBookingActions: React.FC<{
     );
   }
 
-  if (booking.status === "awaiting_payment") {
+  if (booking.status === "pending_payment") {
     return (
-       <Badge variant="secondary" className="p-2"> {/* FIX: Use existing variant */}
+       <Badge variant="secondary" className="p-2 text-base">
          <DollarSign className="mr-2 h-4 w-4" />
          Waiting for Customer Payment
        </Badge>
@@ -643,18 +745,18 @@ const ProviderBookingActions: React.FC<{
   }
 
   if (booking.status === "completed") {
-    return (
-       <Badge variant="default" className="p-2 bg-green-600"> {/* FIX: Use existing variant */}
-         <Check className="mr-2 h-4 w-4" />
-         Job Completed
-       </Badge>
-    )
+    // TODO: "View Invoice" ka button bana sakte hain
+    return null;
   }
 
-  return null; // Declined ya cancelled state ke liye
+  if (booking.status === "declined" || booking.status === "cancelled") {
+    return null; // Koi action nahi
+  }
+
+  return null; // Fallback
 };
 
-// --- NAYA HELPER COMPONENT: CREATE BILL DIALOG ---
+// --- NAYA HELPER COMPONENT: CREATE BILL DIALOG (with form) ---
 const CreateBillDialog: React.FC<{
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -665,12 +767,10 @@ const CreateBillDialog: React.FC<{
     resolver: zodResolver(billFormSchema),
     defaultValues: {
       spareParts: [],
-      serviceCharge: 0,
-      notes: "",
+      serviceCharge: undefined, // 0 ki jagah undefined
     },
   });
 
-  // FIX: useFieldArray import ko upar add kiya
   const { fields, append, remove } = useFieldArray({
       control: form.control,
       name: "spareParts"
@@ -680,8 +780,8 @@ const CreateBillDialog: React.FC<{
   const watchServiceCharge = form.watch("serviceCharge");
 
   const total =
-    (watchSpareParts?.reduce((acc, part) => acc + (Number(part.price) || 0), 0) || 0) + // FIX: Ensure price is number
-    (Number(watchServiceCharge) || 0); // FIX: Ensure charge is number
+    (watchSpareParts?.reduce((acc, part) => acc + (Number(part.cost) || 0), 0) || 0) +
+    (Number(watchServiceCharge) || 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -715,10 +815,10 @@ const CreateBillDialog: React.FC<{
               <Label>Spare Parts Used (Optional)</Label>
               <div className="space-y-2 mt-2">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="flex gap-2 items-center">
+                  <div key={field.id} className="flex gap-2 items-start">
                     <FormField
                       control={form.control}
-                      name={`spareParts.${index}.name`}
+                      name={`spareParts.${index}.part`}
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormControl>
@@ -730,7 +830,7 @@ const CreateBillDialog: React.FC<{
                     />
                     <FormField
                       control={form.control}
-                      name={`spareParts.${index}.price`}
+                      name={`spareParts.${index}.cost`}
                       render={({ field }) => (
                         <FormItem className="w-[120px]">
                           <FormControl>
@@ -760,25 +860,11 @@ const CreateBillDialog: React.FC<{
                 variant="outline"
                 size="sm"
                 className="mt-2"
-                onClick={() => append({ name: "", price: 0 })}
+                onClick={() => append({ part: "", cost: 0 })}
               >
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Part
               </Button>
             </div>
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="e.g., Replaced main switch" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <div className="text-xl font-bold text-right pt-4">
               Total Bill: ₹{total.toFixed(2)}
@@ -786,7 +872,7 @@ const CreateBillDialog: React.FC<{
 
             <DialogFooter>
               <DialogClose asChild>
-                 <Button type="button" variant="outline">Cancel</Button>
+                 <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -799,7 +885,6 @@ const CreateBillDialog: React.FC<{
     </Dialog>
   );
 };
-// --- HELPER COMPONENTS KHATAM ---
 
 // --- COMPONENT 3: SPECIALIZATIONS MANAGER (Waise ka waisa) ---
 const SpecializationsManager: React.FC<{
@@ -936,7 +1021,7 @@ const ProfileSettingsManager: React.FC<{
   const profilePicMutation = useMutation({
     mutationFn: (file: File) => {
       const formData = new FormData();
-      formData.append("image", file); // 'image' field backend route se match karta hai
+      formData.append("image", file);
       return api.patch("/api/provider/profile/image", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -960,7 +1045,7 @@ const ProfileSettingsManager: React.FC<{
     mutationFn: (files: FileList) => {
       const formData = new FormData();
       for (let i = 0; i < files.length; i++) {
-        formData.append("images", files[i]); // 'images' field backend route se match karta hai
+        formData.append("images", files[i]);
       }
       return api.post("/api/provider/profile/gallery", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -1006,7 +1091,6 @@ const ProfileSettingsManager: React.FC<{
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Card 1: Profile Picture */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Picture</CardTitle>
@@ -1048,7 +1132,6 @@ const ProfileSettingsManager: React.FC<{
         </CardFooter>
       </Card>
 
-      {/* Card 2: Gallery Images */}
       <Card>
         <CardHeader>
           <CardTitle>Gallery Images</CardTitle>
@@ -1096,9 +1179,8 @@ const ProfileSettingsManager: React.FC<{
     </div>
   );
 };
-// --- COMPONENT KHATAM ---
 
-// --- Category Lists (Waise ka waisa) ---
+// --- Category Lists ---
 const menuBasedCategories = [
   "beauty",
   "cake-shop",
@@ -1108,9 +1190,9 @@ const menuBasedCategories = [
 ];
 const bookingBasedCategories = ["electrician", "plumber"];
 
-// --- MAIN DASHBOARD COMPONENT (TABS UPDATE KIYE GAYE) ---
+// --- MAIN DASHBOARD COMPONENT (Ab yeh smart hai) ---
 const ProviderDashboard: React.FC = () => {
-  const { user, isLoading: isAuthLoading } = useAuth(); // FIX: Auth loading state
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const {
     data: providerProfile,
@@ -1126,7 +1208,7 @@ const ProviderDashboard: React.FC = () => {
     retry: false,
   });
 
-  // --- LOADING/ERROR STATES FIX KIYE GAYE ---
+  // --- LOADING/ERROR STATES ---
   if (isAuthLoading || (!!user && isLoadingProfile)) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1136,12 +1218,10 @@ const ProviderDashboard: React.FC = () => {
     );
   }
 
-  // Auth check
   if (!user) {
     return <Redirect to="/login" />;
   }
 
-  // Role check
   if (user.role !== "provider") {
      return (
       <div className="container mx-auto py-10 text-center text-muted-foreground">
@@ -1155,7 +1235,6 @@ const ProviderDashboard: React.FC = () => {
     );
   }
 
-  // Profile check
   if (isErrorProfile || !providerProfile) {
     return (
       <div className="container mx-auto py-10 text-center text-muted-foreground">
@@ -1175,7 +1254,6 @@ const ProviderDashboard: React.FC = () => {
   // --- LOADING/ERROR STATES KHATAM ---
 
   const providerType = () => {
-    // Safety check
     if (!providerProfile || !providerProfile.category) {
         return 'unknown';
     }
@@ -1188,21 +1266,25 @@ const ProviderDashboard: React.FC = () => {
   const type = providerType();
 
   const getTabs = () => {
+    // Basic tabs
     const tabs = [
-      { value: "bookings", label: "Bookings" },
       { value: "profile", label: "Profile Settings" },
     ];
+
+    // Kaam ke hisaab se tabs add karo
     if (type === "menu") {
       tabs.unshift({ value: "menu", label: "Menu / Services" });
+      tabs.unshift({ value: "bookings", label: "Bookings" }); // Menu waalon ko bhi booking aa sakti hai
     }
     if (type === "booking") {
       tabs.push({ value: "specializations", label: "My Specializations" });
+      tabs.unshift({ value: "bookings", label: "Bookings" });
     }
     return tabs;
   };
 
   const tabs = getTabs();
-  const defaultTab = type === "menu" ? "menu" : "bookings";
+  const defaultTab = "bookings"; // Sabse important tab
 
   return (
     <div className="container mx-auto py-8">
@@ -1219,15 +1301,16 @@ const ProviderDashboard: React.FC = () => {
           ))}
         </TabsList>
 
-        {/* Saare TabsContent neeche hain */}
+        <TabsContent value="bookings" className="mt-6">
+          <BookingsManager providerProfile={providerProfile} />
+        </TabsContent>
+
         <TabsContent value="menu" className="mt-6">
           {type === "menu" ? (
             <MenuItemsManager providerProfile={providerProfile} />
           ) : null}
         </TabsContent>
-        <TabsContent value="bookings" className="mt-6">
-          <BookingsManager providerProfile={providerProfile} />
-        </TabsContent>
+
         <TabsContent value="specializations" className="mt-6">
           {type === "booking" ? (
             <SpecializationsManager providerProfile={providerProfile} />

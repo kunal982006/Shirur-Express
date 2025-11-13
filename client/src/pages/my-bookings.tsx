@@ -131,7 +131,7 @@ export default function MyBookings() {
           </p>
         </div>
 
-        {!bookings || bookings.length === 0 ? (
+        {!Array.isArray(bookings) || bookings.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
