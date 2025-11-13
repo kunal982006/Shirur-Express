@@ -142,11 +142,11 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       // API call ko theek kiya
       if (initialData) {
         // --- YEH HAI FIX (Update) ---
-        await api.patch(`/api/provider/menu-items/${categorySlug}/${initialData.id}`, payload);
+        await api.patch(`/provider/menu-items/${categorySlug}/${initialData.id}`, payload);
         toast({ title: "Success", description: "Menu item updated." });
       } else {
         // --- YEH HAI FIX (Create) ---
-        await api.post(`/api/provider/menu-items/${categorySlug}`, payload);
+        await api.post(`/provider/menu-items/${categorySlug}`, payload);
         toast({ title: "Success", description: "Menu item added." });
       }
       onSuccess(); // Yeh function Dialog ko band karega aur list refresh karega
