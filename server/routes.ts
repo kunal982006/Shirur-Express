@@ -1,4 +1,4 @@
-// server/routes.ts (UPDATED FOR ELECTRICIAN FLOW)
+// server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
@@ -16,6 +16,7 @@ import {
   insertTableBookingSchema,
   insertServiceProviderSchema,
   insertInvoiceSchema, // NAYA IMPORT
+  type InsertInvoice,
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -23,9 +24,11 @@ import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
 // NAYA IMPORT: z for validation
 import { z } from "zod";
 
+import twilio from "twilio";
+import { sendBookingNotification } from "./twilio-client";
+
 let twilioClient: any = null;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-  const twilio = require('twilio');
   twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 }
 
@@ -36,6 +39,7 @@ interface CustomRequest extends Request {
     userId: string;
     categoryId: string;
   };
+  userId?: string;
 }
 interface AuthRequest extends Request {
   userId?: string;
@@ -274,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
-  
+
   app.get("/api/provider/my-bookings", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;
@@ -310,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/service-problems", async (req: Request, res: Response) => {
     try {
-      const { category: categorySlug, parentId } = req.query; 
+      const { category: categorySlug, parentId } = req.query;
 
       if (!categorySlug) {
         return res.status(400).json({ message: "Category slug is required" });
@@ -321,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Category not found" });
       }
 
-      const problems = await storage.getServiceProblems(category.id, parentId as string | undefined); 
+      const problems = await storage.getServiceProblems(category.id, parentId as string | undefined);
       res.json(problems);
     } catch (error: any) {
       console.error("Get service problems error:", error);
@@ -360,17 +364,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- BOOKING & ORDER ROUTES (UPDATED) ---
 
   // (Customer) Booking create karna
+  // ----- YEH RAHA FIX -----
   app.post("/api/bookings", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const bookingData = insertBookingSchema.parse(req.body);
+
+      // 1. Ek naya schema banao jo string expect kare
+      const bodySchema = insertBookingSchema.extend({
+        scheduledAt: z.string().datetime(), // String expect karo (ISO format)
+      });
+
+      // 2. Body ko naye schema se parse karo
+      const parsedBody = bodySchema.parse(req.body);
+
+      // 3. Ab storage ke liye Date object mein convert karo
+      const bookingData = {
+        ...parsedBody,
+        scheduledAt: new Date(parsedBody.scheduledAt),
+      };
+
       const booking = await storage.createBooking({ ...bookingData, userId });
       res.status(201).json(booking);
     } catch (error: any) {
       console.error("Create booking error:", error);
+      // Zod ka error message ab frontend ko dikhega
       res.status(400).json({ message: error.message || "Error creating booking" });
     }
   });
+  // ----- FIX KHATAM -----
 
   // (Customer) Apni booking cancel karna
   app.patch("/api/bookings/:id/cancel", isLoggedIn, async (req: AuthRequest, res: Response) => {
@@ -407,13 +428,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const booking = await storage.getBooking(bookingId);
       if (!booking || booking.providerId !== providerId) {
-         return res.status(404).json({ message: "Booking nahi mili ya aapke liye nahi hai." });
+        return res.status(404).json({ message: "Booking nahi mili ya aapke liye nahi hai." });
       }
-       if (booking.status !== 'pending') {
+      if (booking.status !== 'pending') {
         return res.status(400).json({ message: `Yeh booking already '${booking.status}' hai.` });
       }
 
-      const acceptedBooking = await storage.updateBookingStatus(bookingId, "accepted", providerId);
+      const { estimatedCost } = req.body;
+      const acceptedBooking = await storage.updateBookingStatus(bookingId, "accepted", providerId, estimatedCost);
+
+      // --- SMS NOTIFICATION LOGIC ---
+      try {
+        // Explicitly check for user phone and provider name
+        const userPhone = acceptedBooking.user?.phone;
+        const providerName = acceptedBooking.provider?.businessName;
+        const scheduledAt = acceptedBooking.scheduledAt;
+
+        if (userPhone && providerName) {
+          console.log(`[SMS] Sending SMS to ${userPhone} for status: accepted`);
+          await sendBookingNotification(
+            userPhone,
+            "accepted",
+            providerName,
+            scheduledAt ? new Date(scheduledAt).toLocaleString("en-IN") : undefined
+          );
+        } else {
+          console.warn(`[SMS Fail] SMS nahi bhej paaye: User phone (${userPhone}) ya provider name (${providerName}) missing.`);
+        }
+      } catch (smsError) {
+        console.error("[SMS Error] SMS notification bhejte waqt error aaya:", smsError);
+      }
+      // -----------------------------
+
       res.json(acceptedBooking);
     } catch (error: any) {
       console.error("Accept booking error:", error);
@@ -429,13 +475,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const booking = await storage.getBooking(bookingId);
       if (!booking || booking.providerId !== providerId) {
-         return res.status(404).json({ message: "Booking nahi mili ya aapke liye nahi hai." });
+        return res.status(404).json({ message: "Booking nahi mili ya aapke liye nahi hai." });
       }
       if (booking.status !== 'pending') {
         return res.status(400).json({ message: `Yeh booking already '${booking.status}' hai.` });
       }
 
       const declinedBooking = await storage.updateBookingStatus(bookingId, "declined");
+
+      // --- SMS NOTIFICATION LOGIC ---
+      try {
+        const userPhone = declinedBooking.user?.phone;
+        const providerName = declinedBooking.provider?.businessName;
+
+        if (userPhone && providerName) {
+          console.log(`[SMS] Sending SMS to ${userPhone} for status: declined`);
+          await sendBookingNotification(
+            userPhone,
+            "declined",
+            providerName
+          );
+        } else {
+          console.warn(`[SMS Fail] SMS nahi bhej paaye: User phone (${userPhone}) ya provider name (${providerName}) missing.`);
+        }
+      } catch (smsError) {
+        console.error("[SMS Error] SMS notification bhejte waqt error aaya:", smsError);
+      }
+      // -----------------------------
+
       res.json(declinedBooking);
     } catch (error: any) {
       console.error("Decline booking error:", error);
@@ -477,9 +544,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { otp, userPhone } = await storage.generateOtpForBooking(bookingId, providerId);
 
       res.json({ message: `OTP ${otp} customer ke phone ${userPhone} par bhej diya gaya hai.` });
-    } catch (error: any)
-    {
-      console.error("Generate OTP error:", error);
+    } catch (error: any) {
+      console.error("Generate OTP error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
       res.status(500).json({ message: error.message || "Error generating OTP" });
     }
   });
@@ -493,7 +559,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updatedBooking = await storage.verifyBookingOtp(bookingId, providerId, otp);
 
-      res.json({ message: "OTP verified successfully! Ab aap bill bana sakte hain.", booking: updatedBooking });
+      const message = updatedBooking.status === 'pending_payment'
+        ? "OTP verified! Invoice created automatically. Customer can now pay."
+        : "OTP verified successfully! Ab aap bill bana sakte hain.";
+
+      res.json({ message, booking: updatedBooking });
     } catch (error: any) {
       console.error("Verify OTP error:", error);
       res.status(400).json({ message: error.message || "Error verifying OTP" });
@@ -547,6 +617,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: error.message || "Error creating invoice" });
     }
   });
+  // (Customer) Get Invoice by ID
+  app.get("/api/invoices/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const { id } = req.params;
+
+      const invoice = await storage.getInvoice(id);
+
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+
+      // Security check: Ensure the invoice belongs to the user (or provider)
+      // For now, we check if it matches the logged-in user
+      if (invoice.userId !== userId) {
+        // Optional: Allow providers to view invoices they created
+        const provider = await storage.getProviderByUserId(userId);
+        if (!provider || provider.id !== invoice.providerId) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      res.json(invoice);
+    } catch (error: any) {
+      console.error("Get invoice error:", error);
+      res.status(500).json({ message: error.message || "Error fetching invoice" });
+    }
+  });
 
   // (Customer) Invoice ke liye payment order create karna
   app.post("/api/invoices/:id/create-payment-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
@@ -597,6 +695,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- NEW RAZORPAY ENDPOINTS (MIGRATION) ---
+
+  // Create Order
+  app.post("/api/pay/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const { invoiceId } = req.body;
+
+      if (!invoiceId) {
+        return res.status(400).json({ message: "Invoice ID is required" });
+      }
+
+      const { razorpayOrderId, amount, currency, invoice } = await storage.createPaymentOrderForInvoice(invoiceId, userId);
+
+      res.json({
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+        razorpayOrderId,
+        amount,
+        currency,
+        invoice,
+      });
+    } catch (error: any) {
+      console.error("Create payment order error:", error);
+      res.status(500).json({ message: error.message || "Error creating payment order" });
+    }
+  });
+
+  // Verify Payment
+  app.post("/api/pay/verify", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, invoiceId } = req.body;
+
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !invoiceId) {
+        return res.status(400).json({ message: "Missing payment details for verification" });
+      }
+
+      const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+
+      if (isValid) {
+        const updatedInvoice = await storage.verifyInvoicePayment(
+          invoiceId,
+          razorpay_payment_id,
+          razorpay_order_id,
+          razorpay_signature
+        );
+        res.json({ status: "success", message: "Payment verified successfully!", invoice: updatedInvoice });
+      } else {
+        res.status(400).json({ status: "failure", message: "Invalid payment signature" });
+      }
+    } catch (error: any) {
+      console.error("Verify payment error:", error);
+      res.status(500).json({ message: error.message || "Error verifying payment" });
+    }
+  });
+
 
   // --- BAAKI ROUTES (Grocery, Restaurant, etc.) ---
 
@@ -616,7 +769,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const { orderId } = req.body; 
+      const { orderId } = req.body;
       if (!orderId) {
         return res.status(400).json({ message: "Order ID is required" });
       }
@@ -704,7 +857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/restaurant-menu-items", async (req: Request, res: Response) => {
     try {
-      const items = await storage.getRestaurantMenuItems(); 
+      const items = await storage.getRestaurantMenuItems();
       res.json(items);
     } catch (error: any) {
       console.error("Get restaurant menu items error:", error);
@@ -729,7 +882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- MENU MANAGEMENT ROUTES (No Change) ---
   app.post("/api/provider/menu-items/:categorySlug", isProvider, async (req: CustomRequest, res: Response) => {
     try {
-      const providerId = req.provider!.id; 
+      const providerId = req.provider!.id;
       const categorySlug = req.params.categorySlug;
       const itemData = req.body;
       const newItem = await storage.createMenuItem(itemData, providerId, categorySlug);
@@ -755,7 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/provider/menu-items/:categorySlug/:itemId", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const { categorySlug, itemId } = req.params;
-      const providerId = req.provider!.id; 
+      const providerId = req.provider!.id;
       const updates = req.body;
       const updatedItem = await storage.updateMenuItem(itemId, providerId, categorySlug, updates);
       if (!updatedItem) {
@@ -771,7 +924,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/provider/menu-items/:categorySlug/:itemId", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const { categorySlug, itemId } = req.params;
-      const providerId = req.provider!.id; 
+      const providerId = req.provider!.id;
       const deletedItem = await storage.deleteMenuItem(itemId, providerId, categorySlug);
       if (!deletedItem) {
         return res.status(404).json({ message: "Item not found or you don't have permission." });

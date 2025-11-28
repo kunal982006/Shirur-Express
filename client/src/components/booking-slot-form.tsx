@@ -1,3 +1,5 @@
+// client/src/components/booking-slot-form.tsx (FIXED)
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -76,34 +78,72 @@ export default function BookingSlotForm({
 
   const createBookingMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
+
+      const date = data.scheduledDate;
+      const timeSlot = data.preferredTimeSlot;
+      const [time, modifier] = timeSlot.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+
+      if (modifier === 'PM' && hours !== 12) {
+        hours += 12;
+      }
+      if (modifier === 'AM' && hours === 12) {
+        hours = 0; 
+      }
+
+      const combinedDateTime = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hours,
+        minutes
+      );
+
+      const scheduledAtISO = combinedDateTime.toISOString();
+
       const bookingData = {
         userId: user?.id || "",
-        providerId,
-        serviceType: "electrician",
+        providerId, // <-- Yeh jaa raha hai, bilkul sahi
+        serviceType: "electrician", 
         problemId,
-        scheduledAt: data.scheduledDate.toISOString(),
+        scheduledAt: scheduledAtISO, 
         preferredTimeSlots: [data.preferredTimeSlot],
         userPhone: data.userPhone,
         userAddress: data.userAddress,
         notes: data.notes,
-        status: "pending",
       };
 
       const response = await apiRequest("POST", "/api/bookings", bookingData);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create booking');
+      }
+
       return response.json();
     },
+
+    // ----- YEH RAHA FIX -----
     onSuccess: () => {
       toast({
         title: "Booking Successful!",
-        description: "Your service request has been sent. The technician will contact you soon.",
+        description: "Your service request has been sent. Check 'My Bookings'.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+
+      // Provider ke dashboard ki list ko refresh karo
+      queryClient.invalidateQueries({ queryKey: ["providerBookings"] });
+
+      // Customer ke 'My Bookings' page ki list ko refresh karo
+      queryClient.invalidateQueries({ queryKey: ["customerBookings"] });
+
       form.reset();
       onSuccess?.();
-      // Redirect to My Bookings page
+
+      // User ko 'My Bookings' page par bhejo
       setLocation("/my-bookings");
     },
+    // ----- FIX KHATAM -----
+
     onError: (error: any) => {
       toast({
         title: "Booking Failed",
@@ -154,7 +194,7 @@ export default function BookingSlotForm({
                         data-testid="button-select-date"
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "PPP") // e.g., "November 13, 2025"
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -168,7 +208,7 @@ export default function BookingSlotForm({
                       selected={field.value}
                       onSelect={field.onChange}
                       disabled={(date) =>
-                        date < new Date() || date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        date < new Date(new Date().setHours(0, 0, 0, 0)) // Aaj se pehle ki date disable karo
                       }
                       initialFocus
                     />

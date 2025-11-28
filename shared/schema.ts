@@ -32,13 +32,13 @@ export const serviceCategories = pgTable("service_categories", {
 
 // Service providers
 export const serviceProviders = pgTable("service_providers", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   categoryId: varchar("category_id").references(() => serviceCategories.id).notNull(),
   businessName: text("business_name").notNull(),
   description: text("description"),
-  profileImageUrl: text("profile_image_url"), 
-    galleryImages: jsonb("gallery_images").$type<string[]>(),
+  profileImageUrl: text("profile_image_url"),
+  galleryImages: jsonb("gallery_images").$type<string[]>(),
   experience: integer("experience_years"),
   rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
   reviewCount: integer("review_count").default(0),
@@ -54,7 +54,7 @@ export const serviceProviders = pgTable("service_providers", {
 
 // Service problems/categories (for electrician, plumber)
 export const serviceProblems = pgTable("service_problems", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   categoryId: varchar("category_id").references(() => serviceCategories.id).notNull(),
   name: text("name").notNull(),
   parentId: varchar("parent_id"),
@@ -62,7 +62,7 @@ export const serviceProblems = pgTable("service_problems", {
 
 // Beauty services (UPDATED)
 export const beautyServices = pgTable("beauty_services", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: varchar("provider_id") // providerId type matches serviceProviders.id
     .notNull()
     .references(() => serviceProviders.id, { onDelete: "cascade" }),
@@ -79,7 +79,7 @@ export const beautyServices = pgTable("beauty_services", {
 
 // Cake products
 export const cakeProducts = pgTable("cake_products", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
@@ -92,7 +92,7 @@ export const cakeProducts = pgTable("cake_products", {
 
 // Grocery products
 export const groceryProducts = pgTable("grocery_products", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   name: varchar("name", { length: 256 }).notNull(),
   description: text("description"),
@@ -109,7 +109,7 @@ export const groceryProducts = pgTable("grocery_products", {
 
 // Rental properties
 export const rentalProperties = pgTable("rental_properties", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   ownerId: varchar("owner_id").references(() => users.id).notNull(),
   title: text("title").notNull(),
   description: text("description"),
@@ -131,7 +131,7 @@ export const rentalProperties = pgTable("rental_properties", {
 
 // Bookings/Service requests (ELECTRICIAN FLOW KE LIYE UPDATED)
 export const bookings = pgTable("bookings", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => serviceProviders.id),
   serviceType: text("service_type").notNull(),
@@ -140,7 +140,7 @@ export const bookings = pgTable("bookings", {
   // STATUS FLOW: 
   // pending -> accepted -> in_progress -> awaiting_otp -> awaiting_billing -> pending_payment -> completed
   // 'pending' se 'declined' ya 'cancelled' bhi ho sakta hai
-  status: text("status").default("pending"), 
+  status: text("status").default("pending"),
 
   scheduledAt: timestamp("scheduled_at"),
   preferredTimeSlots: jsonb("preferred_time_slots").$type<string[]>(),
@@ -159,7 +159,7 @@ export const bookings = pgTable("bookings", {
 
 // Grocery orders
 export const groceryOrders = pgTable("grocery_orders", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   items: jsonb("items").$type<Array<{ productId: string; quantity: number; price: number }>>(),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
@@ -168,9 +168,9 @@ export const groceryOrders = pgTable("grocery_orders", {
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
   status: text("status").default("pending"), // pending, confirmed, delivered, cancelled
-  razorpayOrderId: text("razorpay_order_id"),     
-  razorpayPaymentId: text("razorpay_payment_id"), 
-  razorpaySignature: text("razorpay_signature"), 
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  razorpaySignature: text("razorpay_signature"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -197,7 +197,7 @@ export const invoices = pgTable("invoices", {
 
 // Street food menu items
 export const streetFoodItems = pgTable("street_food_items", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: text("provider_id").notNull().references(() => serviceProviders.id),
   name: text("name").notNull(),
   description: text("description"),
@@ -212,7 +212,7 @@ export const streetFoodItems = pgTable("street_food_items", {
 
 // Restaurant menu items
 export const restaurantMenuItems = pgTable("restaurant_menu_items", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
@@ -226,7 +226,7 @@ export const restaurantMenuItems = pgTable("restaurant_menu_items", {
 
 // Restaurant table bookings
 export const tableBookings = pgTable("table_bookings", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   date: timestamp("booking_date").notNull(),
@@ -239,7 +239,7 @@ export const tableBookings = pgTable("table_bookings", {
 
 // Reviews
 export const reviews = pgTable("reviews", {
-   id: text("id").$defaultFn(() => createId()).primaryKey(),
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
   bookingId: varchar("booking_id").references(() => bookings.id),
@@ -269,7 +269,7 @@ export const serviceProvidersRelations = relations(serviceProviders, ({ one, man
   }),
   bookings: many(bookings),
   reviews: many(reviews),
-  beautyServices: many(beautyServices), 
+  beautyServices: many(beautyServices),
   cakeProducts: many(cakeProducts),
   streetFoodItems: many(streetFoodItems),
   restaurantMenuItems: many(restaurantMenuItems),
@@ -337,6 +337,7 @@ export const insertServiceProviderSchema = createInsertSchema(serviceProviders).
   latitude: true,
   longitude: true,
   specializations: true,
+  profileImageUrl: true,
 });
 
 // BOOKING SCHEMA UPDATE KARO
@@ -348,7 +349,8 @@ export const insertBookingSchema = createInsertSchema(bookings).pick({
   userAddress: true,
   userPhone: true,
   notes: true,
-  isUrgent: true, // NAYA FIELD ADD KARO
+  isUrgent: true,
+  providerId: true,
 });
 
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
@@ -420,7 +422,7 @@ export type InsertRentalProperty = z.infer<typeof insertRentalPropertySchema>;
 export type ServiceCategory = typeof serviceCategories.$inferSelect;
 export type ServiceProblem = typeof serviceProblems.$inferSelect;
 export type BeautyService = typeof beautyServices.$inferSelect;
-export type InsertBeautyService = z.infer<typeof insertBeautyServiceSchema>; 
+export type InsertBeautyService = z.infer<typeof insertBeautyServiceSchema>;
 export type CakeProduct = typeof cakeProducts.$inferSelect;
 export type GroceryProduct = typeof groceryProducts.$inferSelect;
 export type StreetFoodItem = typeof streetFoodItems.$inferSelect;

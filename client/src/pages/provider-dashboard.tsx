@@ -290,7 +290,7 @@ const MenuItemsManager: React.FC<{
                       }
                     >
                       {deleteMenuItemMutation.isPending &&
-                      deleteMenuItemMutation.variables === item.id ? (
+                        deleteMenuItemMutation.variables === item.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         "Delete"
@@ -379,81 +379,81 @@ const BookingsManager: React.FC<{
 
   if (isLoadingBookings) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>My Bookings</CardTitle>
-                <CardDescription>
-                View and manage your upcoming bookings for '
-                {providerProfile.category ? providerProfile.category.name : 'your service'}
-                '.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-center py-10">
-                    <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading
-                    bookings...
-                </div>
-            </CardContent>
-        </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>My Bookings</CardTitle>
+          <CardDescription>
+            View and manage your upcoming bookings for '
+            {providerProfile.category ? providerProfile.category.name : 'your service'}
+            '.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-10">
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading
+            bookings...
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   // BUG FIX: Ab !Array.isArray check kar rahe hain
   if (!Array.isArray(bookings)) {
-     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>My Bookings</CardTitle>
-            </CardHeader>
-            <CardContent>
-                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                    <h3 className="text-xl font-semibold text-destructive">Error Loading Bookings</h3>
-                    <p className="text-muted-foreground mt-2">
-                    Could not fetch bookings. Please try refreshing.
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
-     )
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>My Bookings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <h3 className="text-xl font-semibold text-destructive">Error Loading Bookings</h3>
+            <p className="text-muted-foreground mt-2">
+              Could not fetch bookings. Please try refreshing.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <Tabs defaultValue="new" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="new">
-                New ({newBookings.length})
-            </TabsTrigger>
-            <TabsTrigger value="active">
-                Active ({activeBookings.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-                Completed ({completedBookings.length})
-            </TabsTrigger>
-        </TabsList>
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="new">
+          New ({newBookings.length})
+        </TabsTrigger>
+        <TabsTrigger value="active">
+          Active ({activeBookings.length})
+        </TabsTrigger>
+        <TabsTrigger value="completed">
+          Completed ({completedBookings.length})
+        </TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="new" className="mt-6">
-            <BookingList 
-                bookings={newBookings} 
-                emptyMessage="You have no new booking requests."
-                mutations={{ updateBookingStatusMutation }}
-            />
-        </TabsContent>
+      <TabsContent value="new" className="mt-6">
+        <BookingList
+          bookings={newBookings}
+          emptyMessage="You have no new booking requests."
+          mutations={{ updateBookingStatusMutation }}
+        />
+      </TabsContent>
 
-        <TabsContent value="active" className="mt-6">
-             <BookingList 
-                bookings={activeBookings} 
-                emptyMessage="You have no active jobs."
-                mutations={{ updateBookingStatusMutation }}
-            />
-        </TabsContent>
+      <TabsContent value="active" className="mt-6">
+        <BookingList
+          bookings={activeBookings}
+          emptyMessage="You have no active jobs."
+          mutations={{ updateBookingStatusMutation }}
+        />
+      </TabsContent>
 
-        <TabsContent value="completed" className="mt-6">
-             <BookingList 
-                bookings={completedBookings} 
-                emptyMessage="You have no completed or declined jobs."
-                mutations={{ updateBookingStatusMutation }}
-            />
-        </TabsContent>
+      <TabsContent value="completed" className="mt-6">
+        <BookingList
+          bookings={completedBookings}
+          emptyMessage="You have no completed or declined jobs."
+          mutations={{ updateBookingStatusMutation }}
+        />
+      </TabsContent>
     </Tabs>
   );
 };
@@ -481,70 +481,70 @@ const getBadgeColor = (status: string) => {
 
 // --- NAYA HELPER COMPONENT: BOOKING LIST ---
 const BookingList: React.FC<{
-    bookings: FullBooking[];
-    emptyMessage: string;
-    mutations: {
-        updateBookingStatusMutation: any;
-    }
+  bookings: FullBooking[];
+  emptyMessage: string;
+  mutations: {
+    updateBookingStatusMutation: any;
+  }
 }> = ({ bookings, emptyMessage, mutations }) => {
 
-    if (bookings.length === 0) {
-        return (
-             <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                <h3 className="text-xl font-semibold">{emptyMessage}</h3>
-                <p className="text-muted-foreground mt-2">
-                This tab will update automatically.
-                </p>
-            </div>
-        )
-    }
-
+  if (bookings.length === 0) {
     return (
-        <div className="space-y-4">
-            {bookings.map((booking) => (
-              <Card key={booking.id} className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span>Booking ID: ...{booking.id.slice(-6)}</span>
-                     <Badge 
-                        variant={booking.status === 'completed' ? 'default' : getBadgeColor(booking.status || 'pending')}
-                        className={booking.status === 'completed' ? 'bg-green-600' : ''}
-                    >
-                      {booking.status?.replace("_", " ").toUpperCase()}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>
-                    Customer: {booking.user.username} | Phone:{" "}
-                    {booking.user.phone}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  <p>
-                    <strong>Address:</strong> {booking.userAddress}
-                  </p>
-                  <p>
-                    <strong>Scheduled:</strong>{" "}
-                    {booking.scheduledAt
-                      ? new Date(booking.scheduledAt).toLocaleString("en-IN")
-                      : "ASAP"}
-                  </p>
-                  {booking.isUrgent && <Badge variant="destructive">URGENT</Badge>}
-                  {booking.notes && (
-                    <p className="pt-2">
-                      <strong>Notes:</strong> {booking.notes}
-                    </p>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  <ProviderBookingActions
-                    booking={booking}
-                    mutations={mutations}
-                  />
-                </CardFooter>
-              </Card>
-            ))}
-        </div>
+      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <h3 className="text-xl font-semibold">{emptyMessage}</h3>
+        <p className="text-muted-foreground mt-2">
+          This tab will update automatically.
+        </p>
+      </div>
     )
+  }
+
+  return (
+    <div className="space-y-4">
+      {bookings.map((booking) => (
+        <Card key={booking.id} className="shadow-md">
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>Booking ID: ...{booking.id.slice(-6)}</span>
+              <Badge
+                variant={booking.status === 'completed' ? 'default' : getBadgeColor(booking.status || 'pending')}
+                className={booking.status === 'completed' ? 'bg-green-600' : ''}
+              >
+                {booking.status?.replace("_", " ").toUpperCase()}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Customer: {booking.user.username} | Phone:{" "}
+              {booking.user.phone}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <p>
+              <strong>Address:</strong> {booking.userAddress}
+            </p>
+            <p>
+              <strong>Scheduled:</strong>{" "}
+              {booking.scheduledAt
+                ? new Date(booking.scheduledAt).toLocaleString("en-IN")
+                : "ASAP"}
+            </p>
+            {booking.isUrgent && <Badge variant="destructive">URGENT</Badge>}
+            {booking.notes && (
+              <p className="pt-2">
+                <strong>Notes:</strong> {booking.notes}
+              </p>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <ProviderBookingActions
+              booking={booking}
+              mutations={mutations}
+            />
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  )
 }
 
 // --- NAYA HELPER COMPONENT: BOOKING ACTIONS (SAARA LOGIC YAHAN HAI) ---
@@ -648,17 +648,17 @@ const ProviderBookingActions: React.FC<{
   if (booking.status === "pending") {
     return (
       <>
-        <Button 
-            variant="destructive" 
-            onClick={handleDecline}
-            disabled={updateBookingStatusMutation.isPending}
+        <Button
+          variant="destructive"
+          onClick={handleDecline}
+          disabled={updateBookingStatusMutation.isPending}
         >
           <X className="mr-2 h-4 w-4" /> Decline
         </Button>
-        <Button 
-            onClick={handleAccept} 
-            className="bg-green-600 hover:bg-green-700"
-            disabled={updateBookingStatusMutation.isPending}
+        <Button
+          onClick={handleAccept}
+          className="bg-green-600 hover:bg-green-700"
+          disabled={updateBookingStatusMutation.isPending}
         >
           <Check className="mr-2 h-4 w-4" /> Accept
         </Button>
@@ -668,11 +668,11 @@ const ProviderBookingActions: React.FC<{
 
   if (booking.status === "accepted") {
     return (
-      <Button 
-        onClick={handleStartJob} 
+      <Button
+        onClick={handleStartJob}
         className="bg-blue-600 hover:bg-blue-700"
         disabled={updateBookingStatusMutation.isPending}
-    >
+      >
         <Play className="mr-2 h-4 w-4" /> Start Job
       </Button>
     );
@@ -680,12 +680,12 @@ const ProviderBookingActions: React.FC<{
 
   if (booking.status === "in_progress") {
     return (
-      <Button 
-        onClick={handleJobDone} 
+      <Button
+        onClick={handleJobDone}
         className="bg-green-600 hover:bg-green-700"
         disabled={generateOtpMutation.isPending}
-    >
-        {generateOtpMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ClipboardCheck className="mr-2 h-4 w-4" />}
+      >
+        {generateOtpMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
         Job Done (Get OTP)
       </Button>
     );
@@ -730,6 +730,23 @@ const ProviderBookingActions: React.FC<{
               Verify
             </Button>
           </DialogFooter>
+          <div className="flex justify-center pb-4">
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => generateOtpMutation.mutate(booking.id)}
+              disabled={generateOtpMutation.isPending}
+              className="text-muted-foreground"
+            >
+              {generateOtpMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Sending...
+                </>
+              ) : (
+                "Resend OTP"
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -756,10 +773,10 @@ const ProviderBookingActions: React.FC<{
 
   if (booking.status === "pending_payment") {
     return (
-       <Badge variant="secondary" className="p-2 text-base">
-         <DollarSign className="mr-2 h-4 w-4" />
-         Waiting for Customer Payment
-       </Badge>
+      <Badge variant="secondary" className="p-2 text-base">
+        <DollarSign className="mr-2 h-4 w-4" />
+        Waiting for Customer Payment
+      </Badge>
     )
   }
 
@@ -791,8 +808,8 @@ const CreateBillDialog: React.FC<{
   });
 
   const { fields, append, remove } = useFieldArray({
-      control: form.control,
-      name: "spareParts"
+    control: form.control,
+    name: "spareParts"
   });
 
   const watchSpareParts = form.watch("spareParts");
@@ -843,7 +860,7 @@ const CreateBillDialog: React.FC<{
                           <FormControl>
                             <Input placeholder="Part Name" {...field} />
                           </FormControl>
-                           <FormMessage />
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -859,7 +876,7 @@ const CreateBillDialog: React.FC<{
                               {...field}
                             />
                           </FormControl>
-                           <FormMessage />
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -891,7 +908,7 @@ const CreateBillDialog: React.FC<{
 
             <DialogFooter>
               <DialogClose asChild>
-                 <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
+                <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
               </DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -1242,9 +1259,9 @@ const ProviderDashboard: React.FC = () => {
   }
 
   if (user.role !== "provider") {
-     return (
+    return (
       <div className="container mx-auto py-10 text-center text-muted-foreground">
-         <AlertTriangle className="mx-auto h-12 w-12 text-destructive" />
+        <AlertTriangle className="mx-auto h-12 w-12 text-destructive" />
         <h2 className="text-2xl font-semibold text-foreground mt-4">Access Denied</h2>
         <p className="mt-2">You must be a provider to view this page.</p>
         <Button asChild className="mt-4">
@@ -1274,7 +1291,7 @@ const ProviderDashboard: React.FC = () => {
 
   const providerType = () => {
     if (!providerProfile || !providerProfile.category) {
-        return 'unknown';
+      return 'unknown';
     }
     const slug = providerProfile.category.slug;
     if (menuBasedCategories.includes(slug)) return "menu";

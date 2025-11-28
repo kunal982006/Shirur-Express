@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { 
-  ArrowLeft, 
-  FileText, 
-  DollarSign, 
-  Loader2, 
+import {
+  ArrowLeft,
+  FileText,
+  DollarSign,
+  Loader2,
   CheckCircle,
-  AlertCircle 
+  AlertCircle
 } from "lucide-react";
 
 const loadRazorpayScript = () => {
@@ -67,7 +67,7 @@ export default function InvoicePayment() {
 
   const createPaymentOrderMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/create-payment-order`);
+      const response = await apiRequest("POST", "/api/pay/create-order", { invoiceId });
       return response.json();
     },
   });
@@ -78,7 +78,7 @@ export default function InvoicePayment() {
       razorpay_order_id: string;
       razorpay_signature: string;
     }) => {
-      const response = await apiRequest("POST", `/api/invoices/verify-payment`, {
+      const response = await apiRequest("POST", "/api/pay/verify", {
         invoiceId,
         ...paymentData,
       });
@@ -108,20 +108,20 @@ export default function InvoicePayment() {
 
     const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded) {
-      toast({ 
-        title: "Error", 
-        description: "Payment gateway failed to load. Please try again.", 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: "Payment gateway failed to load. Please try again.",
+        variant: "destructive"
       });
       setIsProcessing(false);
       return;
     }
 
     if (!user || !invoice) {
-      toast({ 
-        title: "Error", 
-        description: "Unable to process payment. Please try again.", 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: "Unable to process payment. Please try again.",
+        variant: "destructive"
       });
       setIsProcessing(false);
       return;
@@ -134,7 +134,7 @@ export default function InvoicePayment() {
         key: rzpOrder.razorpayKeyId,
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
-        name: "ServiceHub",
+        name: "Shirur Express", // Updated name
         description: `Invoice Payment - ${invoiceId.slice(-8)}`,
         order_id: rzpOrder.razorpayOrderId,
         handler: async (response: any) => {
@@ -162,10 +162,10 @@ export default function InvoicePayment() {
         },
         modal: {
           ondismiss: () => {
-            toast({ 
-              title: "Payment Cancelled", 
-              description: "You cancelled the payment.", 
-              variant: "destructive" 
+            toast({
+              title: "Payment Cancelled",
+              description: "You cancelled the payment.",
+              variant: "destructive"
             });
             setIsProcessing(false);
           },
@@ -176,9 +176,10 @@ export default function InvoicePayment() {
       paymentObject.open();
 
     } catch (error: any) {
+      console.error("Payment initiation error:", error); // Added logging
       toast({
         title: "Payment Failed",
-        description: error.response?.data?.message || "Could not initiate payment. Please try again.",
+        description: error.message || "Could not initiate payment. Please try again.", // Improved error message
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -269,7 +270,7 @@ export default function InvoicePayment() {
               <span className="text-sm text-muted-foreground">Invoice ID</span>
               <span className="font-mono text-sm">...{invoiceId.slice(-8)}</span>
             </div>
-            
+
             <Separator />
 
             <div className="flex justify-between items-center">
