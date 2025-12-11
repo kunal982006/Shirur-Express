@@ -54,7 +54,7 @@ export default function InvoicePayment() {
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const invoiceId = params?.id;
+  const invoiceId = params?.id || "";
 
   const { data: invoice, isLoading } = useQuery<Invoice>({
     queryKey: ["/api/invoices", invoiceId],
@@ -67,7 +67,7 @@ export default function InvoicePayment() {
 
   const createPaymentOrderMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/pay/create-order", { invoiceId });
+      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/create-payment-order`);
       return response.json();
     },
   });
@@ -78,8 +78,8 @@ export default function InvoicePayment() {
       razorpay_order_id: string;
       razorpay_signature: string;
     }) => {
-      const response = await apiRequest("POST", "/api/pay/verify", {
-        invoiceId,
+      const response = await apiRequest("POST", "/api/invoices/verify-payment", {
+        invoice_id: invoiceId,
         ...paymentData,
       });
       return response.json();
@@ -275,7 +275,7 @@ export default function InvoicePayment() {
 
             <div className="flex justify-between items-center">
               <span>Service Charge</span>
-              <span className="font-semibold">₹{invoice.serviceCharge.toFixed(2)}</span>
+              <span className="font-semibold">₹{Number(invoice.serviceCharge).toFixed(2)}</span>
             </div>
 
             {spareParts.length > 0 && (
@@ -299,7 +299,7 @@ export default function InvoicePayment() {
 
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total Amount</span>
-              <span className="text-primary">₹{invoice.totalAmount.toFixed(2)}</span>
+              <span className="text-primary">₹{Number(invoice.totalAmount).toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function InvoicePayment() {
                 ) : (
                   <>
                     <DollarSign className="mr-2 h-5 w-5" />
-                    Pay Securely - ₹{invoice.totalAmount.toFixed(2)}
+                    Pay Securely - ₹{Number(invoice.totalAmount).toFixed(2)}
                   </>
                 )}
               </Button>

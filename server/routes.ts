@@ -9,14 +9,19 @@ import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
   insertRentalPropertySchema,
-  insertTableBookingSchema,
+  insertStreetFoodOrderSchema, // NAYA IMPORT
   insertServiceProviderSchema,
   insertInvoiceSchema, // NAYA IMPORT
   type InsertInvoice,
+  insertServiceOfferingSchema, // NAYA IMPORT
+  serviceProviders, // NAYA IMPORT
+  insertRestaurantOrderSchema, // NAYA IMPORT
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -72,6 +77,27 @@ const isProvider = async (req: CustomRequest, res: Response, next: NextFunction)
 export async function registerRoutes(app: Express): Promise<Server> {
 
   // --- AUTHENTICATION ROUTES (No Change) ---
+
+  console.log("Registering Street Food Routes..."); // DEBUG LOG
+  app.post("/api/street-food-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      // Validate body
+      const orderData = insertStreetFoodOrderSchema.parse(req.body);
+
+      // Assign a static runner ID for MVP (e.g., "runner-1")
+      const orderWithRunner = { ...orderData, runnerId: "runner-1" };
+
+      const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
+      console.log("Created Street Food Order:", order); // DEBUG LOG
+      res.status(201).json(order);
+    } catch (error: any) {
+      // FIXED: Safe error logging to prevent crash
+      console.error("Create street food order error:", error instanceof Error ? error.message : String(error));
+      res.status(400).json({ message: error.message || "Error creating order" });
+    }
+  });
+
   app.post("/api/auth/signup", async (req: Request, res: Response) => {
     try {
       const { username, email, password, role, phone } = req.body;
@@ -199,6 +225,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!fullProfile) {
         return res.status(404).json({ message: "Could not retrieve full provider profile." });
       }
+      // Ensure category is included if not already (though storage.ts should handle it)
+      // If storage.ts update is preferred, I will do that instead.
+      // But let's stick to the user's specific instruction if possible, but here it's a function call.
+      // I will update storage.ts as it is the underlying implementation.
       res.json(fullProfile);
     } catch (error: any) {
       console.error("Get provider profile error:", error);
@@ -246,6 +276,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
+
+
+  app.post("/api/upload", upload.array("images", 5), async (req: Request, res: Response) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      const uploadPromises = files.map(file => uploadToCloudinary(file.buffer));
+      const urls = await Promise.all(uploadPromises);
+
+      res.json({ urls });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: error.message || "Upload failed" });
+    }
+  });
 
   app.post(
     "/api/provider/profile/gallery",
@@ -312,6 +360,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // NAYA: Service Templates Route
+  app.get("/api/service-templates/:categorySlug", async (req: Request, res: Response) => {
+    try {
+      const { categorySlug } = req.params;
+      const templates = await storage.getServiceTemplates(categorySlug);
+      res.json(templates);
+    } catch (error: any) {
+      console.error("Get service templates error:", error);
+      res.status(500).json({ message: error.message || "Error fetching service templates" });
+    }
+  });
+
+  // NAYA: Bulk Update Beauty Services
+  app.post("/api/provider/beauty-services/bulk", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      // 1. Safe Provider ID Extraction
+      if (!req.provider || !req.provider.id) {
+        console.error("Bulk update failed: Provider not found in request");
+        return res.status(401).json({ message: "Unauthorized: Provider not found" });
+      }
+      const providerId = req.provider.id;
+
+      // 2. Request Body Validation
+      const { services } = req.body;
+      if (!services || !Array.isArray(services)) {
+        console.error("Bulk update failed: 'services' is not an array");
+        return res.status(400).json({ message: "Invalid request: 'services' must be an array" });
+      }
+
+      // 3. Validate each service item safely
+      const validatedServices = [];
+      for (const s of services) {
+        try {
+          // Ensure providerId is set correctly in the payload
+          const serviceWithProvider = { ...s, providerId };
+          validatedServices.push(insertServiceOfferingSchema.parse(serviceWithProvider));
+        } catch (validationError: any) {
+          console.error("Validation failed for service item:", s, validationError.message);
+          // Option: Skip invalid items or fail entire request. Here we fail to be safe.
+          return res.status(400).json({ message: `Invalid service data: ${validationError.message}` });
+        }
+      }
+
+      // 4. Perform Update
+      const updatedServices = await storage.bulkUpdateServiceOfferings(providerId, validatedServices);
+      res.json(updatedServices);
+
+    } catch (error: any) {
+      // 5. Improved Error Handling
+      console.error("Bulk update failed:", error.message); // Log only message to avoid crash
+      res.status(500).json({ message: "Internal Server Error during bulk update" });
+    }
+  });
+
   app.get("/api/service-problems", async (req: Request, res: Response) => {
     try {
       const { category: categorySlug, parentId } = req.query;
@@ -349,11 +451,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/service-providers/:id", async (req: Request, res: Response) => {
     try {
-      const provider = await storage.getServiceProvider(req.params.id);
+      const provider = await db.query.serviceProviders.findFirst({
+        where: eq(serviceProviders.id, req.params.id),
+        with: {
+          beautyServices: { with: { template: true } },
+          user: true,
+          category: true,
+        }
+      });
+
       if (!provider) {
         return res.status(404).json({ message: "Provider not found" });
       }
-      res.json(provider);
+
+      // Handle case where beautyServices might be undefined/null
+      const response = {
+        ...provider,
+        beautyServices: provider.beautyServices || []
+      };
+
+      res.json(response);
     } catch (error: any) {
       console.error("Get service provider by ID error:", error);
       res.status(500).json({ message: error.message || "Error fetching service provider" });
@@ -682,12 +799,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updatedInvoice = await storage.verifyInvoicePayment(
           invoice_id,
           razorpay_payment_id,
-          razorpay_order_id,
-          razorpay_signature
+          razorpay_order_id
         );
-        res.json({ status: "success", message: "Payment verified successfully!", invoice: updatedInvoice });
+        res.json({ status: "success", invoice: updatedInvoice });
       } else {
-        res.status(400).json({ status: "failure", message: "Invalid payment signature" });
+        res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
     } catch (error: any) {
       console.error("Verify invoice payment error:", error);
@@ -695,248 +811,228 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // --- NEW RAZORPAY ENDPOINTS (MIGRATION) ---
-
-  // Create Order
-  app.post("/api/pay/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
+  // --- PAYMENT VERIFICATION ROUTE (GENERIC) ---
+  app.post("/api/payment/verify-signature", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
-      const userId = req.userId!;
-      const { invoiceId } = req.body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, database_order_id, orderType } = req.body;
 
-      if (!invoiceId) {
-        return res.status(400).json({ message: "Invoice ID is required" });
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !database_order_id) {
+        return res.status(400).json({ message: "Missing payment details" });
       }
 
-      const { razorpayOrderId, amount, currency, invoice } = await storage.createPaymentOrderForInvoice(invoiceId, userId);
+      const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+
+      if (isValid) {
+        // Update order status in DB
+        let updatedOrder;
+        if (orderType === 'street_food') {
+          updatedOrder = await storage.updateStreetFoodOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
+        } else if (orderType === 'restaurant') {
+          updatedOrder = await storage.updateRestaurantOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
+        } else {
+          updatedOrder = await storage.updateGroceryOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
+        }
+
+        res.json({ status: "success", order: updatedOrder });
+      } else {
+        res.status(400).json({ status: "failure", message: "Invalid signature" });
+      }
+
+    } catch (error: any) {
+      console.error("Payment verification error:", error);
+      res.status(500).json({ message: error.message || "Error verifying payment" });
+    }
+  });
+
+  // --- PAYMENT ORDER CREATION ROUTE (GENERIC) ---
+  app.post("/api/payment/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, orderType } = req.body; // database order id
+
+      let amount = 0;
+      let currency = "INR";
+      let dbOrder;
+
+      if (orderType === 'street_food') {
+        dbOrder = await storage.getStreetFoodOrder(orderId);
+      } else if (orderType === 'restaurant') {
+        dbOrder = await storage.getRestaurantOrder(orderId);
+      } else {
+        dbOrder = await storage.getGroceryOrder(orderId);
+      }
+
+      if (!dbOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Amount must be in paise
+      if (orderType === 'street_food' || orderType === 'restaurant') {
+        amount = Math.round(parseFloat(dbOrder.totalAmount) * 100);
+      } else {
+        amount = Math.round(parseFloat((dbOrder as any).total) * 100);
+      }
+
+
+      const options = {
+        amount: amount,
+        currency: currency,
+        receipt: orderId,
+      };
+
+      const order = await razorpayInstance.orders.create(options);
+
+      // Save razorpay order id to db
+      if (orderType === 'street_food') {
+        await storage.updateStreetFoodOrderRazorpayId(orderId, order.id);
+      } else if (orderType === 'restaurant') {
+        await storage.updateRestaurantOrderRazorpayId(orderId, order.id);
+      } else {
+        await storage.updateGroceryOrderRazorpayId(orderId, order.id);
+      }
 
       res.json({
         razorpayKeyId: process.env.RAZORPAY_KEY_ID,
-        razorpayOrderId,
-        amount,
-        currency,
-        invoice,
+        razorpayOrderId: order.id,
+        amount: amount,
+        currency: currency,
       });
+
     } catch (error: any) {
       console.error("Create payment order error:", error);
       res.status(500).json({ message: error.message || "Error creating payment order" });
     }
   });
 
-  // Verify Payment
-  app.post("/api/pay/verify", isLoggedIn, async (req: AuthRequest, res: Response) => {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, invoiceId } = req.body;
+  // --- RESTAURANT ORDERS ROUTES ---
 
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !invoiceId) {
-        return res.status(400).json({ message: "Missing payment details for verification" });
-      }
-
-      const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-
-      if (isValid) {
-        const updatedInvoice = await storage.verifyInvoicePayment(
-          invoiceId,
-          razorpay_payment_id,
-          razorpay_order_id,
-          razorpay_signature
-        );
-        res.json({ status: "success", message: "Payment verified successfully!", invoice: updatedInvoice });
-      } else {
-        res.status(400).json({ status: "failure", message: "Invalid payment signature" });
-      }
-    } catch (error: any) {
-      console.error("Verify payment error:", error);
-      res.status(500).json({ message: error.message || "Error verifying payment" });
-    }
-  });
-
-
-  // --- BAAKI ROUTES (Grocery, Restaurant, etc.) ---
-
-  app.post("/api/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+  app.post("/api/restaurant/orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const orderData = insertGroceryOrderSchema.parse(req.body);
-      const order = await storage.createGroceryOrder({ ...orderData, userId });
+      const orderData = insertRestaurantOrderSchema.parse(req.body);
+
+      // Assign a static rider ID for MVP (e.g., "rider-1") if needed, or leave null
+      // For now, let's leave riderId as null until a rider accepts it (if that's the flow)
+      // Or if we want to auto-assign, we can do it here.
+      // Let's keep it simple: created with status 'pending', no rider yet.
+
+      const order = await storage.createRestaurantOrder({ ...orderData, userId });
+      console.log("Created Restaurant Order:", order);
       res.status(201).json(order);
     } catch (error: any) {
-      console.error("Create grocery order error:", error);
-      res.status(400).json({ message: error.message || "Error creating grocery order" });
+      console.error("Create restaurant order error:", error);
+      res.status(400).json({ message: error.message || "Error creating restaurant order" });
     }
   });
 
-  // (Grocery Payment)
-  app.post("/api/payment/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.userId!;
-      const { orderId } = req.body;
-      if (!orderId) {
-        return res.status(400).json({ message: "Order ID is required" });
-      }
-      const order = await storage.getGroceryOrder(orderId);
-      if (!order || order.userId !== userId) {
-        return res.status(404).json({ message: "Order not found or does not belong to user" });
-      }
-      if (order.status !== 'pending') {
-        return res.status(400).json({ message: "This order has already been processed." });
-      }
-      const amountInPaise = Math.round(parseFloat(order.total) * 100);
-      const options = {
-        amount: amountInPaise,
-        currency: "INR",
-        receipt: order.id,
-        notes: {
-          databaseOrderId: order.id,
-          userId: userId,
-        }
-      };
-      const razorpayOrder = await razorpayInstance.orders.create(options);
-      await storage.updateOrderWithRazorpayOrderId(order.id, razorpayOrder.id);
-      res.json({
-        razorpayKeyId: process.env.RAZORPAY_KEY_ID,
-        razorpayOrderId: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-      });
-    } catch (error: any) {
-      console.error("Create Razorpay order error:", error);
-      res.status(500).json({ message: error.message || "Error creating Razorpay order" });
-    }
-  });
-
-  // (Grocery Payment Verify)
-  app.post("/api/payment/verify-signature", async (req: Request, res: Response) => {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, database_order_id } = req.body;
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !database_order_id) {
-        return res.status(400).json({ message: "Missing payment details for verification" });
-      }
-      const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-      if (isValid) {
-        await storage.verifyAndUpdateOrderPayment(
-          database_order_id,
-          razorpay_payment_id,
-          razorpay_signature
-        );
-        res.json({ status: "success", message: "Payment verified successfully", orderId: database_order_id });
-      } else {
-        res.status(400).json({ status: "failure", message: "Invalid payment signature" });
-      }
-    } catch (error: any) {
-      console.error("Verify payment error:", error);
-      res.status(500).json({ message: error.message || "Error verifying payment" });
-    }
-  });
-
-  app.post("/api/table-bookings", isLoggedIn, async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.userId!;
-      const validatedData = insertTableBookingSchema.parse(req.body);
-      const booking = await storage.createTableBooking({
-        ...validatedData,
-        userId,
-        providerId: req.body.providerId,
-      });
-      res.status(201).json(booking);
-    } catch (error: any) {
-      console.error("Create table booking error:", error);
-      res.status(400).json({ message: error.message || "Error creating table booking" });
-    }
-  });
-
-  app.get("/api/street-food-items", async (req: Request, res: Response) => {
-    try {
-      const { search, providerId } = req.query;
-      const items = await storage.getStreetFoodItems(providerId as string, search as string);
-      res.json(items);
-    } catch (error: any) {
-      console.error("Get street food items error:", error);
-      res.status(500).json({ message: error.message || "Error fetching street food items" });
-    }
-  });
-
-  app.get("/api/restaurant-menu-items", async (req: Request, res: Response) => {
-    try {
-      const items = await storage.getRestaurantMenuItems();
-      res.json(items);
-    } catch (error: any) {
-      console.error("Get restaurant menu items error:", error);
-      res.status(500).json({ message: error.message || "Error fetching restaurant menu items" });
-    }
-  });
-
-  app.get("/api/grocery-products", async (req: Request, res: Response) => {
-    try {
-      const { providerId, search } = req.query;
-      if (!providerId) {
-        return res.status(400).json({ message: "Provider ID is required" });
-      }
-      const products = await storage.getGroceryProducts(providerId as string, search as string);
-      res.json(products);
-    } catch (error: any) {
-      console.error("Get grocery products error:", error);
-      res.status(500).json({ message: error.message || "Error fetching grocery products" });
-    }
-  });
-
-  // --- MENU MANAGEMENT ROUTES (No Change) ---
-  app.post("/api/provider/menu-items/:categorySlug", isProvider, async (req: CustomRequest, res: Response) => {
+  // Get Live Orders for Restaurant
+  app.get("/api/restaurant/orders/live", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;
-      const categorySlug = req.params.categorySlug;
-      const itemData = req.body;
-      const newItem = await storage.createMenuItem(itemData, providerId, categorySlug);
-      res.status(201).json(newItem);
+      const orders = await storage.getRestaurantOrders(providerId);
+      res.json(orders);
     } catch (error: any) {
-      console.error(`Error creating menu item in ${req.params.categorySlug}:`, error);
-      res.status(400).json({ message: error.message || "Error creating menu item" });
+      console.error("Get restaurant orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
     }
   });
 
-  app.get("/api/provider/menu-items/:categorySlug", isProvider, async (req: CustomRequest, res: Response) => {
+  // Update Order Status
+  app.patch("/api/restaurant/orders/:id/status", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;
-      const categorySlug = req.params.categorySlug;
-      const items = await storage.getProviderMenuItems(providerId, categorySlug);
+      const { id } = req.params;
+      const { status } = req.body;
+
+      // Verify order belongs to provider
+      const order = await storage.getRestaurantOrder(id);
+      if (!order || order.providerId !== providerId) {
+        return res.status(404).json({ message: "Order not found or access denied" });
+      }
+
+      const updatedOrder = await storage.updateRestaurantOrderStatus(id, status);
+      res.json(updatedOrder);
+    } catch (error: any) {
+      console.error("Update order status error:", error);
+      res.status(500).json({ message: error.message || "Error updating order status" });
+    }
+  });
+
+  // --- MENU MANAGEMENT ROUTES (GENERIC) ---
+
+  // Get Menu Items
+  app.get("/api/provider/menu-items/:categorySlug", async (req: Request, res: Response) => {
+    try {
+      const { categorySlug } = req.params;
+      // Provider ID is not in params, so we might need to fetch it based on logged in user
+      // But wait, the frontend calls this without provider ID?
+      // Ah, the frontend uses `useQuery` with `providerCategorySlug`.
+      // But to fetch *my* items, I need to know *my* provider ID.
+      // Let's check if the user is logged in.
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const provider = await storage.getProviderByUserId(req.session.userId);
+      if (!provider) {
+        return res.status(404).json({ message: "Provider profile not found" });
+      }
+
+      const items = await storage.getProviderMenuItems(provider.id, categorySlug);
       res.json(items);
     } catch (error: any) {
-      console.error(`Error fetching menu items from ${req.params.categorySlug}:`, error);
+      console.error("Get menu items error:", error);
       res.status(500).json({ message: error.message || "Error fetching menu items" });
     }
   });
 
-  app.patch("/api/provider/menu-items/:categorySlug/:itemId", isProvider, async (req: CustomRequest, res: Response) => {
+  // Create Menu Item
+  app.post("/api/provider/menu-items/:categorySlug", isProvider, async (req: CustomRequest, res: Response) => {
     try {
-      const { categorySlug, itemId } = req.params;
       const providerId = req.provider!.id;
-      const updates = req.body;
-      const updatedItem = await storage.updateMenuItem(itemId, providerId, categorySlug, updates);
-      if (!updatedItem) {
-        return res.status(404).json({ message: "Item not found or you don't have permission." });
-      }
-      res.json(updatedItem);
+      const { categorySlug } = req.params;
+      const itemData = req.body;
+
+      const newItem = await storage.createMenuItem(itemData, providerId, categorySlug);
+      res.status(201).json(newItem);
     } catch (error: any) {
-      console.error(`Error updating menu item in ${req.params.categorySlug}:`, error);
-      res.status(400).json({ message: error.message || "Error updating menu item" });
+      console.error("Create menu item error:", error);
+      res.status(400).json({ message: error.message || "Error creating menu item" });
     }
   });
 
+  // Update Menu Item
+  app.patch("/api/provider/menu-items/:categorySlug/:itemId", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { categorySlug, itemId } = req.params;
+      const updates = req.body;
+
+      const updatedItem = await storage.updateMenuItem(itemId, providerId, categorySlug, updates);
+      if (!updatedItem) {
+        return res.status(404).json({ message: "Item not found or access denied" });
+      }
+      res.json(updatedItem);
+    } catch (error: any) {
+      console.error("Update menu item error:", error);
+      res.status(500).json({ message: error.message || "Error updating menu item" });
+    }
+  });
+
+  // Delete Menu Item
   app.delete("/api/provider/menu-items/:categorySlug/:itemId", isProvider, async (req: CustomRequest, res: Response) => {
     try {
-      const { categorySlug, itemId } = req.params;
       const providerId = req.provider!.id;
-      const deletedItem = await storage.deleteMenuItem(itemId, providerId, categorySlug);
-      if (!deletedItem) {
-        return res.status(404).json({ message: "Item not found or you don't have permission." });
+      const { categorySlug, itemId } = req.params;
+
+      const deleted = await storage.deleteMenuItem(itemId, providerId, categorySlug);
+      if (!deleted) {
+        return res.status(404).json({ message: "Item not found or access denied" });
       }
-      res.json({ message: "Item deleted successfully", id: deletedItem.id });
+      res.json({ message: "Item deleted successfully" });
     } catch (error: any) {
-      console.error(`Error deleting menu item in ${req.params.categorySlug}:`, error);
+      console.error("Delete menu item error:", error);
       res.status(500).json({ message: error.message || "Error deleting menu item" });
     }
   });
 
-  // --- Fallback Routes & Server Creation ---
-  const httpServer = createServer(app);
-  return httpServer;
+  return app;
 }

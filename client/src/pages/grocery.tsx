@@ -49,7 +49,7 @@ const fetchGmartProvider = async (): Promise<GMartProvider | undefined> => {
   }
   const providers: GMartProvider[] = await res.json();
   // Hum assume kar rahe hain ki GMart ka ek hi official provider hai
-  return providers[0]; 
+  return providers[0];
 };
 
 // API function grocery products fetch karne ke liye (ab providerId lega)
@@ -134,6 +134,7 @@ export default function Grocery() {
         price: parseFloat(product.price),
         imageUrl: product.imageUrl || undefined,
         quantity: 1, // Store 'quantity' 1 se start karega
+        providerId: product.providerId, // Pass providerId
       });
       toast({
         title: "✅ Added to Cart!",
@@ -144,9 +145,9 @@ export default function Grocery() {
 
   // Filtered products (client-side category filter)
   const filteredProducts = products
-    ? products.filter(product => 
-        selectedCategory ? product.category === selectedCategory : true
-      )
+    ? products.filter(product =>
+      selectedCategory ? product.category === selectedCategory : true
+    )
     : [];
 
   const isLoading = isLoadingProvider || isLoadingProducts;
@@ -191,16 +192,14 @@ export default function Grocery() {
                   className="flex-shrink-0 flex flex-col items-center p-3 h-auto"
                   onClick={() => handleCategorySelect(category.slug)}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                    selectedCategory === category.slug
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${selectedCategory === category.slug
                       ? "bg-primary-foreground"
                       : "bg-secondary/10"
-                  }`}>
-                    <category.icon className={`h-6 w-6 ${
-                      selectedCategory === category.slug
+                    }`}>
+                    <category.icon className={`h-6 w-6 ${selectedCategory === category.slug
                         ? "text-primary"
                         : "text-secondary"
-                    }`} />
+                      }`} />
                   </div>
                   <span className="text-xs font-medium">{category.name}</span>
                 </Button>

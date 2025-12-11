@@ -2,7 +2,7 @@
 
 import { db } from "./db";
 import bcrypt from "bcrypt";
-import { 
+import {
   users, serviceCategories, serviceProviders, serviceProblems,
   streetFoodItems, restaurantMenuItems, groceryProducts
 } from "@shared/schema";
@@ -273,113 +273,10 @@ async function seed() {
     }
 
     // (Street food vendors... code yahaan hai)
-    if (streetFoodCat && sampleUsers.length >= 11) {
-      const streetFoodVendors = await db.insert(serviceProviders).values([
-        {
-          userId: sampleUsers[9].id,
-          categoryId: streetFoodCat.id,
-          businessName: "Chacha's Chaat Corner",
-          description: "Famous for Pani Puri, Bhel Puri, and Papdi Chaat. 25 years of authentic street food experience.",
-          experience: 25,
-          address: "Chandni Chowk, Delhi",
-          latitude: "28.6507",
-          longitude: "77.2334",
-          rating: "4.9",
-          reviewCount: 567,
-          serviceArea: 5,
-          isVerified: true,
-          isAvailable: true,
-          specializations: ["Pani Puri", "Bhel Puri", "Chaat", "Papdi"],
-        },
-        {
-          userId: sampleUsers[10].id,
-          categoryId: streetFoodCat.id,
-          businessName: "Momos King",
-          description: "Steamed and fried momos with special sauces. Fresh made daily with hygiene standards.",
-          experience: 6,
-          address: "Nehru Place, Delhi",
-          latitude: "28.5494",
-          longitude: "77.2501",
-          rating: "4.6",
-          reviewCount: 345,
-          serviceArea: 5,
-          isVerified: true,
-          isAvailable: true,
-          specializations: ["Momos", "Spring Rolls", "Fried Snacks"],
-        },
-      ]).onConflictDoNothing().returning();
-      providers.push(...streetFoodVendors);
-      console.log(`✅ Created ${streetFoodVendors.length} street food vendors`);
-
-      // Add street food items
-      if (streetFoodVendors.length > 0) {
-        const streetFoodMenuItems = await db.insert(streetFoodItems).values([
-          // ... (street food items ka code yahaan hai) ...
-          {
-            providerId: streetFoodVendors[0].id,
-            name: "Pani Puri",
-            description: "Crispy puris with tangy tamarind water and potato filling",
-            category: "Chaat",
-            price: "40",
-            isVeg: true,
-            isAvailable: true,
-            spicyLevel: "Medium",
-          },
-          {
-            providerId: streetFoodVendors[0].id,
-            name: "Bhel Puri",
-            description: "Puffed rice mixed with vegetables and chutneys",
-            category: "Chaat",
-            price: "50",
-            isVeg: true,
-            isAvailable: true,
-            spicyLevel: "Mild",
-          },
-          {
-            providerId: streetFoodVendors[0].id,
-            name: "Papdi Chaat",
-            description: "Crispy wafers topped with yogurt, chutneys, and sev",
-            category: "Chaat",
-            price: "60",
-            isVeg: true,
-            isAvailable: true,
-            spicyLevel: "Medium",
-          },
-          {
-            providerId: streetFoodVendors[1].id,
-            name: "Veg Steamed Momos",
-            description: "Steamed dumplings with mixed vegetable filling",
-            category: "Momos",
-            price: "80",
-            isVeg: true,
-            isAvailable: true,
-            spicyLevel: "Mild",
-          },
-          {
-            providerId: streetFoodVendors[1].id,
-            name: "Chicken Fried Momos",
-            description: "Crispy fried momos with chicken filling",
-            category: "Momos",
-            price: "120",
-            isVeg: false,
-            isAvailable: true,
-            spicyLevel: "Medium",
-          },
-          {
-            providerId: streetFoodVendors[1].id,
-            name: "Paneer Momos",
-            description: "Steamed momos with spicy paneer filling",
-            category: "Momos",
-            price: "100",
-            isVeg: true,
-            isAvailable: true,
-            spicyLevel: "Hot",
-          },
-        ]).onConflictDoNothing().returning();
-
-        console.log(`✅ Created ${streetFoodMenuItems.length} street food items`);
-      }
-    }
+    // (Street food vendors... REMOVED AS PER USER REQUEST)
+    // if (streetFoodCat && sampleUsers.length >= 11) {
+    //   // ... Removed fake vendors ...
+    // }
 
     // (Restaurant providers... code yahaan hai)
     if (restaurantCat && sampleUsers.length >= 13) {
@@ -519,11 +416,11 @@ async function seed() {
       } else {
         // Agar provider pehle se tha, toh usko fetch kar lo
         const existingProvider = await db.query.serviceProviders.findFirst({
-            where: (sp, { eq }) => eq(sp.userId, sampleUsers[13].id)
+          where: (sp, { eq }) => eq(sp.userId, sampleUsers[13].id)
         });
         if (existingProvider) {
-            gmartProviderId = existingProvider.id;
-            console.log(`✅ Found existing GMart provider`);
+          gmartProviderId = existingProvider.id;
+          console.log(`✅ Found existing GMart provider`);
         }
       }
     }

@@ -13,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, UtensilsCrossed, Star, MapPin, Phone, Clock, Calendar, Users, Leaf, Loader2 } from "lucide-react";
+import { ArrowLeft, UtensilsCrossed, Star, MapPin, Phone, Clock, Calendar, Users, Leaf, Loader2, ShoppingCart, Plus, Minus, X } from "lucide-react";
+import { useCartStore } from "@/hooks/use-cart-store";
+import { useLocation } from "wouter";
 import type { ServiceProvider, User, ServiceCategory, RestaurantMenuItem } from "@shared/schema";
 
 // Type definitions
@@ -50,89 +52,51 @@ const timeSlots = [
 
 export default function Restaurants() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const { addItem, items, removeItem, updateQuantity } = useCartStore();
   const [selectedCuisine, setSelectedCuisine] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [vegOnly, setVegOnly] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantProvider | null>(null);
-  const [bookingOpen, setBookingOpen] = useState(false);
-
-  // Booking form state
-  const [bookingDate, setBookingDate] = useState("");
-  const [timeSlot, setTimeSlot] = useState("");
-  const [numberOfGuests, setNumberOfGuests] = useState("2");
-  const [specialRequests, setSpecialRequests] = useState("");
+  // Booking state removed
 
   // --- Restaurant query (FIXED) ---
   const { data: restaurants, isLoading: loadingRestaurants } = useQuery<RestaurantProvider[]>({
-    queryKey: ["restaurantsList", "restaurants"], 
-    queryFn: () => 
+    queryKey: ["restaurantsList", "restaurants"],
+    queryFn: () =>
       apiRequest("GET", "/api/service-providers?category=restaurants")
         .then(res => res.json()),
   });
 
   // --- Menu items query (FIXED) ---
   const { data: allMenuItems, isLoading: loadingMenu } = useQuery<RestaurantMenuItem[]>({
-    queryKey: ["allRestaurantMenuItems"], 
-    queryFn: () => 
-      apiRequest("GET", "/api/restaurant-menu-items") 
+    queryKey: ["allRestaurantMenuItems"],
+    queryFn: () =>
+      apiRequest("GET", "/api/restaurant-menu-items")
         .then(res => res.json()),
   });
 
-  const bookingMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", `/api/table-bookings`, data);
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Booking failed");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Booking Requested",
-        description: "Your table booking request has been sent to the restaurant.",
-      });
-      setBookingOpen(false);
-      resetBookingForm();
-      queryClient.invalidateQueries({ queryKey: ["userTableBookings"] }); 
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Booking Failed",
-        description: error.message || "Failed to create booking. Are you logged in?",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const resetBookingForm = () => {
-    setBookingDate("");
-    setTimeSlot("");
-    setNumberOfGuests("2");
-    setSpecialRequests("");
-  };
-
-  const handleBookTable = () => {
-    if (!bookingDate || !timeSlot) {
-      toast({
-        title: "Missing Information",
-        description: "Please select date and time slot",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    bookingMutation.mutate({
-      providerId: selectedRestaurant?.id,
-      date: new Date(bookingDate),
-      timeSlot,
-      numberOfGuests: parseInt(numberOfGuests),
-      specialRequests,
+  const handleAddToCart = (item: RestaurantMenuItem, restaurant: RestaurantProvider) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: parseFloat(item.price.toString()),
+      imageUrl: item.imageUrl || undefined,
+      providerId: restaurant.id,
+      itemType: 'restaurant',
+    });
+    toast({
+      title: "Added to Cart",
+      description: `${item.name} added to your cart.`,
     });
   };
 
+  const cartItemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
   // Filter menu items
   const filteredMenuItems = allMenuItems?.filter((item) => {
+    if (selectedRestaurant && item.providerId !== selectedRestaurant.id) return false;
+
     if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
 
     const restaurantForThisItem = restaurants?.find(r => r.id === item.providerId);
@@ -161,7 +125,7 @@ export default function Restaurants() {
             <h1 className="text-4xl md:text-5xl font-bold">Restaurants</h1>
           </div>
           <p className="text-lg md:text-xl opacity-90 max-w-3xl">
-            Book tables at your favorite restaurants and explore diverse cuisines
+            Order food from your favorite restaurants for fast delivery.
           </p>
         </div>
       </section>
@@ -266,81 +230,16 @@ export default function Restaurants() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Dialog open={bookingOpen && selectedRestaurant?.id === restaurant.id} onOpenChange={(open) => {
-                        setBookingOpen(open);
-                        if (open) setSelectedRestaurant(restaurant);
-                        if (!open) resetBookingForm(); 
-                      }}>
-                        <DialogTrigger asChild>
-                          <Button className="flex-1" data-testid={`button-book-${restaurant.id}`}>
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Book Table
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Book a Table at {restaurant.businessName}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div>
-                              <Label htmlFor="date">Date</Label>
-                              <Input
-                                id="date"
-                                type="date"
-                                value={bookingDate}
-                                onChange={(e) => setBookingDate(e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
-                                data-testid="input-booking-date"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="time-slot">Time Slot</Label>
-                              <Select value={timeSlot} onValueChange={setTimeSlot}>
-                                <SelectTrigger data-testid="select-time-slot">
-                                  <SelectValue placeholder="Select time slot" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {timeSlots.map((slot) => (
-                                    <SelectItem key={slot} value={slot}>
-                                      {slot}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label htmlFor="guests">Number of Guests</Label>
-                              <Input
-                                id="guests"
-                                type="number"
-                                min="1"
-                                max="20"
-                                value={numberOfGuests}
-                                onChange={(e) => setNumberOfGuests(e.target.value)}
-                                data-testid="input-guests"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="requests">Special Requests (Optional)</Label>
-                              <Textarea
-                                id="requests"
-                                value={specialRequests}
-                                onChange={(e) => setSpecialRequests(e.target.value)}
-                                placeholder="Any special requirements or dietary restrictions..."
-                                data-testid="textarea-requests"
-                              />
-                            </div>
-                            <Button 
-                              onClick={handleBookTable} 
-                              className="w-full"
-                              disabled={bookingMutation.isPending}
-                              data-testid="button-confirm-booking"
-                            >
-                              {bookingMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking...</> : "Confirm Booking"}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <Button
+                        className="flex-1"
+                        onClick={() => {
+                          setSelectedRestaurant(restaurant);
+                          document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
+                        <UtensilsCrossed className="h-4 w-4 mr-2" />
+                        View Menu
+                      </Button>
                       <Button variant="outline" size="icon" data-testid={`button-call-${restaurant.id}`}>
                         <Phone className="h-4 w-4" />
                       </Button>
@@ -359,12 +258,21 @@ export default function Restaurants() {
             </Card>
           )}
         </div>
-      </section>
+      </section >
 
       {/* Menu Items Section */}
-      <section className="py-12 bg-muted/30">
+      < section id="menu-section" className="py-12 bg-muted/30" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-8">Popular Dishes</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">
+              {selectedRestaurant ? `Menu: ${selectedRestaurant.businessName}` : "Popular Dishes"}
+            </h2>
+            {selectedRestaurant && (
+              <Button variant="outline" onClick={() => setSelectedRestaurant(null)}>
+                <X className="h-4 w-4 mr-2" /> Show All Restaurants
+              </Button>
+            )}
+          </div>
 
           {loadingMenu ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -380,57 +288,103 @@ export default function Restaurants() {
             </div>
           ) : filteredMenuItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredMenuItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-item-${item.id}`}>
-                  {item.imageUrl && (
-                    <div className="h-48 overflow-hidden">
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <div className="flex gap-1">
-                        {item.isVeg && (
-                          <div className="border-2 border-green-600 p-0.5 w-5 h-5 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-green-600" />
-                          </div>
-                        )}
-                        {!item.isVeg && (
-                          <div className="border-2 border-red-600 p-0.5 w-5 h-5 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-red-600" />
-                          </div>
+              {filteredMenuItems.map((item) => {
+                const cartItem = items.find((i) => i.id === item.id);
+                const quantity = cartItem ? cartItem.quantity : 0;
+
+                return (
+                  <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-item-${item.id}`}>
+                    {item.imageUrl && (
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{item.name}</h3>
+                        <div className="flex gap-1">
+                          {item.isVeg && (
+                            <div className="border-2 border-green-600 p-0.5 w-5 h-5 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-green-600" />
+                            </div>
+                          )}
+                          {!item.isVeg && (
+                            <div className="border-2 border-red-600 p-0.5 w-5 h-5 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-red-600" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xl font-bold text-primary">₹{item.price}</span>
+                        {item.cuisine && (
+                          <Badge variant="outline" className="text-xs">
+                            {item.cuisine}
+                          </Badge>
                         )}
                       </div>
-                    </div>
 
-                    {item.description && (
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xl font-bold text-primary">₹{item.price}</span>
-                      {item.cuisine && (
-                        <Badge variant="outline" className="text-xs">
-                          {item.cuisine}
+                      {item.category && (
+                        <Badge variant="secondary" className="text-xs mb-3">
+                          {item.category}
                         </Badge>
                       )}
-                    </div>
 
-                    {item.category && (
-                      <Badge variant="secondary" className="text-xs mb-3">
-                        {item.category}
-                      </Badge>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                      {quantity > 0 ? (
+                        <div className="flex items-center justify-between mt-2 bg-secondary/20 rounded-md p-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              if (quantity === 1) {
+                                removeItem(item.id);
+                              } else {
+                                updateQuantity(item.id, quantity - 1);
+                              }
+                            }}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="font-semibold">{quantity}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              const restaurant = restaurants?.find(r => r.id === item.providerId);
+                              if (restaurant) handleAddToCart(item, restaurant);
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          className="w-full mt-2"
+                          onClick={() => {
+                            const restaurant = restaurants?.find(r => r.id === item.providerId);
+                            if (restaurant) handleAddToCart(item, restaurant);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add to Cart
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <Card>
@@ -441,7 +395,22 @@ export default function Restaurants() {
             </Card>
           )}
         </div>
-      </section>
-    </div>
+      </section >
+      {/* Floating Cart Button */}
+      {
+        cartItemCount > 0 && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <Button
+              size="lg"
+              className="rounded-full shadow-xl h-14 px-6 bg-primary hover:bg-primary/90 text-primary-foreground animate-in fade-in slide-in-from-bottom-4"
+              onClick={() => setLocation("/checkout")}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              View Cart ({cartItemCount})
+            </Button>
+          </div>
+        )
+      }
+    </div >
   );
 }

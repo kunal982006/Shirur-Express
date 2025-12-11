@@ -8,15 +8,15 @@ export default defineConfig({
     react(),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+      process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
+        await import("@replit/vite-plugin-cartographer").then((m) =>
+          m.cartographer(),
+        ),
+        await import("@replit/vite-plugin-dev-banner").then((m) =>
+          m.devBanner(),
+        ),
+      ]
       : []),
   ],
   resolve: {
@@ -24,17 +24,17 @@ export default defineConfig({
     // Humne alias syntax ko object se array mein change kar diya hai
     // Yeh zyada reliable hai
     alias: [
-      { 
-        find: "@", 
-        replacement: path.resolve(import.meta.dirname, "client/src") 
+      {
+        find: "@",
+        replacement: path.resolve(import.meta.dirname, "client/src")
       },
-      { 
-        find: "@shared", 
-        replacement: path.resolve(import.meta.dirname, "shared") 
+      {
+        find: "@shared",
+        replacement: path.resolve(import.meta.dirname, "shared")
       },
-      { 
-        find: "@assets", 
-        replacement: path.resolve(import.meta.dirname, "attached_assets") 
+      {
+        find: "@assets",
+        replacement: path.resolve(import.meta.dirname, "attached_assets")
       },
     ],
     // --- FIX KHATAM ---
@@ -48,6 +48,19 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
+    },
+    watch: {
+      ignored: [
+        "**/check_output.txt",
+        "**/tsc_output.txt",
+        "**/attached_assets/**",
+        "**/*.log",
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/.replit",
+        "**/replit.md"
+      ],
     },
   },
 });

@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Star, MapPin, Clock, Award, Cake } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, Award, Cake, ShoppingBag, Plus, Minus } from "lucide-react";
+import { useCartStore } from "@/hooks/use-cart-store";
+import { useToast } from "@/hooks/use-toast";
 
 const cakeCategories = [
   { name: "All Cakes", active: true },
   { name: "Birthday" },
   { name: "Anniversary" },
   { name: "Wedding" },
-  { name: "Custom" }
+  { name: "Custom" },
+  { name: "Cupcakes" }
 ];
 
 // Mock cake shop data
@@ -66,20 +69,52 @@ const mockCakeShops = [
 export default function CakeShop() {
   const [, setLocation] = useLocation();
   const [activeCategory, setActiveCategory] = useState("All Cakes");
+  const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
+  const { toast } = useToast();
+  const [expandedShops, setExpandedShops] = useState<Record<string, boolean>>({});
 
   const { data: cakeShops, isLoading } = useQuery({
-    queryKey: ["/api/service-providers", { category: "cake" }],
-    // Mock data for now
-    queryFn: () => Promise.resolve(mockCakeShops)
+    queryKey: ["/api/service-providers", { category: "cake-shop" }],
+    queryFn: async () => {
+      const res = await fetch("/api/service-providers?category=cake-shop");
+      if (!res.ok) throw new Error("Failed to fetch cake shops");
+      return res.json();
+    }
   });
 
-  const handleOrderCake = (shopId: string, cakeName: string) => {
-    // Handle cake ordering logic
-    console.log(`Ordering ${cakeName} from ${shopId}`);
+  const toggleShopExpansion = (shopId: string) => {
+    setExpandedShops(prev => ({
+      ...prev,
+      [shopId]: !prev[shopId]
+    }));
+  };
+
+  const handleAddToCart = (cake: any, shopId: string) => {
+    const existingItem = items.find(item => item.id === cake.id);
+    if (existingItem) {
+      updateQuantity(cake.id, 1);
+      toast({
+        title: "➕ Quantity Updated!",
+        description: `${cake.name} quantity increased.`,
+      });
+    } else {
+      addItem({
+        id: cake.id,
+        name: cake.name,
+        price: parseFloat(cake.price),
+        imageUrl: cake.imageUrl || undefined,
+        quantity: 1,
+        providerId: shopId // Ensure we track which shop this is from
+      });
+      toast({
+        title: "✅ Added to Cart!",
+        description: `${cake.name} added to your cart.`,
+      });
+    }
   };
 
   return (
-    <div className="py-16 bg-background">
+    <div className="py-16 bg-background pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
@@ -144,112 +179,149 @@ export default function CakeShop() {
               </CardContent>
             </Card>
           ) : (
-            cakeShops?.map((shop: any) => (
-              <Card key={shop.id} className="shadow-md hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                        <img 
-                          src={shop.image} 
-                          alt={shop.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold">{shop.name}</h3>
-                        <div className="flex items-center space-x-1 mt-1">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`h-4 w-4 ${
-                                  i < Math.floor(shop.rating) 
-                                    ? "text-yellow-500 fill-current" 
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm font-medium">{shop.rating}</span>
-                          <span className="text-sm text-muted-foreground">({shop.reviews})</span>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{shop.address}</span>
-                          <span>•</span>
-                          <span>{shop.distance} away</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="flex items-center">
-                      <Award className="h-3 w-3 mr-1" />
-                      Popular
-                    </Badge>
-                  </div>
+            cakeShops?.map((shop: any) => {
+              const filteredCakes = shop.cakeProducts?.filter((cake: any) => activeCategory === "All Cakes" || cake.category === activeCategory) || [];
+              const isExpanded = expandedShops[shop.id];
+              const displayedCakes = isExpanded ? filteredCakes : filteredCakes.slice(0, 4);
 
-                  {/* Cake Gallery */}
-                  <div className="border-t border-border pt-4 mt-4">
-                    <h4 className="font-semibold mb-3">Featured Cakes</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {shop.cakes.map((cake: any, index: number) => (
-                        <div 
-                          key={index}
-                          className="group cursor-pointer"
-                          onClick={() => handleOrderCake(shop.id, cake.name)}
-                          data-testid={`cake-${cake.name.toLowerCase().replace(/\s+/g, '-')}`}
-                        >
-                          <div className="aspect-square rounded-lg overflow-hidden mb-2 relative">
-                            <img 
-                              src={cake.image} 
-                              alt={cake.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition"></div>
+              return (
+                <Card key={shop.id} className="shadow-md hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={shop.profileImageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200"}
+                            alt={shop.businessName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold">{shop.businessName}</h3>
+                          <div className="flex items-center space-x-1 mt-1">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${i < Math.floor(parseFloat(shop.rating))
+                                      ? "text-yellow-500 fill-current"
+                                      : "text-gray-300"
+                                    }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm font-medium">{shop.rating}</span>
+                            <span className="text-sm text-muted-foreground">({shop.reviewCount})</span>
                           </div>
-                          <h5 className="font-medium text-sm mb-1">{cake.name}</h5>
-                          <div className="flex items-center justify-between">
-                            {cake.isCustom ? (
-                              <span className="text-xs text-muted-foreground">
-                                Starting ₹{cake.startingPrice}
-                              </span>
-                            ) : (
-                              <Select>
-                                <SelectTrigger className="text-xs h-8">
-                                  <SelectValue placeholder="Select weight" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {cake.weightOptions.map((option: any, optionIndex: number) => (
-                                    <SelectItem key={optionIndex} value={option.weight}>
-                                      {option.weight} - ₹{option.price}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
+                          <div className="flex items-center space-x-2 mt-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span>{shop.address}</span>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                      <Badge variant="secondary" className="flex items-center">
+                        <Award className="h-3 w-3 mr-1" />
+                        Popular
+                      </Badge>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        Order 24 hours in advance for custom cakes
-                      </p>
-                      <Button 
-                        className="bg-primary hover:bg-primary/90"
-                        data-testid={`button-view-all-${shop.id}`}
-                      >
-                        View All Cakes
-                      </Button>
+                    {/* Cake Gallery */}
+                    <div className="border-t border-border pt-4 mt-4">
+                      <h4 className="font-semibold mb-3">Featured Cakes</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {displayedCakes.map((cake: any) => {
+                          const cartItem = items.find(item => item.id === cake.id);
+                          return (
+                            <div
+                              key={cake.id}
+                              className="group border rounded-lg p-2 hover:shadow-md transition-all"
+                              data-testid={`cake-${cake.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            >
+                              <div className="aspect-square rounded-lg overflow-hidden mb-2 relative">
+                                <img
+                                  src={cake.imageUrl || "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"}
+                                  alt={cake.name}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                                />
+                              </div>
+                              <h5 className="font-medium text-sm mb-1 truncate">{cake.name}</h5>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-bold">₹{cake.price}</span>
+                                {cake.weight && <span className="text-xs text-muted-foreground">{cake.weight}</span>}
+                              </div>
+
+                              {cartItem ? (
+                                <div className="flex items-center justify-between bg-secondary/20 rounded-md p-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(cake.id, -1); }}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <span className="text-sm font-medium">{cartItem.quantity}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(cake.id, 1); }}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  className="w-full h-8 text-xs"
+                                  onClick={(e) => { e.stopPropagation(); handleAddToCart(cake, shop.id); }}
+                                >
+                                  Add
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          Order 24 hours in advance for custom cakes
+                        </p>
+                        {filteredCakes.length > 4 && (
+                          <Button
+                            variant="outline"
+                            onClick={() => toggleShopExpansion(shop.id)}
+                            data-testid={`button-view-all-${shop.id}`}
+                          >
+                            {isExpanded ? "Show Less" : "View All Cakes"}
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
+
+        {/* Cart Summary Bar */}
+        {items.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-lg border-t z-50 animate-slide-up-fast">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">{items.reduce((total, item) => total + item.quantity, 0)} Items</p>
+                <p className="text-xl font-bold">₹{getTotalPrice().toFixed(2)}</p>
+              </div>
+              <Button onClick={() => setLocation("/checkout")} size="lg">
+                Proceed to Checkout
+                <ShoppingBag className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 // --- NAYE IMPORTS ---
 import { z } from "zod";
@@ -16,6 +17,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api"; // API client
 import { useAuth } from "@/hooks/use-auth"; // User details ke liye
+import { calculateDistance, calculateDeliveryFee } from "@/lib/location";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 // --- IMPORTS KHATAM ---
 
 // Delivery Address ke liye Schema
@@ -51,14 +54,62 @@ const loadRazorpayScript = () => {
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { user } = useAuth(); // Logged in user ko get karo
-  const { items, removeItem, increaseQuantity, decreaseQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
   const { toast } = useToast();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  // --- LOCATION & FEE STATE ---
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [distanceInMeters, setDistanceInMeters] = useState<number | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+
+  // Fetch Provider Details to get coordinates
+  const { data: provider } = useQuery({
+    queryKey: ['/api/service-providers', items[0]?.providerId],
+    queryFn: async () => {
+      if (!items[0]?.providerId) return null;
+      const res = await api.get(`/service-providers/${items[0].providerId}`);
+      return res.data;
+    },
+    enabled: !!items[0]?.providerId
+  });
+
+  // Calculate Distance when locations are available
+  useEffect(() => {
+    if (userLocation && provider && provider.latitude && provider.longitude) {
+      const dist = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        parseFloat(provider.latitude),
+        parseFloat(provider.longitude)
+      );
+      setDistanceInMeters(dist);
+    }
+  }, [userLocation, provider]);
 
   // Fees calculation
   const subtotal = getTotalPrice();
   const platformFee = subtotal * 0.01; // 1%
-  const deliveryFee = 24.50; // Mock delivery fee
+
+  // Dynamic Delivery Fee
+  let deliveryFee = 0;
+  let isDeliverable = true;
+  let distanceInKm = 0;
+
+  if (distanceInMeters !== null) {
+    distanceInKm = distanceInMeters / 1000;
+    if (distanceInKm > 10) {
+      isDeliverable = false;
+    } else {
+      deliveryFee = calculateDeliveryFee(distanceInMeters);
+    }
+  } else {
+    // Default or fallback if location not yet fetched? 
+    // For now, let's keep it 0 or show "Calculate"
+    // We will block order if location is missing.
+  }
+
   const total = subtotal + platformFee + deliveryFee;
 
   // Form setup
@@ -75,9 +126,51 @@ export default function Checkout() {
     }
   }, [items.length, setLocation, isPlacingOrder]);
 
+  // Get User Location
+  const getUserLocation = () => {
+    setIsLocating(true);
+    setLocationError(null);
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationError("Unable to retrieve your location. Please allow location access.");
+        setIsLocating(false);
+      }
+    );
+  };
+
+  // Auto-detect location on mount if not set
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
 
   // --- YEH FUNCTION POORA NAYA HAI ---
   const onSubmit = async (values: CheckoutFormValues) => {
+    if (!userLocation) {
+      toast({ title: "Location Required", description: "Please enable location to calculate delivery fee.", variant: "destructive" });
+      getUserLocation();
+      return;
+    }
+
+    if (!isDeliverable) {
+      toast({ title: "Not Deliverable", description: "Sorry, we do not deliver to this location (too far).", variant: "destructive" });
+      return;
+    }
+
     setIsPlacingOrder(true);
 
     // 1. Razorpay script load karo
@@ -95,23 +188,74 @@ export default function Checkout() {
     }
 
     try {
-      // 2. Pehle apne database mein order create karo (status: 'pending')
-      const orderPayload = {
-        items: items.map(item => ({ productId: item.id, quantity: item.quantity, price: item.price })),
-        subtotal,
-        platformFee,
-        deliveryFee,
-        total,
-        deliveryAddress: values.deliveryAddress,
-      };
+      // 2. Determine Order Type and Payload
+      const isStreetFood = items.some(item => item.itemType === 'street_food');
+      const isRestaurant = items.some(item => item.itemType === 'restaurant');
 
-      const dbOrderResponse = await api.post("/api/grocery-orders", orderPayload);
+      let endpoint = "/grocery-orders";
+      if (isStreetFood) endpoint = "/street-food-orders";
+      if (isRestaurant) endpoint = "/restaurant/orders";
+
+      let orderPayload;
+
+      if (isStreetFood || isRestaurant) {
+        orderPayload = {
+          items: items.map(item => ({
+            productId: item.id, // For restaurant, this is menuItemId
+            menuItemId: isRestaurant ? item.id : undefined, // Explicitly set menuItemId for restaurant
+            quantity: item.quantity,
+            price: item.price,
+            providerId: item.providerId || "unknown",
+            name: item.name
+          })),
+          totalAmount: total.toFixed(2), // Schema expects totalAmount
+          deliveryAddress: values.deliveryAddress,
+          providerId: isRestaurant ? items[0].providerId : undefined, // Restaurant order needs providerId at root
+          // runnerId will be assigned by backend
+        };
+      } else {
+        // Grocery Order Payload
+        orderPayload = {
+          items: items.map(item => ({ productId: item.id, quantity: item.quantity, price: item.price })),
+          subtotal: subtotal.toFixed(2),
+          platformFee: platformFee.toFixed(2),
+          deliveryFee: deliveryFee.toFixed(2),
+          total: total.toFixed(2),
+          deliveryAddress: values.deliveryAddress,
+          providerId: items[0]?.providerId || null,
+        };
+      }
+
+      // Validate single provider for Grocery (Street food can be multi-vendor? Schema supports it via JSON items having providerId)
+      // But for now let's keep the single provider check ONLY for grocery if needed, or remove it if we want multi-vendor grocery too.
+      // The user requirement said "Users can add multiple items from a single vendor or multiple vendors to the cart" for Street Food.
+      // So we SKIP the single provider check for Street Food.
+
+      if (!isStreetFood) {
+        // For Grocery AND Restaurant, we enforce single provider
+        const uniqueProviders = new Set(items.map(item => item.providerId).filter(Boolean));
+        if (uniqueProviders.size > 1) {
+          toast({ title: "Multiple Shops Detected", description: "Please order from one shop/restaurant at a time.", variant: "destructive" });
+          setIsPlacingOrder(false);
+          return;
+        }
+      }
+
+      const dbOrderResponse = await api.post(endpoint, orderPayload);
       const dbOrder = await dbOrderResponse.data;
+      console.log("DB Order Response:", dbOrder);
+
+      if (!dbOrder || !dbOrder.id) {
+        alert("DEBUG: Order created but ID missing! " + JSON.stringify(dbOrder));
+        throw new Error("Order ID missing from server response");
+      }
+
       const databaseOrderId = dbOrder.id;
 
       // 3. Ab Razorpay ka order create karo
-      const rzpOrderResponse = await api.post("/api/payment/create-order", {
+      const rzpOrderResponse = await api.post("/payment/create-order", {
         orderId: databaseOrderId,
+        orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
       });
       const rzpOrder = await rzpOrderResponse.data;
 
@@ -128,11 +272,12 @@ export default function Checkout() {
         handler: async (response: any) => {
           try {
             // 5. Payment ko server par verify karo
-            const verificationResponse = await api.post("/api/payment/verify-signature", {
+            const verificationResponse = await api.post("/payment/verify-signature", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              database_order_id: databaseOrderId, 
+              database_order_id: databaseOrderId,
+              orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
             });
 
             if (verificationResponse.data.status === 'success') {
@@ -177,9 +322,11 @@ export default function Checkout() {
       paymentObject.open();
 
     } catch (error: any) {
+      console.error("Order placement error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Could not create order. Please try again.";
       toast({
         title: "Order Failed",
-        description: error.response?.data?.message || "Could not create order. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsPlacingOrder(false);
@@ -211,6 +358,58 @@ export default function Checkout() {
 
               {/* Left Column: Address + Cart */}
               <div>
+                {/* Location Status Card */}
+                <Card className="mb-8">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <MapPin className="h-5 w-5" />
+                      <span>Location & Delivery</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {!userLocation ? (
+                      <div className="flex flex-col items-start gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          We need your location to calculate the delivery fee.
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={getUserLocation}
+                          disabled={isLocating}
+                          variant="secondary"
+                        >
+                          {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
+                          Detect My Location
+                        </Button>
+                        {locationError && (
+                          <p className="text-sm text-destructive">{locationError}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex items-center text-green-600 gap-2">
+                          <MapPin className="h-4 w-4" />
+                          <span className="text-sm font-medium">Location Detected</span>
+                        </div>
+                        {distanceInMeters !== null && (
+                          <p className="text-sm text-muted-foreground">
+                            Distance to Vendor: <span className="font-medium text-foreground">{distanceInKm.toFixed(1)} km</span>
+                          </p>
+                        )}
+                        {!isDeliverable && (
+                          <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Not Deliverable</AlertTitle>
+                            <AlertDescription>
+                              Your location is too far from the vendor ({distanceInKm.toFixed(1)} km). We only deliver within 10 km.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
                 <Card className="mb-8">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -270,18 +469,18 @@ export default function Checkout() {
                           <div className="text-right flex items-center space-x-2">
                             <Button
                               variant="outline" size="icon" className="h-7 w-7"
-                              onClick={() => decreaseQuantity(item.id)}
+                              onClick={() => updateQuantity(item.id, -1)}
                               disabled={item.quantity <= 1 || isPlacingOrder}
                               aria-label="Decrease quantity" type="button"
                             > <Minus className="h-4 w-4" /> </Button>
 
                             <Badge variant="secondary" className="h-7 w-7 flex items-center justify-center">
-                                {item.quantity}
+                              {item.quantity}
                             </Badge>
 
                             <Button
                               variant="outline" size="icon" className="h-7 w-7"
-                              onClick={() => increaseQuantity(item.id)}
+                              onClick={() => updateQuantity(item.id, 1)}
                               aria-label="Increase quantity" type="button"
                               disabled={isPlacingOrder}
                             > <Plus className="h-4 w-4" /> </Button>
@@ -319,8 +518,13 @@ export default function Checkout() {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
                         Delivery Fee
+                        {distanceInMeters !== null && (
+                          <span className="ml-1 text-xs">({distanceInKm.toFixed(1)} km)</span>
+                        )}
                       </span>
-                      <span>₹{deliveryFee.toFixed(2)}</span>
+                      <span>
+                        {distanceInMeters !== null ? `₹${deliveryFee.toFixed(2)}` : "Calculating..."}
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold text-lg">
@@ -332,11 +536,15 @@ export default function Checkout() {
                     <Button
                       type="submit" // <-- YEH CHANGE HUA
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder}
+                      disabled={items.length === 0 || isPlacingOrder || !isDeliverable || !userLocation}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : !isDeliverable ? (
+                        "Not Deliverable"
+                      ) : !userLocation ? (
+                        "Detect Location to Pay"
                       ) : (
                         `Pay Securely (₹${total.toFixed(2)})`
                       )}

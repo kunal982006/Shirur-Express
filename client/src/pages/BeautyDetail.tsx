@@ -4,38 +4,40 @@ import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, Star, MapPin, Clock, Plus,
-  ChevronDown,
+import {
+    ArrowLeft, Star, MapPin, Clock, Plus,
+    ChevronDown,
 } from "lucide-react";
 import {
-  Select, 
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import api from "@/lib/api";
 
 // --- BEAUTY ENCYCLOPEDIA DATA REFERENCE (MOCK MENU) ---
 const NESTED_SERVICES = {
-  "Hair Services": [
-    { name: "Haircut & Styling", subCategories: [ 
-        { name: "Haircuts & Basic Styling", items: [ { id: 'wcut', name: "Women's Haircut", price: 800, duration: 45, gender: 'Women' } ] },
-        { name: "Hair Coloring", items: [ { id: 'fcolor', name: "Full Color", price: 3500, duration: 120, type: 'Coloring' } ] },
-      ]
-    },
-    { name: "Hair Treatments", services: [ { id: 'keratin', name: "Keratin Treatment", price: 5500, duration: 180, gender: 'Unisex' } ] },
-  ],
-  "Nail Services": [
-    { name: "Manicures", services: [ { id: 'cmani', name: "Classic Manicure", price: 600, duration: 40 } ] },
-  ],
-  "Skincare Services": [
-    { name: "Facials", services: [ { id: 'basic', name: "Basic Cleansing Facial", price: 900, duration: 60 } ] },
-    { name: "Hair Removal", services: [ { id: 'wax', name: "Waxing (Various Options)", price: 500, duration: 30, gender: 'Women' } ] },
-  ],
+    "Hair Services": [
+        {
+            name: "Haircut & Styling", subCategories: [
+                { name: "Haircuts & Basic Styling", items: [{ id: 'wcut', name: "Women's Haircut", price: 800, duration: 45, gender: 'Women' }] },
+                { name: "Hair Coloring", items: [{ id: 'fcolor', name: "Full Color", price: 3500, duration: 120, type: 'Coloring' }] },
+            ]
+        },
+        { name: "Hair Treatments", services: [{ id: 'keratin', name: "Keratin Treatment", price: 5500, duration: 180, gender: 'Unisex' }] },
+    ],
+    "Nail Services": [
+        { name: "Manicures", services: [{ id: 'cmani', name: "Classic Manicure", price: 600, duration: 40 }] },
+    ],
+    "Skincare Services": [
+        { name: "Facials", services: [{ id: 'basic', name: "Basic Cleansing Facial", price: 900, duration: 60 }] },
+        { name: "Hair Removal", services: [{ id: 'wax', name: "Waxing (Various Options)", price: 500, duration: 30, gender: 'Women' }] },
+    ],
 };
 
-const MAIN_CATEGORIES = Object.keys(NESTED_SERVICES);
+const MAIN_CATEGORIES = []; // Placeholder, will be derived dynamically
 
 // Mock Parlor List (Used to find the specific parlor)
 const mockBeautyParlors = [
@@ -56,13 +58,15 @@ const mockBeautyParlors = [
 ];
 
 // Helper component to display a single service item
-const ServiceItemCard = ({ parlorId, service, subCategoryName }: { parlorId: string, service: any, subCategoryName: string }) => {
-    const [, setLocation] = useLocation();
-
-    const handleBook = (service: any) => {
-        setLocation(`/book/beauty?parlorId=${parlorId}&serviceId=${service.id}`);
-    };
-
+const ServiceItemCard = ({ parlorId, service, subCategoryName, cart, onAdd, onRemove }: {
+    parlorId: string,
+    service: any,
+    subCategoryName: string,
+    cart: Record<string, any>,
+    onAdd: (service: any) => void,
+    onRemove: (serviceId: string) => void
+}) => {
+    const isInCart = !!cart[service.id];
     const isWomenOnly = service.gender === 'Women' && subCategoryName.includes('Hair Removal');
 
     return (
@@ -77,9 +81,15 @@ const ServiceItemCard = ({ parlorId, service, subCategoryName }: { parlorId: str
             </div>
             <div className="flex items-center space-x-3">
                 <p className="font-bold text-lg">₹{service.price}</p>
-                <Button size="sm" onClick={() => handleBook(service)}>
-                    Book
-                </Button>
+                {isInCart ? (
+                    <Button size="sm" variant="destructive" onClick={() => onRemove(service.id)}>
+                        Remove
+                    </Button>
+                ) : (
+                    <Button size="sm" onClick={() => onAdd(service)}>
+                        Add
+                    </Button>
+                )}
             </div>
         </Card>
     );
@@ -93,22 +103,69 @@ export default function BeautyDetail() {
 
     const [selectedMainCat, setSelectedMainCat] = useState<string | null>(null);
     const [selectedSubCat, setSelectedSubCat] = useState<string | null>(null);
+    const [cart, setCart] = useState<Record<string, any>>({});
 
-    // 1. Fetch Parlor Details (MOCKING API CALL)
+    // 1. Fetch Parlor Details (REAL API CALL)
     const { data: parlorDetail, isLoading: parlorLoading } = useQuery({
         queryKey: ["parlor-detail", parlorId],
-        queryFn: () => {
-            // FIX: Find the correct parlor by ID from the list
-            const foundParlor = mockBeautyParlors.find(p => p.id === parlorId);
+        queryFn: async () => {
+            try {
+                const res = await api.get(`/service-providers/${parlorId}`);
+                const data = res.data;
 
-            if (foundParlor) {
-                // Attach the menu data to the found parlor
-                return Promise.resolve({ ...foundParlor, menuData: NESTED_SERVICES });
+                if (!data) return null;
+
+                // Transform beautyServices into NESTED_SERVICES format
+                const menuData: any = {};
+
+                if (data.beautyServices) {
+                    data.beautyServices.forEach((service: any) => {
+                        if (!service.isActive) return;
+
+                        const template = service.template;
+                        if (!template) return;
+
+                        const mainCat = template.subCategory || "Other Services"; // Using subCategory as Main Category
+                        const subCat = "All Services"; // We don't have a 3rd level, so grouping under All Services
+
+                        if (!menuData[mainCat]) {
+                            menuData[mainCat] = [];
+                        }
+
+                        // Check if "All Services" subcategory exists
+                        let subCatObj = menuData[mainCat].find((s: any) => s.name === subCat);
+                        if (!subCatObj) {
+                            subCatObj = { name: subCat, services: [] };
+                            menuData[mainCat].push(subCatObj);
+                        }
+
+                        subCatObj.services.push({
+                            id: service.id,
+                            name: template.name,
+                            price: Number(service.price),
+                            duration: template.duration || 30, // Default if missing
+                            gender: template.gender || 'Unisex',
+                            description: template.description
+                        });
+                    });
+                }
+
+                return {
+                    ...data,
+                    name: data.businessName, // Map fields for UI compatibility
+                    image: data.profileImageUrl,
+                    address: data.address,
+                    rating: data.rating,
+                    reviews: data.reviewCount,
+                    distance: "2.5 km", // Mock distance for now
+                    menuData
+                };
+            } catch (err) {
+                console.error("Error fetching parlor details:", err);
+                return null;
             }
-            // If ID not found, return null
-            return Promise.resolve(null); 
         },
-        enabled: !!parlorId, // Only run if parlorId exists
+        enabled: !!parlorId,
     });
 
     const parlorMenu = parlorDetail?.menuData || {};
@@ -116,7 +173,7 @@ export default function BeautyDetail() {
     // 2. Derive Sub-Categories based on selected Main Category
     const subCategories = useMemo(() => {
         if (!selectedMainCat || !parlorMenu[selectedMainCat]) return [];
-        return parlorMenu[selectedMainCat]; 
+        return parlorMenu[selectedMainCat];
     }, [selectedMainCat, parlorMenu]);
 
     // 3. Derive Final Services based on selected Sub-Category
@@ -143,7 +200,7 @@ export default function BeautyDetail() {
     }
 
     // FIX: Error check to display "not found" state
-    if (!parlorDetail && !parlorLoading) { 
+    if (!parlorDetail && !parlorLoading) {
         return (
             <div className="text-center py-20">
                 <p className="text-red-500 font-semibold text-xl">
@@ -161,15 +218,42 @@ export default function BeautyDetail() {
 
     const handleMainCatChange = (value: string) => {
         setSelectedMainCat(value);
-        setSelectedSubCat(null); // Reset sub-category
+
+        // Auto-select the first sub-category if available
+        const subCats = parlorMenu[value];
+        if (subCats && subCats.length > 0) {
+            setSelectedSubCat(subCats[0].name);
+        } else {
+            setSelectedSubCat(null);
+        }
     };
 
     const handleSubCatChange = (value: string) => {
         setSelectedSubCat(value);
     };
 
+    const addToCart = (service: any) => {
+        setCart(prev => ({ ...prev, [service.id]: service }));
+    };
+
+    const removeFromCart = (serviceId: string) => {
+        setCart(prev => {
+            const newCart = { ...prev };
+            delete newCart[serviceId];
+            return newCart;
+        });
+    };
+
+    const cartItemCount = Object.keys(cart).length;
+    const cartTotal = Object.values(cart).reduce((sum: number, item: any) => sum + item.price, 0);
+
+    const handleCheckout = () => {
+        const serviceIds = Object.keys(cart).join(',');
+        setLocation(`/book/beauty?parlorId=${parlorId}&services=${serviceIds}`);
+    };
+
     return (
-        <div className="py-8 md:py-12 bg-gray-50 min-h-screen">
+        <div className="py-8 md:py-12 bg-gray-50 min-h-screen pb-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header and Back Button */}
@@ -185,7 +269,7 @@ export default function BeautyDetail() {
 
                 {/* Parlor Banner/Detail Header */}
                 <Card className="mb-8 p-0 overflow-hidden">
-                    <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover"/>
+                    <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover" />
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                             <div>
@@ -221,7 +305,7 @@ export default function BeautyDetail() {
                                         <SelectValue placeholder="Select Category (e.g., Hair Services)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {MAIN_CATEGORIES.map((catName) => (
+                                        {Object.keys(parlorMenu).map((catName) => (
                                             <SelectItem key={catName} value={catName}>
                                                 {catName}
                                             </SelectItem>
@@ -233,9 +317,9 @@ export default function BeautyDetail() {
                             {/* 2. Sub-Category Dropdown (Haircut & Styling, Treatments) */}
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Sub Category</label>
-                                <Select 
-                                    onValueChange={handleSubCatChange} 
-                                    value={selectedSubCat || ""} 
+                                <Select
+                                    onValueChange={handleSubCatChange}
+                                    value={selectedSubCat || ""}
                                     disabled={!selectedMainCat}
                                 >
                                     <SelectTrigger>
@@ -272,27 +356,45 @@ export default function BeautyDetail() {
                             <Card><CardContent className="p-6 text-center text-muted-foreground">No services found in this sub-category. Please try a different selection.</CardContent></Card>
                         ) : finalServices.length === 0 && !selectedSubCat ? (
                             // Show initial prompt when no filter is selected
-                             <Card><CardContent className="p-6 text-center text-muted-foreground">Please use the dropdowns above to browse the specific services offered by the parlor.</CardContent></Card>
+                            <Card><CardContent className="p-6 text-center text-muted-foreground">Please use the dropdowns above to browse the specific services offered by the parlor.</CardContent></Card>
                         ) : (
                             finalServices.map((service: any) => (
-                                <ServiceItemCard 
-                                    key={service.id} 
-                                    parlorId={parlorId} 
-                                    service={service} 
+                                <ServiceItemCard
+                                    key={service.id}
+                                    parlorId={parlorId}
+                                    service={service}
                                     subCategoryName={selectedSubCat || "Services"}
+                                    cart={cart}
+                                    onAdd={addToCart}
+                                    onRemove={removeFromCart}
                                 />
                             ))
                         )}
 
                         {/* Beautician Add Option at the bottom */}
                         <div className="pt-4 border-t border-dashed border-gray-300">
-                             <Button size="sm" variant="outline" className="text-primary hover:bg-primary/10">
+                            <Button size="sm" variant="outline" className="text-primary hover:bg-primary/10">
                                 <Plus className="h-4 w-4 mr-2" /> Add New Service (Beautician View)
                             </Button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Floating Checkout Bar */}
+            {cartItemCount > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div>
+                            <p className="font-bold text-lg">{cartItemCount} Items Selected</p>
+                            <p className="text-sm text-muted-foreground">Total: ₹{cartTotal}</p>
+                        </div>
+                        <Button onClick={handleCheckout} size="lg">
+                            Proceed to Checkout
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

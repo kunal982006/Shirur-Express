@@ -1,27 +1,26 @@
-// server/src/shared/schema.ts (UPDATED)
-
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, boolean, timestamp, serial, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// =========================================
+// 1. BASE TABLES (Users, Categories, Templates)
+// =========================================
 
-// Users table
 export const users = pgTable("users", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   phone: text("phone"),
   password: text("password").notNull(),
-  role: text("role").default("customer"), // customer, provider, admin
+  role: text("role").default("customer"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Service categories
 export const serviceCategories = pgTable("service_categories", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   name: text("name").notNull(),
@@ -30,11 +29,23 @@ export const serviceCategories = pgTable("service_categories", {
   description: text("description"),
 });
 
-// Service providers
+export const serviceTemplates = pgTable("service_templates", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  categorySlug: text("category_slug").notNull(),
+  subCategory: text("sub_category").notNull(),
+  name: text("name").notNull(),
+  defaultPrice: decimal("default_price", { precision: 10, scale: 2 }).notNull(),
+  imageUrl: text("image_url"),
+});
+
+// =========================================
+// 2. CORE PROVIDER TABLES
+// =========================================
+
 export const serviceProviders = pgTable("service_providers", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  categoryId: varchar("category_id").references(() => serviceCategories.id).notNull(),
+  userId: varchar("user_id").notNull(), // Relation defined below
+  categoryId: varchar("category_id").notNull(), // Relation defined below
   businessName: text("business_name").notNull(),
   description: text("description"),
   profileImageUrl: text("profile_image_url"),
@@ -52,54 +63,90 @@ export const serviceProviders = pgTable("service_providers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Service problems/categories (for electrician, plumber)
+export const serviceOfferings = pgTable("service_offerings", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  providerId: varchar("provider_id").notNull(), // Linked in relations
+  templateId: text("template_id").notNull(),    // Linked in relations
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// =========================================
+// 3. BOOKINGS & INVOICES (Circular Dependency Broken Here)
+// =========================================
+
+export const bookings = pgTable("bookings", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id").notNull(),
+  providerId: varchar("provider_id"),
+  serviceType: text("service_type").notNull(),
+  problemId: varchar("problem_id"),
+  status: text("status").default("pending"),
+  scheduledAt: timestamp("scheduled_at"),
+  preferredTimeSlots: jsonb("preferred_time_slots").$type<string[]>(),
+  userAddress: text("user_address").notNull(),
+  userPhone: text("user_phone").notNull(),
+  notes: text("notes"),
+  estimatedCost: decimal("estimated_cost", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  isUrgent: boolean("is_urgent").default(false),
+  serviceOtp: text("service_otp"),
+  serviceOtpExpiresAt: timestamp("service_otp_expires_at"),
+  // Removed .references() to stop crash. Relation handles it.
+  invoiceId: text("invoice_id"),
+});
+
+export const invoices = pgTable("invoices", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  // Removed .references() to stop crash. Relation handles it.
+  bookingId: varchar("booking_id").notNull(),
+  providerId: varchar("provider_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  sparePartsDetails: jsonb("spare_parts_details").$type<Array<{ part: string; cost: number }>>(),
+  sparePartsTotal: decimal("spare_parts_total", { precision: 10, scale: 2 }).default("0.00"),
+  serviceCharge: decimal("service_charge", { precision: 10, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentStatus: text("payment_status").default("pending"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// =========================================
+// 4. OTHER PRODUCT TABLES
+// =========================================
+
 export const serviceProblems = pgTable("service_problems", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  categoryId: varchar("category_id").references(() => serviceCategories.id).notNull(),
+  categoryId: varchar("category_id").notNull(),
   name: text("name").notNull(),
   parentId: varchar("parent_id"),
 });
 
-// Beauty services (UPDATED)
-export const beautyServices = pgTable("beauty_services", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  providerId: varchar("provider_id") // providerId type matches serviceProviders.id
-    .notNull()
-    .references(() => serviceProviders.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // Service ka naam (e.g., "Haircut", "Facial")
-  description: text("description"), // Service ki description
-  imageUrl: text("image_url"), // Service ki image
-  duration: integer("duration_minutes"), // Service kitni der ki hai (in minutes)
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Service ki price
-  category: text("category"), // Category (e.g., "Hair", "Skin", "Nails")
-  subCategory: text("sub_category"), // Naya field: subCategory
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(), // Naya field: updatedAt
-});
-
-// Cake products
 export const cakeProducts = pgTable("cake_products", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
+  providerId: varchar("provider_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category"), // Birthday, Anniversary, Wedding, Custom
+  category: text("category"),
   imageUrl: text("image_url"),
-  basePrice: decimal("base_price", { precision: 10, scale: 2 }).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  weight: text("weight"), // Added weight field
   weightOptions: jsonb("weight_options").$type<Array<{ weight: string; price: number }>>(),
   isCustomizable: boolean("is_customizable").default(false),
 });
 
-// Grocery products
 export const groceryProducts = pgTable("grocery_products", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
+  providerId: varchar("provider_id").notNull(),
   name: varchar("name", { length: 256 }).notNull(),
   description: text("description"),
-  category: varchar("category", { length: 256 }).notNull(), // Category slug (e.g., "fruits")
-  price: varchar("price", { length: 50 }).notNull(), // Price as string to handle currency symbols easily
-  weight: varchar("weight", { length: 100 }), // e.g., "1 kg", "500g"
-  unit: varchar("unit", { length: 50 }), // e.g., "kg", "dozen", "pack"
+  category: varchar("category", { length: 256 }).notNull(),
+  price: varchar("price", { length: 50 }).notNull(),
+  weight: varchar("weight", { length: 100 }),
+  unit: varchar("unit", { length: 50 }),
   inStock: boolean("in_stock").default(true).notNull(),
   stockQuantity: integer("stock_quantity").default(0).notNull(),
   imageUrl: varchar("image_url", { length: 256 }),
@@ -107,98 +154,9 @@ export const groceryProducts = pgTable("grocery_products", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Rental properties
-export const rentalProperties = pgTable("rental_properties", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  ownerId: varchar("owner_id").references(() => users.id).notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  propertyType: text("property_type").notNull(), // 1BHK, 2BHK, etc.
-  rent: decimal("rent", { precision: 10, scale: 2 }).notNull(),
-  area: integer("area_sqft"),
-  bedrooms: integer("bedrooms"),
-  bathrooms: integer("bathrooms"),
-  furnishing: text("furnishing"), // Furnished, Semi-Furnished, Unfurnished
-  address: text("address").notNull(),
-  locality: text("locality"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  amenities: jsonb("amenities").$type<string[]>(),
-  images: jsonb("images").$type<string[]>(),
-  isAvailable: boolean("is_available").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Bookings/Service requests (ELECTRICIAN FLOW KE LIYE UPDATED)
-export const bookings = pgTable("bookings", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id),
-  serviceType: text("service_type").notNull(),
-  problemId: varchar("problem_id").references(() => serviceProblems.id),
-
-  // STATUS FLOW: 
-  // pending -> accepted -> in_progress -> awaiting_otp -> awaiting_billing -> pending_payment -> completed
-  // 'pending' se 'declined' ya 'cancelled' bhi ho sakta hai
-  status: text("status").default("pending"),
-
-  scheduledAt: timestamp("scheduled_at"),
-  preferredTimeSlots: jsonb("preferred_time_slots").$type<string[]>(),
-  userAddress: text("user_address").notNull(),
-  userPhone: text("user_phone").notNull(),
-  notes: text("notes"),
-  estimatedCost: decimal("estimated_cost", { precision: 10, scale: 2 }), // Yeh provider accept karte waqt de sakta hai
-  createdAt: timestamp("created_at").defaultNow(),
-
-  // --- NAYE FIELDS AAPKE ELECTRICIAN FLOW KE LIYE ---
-  isUrgent: boolean("is_urgent").default(false), // Customer yeh 'true' set karega agar urgent hai
-  serviceOtp: text("service_otp"), // 6-digit OTP jo provider verify karega
-  serviceOtpExpiresAt: timestamp("service_otp_expires_at"), // OTP expiry time
-  invoiceId: text("invoice_id").references(() => invoices.id), // Final bill/invoice se link
-});
-
-// Grocery orders
-export const groceryOrders = pgTable("grocery_orders", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  items: jsonb("items").$type<Array<{ productId: string; quantity: number; price: number }>>(),
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
-  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(),
-  deliveryFee: decimal("delivery_fee", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
-  deliveryAddress: text("delivery_address").notNull(),
-  status: text("status").default("pending"), // pending, confirmed, delivered, cancelled
-  razorpayOrderId: text("razorpay_order_id"),
-  razorpayPaymentId: text("razorpay_payment_id"),
-  razorpaySignature: text("razorpay_signature"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// --- YEH AAPKE FLOW KE LIYE NAYA TABLE HAI ---
-// Final Invoice/Bill
-export const invoices = pgTable("invoices", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  bookingId: varchar("booking_id").references(() => bookings.id).notNull().unique(), // Har booking ka ek hi invoice
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-
-  sparePartsDetails: jsonb("spare_parts_details").$type<Array<{ part: string; cost: number }>>(),
-  sparePartsTotal: decimal("spare_parts_total", { precision: 10, scale: 2 }).default("0.00"),
-  serviceCharge: decimal("service_charge", { precision: 10, scale: 2 }).notNull(),
-  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-
-  paymentStatus: text("payment_status").default("pending"), // pending, completed
-  razorpayOrderId: text("razorpay_order_id"),
-  razorpayPaymentId: text("razorpay_payment_id"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// Street food menu items
 export const streetFoodItems = pgTable("street_food_items", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  providerId: text("provider_id").notNull().references(() => serviceProviders.id),
+  providerId: text("provider_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
   imageUrl: text("image_url"),
@@ -206,207 +164,116 @@ export const streetFoodItems = pgTable("street_food_items", {
   price: text("price").notNull(),
   isVeg: boolean("is_veg").default(true),
   isAvailable: boolean("is_available").default(true),
-  spicyLevel: text("spicy_level"), // Mild, Medium, Hot
+  spicyLevel: text("spicy_level"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Restaurant menu items
 export const restaurantMenuItems = pgTable("restaurant_menu_items", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
+  providerId: varchar("provider_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category"), // Starters, Main Course, Desserts, Beverages
+  category: text("category"),
   imageUrl: text("image_url"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   isVeg: boolean("is_veg").default(true),
   isAvailable: boolean("is_available").default(true),
-  cuisine: text("cuisine"), // Indian, Chinese, Italian, etc.
+  cuisine: text("cuisine"),
 });
 
-// Restaurant table bookings
-export const tableBookings = pgTable("table_bookings", {
-  id: text("id").$defaultFn(() => createId()).primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
-  date: timestamp("booking_date").notNull(),
-  timeSlot: text("time_slot").notNull(),
-  numberOfGuests: integer("number_of_guests").notNull(),
-  specialRequests: text("special_requests"),
-  status: text("status").default("pending"), // pending, confirmed, cancelled, completed
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// Reviews
+
 export const reviews = pgTable("reviews", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  providerId: varchar("provider_id").references(() => serviceProviders.id).notNull(),
-  bookingId: varchar("booking_id").references(() => bookings.id),
+  userId: varchar("user_id").notNull(),
+  providerId: varchar("provider_id").notNull(),
+  bookingId: varchar("booking_id"),
   rating: integer("rating").notNull(),
   comment: text("comment"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  serviceProviders: many(serviceProviders),
-  bookings: many(bookings),
-  reviews: many(reviews),
-  rentalProperties: many(rentalProperties),
-  groceryOrders: many(groceryOrders),
-  invoices: many(invoices), // NAYA
-}));
+export const rentalProperties = pgTable("rental_properties", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  ownerId: varchar("owner_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  propertyType: text("property_type").notNull(),
+  rent: decimal("rent", { precision: 10, scale: 2 }).notNull(),
+  area: integer("area_sqft"),
+  bedrooms: integer("bedrooms"),
+  bathrooms: integer("bathrooms"),
+  furnishing: text("furnishing"),
+  address: text("address").notNull(),
+  locality: text("locality"),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  amenities: jsonb("amenities").$type<string[]>(),
+  images: jsonb("images").$type<string[]>(),
+  // Enhanced fields
+  deposit: decimal("deposit", { precision: 10, scale: 2 }),
+  noticePeriod: text("notice_period"),
+  status: text("status").default("available"), // available, rented, sold, unavailable
+  ownerNote: text("owner_note"),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
-export const serviceProvidersRelations = relations(serviceProviders, ({ one, many }) => ({
-  user: one(users, {
-    fields: [serviceProviders.userId],
-    references: [users.id],
-  }),
-  category: one(serviceCategories, {
-    fields: [serviceProviders.categoryId],
-    references: [serviceCategories.id],
-  }),
-  bookings: many(bookings),
-  reviews: many(reviews),
-  beautyServices: many(beautyServices),
-  cakeProducts: many(cakeProducts),
-  streetFoodItems: many(streetFoodItems),
-  restaurantMenuItems: many(restaurantMenuItems),
-  tableBookings: many(tableBookings),
-  groceryProducts: many(groceryProducts),
-  invoices: many(invoices), // NAYA
-}));
+export const groceryOrders = pgTable("grocery_orders", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id").notNull(),
+  items: jsonb("items").$type<Array<{ productId: string; quantity: number; price: number }>>(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(),
+  deliveryFee: decimal("delivery_fee", { precision: 10, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  deliveryAddress: text("delivery_address").notNull(),
+  status: text("status").default("pending"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  razorpaySignature: text("razorpay_signature"),
+  providerId: varchar("provider_id"), // Added providerId for multi-vendor support
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
-export const bookingsRelations = relations(bookings, ({ one }) => ({
-  user: one(users, {
-    fields: [bookings.userId],
-    references: [users.id],
-  }),
-  provider: one(serviceProviders, {
-    fields: [bookings.providerId],
-    references: [serviceProviders.id],
-  }),
-  problem: one(serviceProblems, {
-    fields: [bookings.problemId],
-    references: [serviceProblems.id],
-  }),
-  invoice: one(invoices, { // NAYA
-    fields: [bookings.invoiceId],
-    references: [invoices.id],
-  }),
-}));
+// =========================================
+// 5. ZOD SCHEMAS (Defined after tables)
+// =========================================
 
-// NAYA RELATION
-export const invoicesRelations = relations(invoices, ({ one }) => ({
-  booking: one(bookings, {
-    fields: [invoices.bookingId],
-    references: [bookings.id],
-  }),
-  provider: one(serviceProviders, {
-    fields: [invoices.providerId],
-    references: [serviceProviders.id],
-  }),
-  user: one(users, {
-    fields: [invoices.userId],
-    references: [users.id],
-  }),
-}));
-
-export const groceryProductsRelations = relations(groceryProducts, ({ one }) => ({
-  provider: one(serviceProviders, {
-    fields: [groceryProducts.providerId],
-    references: [serviceProviders.id],
-  }),
-}));
-
-// Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  email: true,
-  phone: true,
-  password: true,
-  role: true,
+  username: true, email: true, phone: true, password: true, role: true,
 });
-
 export const insertServiceProviderSchema = createInsertSchema(serviceProviders).pick({
-  businessName: true,
-  description: true,
-  experience: true,
-  address: true,
-  latitude: true,
-  longitude: true,
-  specializations: true,
-  profileImageUrl: true,
+  businessName: true, description: true, experience: true, address: true,
+  latitude: true, longitude: true, specializations: true, profileImageUrl: true,
 });
-
-// BOOKING SCHEMA UPDATE KARO
 export const insertBookingSchema = createInsertSchema(bookings).pick({
-  serviceType: true,
-  problemId: true,
-  scheduledAt: true,
-  preferredTimeSlots: true,
-  userAddress: true,
-  userPhone: true,
-  notes: true,
-  isUrgent: true,
-  providerId: true,
+  serviceType: true, problemId: true, scheduledAt: true, preferredTimeSlots: true,
+  userAddress: true, userPhone: true, notes: true, isUrgent: true, providerId: true,
 });
-
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
-  items: true,
-  subtotal: true,
-  platformFee: true,
-  deliveryFee: true,
-  total: true,
-  deliveryAddress: true,
+  items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true,
 });
-
 export const insertRentalPropertySchema = createInsertSchema(rentalProperties).pick({
-  title: true,
-  description: true,
-  propertyType: true,
-  rent: true,
-  area: true,
-  bedrooms: true,
-  bathrooms: true,
-  furnishing: true,
-  address: true,
-  locality: true,
-  latitude: true,
-  longitude: true,
-  amenities: true,
-  images: true,
+  title: true, description: true, propertyType: true, rent: true, area: true,
+  bedrooms: true, bathrooms: true, furnishing: true, address: true, locality: true,
+  latitude: true, longitude: true, amenities: true, images: true,
+  deposit: true, noticePeriod: true, status: true, ownerNote: true,
+  contactPhone: true, contactEmail: true,
 });
 
-export const insertTableBookingSchema = createInsertSchema(tableBookings).pick({
-  date: true,
-  timeSlot: true,
-  numberOfGuests: true,
-  specialRequests: true,
-});
-
-export const insertBeautyServiceSchema = createInsertSchema(beautyServices).pick({
-  name: true,
-  description: true,
-  imageUrl: true,
-  duration: true,
-  price: true,
-  category: true,
-  subCategory: true,
-});
-
-// NAYA INVOICE SCHEMA
 export const insertInvoiceSchema = createInsertSchema(invoices).pick({
-  bookingId: true,
-  providerId: true,
-  userId: true,
-  sparePartsDetails: true,
-  sparePartsTotal: true,
-  serviceCharge: true,
-  totalAmount: true,
+  bookingId: true, providerId: true, userId: true, sparePartsDetails: true,
+  sparePartsTotal: true, serviceCharge: true, totalAmount: true,
 });
-
+export const insertServiceTemplateSchema = createInsertSchema(serviceTemplates).pick({
+  categorySlug: true, subCategory: true, name: true, defaultPrice: true, imageUrl: true,
+});
+export const insertServiceOfferingSchema = z.object({
+  providerId: z.string(), templateId: z.string(), price: z.string(), isActive: z.boolean().optional(),
+});
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -421,14 +288,171 @@ export type RentalProperty = typeof rentalProperties.$inferSelect;
 export type InsertRentalProperty = z.infer<typeof insertRentalPropertySchema>;
 export type ServiceCategory = typeof serviceCategories.$inferSelect;
 export type ServiceProblem = typeof serviceProblems.$inferSelect;
-export type BeautyService = typeof beautyServices.$inferSelect;
-export type InsertBeautyService = z.infer<typeof insertBeautyServiceSchema>;
 export type CakeProduct = typeof cakeProducts.$inferSelect;
 export type GroceryProduct = typeof groceryProducts.$inferSelect;
 export type StreetFoodItem = typeof streetFoodItems.$inferSelect;
 export type RestaurantMenuItem = typeof restaurantMenuItems.$inferSelect;
-export type TableBooking = typeof tableBookings.$inferSelect;
-export type InsertTableBooking = z.infer<typeof insertTableBookingSchema>;
+
 export type Review = typeof reviews.$inferSelect;
-export type Invoice = typeof invoices.$inferSelect; // NAYA TYPE
-export type InsertInvoice = z.infer<typeof insertInvoiceSchema>; // NAYA TYPE
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type ServiceTemplate = typeof serviceTemplates.$inferSelect;
+export type InsertServiceTemplate = z.infer<typeof insertServiceTemplateSchema>;
+export type ServiceOffering = typeof serviceOfferings.$inferSelect;
+export type InsertServiceOffering = z.infer<typeof insertServiceOfferingSchema>;
+
+// =========================================
+// 6. RELATIONS (STRICTLY AT THE BOTTOM)
+// =========================================
+
+export const usersRelations = relations(users, ({ many }) => ({
+  serviceProviders: many(serviceProviders),
+  bookings: many(bookings),
+  reviews: many(reviews),
+  rentalProperties: many(rentalProperties),
+  groceryOrders: many(groceryOrders),
+  invoices: many(invoices),
+}));
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  user: one(users, { fields: [bookings.userId], references: [users.id] }),
+  provider: one(serviceProviders, { fields: [bookings.providerId], references: [serviceProviders.id] }),
+  problem: one(serviceProblems, { fields: [bookings.problemId], references: [serviceProblems.id] }),
+  invoice: one(invoices, { fields: [bookings.invoiceId], references: [invoices.id] }),
+}));
+
+export const invoicesRelations = relations(invoices, ({ one }) => ({
+  booking: one(bookings, { fields: [invoices.bookingId], references: [bookings.id] }),
+  provider: one(serviceProviders, { fields: [invoices.providerId], references: [serviceProviders.id] }),
+  user: one(users, { fields: [invoices.userId], references: [users.id] }),
+}));
+
+export const groceryProductsRelations = relations(groceryProducts, ({ one }) => ({
+  provider: one(serviceProviders, { fields: [groceryProducts.providerId], references: [serviceProviders.id] }),
+}));
+
+export const serviceProvidersRelations = relations(serviceProviders, ({ one, many }) => ({
+  user: one(users, { fields: [serviceProviders.userId], references: [users.id] }),
+  category: one(serviceCategories, { fields: [serviceProviders.categoryId], references: [serviceCategories.id] }),
+  bookings: many(bookings),
+  reviews: many(reviews),
+  // The ALIAS that matches your Backend Code
+  beautyServices: many(serviceOfferings),
+  cakeProducts: many(cakeProducts),
+  streetFoodItems: many(streetFoodItems),
+  restaurantMenuItems: many(restaurantMenuItems),
+  restaurantOrders: many(restaurantOrders),
+  groceryProducts: many(groceryProducts),
+  invoices: many(invoices),
+}));
+
+export const serviceOfferingsRelations = relations(serviceOfferings, ({ one }) => ({
+  provider: one(serviceProviders, { fields: [serviceOfferings.providerId], references: [serviceProviders.id] }),
+  template: one(serviceTemplates, { fields: [serviceOfferings.templateId], references: [serviceTemplates.id] }),
+}));
+
+// =========================================
+// MISSING RELATIONS (Add these at the bottom)
+// =========================================
+
+export const cakeProductsRelations = relations(cakeProducts, ({ one }) => ({
+  provider: one(serviceProviders, {
+    fields: [cakeProducts.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
+export const streetFoodItemsRelations = relations(streetFoodItems, ({ one }) => ({
+  provider: one(serviceProviders, {
+    fields: [streetFoodItems.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
+export const restaurantMenuItemsRelations = relations(restaurantMenuItems, ({ one }) => ({
+  provider: one(serviceProviders, {
+    fields: [restaurantMenuItems.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
+
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+  }),
+  provider: one(serviceProviders, {
+    fields: [reviews.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
+// =========================================
+// 7. STREET FOOD ORDERS (NEW)
+// =========================================
+
+
+export const streetFoodOrders = pgTable("street_food_orders", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id").notNull(),
+  providerId: varchar("provider_id").notNull(), // Street food orders might be single provider too
+  items: jsonb("items").$type<Array<{ productId: string; quantity: number; price: number; name: string; providerId: string }>>(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  deliveryAddress: text("delivery_address").notNull(),
+  status: text("status").default("pending"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertStreetFoodOrderSchema = createInsertSchema(streetFoodOrders).pick({
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true,
+});
+
+export type StreetFoodOrder = typeof streetFoodOrders.$inferSelect;
+export type InsertStreetFoodOrder = z.infer<typeof insertStreetFoodOrderSchema>;
+
+export const restaurantOrders = pgTable("restaurant_orders", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id").notNull(),
+  providerId: varchar("provider_id").notNull(),
+  riderId: varchar("rider_id"), // Nullable initially
+  items: jsonb("items").$type<Array<{ menuItemId: string; quantity: number; name: string; price: number }>>(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  deliveryAddress: text("delivery_address").notNull(),
+  status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, delivered, declined, cancelled
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertRestaurantOrderSchema = createInsertSchema(restaurantOrders).pick({
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true,
+});
+
+export type RestaurantOrder = typeof restaurantOrders.$inferSelect;
+export type InsertRestaurantOrder = z.infer<typeof insertRestaurantOrderSchema>;
+
+export const streetFoodOrdersRelations = relations(streetFoodOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [streetFoodOrders.userId],
+    references: [users.id],
+  }),
+}));
+
+export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [restaurantOrders.userId],
+    references: [users.id],
+  }),
+  provider: one(serviceProviders, {
+    fields: [restaurantOrders.providerId],
+    references: [serviceProviders.id],
+  }),
+  rider: one(users, {
+    fields: [restaurantOrders.riderId],
+    references: [users.id],
+  }),
+}));

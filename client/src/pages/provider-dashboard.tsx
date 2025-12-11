@@ -12,6 +12,10 @@ import {
   Booking,
   Invoice,
   User,
+  ServiceTemplate, // NAYA
+  ServiceOffering, // NAYA
+  RestaurantOrder, // NAYA
+  RentalProperty, // NAYA
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,6 +98,7 @@ type ProviderProfileWithCategory = ServiceProvider & {
   category: ServiceCategory;
   profileImageUrl?: string | null;
   galleryImages?: string[] | null;
+  beautyServices?: ServiceOffering[]; // NAYA: Include beautyServices
 };
 
 // Booking API se jaisi aayegi (user aur invoice ke saath)
@@ -128,7 +133,7 @@ const MenuItemsManager: React.FC<{
 }> = ({ providerProfile }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const providerCategorySlug = providerProfile.category.slug;
+  const providerCategorySlug = providerProfile.category?.slug;
 
   const {
     data: menuItems,
@@ -327,6 +332,15 @@ const BookingsManager: React.FC<{
     refetchInterval: 30000,
   });
 
+  // Grocery Orders Fetch karne ka logic
+  const { data: groceryOrders, isLoading: isLoadingOrders } = useQuery<GroceryOrder[]>({
+    queryKey: ["providerGroceryOrders"],
+    queryFn: async () => {
+      const res = await api.get("/provider/grocery-orders");
+      return res.data;
+    },
+  });
+
   // Action mutations (Accept / Decline)
   const updateBookingStatusMutation = useMutation({
     mutationFn: ({
@@ -377,6 +391,11 @@ const BookingsManager: React.FC<{
   const activeBookings = filterBookings(['accepted', 'in_progress', 'awaiting_otp', 'awaiting_billing', 'pending_payment']);
   const completedBookings = filterBookings(['completed', 'declined', 'cancelled']);
 
+  // Determine default tab based on category
+  const defaultTab = (providerProfile.category?.slug === 'cake-shop' || providerProfile.category?.slug === 'grocery')
+    ? "orders"
+    : "new";
+
   if (isLoadingBookings) {
     return (
       <Card>
@@ -418,8 +437,8 @@ const BookingsManager: React.FC<{
   }
 
   return (
-    <Tabs defaultValue="new" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+    <Tabs defaultValue={defaultTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="new">
           New ({newBookings.length})
         </TabsTrigger>
@@ -428,6 +447,9 @@ const BookingsManager: React.FC<{
         </TabsTrigger>
         <TabsTrigger value="completed">
           Completed ({completedBookings.length})
+        </TabsTrigger>
+        <TabsTrigger value="orders">
+          Orders ({groceryOrders?.length || 0})
         </TabsTrigger>
       </TabsList>
 
@@ -453,6 +475,53 @@ const BookingsManager: React.FC<{
           emptyMessage="You have no completed or declined jobs."
           mutations={{ updateBookingStatusMutation }}
         />
+      </TabsContent>
+
+      <TabsContent value="orders" className="mt-6">
+        {!Array.isArray(groceryOrders) || groceryOrders.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <h3 className="text-xl font-semibold">No Orders Yet</h3>
+            <p className="text-muted-foreground mt-2">
+              You haven't received any grocery/cake orders.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {groceryOrders.map((order) => (
+              <Card key={order.id} className="shadow-md border-l-4 border-green-500">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>Order #{order.id.slice(0, 8)}</span>
+                    <Badge className="bg-green-600">
+                      {order.status?.toUpperCase() || "CONFIRMED"}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="bg-muted p-3 rounded-md">
+                    <h4 className="font-medium mb-2 text-sm">Items:</h4>
+                    {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>{item.name} x {item.quantity}</span>
+                        <span>₹{item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                    <div className="border-t mt-2 pt-2 flex justify-between font-bold text-sm">
+                      <span>Total</span>
+                      <span>₹{order.total}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm">
+                    <strong>Delivery Address:</strong> {order.deliveryAddress}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );
@@ -1043,6 +1112,496 @@ const SpecializationsManager: React.FC<{
   );
 };
 
+// --- COMPONENT 4: BEAUTY SERVICE SELECTOR (NAYA COMPONENT) ---
+const BeautyServiceSelector: React.FC<{
+  providerProfile: ProviderProfileWithCategory;
+}> = ({ providerProfile }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const categorySlug = providerProfile.category.slug;
+
+  // 1. Fetch Master Templates
+  const { data: templates, isLoading: isLoadingTemplates } = useQuery<ServiceTemplate[]>({
+    queryKey: ["serviceTemplates", categorySlug],
+    queryFn: async () => {
+      const res = await api.get(`/service-templates/${categorySlug}`);
+      return res.data;
+    },
+  });
+
+  // 2. Use Existing Services from Profile (No extra fetch needed)
+  const existingServices = providerProfile.beautyServices || [];
+
+  // State for form
+  const [selectedServices, setSelectedServices] = useState<Record<string, { price: number; enabled: boolean }>>({});
+
+  // Initialize state when data loads
+  React.useEffect(() => {
+    if (templates) {
+      const initial: Record<string, { price: number; enabled: boolean }> = {};
+
+      // Initialize all templates as disabled first
+      templates.forEach(t => {
+        initial[t.name] = { price: Number(t.defaultPrice), enabled: false };
+      });
+
+      // Override with existing services (match by templateId)
+      if (existingServices.length > 0) {
+        existingServices.forEach(s => {
+          const template = templates.find(t => t.id === s.templateId);
+          if (template && s.isActive) {
+            initial[template.name] = { price: Number(s.price), enabled: true };
+          }
+        });
+      }
+
+      setSelectedServices(initial);
+    }
+  }, [templates, existingServices]);
+
+  const handleToggle = (name: string, checked: boolean, defaultPrice: number) => {
+    setSelectedServices(prev => {
+      const existing = prev[name];
+      // Agar pehle se state mein hai, toh wahi price use karo, warna defaultPrice
+      const priceToUse = existing ? existing.price : defaultPrice;
+
+      return {
+        ...prev,
+        [name]: { price: priceToUse, enabled: checked }
+      };
+    });
+  };
+
+  const handlePriceChange = (name: string, price: string) => {
+    const numPrice = parseFloat(price);
+    if (!isNaN(numPrice)) {
+      setSelectedServices(prev => ({
+        ...prev,
+        [name]: { ...prev[name], price: numPrice }
+      }));
+    }
+  };
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      // Convert state to array for API
+      const servicesToSave = Object.entries(selectedServices)
+        .filter(([_, val]) => val.enabled)
+        .map(([name, val]) => {
+          const template = templates?.find(t => t.name === name);
+          return {
+            templateId: template?.id, // Send templateId
+            price: String(val.price),
+            isActive: true, // Explicitly set active
+          };
+        });
+
+      return api.post("/provider/beauty-services/bulk", { services: servicesToSave });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Services updated successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["providerProfile", providerProfile.userId] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update services.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  if (isLoadingTemplates) {
+    return <div><Loader2 className="animate-spin" /> Loading services...</div>;
+  }
+
+  // Group templates by subCategory
+  const groupedTemplates = templates?.reduce((acc, template) => {
+    const sub = template.subCategory || "Other";
+    if (!acc[sub]) acc[sub] = [];
+    acc[sub].push(template);
+    return acc;
+  }, {} as Record<string, ServiceTemplate[]>) || {};
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Manage Services</CardTitle>
+        <CardDescription>Select the services you offer and set your prices.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-8">
+          {Object.entries(groupedTemplates).map(([subCategory, items]) => (
+            <div key={subCategory}>
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2">{subCategory}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {items.map((item) => {
+                  const state = selectedServices[item.name] || { price: Number(item.defaultPrice), enabled: false };
+                  return (
+                    <div key={item.id} className={`flex items-center space-x-4 p-4 border rounded-lg transition-colors ${state.enabled ? 'bg-accent/10 border-accent' : 'bg-card'}`}>
+                      <Checkbox
+                        id={`srv-${item.id}`}
+                        checked={state.enabled}
+                        onCheckedChange={(checked) => handleToggle(item.name, checked as boolean, Number(item.defaultPrice))}
+                        className="h-5 w-5"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor={`srv-${item.id}`} className="font-medium cursor-pointer">
+                          {item.name}
+                        </Label>
+                      </div>
+                      <div className="w-24">
+                        <Input
+                          type="number"
+                          value={state.price}
+                          onChange={(e) => handlePriceChange(item.name, e.target.value)}
+                          disabled={!state.enabled}
+                          className="h-8"
+                          placeholder="Price"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full md:w-auto">
+          {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          Save Changes
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
+
+// --- COMPONENT 5: RESTAURANT ORDERS MANAGER (NEW) ---
+const RestaurantOrdersManager: React.FC<{
+  providerProfile: ProviderProfileWithCategory;
+}> = ({ providerProfile }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch Live Orders (Polling every 10 seconds)
+  const { data: orders, isLoading } = useQuery<RestaurantOrder[]>({
+    queryKey: ["restaurantOrders", providerProfile.id],
+    queryFn: async () => {
+      const res = await api.get("/restaurant/orders/live");
+      return res.data;
+    },
+    refetchInterval: 10000, // Poll every 10 seconds
+  });
+
+  // Update Status Mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/restaurant/orders/${orderId}/status`, { status }),
+    onSuccess: (data) => {
+      toast({
+        title: "Order Updated",
+        description: `Order status changed to ${data.data.status}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["restaurantOrders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading live orders...
+      </div>
+    );
+  }
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <h3 className="text-xl font-semibold">No Active Orders</h3>
+        <p className="text-muted-foreground mt-2">
+          New orders will appear here automatically.
+        </p>
+      </div>
+    );
+  }
+
+  // Filter orders by status
+  const pendingOrders = orders.filter((o) => o.status === "pending");
+  const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled"].includes(o.status || ""));
+
+  return (
+    <Tabs defaultValue="pending" className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="pending" className="relative">
+          Pending
+          {pendingOrders.length > 0 && (
+            <Badge variant="destructive" className="ml-2 absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full">
+              {pendingOrders.length}
+            </Badge>
+          )}
+        </TabsTrigger>
+        <TabsTrigger value="active">Active ({activeOrders.length})</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pending" className="mt-6 space-y-4">
+        {pendingOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No pending orders.</p>
+        ) : (
+          pendingOrders.map((order) => (
+            <RestaurantOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isPending={true}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="active" className="mt-6 space-y-4">
+        {activeOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No active orders.</p>
+        ) : (
+          activeOrders.map((order) => (
+            <RestaurantOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="history" className="mt-6 space-y-4">
+        {pastOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No order history.</p>
+        ) : (
+          pastOrders.map((order) => (
+            <RestaurantOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isHistory={true}
+            />
+          ))
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const RestaurantOrderCard: React.FC<{
+  order: RestaurantOrder & { user?: any; rider?: any };
+  onStatusChange: (id: string, status: string) => void;
+  isPending?: boolean;
+  isHistory?: boolean;
+}> = ({ order, onStatusChange, isPending, isHistory }) => {
+  return (
+    <Card className={`shadow-md ${isPending ? "border-l-4 border-orange-500 animate-in fade-in slide-in-from-bottom-2" : ""}`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
+            <CardDescription>
+              {new Date(order.createdAt || new Date()).toLocaleTimeString()} - {order.user?.username || "Guest"}
+            </CardDescription>
+          </div>
+          <Badge variant={isPending ? "destructive" : "outline"}>
+            {order.status?.toUpperCase().replace(/_/g, " ")}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="bg-muted/50 p-3 rounded-md mb-3">
+          {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+            <div key={idx} className="flex justify-between text-sm mb-1">
+              <span>{item.quantity} x {item.name}</span>
+              <span className="font-medium">₹{item.price * item.quantity}</span>
+            </div>
+          ))}
+          <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+            <span>Total</span>
+            <span>₹{order.totalAmount}</span>
+          </div>
+        </div>
+        <div className="text-sm space-y-1">
+          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+          {order.rider && (
+            <p className="text-blue-600"><strong>Rider:</strong> {order.rider.username} ({order.rider.phone})</p>
+          )}
+        </div>
+      </CardContent>
+      {!isHistory && (
+        <CardFooter className="flex justify-end gap-2 pt-2">
+          {isPending ? (
+            <>
+              <Button variant="destructive" size="sm" onClick={() => onStatusChange(order.id, "declined")}>
+                Decline
+              </Button>
+              <Button className="bg-green-600 hover:bg-green-700" size="sm" onClick={() => onStatusChange(order.id, "accepted")}>
+                Accept Order
+              </Button>
+            </>
+          ) : (
+            <>
+              {order.status === "accepted" && (
+                <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+                  Start Preparing
+                </Button>
+              )}
+              {order.status === "preparing" && (
+                <Button className="bg-orange-500 hover:bg-orange-600" size="sm" onClick={() => onStatusChange(order.id, "ready_for_pickup")}>
+                  Ready for Pickup
+                </Button>
+              )}
+              {order.status === "ready_for_pickup" && (
+                <span className="text-sm text-muted-foreground italic">Waiting for rider...</span>
+              )}
+            </>
+          )}
+        </CardFooter>
+      )}
+    </Card>
+  );
+};
+
+// --- COMPONENT 6: RENTAL MANAGER (NEW) ---
+const RentalManager: React.FC<{
+  providerProfile: ProviderProfileWithCategory;
+}> = ({ providerProfile }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: properties, isLoading } = useQuery<RentalProperty[]>({
+    queryKey: ["providerProperties", providerProfile.userId],
+    queryFn: async () => {
+      const res = await api.get("/provider/rental-properties");
+      return res.data;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/rental-properties/${id}`),
+    onSuccess: () => {
+      toast({ title: "Property Deleted", description: "Listing removed successfully." });
+      queryClient.invalidateQueries({ queryKey: ["providerProperties"] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      api.patch(`/rental-properties/${id}`, { status }),
+    onSuccess: () => {
+      toast({ title: "Status Updated", description: "Property status changed." });
+      queryClient.invalidateQueries({ queryKey: ["providerProperties"] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  if (isLoading) return <div><Loader2 className="animate-spin" /> Loading properties...</div>;
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>My Rental Listings</CardTitle>
+          <CardDescription>Manage your property listings.</CardDescription>
+        </div>
+        <Button asChild>
+          <Link href="/list-property">
+            <PlusCircle className="mr-2 h-4 w-4" /> List New Property
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {!properties || properties.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <h3 className="text-xl font-semibold">No Properties Listed</h3>
+            <p className="text-muted-foreground mt-2">List your first property to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {properties.map(property => (
+              <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  {property.images && property.images[0] ? (
+                    <img src={property.images[0]} alt={property.title} className="w-16 h-16 object-cover rounded" />
+                  ) : (
+                    <div className="w-16 h-16 bg-muted rounded flex items-center justify-center"><Home className="h-6 w-6 opacity-20" /></div>
+                  )}
+                  <div>
+                    <h4 className="font-semibold">{property.title}</h4>
+                    <div className="text-sm text-muted-foreground">
+                      ₹{property.rent}/mo • {property.locality}
+                    </div>
+                    <Badge variant={property.status === 'available' ? 'default' : 'secondary'} className="mt-1">
+                      {property.status?.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/properties/${property.id}`}>View</Link>
+                  </Button>
+                  {property.status === 'available' ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => toggleStatusMutation.mutate({ id: property.id, status: 'rented' })}
+                      disabled={toggleStatusMutation.isPending}
+                    >
+                      Mark Rented
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleStatusMutation.mutate({ id: property.id, status: 'available' })}
+                      disabled={toggleStatusMutation.isPending}
+                    >
+                      Mark Available
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => {
+                      if (confirm('Delete this listing?')) deleteMutation.mutate(property.id);
+                    }}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 // --- COMPONENT 4: PROFILE SETTINGS (Waise ka waisa) ---
 const ProfileSettingsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
@@ -1221,10 +1780,10 @@ const menuBasedCategories = [
   "beauty",
   "cake-shop",
   "street-food",
-  "restaurants",
   "grocery",
 ];
 const bookingBasedCategories = ["electrician", "plumber"];
+const restaurantCategory = "restaurants";
 
 // --- MAIN DASHBOARD COMPONENT (Ab yeh smart hai) ---
 const ProviderDashboard: React.FC = () => {
@@ -1296,6 +1855,8 @@ const ProviderDashboard: React.FC = () => {
     const slug = providerProfile.category.slug;
     if (menuBasedCategories.includes(slug)) return "menu";
     if (bookingBasedCategories.includes(slug)) return "booking";
+    if (slug === restaurantCategory) return "restaurant";
+    if (slug === "rental") return "rental"; // NAYA
     return "unknown";
   };
 
@@ -1312,15 +1873,34 @@ const ProviderDashboard: React.FC = () => {
       tabs.unshift({ value: "menu", label: "Menu / Services" });
       tabs.unshift({ value: "bookings", label: "Bookings" }); // Menu waalon ko bhi booking aa sakti hai
     }
+    // Beauty Parlor Logic
+    if (type === "menu" && providerProfile.category.slug === "beauty") {
+      // Replace "menu" with "services" for beauty
+      const menuIndex = tabs.findIndex(t => t.value === "menu");
+      if (menuIndex !== -1) {
+        tabs[menuIndex] = { value: "beauty-services", label: "My Services" };
+      }
+    }
+
     if (type === "booking") {
       tabs.push({ value: "specializations", label: "My Specializations" });
       tabs.unshift({ value: "bookings", label: "Bookings" });
     }
+
+    if (type === "restaurant") {
+      tabs.unshift({ value: "menu", label: "Menu Management" });
+      tabs.unshift({ value: "live-orders", label: "Live Orders" });
+    }
+
+    if (type === "rental") {
+      tabs.unshift({ value: "rental-listings", label: "My Properties" });
+    }
+
     return tabs;
   };
 
   const tabs = getTabs();
-  const defaultTab = "bookings"; // Sabse important tab
+  const defaultTab = type === "restaurant" ? "live-orders" : (type === "rental" ? "rental-listings" : "bookings"); // Sabse important tab
 
   return (
     <div className="container mx-auto py-8">
@@ -1329,7 +1909,7 @@ const ProviderDashboard: React.FC = () => {
       </h1>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className={`grid w-full grid-cols-${tabs.length}`}>
+        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
@@ -1342,10 +1922,26 @@ const ProviderDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="menu" className="mt-6">
-          {type === "menu" ? (
+          {type === "menu" || type === "restaurant" ? (
             <MenuItemsManager providerProfile={providerProfile} />
           ) : null}
         </TabsContent>
+
+        <TabsContent value="live-orders" className="mt-6">
+          {type === "restaurant" ? (
+            <RestaurantOrdersManager providerProfile={providerProfile} />
+          ) : null}
+        </TabsContent>
+
+        <TabsContent value="beauty-services" className="mt-6">
+          <BeautyServiceSelector providerProfile={providerProfile} />
+        </TabsContent>
+
+        <TabsContent value="rental-listings" className="mt-6">
+          <RentalManager providerProfile={providerProfile} />
+        </TabsContent>
+
+
 
         <TabsContent value="specializations" className="mt-6">
           {type === "booking" ? (

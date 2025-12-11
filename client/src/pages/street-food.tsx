@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Sandwich, Flame, Leaf, MapPin, Star, Phone } from "lucide-react";
+import { ArrowLeft, Sandwich, Flame, Leaf, MapPin, Star, Phone, ShoppingBag } from "lucide-react";
 
 // --- YEH NAYE IMPORTS ADD KIYE HAIN ---
 import { useCartStore } from "@/hooks/use-cart-store";
@@ -37,7 +37,7 @@ export default function StreetFood() {
 
   // --- YEH NAYI LINES ADD KI HAIN ---
   const { toast } = useToast();
-  const addItemToCart = useCartStore((state) => state.addItem);
+  const { addItem: addItemToCart, items: cartItems, getTotalPrice } = useCartStore();
 
   const handleOrderNow = (item: any) => {
     addItemToCart({
@@ -45,6 +45,8 @@ export default function StreetFood() {
       name: item.name,
       price: parseFloat(item.price), // Price ko number me convert kiya
       imageUrl: item.imageUrl,
+      providerId: item.providerId,
+      itemType: 'street_food',
     });
     toast({
       title: "✅ Added to Cart!",
@@ -207,7 +209,7 @@ export default function StreetFood() {
 
                     <div className="flex gap-2">
                       <Link href={`/street-food/${vendor.id}`}>
-                        <Button as="a" className="flex-1" data-testid={`button-menu-${vendor.id}`}>
+                        <Button className="flex-1" data-testid={`button-menu-${vendor.id}`}>
                           View Menu
                         </Button>
                       </Link>
@@ -289,7 +291,7 @@ export default function StreetFood() {
                       {item.spicyLevel && (
                         <Badge variant={
                           item.spicyLevel === 'Hot' ? 'destructive' :
-                          item.spicyLevel === 'Medium' ? 'default' : 'secondary'
+                            item.spicyLevel === 'Medium' ? 'default' : 'secondary'
                         } className="flex items-center gap-1">
                           <Flame className="h-3 w-3" />
                           {item.spicyLevel}
@@ -325,6 +327,24 @@ export default function StreetFood() {
           )}
         </div>
       </section>
+
+      {/* Cart Summary Bar */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-lg border-t z-50 animate-slide-up-fast">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground">{cartItems.reduce((total, item) => total + item.quantity, 0)} Items</p>
+              <p className="text-xl font-bold">₹{getTotalPrice().toFixed(2)}</p>
+            </div>
+            <Link href="/checkout">
+              <Button size="lg">
+                Proceed to Checkout
+                <ShoppingBag className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

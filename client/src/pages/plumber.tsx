@@ -1,91 +1,85 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import ProviderCard from "@/components/provider-card";
-import CallRequestModal from "@/components/call-request-modal";
-import { ArrowLeft, Wrench, Droplets, Aperture, ShowerHead, ChevronRight } from "lucide-react";
+import { ArrowLeft, Search, Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import type { ServiceProvider, ServiceProblem, User, ServiceCategory } from "@shared/schema";
 
-const problemCategories = [
-  {
-    id: "leakage",
-    name: "Water Leakage",
-    icon: Droplets,
-    subcategories: [
-      "Pipe Leakage",
-      "Tap Leaking",
-      "Toilet Leakage",
-      "Ceiling Leak",
-      "Underground Leak"
-    ]
-  },
-  {
-    id: "blockage",
-    name: "Drain Blockage",
-    icon: Aperture,
-    subcategories: [
-      "Kitchen Sink Block",
-      "Bathroom Drain Block", 
-      "Toilet Blockage",
-      "Main Drain Block",
-      "Other Blockage"
-    ]
-  },
-  {
-    id: "installation",
-    name: "New Installation",
-    icon: ShowerHead,
-    subcategories: [
-      "Bathroom Fitting",
-      "Kitchen Setup",
-      "Water Heater",
-      "Water Pump",
-      "Other Installation"
-    ]
-  },
-  {
-    id: "repair",
-    name: "Repair & Maintenance",
-    icon: Wrench,
-    subcategories: [
-      "Tap Repair",
-      "Flush Repair",
-      "Pipe Repair",
-      "Water Motor",
-      "General Repair"
-    ]
-  }
-];
+type PlumberProvider = ServiceProvider & { user: User; category: ServiceCategory };
 
 export default function Plumber() {
   const [, setLocation] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
-  const [sortBy, setSortBy] = useState("distance");
-  const [callModalOpen, setCallModalOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAppliance, setSelectedAppliance] = useState("");
+  const [selectedProblem, setSelectedProblem] = useState("");
 
-  const { data: providers, isLoading } = useQuery({
-    queryKey: ["/api/service-providers", { category: "plumber" }],
+  // 1. Get all plumbers (Profiles)
+  const { data: providers, isLoading: providersLoading } = useQuery<PlumberProvider[]>({
+    queryKey: ["service-providers", "plumber"],
+    queryFn: () =>
+      apiRequest("GET", "/api/service-providers?category=plumber")
+        .then(res => res.json()),
   });
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setSelectedSubcategory("");
-  };
+  // 2. Get appliance categories (Parent Problems)
+  const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
+    queryKey: ["service-problems", "plumber"],
+    queryFn: () =>
+      apiRequest("GET", "/api/service-problems?category=plumber")
+        .then(res => res.json()),
+  });
 
-  const handleSubcategorySelect = (subcategory: string) => {
-    setSelectedSubcategory(subcategory);
-  };
+  // 3. Get problems for selected appliance (Child Problems)
+  const { data: problems, isLoading: problemsLoading } = useQuery<ServiceProblem[]>({
+    queryKey: ["service-problems", "plumber", selectedAppliance],
+    queryFn: () =>
+      apiRequest("GET", `/api/service-problems?category=plumber&parentId=${selectedAppliance}`)
+        .then(res => res.json()),
+    enabled: !!selectedAppliance,
+  });
 
-  const handleCallRequest = (provider: any) => {
-    setSelectedProvider(provider);
-    setCallModalOpen(true);
-  };
+  // Filter providers based on search and selected problem/appliance
+  const filteredProviders = useMemo(() => {
+    if (!providers) return [];
 
-  const selectedCategoryData = problemCategories.find(cat => cat.id === selectedCategory);
+    let filtered = providers;
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter((provider) =>
+        provider.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        provider.address?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Specialization (Appliance) filter
+    if (selectedAppliance) {
+      const applianceName = appliances?.find(a => a.id === selectedAppliance)?.name;
+      if (applianceName) {
+        filtered = filtered.filter(provider =>
+          provider.specializations?.includes(applianceName)
+        );
+      }
+    }
+
+    return filtered;
+  }, [providers, searchQuery, selectedAppliance, appliances]);
+
+  const handleApplianceChange = (value: string) => {
+    setSelectedAppliance(value);
+    setSelectedProblem(""); // Reset problem selection
+  };
 
   return (
     <div className="py-16 bg-background">
@@ -104,133 +98,153 @@ export default function Plumber() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Find Plumbers</h2>
           <p className="text-muted-foreground">
-            Select your problem and we'll show you the best plumbers near you
+            Search by name or filter by appliance and problem
           </p>
         </div>
 
-        {/* Problem Selection */}
+        {/* Search and Filter Bar */}
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>What's your problem?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Main Categories */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {problemCategories.map((category) => (
-                <div
-                  key={category.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedCategory === category.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary hover:bg-primary/5"
-                  }`}
-                  onClick={() => handleCategorySelect(category.id)}
-                  data-testid={`category-${category.id}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <category.icon className="h-5 w-5 text-primary" />
-                      <span className="font-medium">{category.name}</span>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search plumbers by name or location..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  data-testid="input-search-plumber"
+                />
+              </div>
 
-            {/* Subcategory Selection */}
-            {selectedCategoryData && (
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <h4 className="font-medium mb-3">Select specific issue:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCategoryData.subcategories.map((subcategory) => (
-                      <Button
-                        key={subcategory}
-                        variant={selectedSubcategory === subcategory ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleSubcategorySelect(subcategory)}
-                        data-testid={`subcategory-${subcategory.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {subcategory}
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              {/* Appliance and Problem Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Appliance Dropdown */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Select Appliance
+                  </label>
+                  <Select
+                    value={selectedAppliance}
+                    onValueChange={handleApplianceChange}
+                    disabled={appliancesLoading}
+                  >
+                    <SelectTrigger data-testid="select-appliance">
+                      <SelectValue placeholder={appliancesLoading ? "Loading..." : "Choose an appliance"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {appliances?.map((appliance: any) => (
+                        <SelectItem
+                          key={appliance.id}
+                          value={appliance.id}
+                          data-testid={`appliance-${appliance.id}`}
+                        >
+                          {appliance.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Problem Dropdown */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Select Problem
+                  </label>
+                  <Select
+                    value={selectedProblem}
+                    onValueChange={setSelectedProblem}
+                    disabled={!selectedAppliance || problemsLoading}
+                  >
+                    <SelectTrigger data-testid="select-problem">
+                      <SelectValue placeholder={
+                        problemsLoading ? "Loading..." :
+                          selectedAppliance
+                            ? "Choose a problem"
+                            : "Select appliance first"
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {problems?.map((problem: any) => (
+                        <SelectItem
+                          key={problem.id}
+                          value={problem.id}
+                          data-testid={`problem-${problem.id}`}
+                        >
+                          {problem.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Active Filters Display */}
+              {(selectedAppliance || selectedProblem) && (
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="text-sm text-muted-foreground">
+                    Active filters:
+                  </span>
+                  {selectedAppliance && (
+                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                      {appliances?.find((a: any) => a.id === selectedAppliance)?.name}
+                    </span>
+                  )}
+                  {selectedProblem && (
+                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                      {problems?.find((p: any) => p.id === selectedProblem)?.name}
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedAppliance("");
+                      setSelectedProblem("");
+                    }}
+                    data-testid="button-clear-filters"
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Available Plumbers */}
+        {/* Plumbers List */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold">Available Plumbers Near You</h3>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="distance">Distance</SelectItem>
-                  <SelectItem value="rating">Rating</SelectItem>
-                  <SelectItem value="experience">Experience</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <h3 className="text-xl font-semibold mb-4">
+            Available Plumbers ({filteredProviders?.length || 0})
+          </h3>
 
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="flex space-x-4">
-                      <div className="w-16 h-16 bg-muted rounded-lg"></div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-muted rounded w-1/4"></div>
-                        <div className="h-3 bg-muted rounded w-1/2"></div>
-                        <div className="h-3 bg-muted rounded w-1/3"></div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {providersLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
+              <p className="text-muted-foreground mt-2">Loading plumbers...</p>
             </div>
+          ) : filteredProviders?.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">
+                  No plumbers found. Try adjusting your filters.
+                </p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="space-y-4">
-              {providers?.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No plumbers found</h3>
-                    <p className="text-muted-foreground">
-                      Try adjusting your location or check back later for available providers.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                providers?.map((provider: any) => (
-                  <ProviderCard
-                    key={provider.id}
-                    provider={provider}
-                    onCallRequest={() => handleCallRequest(provider)}
-                    onSchedule={() => {}}
-                  />
-                ))
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProviders?.map((provider: any) => (
+                <ProviderCard
+                  key={provider.id}
+                  provider={provider}
+                  categorySlug="plumber"
+                />
+              ))}
             </div>
           )}
         </div>
       </div>
-
-      {/* Call Request Modal */}
-      <CallRequestModal
-        open={callModalOpen}
-        onClose={() => setCallModalOpen(false)}
-        provider={selectedProvider}
-      />
     </div>
   );
 }

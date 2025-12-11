@@ -5,7 +5,6 @@ import {
   serviceProviders,
   serviceCategories,
   serviceProblems,
-  beautyServices,
   cakeProducts,
   groceryProducts,
   rentalProperties,
@@ -14,7 +13,7 @@ import {
   reviews,
   streetFoodItems,
   restaurantMenuItems,
-  tableBookings,
+
   invoices, // NAYA IMPORT
   type User,
   type InsertUser,
@@ -28,19 +27,30 @@ import {
   type InsertRentalProperty,
   type ServiceCategory,
   type ServiceProblem,
-  type BeautyService,
   type CakeProduct,
   type GroceryProduct,
   type Review,
   type StreetFoodItem,
   type RestaurantMenuItem,
-  type TableBooking,
-  type InsertTableBooking,
+
   type Invoice,
   type InsertInvoice, // NAYE TYPES
+  serviceTemplates,
+  type ServiceTemplate,
+  type InsertServiceTemplate,
+  serviceOfferings,
+  type ServiceOffering,
+  type InsertServiceOffering,
+  insertServiceOfferingSchema,
+  streetFoodOrders,
+  type StreetFoodOrder,
+  type InsertStreetFoodOrder,
+  restaurantOrders,
+  type RestaurantOrder,
+  type InsertRestaurantOrder,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, asc, gt } from "drizzle-orm";
+import { eq, and, sql, desc, asc, gt, lt, gte, lte } from "drizzle-orm";
 // NAYE IMPORTS
 import { sendOtpNotification } from "./twilio-client";
 import { razorpayInstance } from "./razorpay-client";
@@ -98,7 +108,13 @@ export interface IStorage {
     parentId?: string,
   ): Promise<ServiceProblem[]>;
   // Other services...
-  getBeautyServices(providerId: string): Promise<BeautyService[]>;
+  getServiceTemplates(categorySlug: string): Promise<ServiceTemplate[]>;
+  bulkUpdateServiceOfferings(
+    providerId: string,
+    offerings: InsertServiceOffering[]
+  ): Promise<ServiceOffering[]>;
+  getServiceOfferings(providerId: string): Promise<ServiceOffering[]>;
+
   getCakeProducts(providerId: string): Promise<CakeProduct[]>;
   getGroceryProducts(
     providerId?: string,
@@ -108,12 +124,19 @@ export interface IStorage {
   getRentalProperties(
     filters: any,
   ): Promise<(RentalProperty & { owner: User })[]>;
+  getProviderRentalProperties(ownerId: string): Promise<RentalProperty[]>;
   getRentalProperty(
     id: string,
   ): Promise<(RentalProperty & { owner: User }) | undefined>;
   createRentalProperty(
     property: InsertRentalProperty & { ownerId: string },
   ): Promise<RentalProperty>;
+  updateRentalProperty(
+    id: string,
+    updates: Partial<InsertRentalProperty> & { status?: string },
+  ): Promise<RentalProperty | undefined>;
+  deleteRentalProperty(id: string): Promise<void>;
+  auditRentalProperties(): Promise<RentalProperty[]>;
 
   // Bookings (UPDATED INTERFACE)
   createBooking(
@@ -184,7 +207,8 @@ export interface IStorage {
     orderId: string,
     rzpPaymentId: string,
     rzpSignature: string,
-  ): Promise<GroceryOrder | undefined>;
+    orderType?: 'grocery' | 'street_food',
+  ): Promise<GroceryOrder | StreetFoodOrder | undefined>;
 
   // Reviews
   createReview(review: {
@@ -202,12 +226,12 @@ export interface IStorage {
   ): Promise<StreetFoodItem[]>;
   getRestaurantMenuItems(providerId?: string): Promise<RestaurantMenuItem[]>;
   // Table bookings
-  createTableBooking(
-    booking: InsertTableBooking & { userId: string; providerId: string },
-  ): Promise<TableBooking>;
-  getTableBooking(id: string): Promise<TableBooking | undefined>;
-  updateTableBookingStatus(id: string, status: string): Promise<TableBooking>;
-  getUserTableBookings(userId: string): Promise<TableBooking[]>;
+  // Restaurant Orders
+  createRestaurantOrder(order: InsertRestaurantOrder & { userId: string }): Promise<RestaurantOrder>;
+  getRestaurantOrder(id: string): Promise<RestaurantOrder | undefined>;
+  getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]>;
+  getRiderOrders(riderId?: string): Promise<RestaurantOrder[]>;
+  updateRestaurantOrderStatus(id: string, status: string, riderId?: string): Promise<RestaurantOrder>;
   // Menu Management
   createMenuItem(
     itemData: any,
@@ -229,9 +253,26 @@ export interface IStorage {
     providerId: string,
     categorySlug: string,
   ): Promise<any[]>;
+
+  // Street Food Orders
+  createStreetFoodOrder(order: InsertStreetFoodOrder & { userId: string }): Promise<StreetFoodOrder>;
+  getStreetFoodOrder(id: string): Promise<StreetFoodOrder | undefined>;
+  getRunnerOrders(runnerId?: string): Promise<StreetFoodOrder[]>;
+  updateStreetFoodOrderStatus(id: string, status: string): Promise<StreetFoodOrder>;
+  createStreetFoodVendor(vendor: InsertServiceProvider): Promise<ServiceProvider>;
+  deleteStreetFoodVendor(id: string): Promise<void>;
+  createStreetFoodItem(item: InsertStreetFoodItem): Promise<StreetFoodItem>;
+  deleteStreetFoodItem(id: string): Promise<void>;
+  updateStreetFoodItem(id: string, updates: Partial<InsertStreetFoodItem>): Promise<StreetFoodItem | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
+  updateStripeCustomerId(userId: string, customerId: string): Promise<User> {
+    throw new Error("Method not implemented.");
+  }
+  updateUserStripeInfo(userId: string, info: { customerId: string; subscriptionId: string; }): Promise<User> {
+    throw new Error("Method not implemented.");
+  }
   // --- User Operations (No Change) ---
   async getUser(id: string): Promise<User | undefined> {
     return db.query.users.findFirst({ where: eq(users.id, id) });
@@ -269,9 +310,14 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
+    const withRelations: any = { user: true, category: true };
+    if (categorySlug === "cake-shop") {
+      withRelations.cakeProducts = true;
+    }
+
     const results = await db.query.serviceProviders.findMany({
       where: and(...conditions),
-      with: { user: true, category: true },
+      with: withRelations,
       orderBy: [desc(serviceProviders.rating)],
     });
 
@@ -282,10 +328,21 @@ export class DatabaseStorage implements IStorage {
     const result = await db.query.serviceProviders.findFirst({
       where: eq(serviceProviders.id, id),
       with: {
-        user: true,
         category: true,
+        beautyServices: { with: { template: true } },
+        cakeProducts: true,
+        streetFoodItems: true,
+        restaurantMenuItems: true,
       },
     });
+
+    // Safety check
+    if (result && !result.beautyServices) {
+      (result as any).beautyServices = [];
+    }
+
+
+
     return result as any;
   }
 
@@ -655,7 +712,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
+      amount: Number(razorpayOrder.amount),
       currency: razorpayOrder.currency,
       invoice: updatedInvoice,
     };
@@ -718,6 +775,7 @@ export class DatabaseStorage implements IStorage {
       total: order.total,
       deliveryAddress: order.deliveryAddress,
       userId: order.userId,
+      providerId: order.providerId, // NAYA FIELD
     };
     const [newOrder] = await db
       .insert(groceryOrders)
@@ -741,30 +799,85 @@ export class DatabaseStorage implements IStorage {
   async updateOrderWithRazorpayOrderId(
     orderId: string,
     razorpayOrderId: string,
-  ): Promise<GroceryOrder | undefined> {
-    const [order] = await db
-      .update(groceryOrders)
-      .set({ razorpayOrderId: razorpayOrderId })
-      .where(eq(groceryOrders.id, orderId))
-      .returning();
-    return order;
+    orderType: 'grocery' | 'street_food' | 'restaurant' = 'grocery',
+  ): Promise<GroceryOrder | StreetFoodOrder | RestaurantOrder | undefined> {
+    if (orderType === 'street_food') {
+      const [order] = await db
+        .update(streetFoodOrders)
+        .set({ razorpayOrderId: razorpayOrderId })
+        .where(eq(streetFoodOrders.id, orderId))
+        .returning();
+      return order;
+    } else if (orderType === 'restaurant') {
+      const [order] = await db
+        .update(restaurantOrders)
+        .set({ razorpayOrderId: razorpayOrderId })
+        .where(eq(restaurantOrders.id, orderId))
+        .returning();
+      return order;
+    } else {
+      const [order] = await db
+        .update(groceryOrders)
+        .set({ razorpayOrderId: razorpayOrderId })
+        .where(eq(groceryOrders.id, orderId))
+        .returning();
+      return order;
+    }
   }
 
   async verifyAndUpdateOrderPayment(
     orderId: string,
     rzpPaymentId: string,
     rzpSignature: string,
-  ): Promise<GroceryOrder | undefined> {
-    const [order] = await db
-      .update(groceryOrders)
-      .set({
-        razorpayPaymentId: rzpPaymentId,
-        razorpaySignature: rzpSignature,
-        status: "confirmed",
-      })
-      .where(eq(groceryOrders.id, orderId))
-      .returning();
-    return order;
+    orderType: 'grocery' | 'street_food' | 'restaurant' = 'grocery',
+  ): Promise<GroceryOrder | StreetFoodOrder | RestaurantOrder | undefined> {
+    if (orderType === 'street_food') {
+      const [order] = await db
+        .update(streetFoodOrders)
+        .set({
+          razorpayPaymentId: rzpPaymentId,
+          // razorpaySignature: rzpSignature,
+          status: "confirmed", // or "paid"
+        })
+        .where(eq(streetFoodOrders.id, orderId))
+        .returning();
+      return order;
+    } else if (orderType === 'restaurant') {
+      const [order] = await db
+        .update(restaurantOrders)
+        .set({
+          razorpayPaymentId: rzpPaymentId,
+          status: "accepted", // Auto-accept upon payment (Direct Payment flow)
+        })
+        .where(eq(restaurantOrders.id, orderId))
+        .returning();
+      return order;
+    } else {
+      const [order] = await db
+        .update(groceryOrders)
+        .set({
+          razorpayPaymentId: rzpPaymentId,
+          razorpaySignature: rzpSignature,
+          status: "confirmed",
+        })
+        .where(eq(groceryOrders.id, orderId))
+        .returning();
+      return order;
+    }
+  }
+
+  async getGroceryOrdersByUser(userId: string): Promise<GroceryOrder[]> {
+    return db.query.groceryOrders.findMany({
+      where: eq(groceryOrders.userId, userId),
+      orderBy: (groceryOrders, { desc }) => [desc(groceryOrders.createdAt)],
+    });
+  }
+
+  async getGroceryOrdersByProvider(providerId: string): Promise<GroceryOrder[]> {
+    return db.query.groceryOrders.findMany({
+      where: eq(groceryOrders.providerId, providerId),
+      orderBy: (groceryOrders, { desc }) => [desc(groceryOrders.createdAt)],
+    });
   }
 
   async createRentalProperty(
@@ -786,6 +899,13 @@ export class DatabaseStorage implements IStorage {
       amenities: property.amenities,
       images: property.images,
       ownerId: property.ownerId,
+      // New fields
+      deposit: property.deposit,
+      noticePeriod: property.noticePeriod,
+      status: property.status || 'available',
+      ownerNote: property.ownerNote,
+      contactPhone: property.contactPhone,
+      contactEmail: property.contactEmail,
     };
     const [newProperty] = await db
       .insert(rentalProperties)
@@ -794,11 +914,72 @@ export class DatabaseStorage implements IStorage {
     return newProperty;
   }
 
-  async getBeautyServices(providerId: string): Promise<BeautyService[]> {
-    return db.query.beautyServices.findMany({
-      where: eq(beautyServices.providerId, providerId),
+  async updateRentalProperty(
+    id: string,
+    updates: Partial<InsertRentalProperty> & { status?: string },
+  ): Promise<RentalProperty | undefined> {
+    const [updatedProperty] = await db
+      .update(rentalProperties)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(rentalProperties.id, id))
+      .returning();
+    return updatedProperty;
+  }
+
+  async deleteRentalProperty(id: string): Promise<void> {
+    await db.delete(rentalProperties).where(eq(rentalProperties.id, id));
+  }
+
+  async auditRentalProperties(): Promise<RentalProperty[]> {
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    return db.query.rentalProperties.findMany({
+      where: and(
+        lt(rentalProperties.updatedAt, ninetyDaysAgo),
+        eq(rentalProperties.status, 'available')
+      )
     });
   }
+
+  async getServiceTemplates(categorySlug: string): Promise<ServiceTemplate[]> {
+    return db.query.serviceTemplates.findMany({
+      where: eq(serviceTemplates.categorySlug, categorySlug),
+    });
+  }
+
+  async bulkUpdateServiceOfferings(
+    providerId: string,
+    offerings: InsertServiceOffering[]
+  ): Promise<ServiceOffering[]> {
+    // 1. Delete existing offerings for this provider
+    await db.delete(serviceOfferings).where(eq(serviceOfferings.providerId, providerId));
+
+    if (offerings.length === 0) {
+      return [];
+    }
+
+    // 2. Insert new offerings
+    const offeringsToInsert = offerings.map((s) => ({
+      ...s,
+      providerId,
+    }));
+
+    const insertedOfferings = await db
+      .insert(serviceOfferings)
+      .values(offeringsToInsert)
+      .returning();
+
+    return insertedOfferings;
+  }
+
+  async getServiceOfferings(providerId: string): Promise<ServiceOffering[]> {
+    return db.query.serviceOfferings.findMany({
+      where: eq(serviceOfferings.providerId, providerId),
+    });
+  }
+
+
   async getCakeProducts(providerId: string): Promise<CakeProduct[]> {
     return db.query.cakeProducts.findMany({
       where: eq(cakeProducts.providerId, providerId),
@@ -904,13 +1085,45 @@ export class DatabaseStorage implements IStorage {
     maxRent?: number;
     furnishing?: string;
     locality?: string;
+    bedrooms?: number;
   }) {
+    const conditions = [eq(rentalProperties.status, 'available')];
+
+    if (filters.propertyType) {
+      conditions.push(eq(rentalProperties.propertyType, filters.propertyType));
+    }
+    if (filters.minRent) {
+      conditions.push(gte(rentalProperties.rent, filters.minRent.toString()));
+    }
+    if (filters.maxRent) {
+      conditions.push(lte(rentalProperties.rent, filters.maxRent.toString()));
+    }
+    if (filters.furnishing) {
+      conditions.push(eq(rentalProperties.furnishing, filters.furnishing));
+    }
+    if (filters.bedrooms) {
+      conditions.push(eq(rentalProperties.bedrooms, filters.bedrooms));
+    }
+    // Locality search (partial match)
+    if (filters.locality) {
+      conditions.push(sql`${rentalProperties.locality} ILIKE ${`%${filters.locality}%`}`);
+    }
+
     return db.query.rentalProperties.findMany({
+      where: and(...conditions),
       with: { owner: true },
       orderBy: [desc(rentalProperties.createdAt)],
     }) as any;
   }
-  async getRentalProperty(id: string) {
+
+  async getProviderRentalProperties(ownerId: string): Promise<RentalProperty[]> {
+    return db.query.rentalProperties.findMany({
+      where: eq(rentalProperties.ownerId, ownerId),
+      orderBy: [desc(rentalProperties.createdAt)],
+    });
+  }
+
+  async getRentalProperty(id: string): Promise<(RentalProperty & { owner: User }) | undefined> {
     return db.query.rentalProperties.findFirst({
       where: eq(rentalProperties.id, id),
       with: { owner: true },
@@ -949,12 +1162,7 @@ export class DatabaseStorage implements IStorage {
 
   private getMenuTableInfo(categorySlug: string) {
     switch (categorySlug) {
-      case "beauty":
-        return {
-          table: beautyServices,
-          idField: beautyServices.id,
-          providerIdField: beautyServices.providerId,
-        };
+
       case "cake-shop":
         return {
           table: cakeProducts,
@@ -1040,6 +1248,118 @@ export class DatabaseStorage implements IStorage {
     const { table, providerIdField } = this.getMenuTableInfo(categorySlug);
     return db.select().from(table).where(eq(providerIdField, providerId));
   }
+
+  // --- STREET FOOD ORDER METHODS ---
+
+  async createStreetFoodOrder(order: InsertStreetFoodOrder & { userId: string }): Promise<StreetFoodOrder> {
+    const [newOrder] = await db.insert(streetFoodOrders).values(order).returning();
+    // Ensure ID is present. If Drizzle fails to return it (rare), we might need to fetch it? 
+    // But returning() should work. 
+    return newOrder;
+  }
+
+  async getStreetFoodOrder(id: string): Promise<StreetFoodOrder | undefined> {
+    const [order] = await db.select().from(streetFoodOrders).where(eq(streetFoodOrders.id, id));
+    return order;
+  }
+
+  async getRunnerOrders(): Promise<StreetFoodOrder[]> {
+    return db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt));
+  }
+
+  async updateStreetFoodOrderStatus(id: string, status: string): Promise<StreetFoodOrder> {
+    const [updatedOrder] = await db
+      .update(streetFoodOrders)
+      .set({ status })
+      .where(eq(streetFoodOrders.id, id))
+      .returning();
+    return updatedOrder;
+  }
+
+  // --- STREET FOOD MANAGEMENT (RUNNER) ---
+
+  async createStreetFoodVendor(vendor: InsertServiceProvider): Promise<ServiceProvider> {
+    const [newVendor] = await db.insert(serviceProviders).values(vendor).returning();
+    return newVendor;
+  }
+
+  async deleteStreetFoodVendor(id: string): Promise<void> {
+    // First delete related items
+    await db.delete(streetFoodItems).where(eq(streetFoodItems.providerId, id));
+    // Then delete the vendor
+    await db.delete(serviceProviders).where(eq(serviceProviders.id, id));
+  }
+
+  async createStreetFoodItem(item: InsertStreetFoodItem): Promise<StreetFoodItem> {
+    const [newItem] = await db.insert(streetFoodItems).values(item).returning();
+    return newItem;
+  }
+
+  async deleteStreetFoodItem(id: string): Promise<void> {
+    await db.delete(streetFoodItems).where(eq(streetFoodItems.id, id));
+  }
+
+  async updateStreetFoodItem(id: string, updates: Partial<InsertStreetFoodItem>): Promise<StreetFoodItem | undefined> {
+    const [updatedItem] = await db
+      .update(streetFoodItems)
+      .set(updates)
+      .where(eq(streetFoodItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  // Restaurant Orders
+  async createRestaurantOrder(order: InsertRestaurantOrder & { userId: string }): Promise<RestaurantOrder> {
+    const [newOrder] = await db.insert(restaurantOrders).values(order).returning();
+    return newOrder;
+  }
+
+  async getRestaurantOrder(id: string): Promise<RestaurantOrder | undefined> {
+    return db.query.restaurantOrders.findFirst({
+      where: eq(restaurantOrders.id, id),
+      with: { user: true, provider: true, rider: true },
+    });
+  }
+
+  async getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]> {
+    return db.query.restaurantOrders.findMany({
+      where: eq(restaurantOrders.providerId, providerId),
+      with: { user: true, rider: true },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    });
+  }
+
+  async getRiderOrders(riderId?: string): Promise<RestaurantOrder[]> {
+    if (riderId) {
+      return db.query.restaurantOrders.findMany({
+        where: eq(restaurantOrders.riderId, riderId),
+        with: { user: true, provider: true },
+        orderBy: [desc(restaurantOrders.createdAt)],
+      });
+    } else {
+      // Available orders for any rider (pending/accepted/preparing)
+      return db.query.restaurantOrders.findMany({
+        where: sql`${restaurantOrders.riderId} IS NULL AND ${restaurantOrders.status} IN ('pending', 'accepted', 'preparing')`,
+        with: { user: true, provider: true },
+        orderBy: [desc(restaurantOrders.createdAt)],
+      });
+    }
+  }
+
+  async updateRestaurantOrderStatus(id: string, status: string, riderId?: string): Promise<RestaurantOrder> {
+    const updates: any = { status };
+    if (riderId) {
+      updates.riderId = riderId;
+    }
+    const [updatedOrder] = await db
+      .update(restaurantOrders)
+      .set(updates)
+      .where(eq(restaurantOrders.id, id))
+      .returning();
+    return updatedOrder;
+  }
 }
 
 export const storage = new DatabaseStorage();
+
+

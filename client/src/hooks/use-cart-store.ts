@@ -10,6 +10,8 @@ interface CartItem {
   price: number;
   imageUrl?: string;
   quantity: number;
+  providerId?: string;
+  itemType?: 'grocery' | 'street_food' | 'service' | 'restaurant'; // Added itemType
 }
 
 // Define the state and actions for our cart store
@@ -18,7 +20,7 @@ interface CartState {
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (itemId: string) => void;
   // --- YEH NAINA ACTION ADD KIYA ---
-  updateQuantity: (itemId: string, amount: number) => void; 
+  updateQuantity: (itemId: string, amount: number) => void;
   clearCart: () => void;
   getItemCount: () => number;
   getTotalPrice: () => number;
@@ -31,7 +33,20 @@ export const useCartStore = create<CartState>()(
 
       // Action to add an item to the cart
       addItem: (newItem) => {
-        const existingItem = get().items.find((item) => item.id === newItem.id);
+        const currentItems = get().items;
+        const existingItem = currentItems.find((item) => item.id === newItem.id);
+
+        // Check for provider mismatch
+        if (currentItems.length > 0 && newItem.providerId) {
+          const currentProviderId = currentItems[0].providerId;
+          if (currentProviderId && currentProviderId !== newItem.providerId) {
+            // Different provider, clear cart first (or ask user, but for now auto-clear/replace is simpler for MVP or just alert)
+            // Let's go with: Clear cart and add new item (User might lose data, but it enforces single vendor)
+            // Better UX: Don't add and return false? But this is a void function.
+            // Let's just clear it for now to enforce the rule strictly.
+            set({ items: [] });
+          }
+        }
 
         if (existingItem) {
           // Agar item pehle se hai, toh updateQuantity ko call karo
