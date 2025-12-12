@@ -122,17 +122,23 @@ export default function BeautyDetail() {
                     data.beautyServices.forEach((service: any) => {
                         if (!service.isActive) return;
 
-                        const template = service.template;
-                        if (!template) return;
+                        // Prioritize service-level fields, fall back to template
+                        const template = service.template || {};
 
-                        const mainCat = template.subCategory || "Other Services"; // Using subCategory as Main Category
-                        const subCat = "All Services"; // We don't have a 3rd level, so grouping under All Services
+                        // New Hierarchy: Section -> SubCategory -> Service
+                        // Default to 'Other' if section is missing (e.g. old data)
+                        const mainCat = service.section || "Other Services";
+                        const subCat = service.subCategory || "General Services";
+                        const name = service.name || template.name || "Unnamed Service";
+                        const duration = service.duration || template.duration || 30;
+                        const description = service.description || template.description;
+                        const gender = 'Unisex'; // Could be added to schema later
 
                         if (!menuData[mainCat]) {
                             menuData[mainCat] = [];
                         }
 
-                        // Check if "All Services" subcategory exists
+                        // Check if SubCategory exists within MainCategory
                         let subCatObj = menuData[mainCat].find((s: any) => s.name === subCat);
                         if (!subCatObj) {
                             subCatObj = { name: subCat, services: [] };
@@ -141,11 +147,11 @@ export default function BeautyDetail() {
 
                         subCatObj.services.push({
                             id: service.id,
-                            name: template.name,
+                            name: name,
                             price: Number(service.price),
-                            duration: template.duration || 30, // Default if missing
-                            gender: template.gender || 'Unisex',
-                            description: template.description
+                            duration: duration,
+                            gender: gender,
+                            description: description
                         });
                     });
                 }

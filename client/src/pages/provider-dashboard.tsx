@@ -1112,16 +1112,28 @@ const SpecializationsManager: React.FC<{
   );
 };
 
-// --- COMPONENT 4: BEAUTY SERVICE SELECTOR (NAYA COMPONENT) ---
+// --- COMPONENT 4: BEAUTY SERVICE SELECTOR (Three-Level Hierarchy) ---
 const BeautyServiceSelector: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const categorySlug = providerProfile.category.slug;
+  const [activeAccordion, setActiveAccordion] = useState<string | undefined>("Hair");
+  const [isAddingOpen, setIsAddingOpen] = useState(false);
 
-  // 1. Fetch Master Templates
-  const { data: templates, isLoading: isLoadingTemplates } = useQuery<ServiceTemplate[]>({
+  // New Service Form State
+  const [newService, setNewService] = useState({
+    section: "Hair",
+    subCategory: "",
+    name: "",
+    price: "",
+    duration: "30",
+    imageUrl: "",
+  });
+
+  // 1. Fetch Master Templates (As suggestions)
+  const { data: templates } = useQuery<ServiceTemplate[]>({
     queryKey: ["serviceTemplates", categorySlug],
     queryFn: async () => {
       const res = await api.get(`/service-templates/${categorySlug}`);
@@ -1129,149 +1141,351 @@ const BeautyServiceSelector: React.FC<{
     },
   });
 
-  // 2. Use Existing Services from Profile (No extra fetch needed)
+  // 2. Use Existing Services is the single source of truth for what is "Active"
+  // We need to merge templates into this list if they aren't already there?
+  // Actually, user wants full control. So we primarily render what's in `existingServices`.
+  // But to help them start, we can pre-fill from templates if existingServices is empty.
+
   const existingServices = providerProfile.beautyServices || [];
 
-  // State for form
-  const [selectedServices, setSelectedServices] = useState<Record<string, { price: number; enabled: boolean }>>({});
+  // State: List of all services (enabled/active ones)
+  // We need a local state to manage edits before saving
+  const [servicesList, setServicesList] = useState<ServiceOffering[]>([]);
 
-  // Initialize state when data loads
   React.useEffect(() => {
-    if (templates) {
-      const initial: Record<string, { price: number; enabled: boolean }> = {};
+    // If we have existing services, use them but normalize the data (fill missing sections/subcats)
+    if (existingServices.length > 0) {
+      const normalizedServices = existingServices.map(s => {
+        let section = s.section;
+        let subCategory = s.subCategory;
 
-      // Initialize all templates as disabled first
-      templates.forEach(t => {
-        initial[t.name] = { price: Number(t.defaultPrice), enabled: false };
+        // Migrating old data if missing
+        if (!section || !subCategory) {
+          const sub = s.subCategory || "";
+          // Heuristic to fill section based on subCategory if exists
+          if (sub.includes("Hair") || sub.includes("Cut") || sub.includes("Bloom") || sub.includes("Curl")) section = "Hair";
+          else if (sub.includes("Facial") || sub.includes("Skin") || sub.includes("Wax") || sub.includes("Thread")) section = "Skin Care";
+          else if (sub.includes("Make") || sub.includes("Nail") || sub.includes("Bridal")) section = "Makeover";
+          else section = "Other";
+
+          if (!subCategory) subCategory = "General";
+        }
+
+        return { ...s, section: section || "Other", subCategory: subCategory || "General" };
       });
-
-      // Override with existing services (match by templateId)
-      if (existingServices.length > 0) {
-        existingServices.forEach(s => {
-          const template = templates.find(t => t.id === s.templateId);
-          if (template && s.isActive) {
-            initial[template.name] = { price: Number(s.price), enabled: true };
-          }
-        });
-      }
-
-      setSelectedServices(initial);
+      setServicesList(normalizedServices);
+    } else if (templates && templates.length > 0) {
+      // Pre-fill from templates for first time users
+      const prefilled = templates.map(t => ({
+        id: `temp-${t.id}`, // Temporary ID
+        providerId: providerProfile.id,
+        templateId: t.id,
+        name: t.name,
+        section: t.categorySlug === 'beauty' ? 'Hair' : 'Other', // Fallback, we need a map
+        subCategory: t.subCategory || "General",
+        price: t.defaultPrice,
+        duration: 30, // Default
+        imageUrl: t.imageUrl,
+        isActive: false,
+      }));
+      setServicesList(prefilled);
     }
-  }, [templates, existingServices]);
+  }, [existingServices]); // Only run when existingServices loads
 
-  const handleToggle = (name: string, checked: boolean, defaultPrice: number) => {
-    setSelectedServices(prev => {
-      const existing = prev[name];
-      // Agar pehle se state mein hai, toh wahi price use karo, warna defaultPrice
-      const priceToUse = existing ? existing.price : defaultPrice;
+  // Helper to group services into tree (No change needed, but safe to keep)
+  const groupedServices = React.useMemo(() => {
+    // ... (same as before) ...
+    const sections: Record<string, Record<string, ServiceOffering[]>> = {
+      "Hair": {},
+      "Skin Care": {},
+      "Makeover": {},
+      "Other": {}
+    };
 
-      return {
-        ...prev,
-        [name]: { price: priceToUse, enabled: checked }
-      };
+    servicesList.forEach(s => {
+      let section = s.section || "Other";
+      if (!['Hair', 'Skin Care', 'Makeover'].includes(section)) section = "Other";
+      const subCat = s.subCategory || "General";
+
+      if (!sections[section]) sections[section] = {};
+      if (!sections[section][subCat]) sections[section][subCat] = [];
+      sections[section][subCat].push(s);
     });
+    return sections;
+  }, [servicesList]);
+
+  // Handlers
+  const handleUpdateService = (id: string, field: keyof ServiceOffering, value: any) => {
+    setServicesList(prev => prev.map(s =>
+      s.id === id ? { ...s, [field]: value } : s
+    ));
   };
 
-  const handlePriceChange = (name: string, price: string) => {
-    const numPrice = parseFloat(price);
-    if (!isNaN(numPrice)) {
-      setSelectedServices(prev => ({
-        ...prev,
-        [name]: { ...prev[name], price: numPrice }
-      }));
+  const handleDeleteService = (id: string) => {
+    setServicesList(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleAddService = () => {
+    if (!newService.name || !newService.price) {
+      toast({ title: "Incomplete", description: "Name and Price are required", variant: "destructive" });
+      return;
     }
+
+    const newItem: any = {
+      id: `new-${Date.now()}`,
+      providerId: providerProfile.id,
+      templateId: null, // Custom
+      section: newService.section,
+      subCategory: newService.subCategory || "General",
+      name: newService.name,
+      price: newService.price,
+      duration: Number(newService.duration),
+      imageUrl: newService.imageUrl,
+      isActive: true, // Auto-active for new items
+    };
+
+    setServicesList(prev => [...prev, newItem]);
+    setIsAddingOpen(false);
+    setNewService({ ...newService, name: "", price: "", imageUrl: "" }); // Reset slightly
+    toast({ title: "Added", description: "Service added to list. Don't forget to Save." });
   };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // Convert state to array for API
-      const servicesToSave = Object.entries(selectedServices)
-        .filter(([_, val]) => val.enabled)
-        .map(([name, val]) => {
-          const template = templates?.find(t => t.name === name);
-          return {
-            templateId: template?.id, // Send templateId
-            price: String(val.price),
-            isActive: true, // Explicitly set active
-          };
-        });
+      // Ensure no nulls are sent
+      const payload = servicesList.map(s => ({
+        providerId: providerProfile.id,
+        templateId: s.templateId || undefined,
+        name: s.name || "Unnamed Service", // Validation safety
+        section: s.section || "Other",     // Validation safety
+        subCategory: s.subCategory || "General", // Validation safety
+        price: String(s.price),
+        duration: s.duration || 30,
+        imageUrl: s.imageUrl,
+        isActive: true, // We are sending the active list
+      }));
 
-      return api.post("/provider/beauty-services/bulk", { services: servicesToSave });
+      return api.post("/provider/beauty-services/bulk", { services: payload });
     },
+
     onSuccess: () => {
-      toast({ title: "Success", description: "Services updated successfully!" });
+      toast({ title: "Saved", description: "Your service menu has been updated." });
       queryClient.invalidateQueries({ queryKey: ["providerProfile", providerProfile.userId] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update services.",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   });
 
-  if (isLoadingTemplates) {
-    return <div><Loader2 className="animate-spin" /> Loading services...</div>;
-  }
-
-  // Group templates by subCategory
-  const groupedTemplates = templates?.reduce((acc, template) => {
-    const sub = template.subCategory || "Other";
-    if (!acc[sub]) acc[sub] = [];
-    acc[sub].push(template);
-    return acc;
-  }, {} as Record<string, ServiceTemplate[]>) || {};
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Manage Services</CardTitle>
-        <CardDescription>Select the services you offer and set your prices.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-8">
-          {Object.entries(groupedTemplates).map(([subCategory, items]) => (
-            <div key={subCategory}>
-              <h3 className="text-lg font-semibold mb-4 border-b pb-2">{subCategory}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {items.map((item) => {
-                  const state = selectedServices[item.name] || { price: Number(item.defaultPrice), enabled: false };
-                  return (
-                    <div key={item.id} className={`flex items-center space-x-4 p-4 border rounded-lg transition-colors ${state.enabled ? 'bg-accent/10 border-accent' : 'bg-card'}`}>
-                      <Checkbox
-                        id={`srv-${item.id}`}
-                        checked={state.enabled}
-                        onCheckedChange={(checked) => handleToggle(item.name, checked as boolean, Number(item.defaultPrice))}
-                        className="h-5 w-5"
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor={`srv-${item.id}`} className="font-medium cursor-pointer">
-                          {item.name}
-                        </Label>
-                      </div>
-                      <div className="w-24">
-                        <Input
-                          type="number"
-                          value={state.price}
-                          onChange={(e) => handlePriceChange(item.name, e.target.value)}
-                          disabled={!state.enabled}
-                          className="h-8"
-                          placeholder="Price"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Manage Services</CardTitle>
+          <CardDescription>Customize your service menu. Add, edit, or remove services.</CardDescription>
+        </div>
+        <Dialog open={isAddingOpen} onOpenChange={setIsAddingOpen}>
+          <DialogTrigger asChild>
+            <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Service</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Service</DialogTitle>
+              <DialogDescription>Add a custom service to your menu.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Section</Label>
+                  <select
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={newService.section}
+                    onChange={(e) => setNewService({ ...newService, section: e.target.value })}
+                  >
+                    <option value="Hair">Hair</option>
+                    <option value="Skin Care">Skin Care</option>
+                    <option value="Makeover">Makeover</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Sub Category</Label>
+                  {/* Suggest Subcats based on Section */}
+                  <Input
+                    placeholder="e.g. Haircut, Facial"
+                    value={newService.subCategory}
+                    onChange={(e) => setNewService({ ...newService, subCategory: e.target.value })}
+                    list="subcat-suggestions"
+                  />
+                  <datalist id="subcat-suggestions">
+                    {newService.section === "Hair" && (
+                      <>
+                        <option value="Haircut" />
+                        <option value="Hairstyles" />
+                        <option value="Hair Treatment" />
+                      </>
+                    )}
+                    {newService.section === "Skin Care" && (
+                      <>
+                        <option value="Facials" />
+                        <option value="Hair Removal" />
+                      </>
+                    )}
+                    {newService.section === "Makeover" && (
+                      <>
+                        <option value="Makeup" />
+                        <option value="Nail Art" />
+                        <option value="Bridal Packages" />
+                      </>
+                    )}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Service Name (Item)</Label>
+                <Input
+                  placeholder="e.g. Layered Cut, Gold Facial"
+                  value={newService.name}
+                  onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Price (₹)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={newService.price}
+                    onChange={(e) => setNewService({ ...newService, price: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duration (mins)</Label>
+                  <Input
+                    type="number"
+                    placeholder="30"
+                    value={newService.duration}
+                    onChange={(e) => setNewService({ ...newService, duration: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
-          ))}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddingOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddService}>Add Service</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+
+      <CardContent>
+        {servicesList.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-xl">
+            No services added yet. Click "Add Service" to start building your menu.
+          </div>
+        )}
+
+        <div className="space-y-6">
+          {Object.keys(groupedServices).map(section => {
+            const subCategories = groupedServices[section];
+            if (Object.keys(subCategories).length === 0) return null;
+
+            return (
+              <div key={section} className="border rounded-xl p-5 bg-card/50">
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-primary">
+                  {section === "Hair" && "💇‍♀️"}
+                  {section === "Skin Care" && "✨"}
+                  {section === "Makeover" && "💄"}
+                  {section}
+                </h2>
+
+                <div className="space-y-6 pl-2">
+                  {Object.keys(subCategories).map(subCat => (
+                    <div key={subCat}>
+                      <h3 className="text-lg font-semibold mb-3 text-foreground/80 border-b inline-block pb-1">
+                        {subCat}
+                      </h3>
+                      <div className="grid grid-cols-1 gap-3">
+                        {subCategories[subCat].map((service) => (
+                          <div key={service.id} className="flex flex-col md:flex-row gap-4 p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                            {/* Inputs */}
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                              {/* Name */}
+                              <div className="md:col-span-4">
+                                <Label className="text-xs text-muted-foreground md:hidden">Name</Label>
+                                <Input
+                                  value={service.name || ""}
+                                  onChange={(e) => handleUpdateService(service.id, "name", e.target.value)}
+                                  className="font-medium"
+                                  placeholder="Service Name"
+                                />
+                              </div>
+
+                              {/* Price */}
+                              <div className="md:col-span-2">
+                                <Label className="text-xs text-muted-foreground md:hidden">Price</Label>
+                                <div className="relative">
+                                  <span className="absolute left-2 top-2.5 text-xs">₹</span>
+                                  <Input
+                                    type="number"
+                                    value={service.price || 0}
+                                    onChange={(e) => handleUpdateService(service.id, "price", e.target.value)}
+                                    className="pl-5"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Duration */}
+                              <div className="md:col-span-2">
+                                <Label className="text-xs text-muted-foreground md:hidden">Mins</Label>
+                                <div className="relative">
+                                  <span className="absolute right-2 top-2.5 text-xs text-muted-foreground">min</span>
+                                  <Input
+                                    type="number"
+                                    value={service.duration || 0}
+                                    onChange={(e) => handleUpdateService(service.id, "duration", e.target.value)}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Image URL (Hidden or collapsed usually, but user wants edit) */}
+                              <div className="md:col-span-4">
+                                <Label className="text-xs text-muted-foreground md:hidden">Image</Label>
+                                <Input
+                                  value={service.imageUrl || ""}
+                                  onChange={(e) => handleUpdateService(service.id, "imageUrl", e.target.value)}
+                                  placeholder="Image URL..."
+                                  className="text-xs text-muted-foreground"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-end">
+                              <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDeleteService(service.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
+
       </CardContent>
-      <CardFooter>
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full md:w-auto">
+      <CardFooter className="sticky bottom-0 bg-background/95 backdrop-blur py-4 border-t z-10 shadow-lg flex justify-between">
+        <p className="text-sm text-muted-foreground">
+          {servicesList.length} services configured
+        </p>
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} size="lg">
           {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save Changes
+          Save All Changes
         </Button>
       </CardFooter>
     </Card>

@@ -66,7 +66,14 @@ export const serviceProviders = pgTable("service_providers", {
 export const serviceOfferings = pgTable("service_offerings", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   providerId: varchar("provider_id").notNull(), // Linked in relations
-  templateId: text("template_id").notNull(),    // Linked in relations
+  templateId: text("template_id"),    // Nullable for custom services
+  name: text("name"), // For custom services or overriding template name
+  description: text("description"),
+  duration: integer("duration_minutes"), // New: Duration in minutes
+  imageUrl: text("image_url"),
+  categorySlug: text("category_slug"), // Needed for custom services grouping
+  subCategory: text("sub_category"),   // Level 2: Haircut
+  section: text("section"),            // Level 1: Hair, Skin Care, Makeover
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -272,7 +279,17 @@ export const insertServiceTemplateSchema = createInsertSchema(serviceTemplates).
   categorySlug: true, subCategory: true, name: true, defaultPrice: true, imageUrl: true,
 });
 export const insertServiceOfferingSchema = z.object({
-  providerId: z.string(), templateId: z.string(), price: z.string(), isActive: z.boolean().optional(),
+  providerId: z.string(),
+  templateId: z.string().optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  duration: z.number().optional(), // minutes
+  imageUrl: z.string().optional(),
+  categorySlug: z.string().optional(),
+  subCategory: z.string().optional(),
+  section: z.string().optional(),
+  price: z.string(),
+  isActive: z.boolean().optional(),
 });
 
 // Types
