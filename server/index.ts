@@ -8,6 +8,7 @@ import { registerRoutes } from "./routes"; // registerRoutes from server/routes.
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+app.set("trust proxy", 1);
 
 const PgStore = connectPgSimple(session);
 
@@ -30,11 +31,17 @@ app.use(express.json({
   verify: (req, _res, buf) => {
     req.rawBody = buf;
   }
+
 }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use(
   session({
+    cookie: {
+      secure: true, // Render par ye TRUE hona chahiye
+      sameSite: "lax", // Ye zaroori hai
+      maxAge: 24 * 60 * 60 * 1000 // 1 din
+    },
     store: new PgStore({
       pool,
       createTableIfMissing: true,
@@ -42,12 +49,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "dev-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Set to true only in production with HTTPS
-      sameSite: "lax",
-    },
+
   })
 );
 
