@@ -236,6 +236,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- RENTAL PROPERTY ROUTES (NEW) ---
+  app.get("/api/provider/rental-properties", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const properties = await storage.getProviderRentalProperties(userId);
+      res.json(properties);
+    } catch (error: any) {
+      console.error("Get provider rental properties error:", error);
+      res.status(500).json({ message: error.message || "Error fetching rental properties" });
+    }
+  });
+
+  app.delete("/api/rental-properties/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const property = await storage.getRentalProperty(id);
+
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      if (property.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      await storage.deleteRentalProperty(id);
+      res.json({ message: "Property deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete rental property error:", error);
+      res.status(500).json({ message: error.message || "Error deleting property" });
+    }
+  });
+
+  app.patch("/api/rental-properties/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = req.userId!;
+      const updates = req.body;
+      const property = await storage.getRentalProperty(id);
+
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      if (property.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updatedProperty = await storage.updateRentalProperty(id, updates);
+      res.json(updatedProperty);
+    } catch (error: any) {
+      console.error("Update rental property error:", error);
+      res.status(500).json({ message: error.message || "Error updating property" });
+    }
+  });
+
   app.patch("/api/provider/profile", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;

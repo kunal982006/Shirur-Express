@@ -12,6 +12,14 @@ app.set("trust proxy", 1);
 
 const PgStore = connectPgSimple(session);
 
+// Validate DB connection on startup
+pool.connect().then(client => {
+  console.log("Database connected successfully");
+  client.release();
+}).catch(err => {
+  console.error("Database connection failed on startup:", err);
+});
+
 // Extend Express Session to include userId and userRole
 declare module 'express-session' {
   interface SessionData {
@@ -38,7 +46,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(
   session({
     cookie: {
-      secure: true, // Render par ye TRUE hona chahiye
+      secure: app.get("env") === "production", // Render par ye TRUE hona chahiye, dev mein FALSE
       sameSite: "lax", // Ye zaroori hai
       maxAge: 24 * 60 * 60 * 1000 // 1 din
     },
