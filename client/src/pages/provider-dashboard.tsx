@@ -33,6 +33,7 @@ import {
   AlertTriangle,
   Home,
   Trash2,
+  ArrowLeft,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
@@ -128,6 +129,17 @@ const billFormSchema = z.object({
 type BillFormData = z.infer<typeof billFormSchema>;
 
 // --- COMPONENT 1: MENU MANAGER (Yeh waise ka waisa hai) ---
+// --- COMPONENT 1: MENU MANAGER (REFACTORED FOR CATEGORIES & SEARCH) ---
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
+
 const MenuItemsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
@@ -153,6 +165,8 @@ const MenuItemsManager: React.FC<{
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const deleteMenuItemMutation = useMutation({
     mutationFn: (itemId: string) =>
@@ -168,6 +182,7 @@ const MenuItemsManager: React.FC<{
         title: "Error",
         description: error.response?.data?.message || "Failed to delete.",
         variant: "destructive",
+        duration: 3000,
       });
     },
   });
@@ -189,47 +204,122 @@ const MenuItemsManager: React.FC<{
     refetchMenuItems();
   };
 
+  // --- Optimized Search Logic ---
+  const searchResults = React.useMemo(() => {
+    if (!searchQuery || searchQuery.length < 1 || !Array.isArray(menuItems)) return [];
+
+    const query = searchQuery.toLowerCase();
+    const matches = menuItems.filter(item =>
+      item.name.toLowerCase().includes(query) ||
+      (item.category || "").toLowerCase().includes(query)
+    );
+
+    // Limit to top 20 results to prevent lag
+    return matches.slice(0, 20);
+  }, [menuItems, searchQuery]);
+
+  // --- Derived State for Categories ---
+  const categories = React.useMemo(() => {
+    if (!Array.isArray(menuItems)) return [];
+
+    const catMap = new Map<string, number>();
+    menuItems.forEach(item => {
+      const cat = item.category || "Uncategorized";
+      catMap.set(cat, (catMap.get(cat) || 0) + 1);
+    });
+
+    return Array.from(catMap.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [menuItems]);
+
+  const filteredItems = React.useMemo(() => {
+    if (!selectedCategory || !Array.isArray(menuItems)) return [];
+    return menuItems.filter(item => (item.category || "Uncategorized") === selectedCategory);
+  }, [menuItems, selectedCategory]);
+
+  // Main UI Render
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>My Menu Items</CardTitle>
-          <CardDescription>
-            Manage the items for your '
-            {providerProfile.category ? providerProfile.category.name : "service"}
-            ' service.
-          </CardDescription>
+      <CardHeader className="flex flex-col gap-4">
+        <div className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>My Menu Items</CardTitle>
+            <CardDescription>
+              Manage the items for your '
+              {providerProfile.category ? providerProfile.category.name : "service"}
+              ' service.
+            </CardDescription>
+          </div>
+          <Dialog
+            open={isFormOpen}
+            onOpenChange={(isOpen) => {
+              setIsFormOpen(isOpen);
+              if (!isOpen) setEditingItem(null);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingItem(null)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingItem ? "Edit Item" : "Add New Item"}
+                </DialogTitle>
+                <DialogDescription>
+                  Fill in the details for your service or product.
+                </DialogDescription>
+              </DialogHeader>
+              <MenuItemForm
+                providerId={providerProfile.id}
+                categorySlug={providerCategorySlug}
+                initialData={editingItem}
+                onSuccess={handleFormSuccess}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog
-          open={isFormOpen}
-          onOpenChange={(isOpen) => {
-            setIsFormOpen(isOpen);
-            if (!isOpen) setEditingItem(null);
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingItem(null)}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem ? "Edit Item" : "Add New Item"}
-              </DialogTitle>
-              <DialogDescription>
-                Fill in the details for your service or product.
-              </DialogDescription>
-            </DialogHeader>
-            <MenuItemForm
-              providerId={providerProfile.id}
-              categorySlug={providerCategorySlug}
-              initialData={editingItem}
-              onSuccess={handleFormSuccess}
+
+        {/* --- Search Bar with Autocomplete --- */}
+        <div className="relative border rounded-md">
+          <Command className="rounded-lg border shadow-md">
+            <CommandInput
+              placeholder="Search for any product across all categories..."
+              value={searchQuery}
+              onValueChange={setSearchQuery}
             />
-          </DialogContent>
-        </Dialog>
+            {/* Show list only when items exist and not empty */}
+            {searchQuery.length > 0 && (
+              <CommandList className="max-h-[300px] overflow-y-auto">
+                {searchResults.length === 0 ? (
+                  <CommandEmpty>No results found.</CommandEmpty>
+                ) : (
+                  <CommandGroup heading="Suggestions">
+                    {searchResults.map(item => (
+                      <CommandItem key={item.id} onSelect={() => {
+                        setSelectedCategory(item.category || "Uncategorized");
+                        setSearchQuery(""); // Clear search after selection
+                      }}>
+                        <div className="flex items-center gap-2 w-full cursor-pointer">
+                          {item.imageUrl && (
+                            <img src={item.imageUrl} className="w-8 h-8 rounded-sm object-cover" />
+                          )}
+                          <div className="flex flex-col">
+                            <span className="font-medium">{item.name}</span>
+                            <span className="text-xs text-muted-foreground">{item.category}</span>
+                          </div>
+                          <span className="ml-auto font-bold text-sm">₹{item.price}</span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            )}
+          </Command>
+        </div>
       </CardHeader>
+
       <CardContent>
         {isLoadingMenuItems ? (
           <div className="flex justify-center py-10">
@@ -238,74 +328,93 @@ const MenuItemsManager: React.FC<{
         ) : !Array.isArray(menuItems) || menuItems.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed rounded-lg">
             <h3 className="text-xl font-semibold">Your Menu is Empty</h3>
-            <p className="text-muted-foreground mt-2">
-              Click "Add New Item" to start building your menu.
-            </p>
+          </div>
+        ) : !selectedCategory ? (
+          // --- CATEGORIES GRID VIEW ---
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categories.map((cat) => (
+              <Card
+                key={cat.name}
+                className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-primary"
+                onClick={() => setSelectedCategory(cat.name)}
+              >
+                <CardHeader className="p-4">
+                  <CardTitle className="text-lg truncate" title={cat.name}>{cat.name}</CardTitle>
+                  <CardDescription>{cat.count} Items</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price (₹)</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {menuItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-muted rounded-md" />
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>
-                    {item.category ? (
-                      <Badge variant="outline">{item.category}</Badge>
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
-                  <TableCell>{item.price}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(item)}
-                      className="mr-2"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(item.id)}
-                      disabled={
-                        deleteMenuItemMutation.isPending &&
-                        deleteMenuItemMutation.variables === item.id
-                      }
-                    >
-                      {deleteMenuItemMutation.isPending &&
-                        deleteMenuItemMutation.variables === item.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
-                  </TableCell>
+          // --- SELECTED CATEGORY ITEM LIST ---
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="outline" size="sm" onClick={() => setSelectedCategory(null)}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
+              </Button>
+              <h3 className="text-xl font-bold ml-2">{selectedCategory}</h3>
+              <Badge variant="secondary" className="ml-2">{filteredItems.length} Items</Badge>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">Image</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Price (₹)</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-muted rounded-md" />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div>{item.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                    </TableCell>
+                    <TableCell className="font-bold">₹{item.price}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(item)}
+                        className="mr-2"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                        disabled={
+                          deleteMenuItemMutation.isPending &&
+                          deleteMenuItemMutation.variables === item.id
+                        }
+                      >
+                        {deleteMenuItemMutation.isPending &&
+                          deleteMenuItemMutation.variables === item.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

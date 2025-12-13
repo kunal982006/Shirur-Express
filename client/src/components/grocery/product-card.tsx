@@ -10,6 +10,7 @@ interface ProductCardProps {
     price: string | number; // Price string ya number ho sakta hai
     weight?: string;
     imageUrl?: string;
+    mrp?: string | number;
     category?: string;
     inStock?: boolean;
   };
@@ -28,6 +29,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   // Price ko number me convert karo
   const priceAsNumber = parseFloat(product.price as string);
+  const mrpAsNumber = product.mrp ? parseFloat(product.mrp as string) : null;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -45,10 +47,16 @@ export default function ProductCard({
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg truncate">{product.name}</h3>
         {product.weight && <p className="text-sm text-muted-foreground">{product.weight}</p>}
-        <div className="flex items-center justify-between mt-4">
-          {/* --- YAHAN BADLAV KIYA HAI --- */}
-          <span className="text-xl font-bold text-primary">₹{priceAsNumber.toFixed(2)}</span>
-          {product.category && <Badge variant="outline">{product.category}</Badge>}
+        <div className="flex flex-col mt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-primary">₹{priceAsNumber.toFixed(2)}</span>
+            {mrpAsNumber && mrpAsNumber > priceAsNumber && (
+              <span className="text-sm text-red-500 line-through">
+                ₹{mrpAsNumber.toFixed(2)}
+              </span>
+            )}
+          </div>
+          {product.category && <Badge variant="outline" className="mt-2 w-fit">{product.category}</Badge>}
         </div>
 
         {quantity === 0 ? (

@@ -22,8 +22,18 @@ import {
   ShoppingBag,
   Sparkles,
   Loader2, // Loader icon add kiya
+  Check,
 } from "lucide-react";
 import type { ServiceProvider, User, ServiceCategory, GroceryProduct } from "@shared/schema"; // Types import kiye
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 // Categories list wahi rahegi
 const categories = [
@@ -112,11 +122,39 @@ export default function Grocery() {
     enabled: !!gmartProviderId, // Yeh query tabhi chalegi jab providerId mil jayega
   });
 
-  const handleCategorySelect = (categorySlug: string) => {
-    setSelectedCategory(selectedCategory === categorySlug ? "" : categorySlug);
-    // TODO: Ab category select pe client-side filter kar sakte hain,
-    // ya backend API ko update kar sakte hain ki woh providerId + category dono le.
-    // Abhi ke liye, yeh sirf UI highlight karega.
+  // --- Metadata (Categories & Brands) ---
+  const { data: metadata } = useQuery({
+    queryKey: ["groceryMetadata", gmartProviderId],
+    queryFn: async () => {
+      if (!gmartProviderId) return { categories: [], brands: [] };
+      const res = await fetch(`/api/grocery-metadata?providerId=${gmartProviderId}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: !!gmartProviderId
+  });
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const toggleCategory = (cat: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+  };
+
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev =>
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+    );
+  };
+
+  // Clear filters
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setSelectedBrands([]);
+    setSearchQuery("");
   };
 
   const handleAddToCart = (product: GroceryProduct) => {
@@ -145,9 +183,13 @@ export default function Grocery() {
 
   // Filtered products (client-side category filter)
   const filteredProducts = products
-    ? products.filter(product =>
-      selectedCategory ? product.category === selectedCategory : true
-    )
+    ? products.filter(product => {
+      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+      const matchesBrand = selectedBrands.length === 0 || (product.brand && selectedBrands.includes(product.brand));
+      // Search is mainly handled by API but let's double check if we can refine
+      const matchesSearch = !searchQuery || product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesBrand && matchesSearch;
+    })
     : [];
 
   const isLoading = isLoadingProvider || isLoadingProducts;
@@ -181,32 +223,41 @@ export default function Grocery() {
           </div>
         </div>
 
-        {/* Categories Navigation */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-4 overflow-x-auto pb-2">
-              {categories.map((category) => (
-                <Button
-                  key={category.slug}
-                  variant={selectedCategory === category.slug ? "default" : "ghost"}
-                  className="flex-shrink-0 flex flex-col items-center p-3 h-auto"
-                  onClick={() => handleCategorySelect(category.slug)}
-                >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${selectedCategory === category.slug
+        {/* Categories Navigation (Horizontal Scroll) */}
+        {metadata?.categories && metadata.categories.length > 0 && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+                {metadata.categories.map((category: string) => (
+                  <Button
+                    key={category}
+                    variant={selectedCategories.includes(category) && selectedCategories.length === 1 ? "default" : "ghost"}
+                    className="flex-shrink-0 flex flex-col items-center p-3 h-auto min-w-[80px]"
+                    onClick={() => {
+                      // Quick filter behavior: Single select toggle
+                      if (selectedCategories.includes(category) && selectedCategories.length === 1) {
+                        setSelectedCategories([]);
+                      } else {
+                        setSelectedCategories([category]);
+                      }
+                    }}
+                  >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${selectedCategories.includes(category) && selectedCategories.length === 1
                       ? "bg-primary-foreground"
                       : "bg-secondary/10"
-                    }`}>
-                    <category.icon className={`h-6 w-6 ${selectedCategory === category.slug
+                      }`}>
+                      <ShoppingBag className={`h-6 w-6 ${selectedCategories.includes(category) && selectedCategories.length === 1
                         ? "text-primary"
                         : "text-secondary"
-                      }`} />
-                  </div>
-                  <span className="text-xs font-medium">{category.name}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                        }`} />
+                    </div>
+                    <span className="text-xs font-medium text-center truncate w-full">{category}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Search and Filter */}
         <div className="flex items-center space-x-4 mb-6">
@@ -220,10 +271,71 @@ export default function Grocery() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex items-center space-x-2">
-            <Filter className="h-4 w-4" />
-            <span>Filter</span>
-          </Button>
+
+          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="flex items-center space-x-2 relative">
+                <Filter className="h-4 w-4" />
+                <span>Filter</span>
+                {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {selectedCategories.length + selectedBrands.length}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[300px] sm:w-[400px]">
+              <SheetHeader>
+                <SheetTitle>Filters</SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(100vh-8rem)] pr-4">
+                <div className="py-4 space-y-6">
+                  {/* Categories Filter */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-sm">Categories</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {metadata?.categories?.map((cat: string) => (
+                        <Badge
+                          key={cat}
+                          variant={selectedCategories.includes(cat) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => toggleCategory(cat)}
+                        >
+                          {cat}
+                          {selectedCategories.includes(cat) && <Check className="ml-1 h-3 w-3" />}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Brands Filter */}
+                  {metadata?.brands && metadata.brands.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-sm">Brands</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {metadata.brands.map((brand: string) => (
+                          <Badge
+                            key={brand}
+                            variant={selectedBrands.includes(brand) ? "default" : "outline"}
+                            className="cursor-pointer"
+                            onClick={() => toggleBrand(brand)}
+                          >
+                            {brand}
+                            {selectedBrands.includes(brand) && <Check className="ml-1 h-3 w-3" />}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+              <div className="py-4 border-t mt-auto">
+                <Button variant="destructive" className="w-full" onClick={clearFilters}>
+                  Clear All Filters
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Products Grid */}
@@ -235,8 +347,11 @@ export default function Grocery() {
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No products found</h3>
               <p className="text-muted-foreground">
-                {searchQuery ? 'Try a different search term' : 'Try selecting a different category or clearing filters.'}
+                {searchQuery || selectedCategories.length > 0 || selectedBrands.length > 0
+                  ? 'Try adjusting your filters or search term.'
+                  : 'No products available.'}
               </p>
+              <Button variant="link" onClick={clearFilters}>Clear Filters</Button>
             </CardContent>
           </Card>
         ) : (

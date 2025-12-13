@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -22,6 +22,7 @@ import {
   insertServiceOfferingSchema, // NAYA IMPORT
   serviceProviders, // NAYA IMPORT
   insertRestaurantOrderSchema, // NAYA IMPORT
+  groceryProducts, // NAYA IMPORT
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -1086,6 +1087,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Delete menu item error:", error);
       res.status(500).json({ message: error.message || "Error deleting menu item" });
+    }
+  });
+
+  // --- GROCERY PRODUCTS ROUTE (NEW) ---
+  app.get("/api/grocery-products", async (req: Request, res: Response) => {
+    try {
+      const { providerId, search } = req.query;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      const conditions = [eq(groceryProducts.providerId, providerId as string)];
+
+      const products = await db.select().from(groceryProducts).where(
+        and(...conditions)
+      );
+
+      if (search) {
+        const s = (search as string).toLowerCase();
+        const filtered = products.filter(p => p.name.toLowerCase().includes(s));
+        return res.json(filtered);
+      }
+
+      res.json(products);
+    } catch (error: any) {
+      console.error("Get grocery products error:", error);
+      res.status(500).json({ message: error.message || "Error fetching grocery products" });
+    }
+  });
+
+  app.get("/api/grocery-metadata", async (req: Request, res: Response) => {
+    try {
+      const { providerId } = req.query;
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+
+      // Fetch all products for this provider to extract metadata
+      const products = await db.select({
+        category: groceryProducts.category,
+        brand: groceryProducts.brand
+      }).from(groceryProducts).where(
+        eq(groceryProducts.providerId, providerId as string)
+      );
+
+      // Extract unique categories and brands
+      const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort();
+      const brands = Array.from(new Set(products.map(p => p.brand).filter(Boolean))).sort();
+
+      res.json({ categories, brands });
+    } catch (error: any) {
+      console.error("Get grocery metadata error:", error);
+      res.status(500).json({ message: error.message || "Error fetching grocery metadata" });
     }
   });
 

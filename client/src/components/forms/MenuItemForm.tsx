@@ -44,7 +44,7 @@ const restaurantSchema = baseSchema.extend({ isVeg: z.boolean().default(true).op
 
 // --- YEH NAYA SCHEMA HAI 'GROCERY' KE LIYE ---
 const grocerySchema = baseSchema.extend({
-  category: z.enum(groceryCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
+  category: z.string().min(2, { message: "Category name is required" }), // Changed from enum to string
   weight: z.string().optional(),
   unit: z.string().optional(),
   inStock: z.boolean().default(true).optional(),
@@ -307,20 +307,12 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {groceryCategories.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="e.g., BISCUITS, SPICES" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Enter the category name (e.g., BISCUITS, SPICES). Try to match existing categories.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

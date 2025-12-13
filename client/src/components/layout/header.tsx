@@ -88,20 +88,20 @@ export default function Header() {
                     Provider Dashboard
                   </Button>
                 )}
-                 {/* Mobile: Settings link */}
-                 {user && ( // Settings sirf logged-in user ke liye
-                    <Button
-                      variant="ghost"
-                      className="justify-start px-4 py-2 text-lg font-medium"
-                      onClick={() => {
-                        setLocation("/settings");
-                        setIsOpen(false);
-                      }}
-                    >
-                      <Settings className="mr-3 h-5 w-5" />
-                      Settings
-                    </Button>
-                 )}
+                {/* Mobile: Settings link */}
+                {user && ( // Settings sirf logged-in user ke liye
+                  <Button
+                    variant="ghost"
+                    className="justify-start px-4 py-2 text-lg font-medium"
+                    onClick={() => {
+                      setLocation("/settings");
+                      setIsOpen(false);
+                    }}
+                  >
+                    <Settings className="mr-3 h-5 w-5" />
+                    Settings
+                  </Button>
+                )}
 
                 {/* Mobile: Logout / Login Button */}
                 {user ? (
@@ -136,8 +136,16 @@ export default function Header() {
           </Sheet>
 
           {/* Logo / Home link */}
-          <Button variant="ghost" className="text-xl font-bold" onClick={() => setLocation("/")}>
-            ServiceConnect
+          <Button variant="ghost" className="flex items-center gap-2 hover:bg-transparent" onClick={() => setLocation("/")}>
+            <img
+              src="/shirur-express-logo.png"
+              alt="Shirur Express Logo"
+              className="h-16 w-16 rounded-full object-cover"
+            />
+            <div className="flex flex-col items-start bg-transparent">
+              <span className="text-2xl font-extrabold tracking-tight leading-none text-primary" style={{ fontFamily: "'Outfit', sans-serif" }}>Shirur Express</span>
+              <span className="text-xs font-medium text-muted-foreground tracking-widest uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Home Services</span>
+            </div>
           </Button>
 
           {/* Desktop Navigation (optional, if needed) */}
@@ -152,25 +160,25 @@ export default function Header() {
                 {item.name}
               </Button>
             ))}
-             {user?.role === 'provider' && (
-                <Button
-                    variant="ghost"
-                    onClick={() => setLocation("/provider/dashboard")}
-                    className="text-sm font-medium"
-                >
-                    <LayoutDashboard className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
-                    Provider Dashboard
-                </Button>
+            {user?.role === 'provider' && (
+              <Button
+                variant="ghost"
+                onClick={() => setLocation("/provider/dashboard")}
+                className="text-sm font-medium"
+              >
+                <LayoutDashboard className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
+                Provider Dashboard
+              </Button>
             )}
-             {user && (
-                <Button
-                    variant="ghost"
-                    onClick={() => setLocation("/settings")}
-                    className="text-sm font-medium"
-                >
-                    <Settings className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
-                    Settings
-                </Button>
+            {user && (
+              <Button
+                variant="ghost"
+                onClick={() => setLocation("/settings")}
+                className="text-sm font-medium"
+              >
+                <Settings className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
+                Settings
+              </Button>
             )}
           </nav>
         </div>
