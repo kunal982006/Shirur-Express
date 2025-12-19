@@ -59,7 +59,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [currentSubCategories, setCurrentSubCategories] = useState<{ value: string; label: string; }[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const getSchema = () => {
     switch (categorySlug) {
@@ -117,9 +118,13 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
 
 
   // Image Upload Handler
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  }
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
+  };
+
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -159,7 +164,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
     } finally {
       setIsUploading(false);
       // Reset input so same file can be selected again if needed
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
     }
   };
 
@@ -263,21 +269,28 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                 <FormLabel>Image</FormLabel>
                 <FormControl>
                   <div className="space-y-2">
-                    {/* Hidden File Input */}
+                    {/* Hidden File Inputs */}
                     <input
                       type="file"
-                      ref={fileInputRef}
+                      ref={galleryInputRef}
                       className="hidden"
                       accept="image/*"
                       onChange={handleFileChange}
-                      capture="environment" // Encourages camera use on mobile
+                    />
+                    <input
+                      type="file"
+                      ref={cameraInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      capture="environment"
                     />
 
                     {/* Image Preview & Upload Button */}
                     <div className="flex items-center gap-4">
                       <div
                         className="w-20 h-20 border-2 border-dashed rounded-md flex items-center justify-center bg-muted cursor-pointer overflow-hidden relative"
-                        onClick={handleFileClick}
+                        onClick={handleGalleryClick}
                       >
                         {field.value ? (
                           <img src={field.value} alt="Preview" className="w-full h-full object-cover" />
@@ -292,11 +305,11 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={handleFileClick} disabled={isUploading}>
+                        <Button type="button" variant="outline" size="sm" onClick={handleGalleryClick} disabled={isUploading}>
                           <Upload className="mr-2 h-4 w-4" />
                           {field.value ? "Change Image" : "Upload Image"}
                         </Button>
-                        <Button type="button" variant="ghost" size="sm" onClick={handleFileClick} className="text-xs text-muted-foreground" disabled={isUploading}>
+                        <Button type="button" variant="ghost" size="sm" onClick={handleCameraClick} className="text-xs text-muted-foreground" disabled={isUploading}>
                           <Camera className="mr-2 h-3 w-3" />
                           Take Photo
                         </Button>
