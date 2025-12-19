@@ -1,0 +1,1 @@
+Columns in 'service_providers' table: ["gallery_images","latitude","longitude","service_area_km","is_verified","is_available","specializations","created_at","experience_years","rating","review_count","user_id","category_id","business_name","description","address","id","profile_image_url"]

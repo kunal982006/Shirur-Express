@@ -7,6 +7,7 @@ interface User {
   username: string;
   email: string;
   phone?: string;
+  address?: string; // NAYA FIELD
   role: string;
 }
 
@@ -26,17 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
     queryFn: async () => {
-        // Using fetch to get the current user
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        if (!res.ok) {
-            // If the status is 401 (not authenticated), we don't throw an error,
-            // we just return null because it's an expected state.
-            if (res.status === 401) {
-                return null;
-            }
-            throw new Error("Failed to fetch user");
+      // Using fetch to get the current user
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (!res.ok) {
+        // If the status is 401 (not authenticated), we don't throw an error,
+        // we just return null because it's an expected state.
+        if (res.status === 401) {
+          return null;
         }
-        return res.json();
+        throw new Error("Failed to fetch user");
+      }
+      return res.json();
     },
     retry: false, // Don't retry on failure
     staleTime: 5 * 60 * 1000, // 5 minutes

@@ -18,6 +18,7 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   isVerified: boolean("is_verified").default(false),
+  address: text("address"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -130,6 +131,7 @@ export const serviceProblems = pgTable("service_problems", {
   categoryId: varchar("category_id").notNull(),
   name: text("name").notNull(),
   parentId: varchar("parent_id"),
+  imageUrl: text("image_url"),
 });
 
 export const cakeProducts = pgTable("cake_products", {
@@ -143,6 +145,7 @@ export const cakeProducts = pgTable("cake_products", {
   weight: text("weight"), // Added weight field
   weightOptions: jsonb("weight_options").$type<Array<{ weight: string; price: number }>>(),
   isCustomizable: boolean("is_customizable").default(false),
+  isPopular: boolean("is_popular").default(false),
 });
 
 export const groceryProducts = pgTable("grocery_products", {
@@ -252,7 +255,7 @@ export const groceryOrders = pgTable("grocery_orders", {
 // =========================================
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true, email: true, phone: true, password: true, role: true,
+  username: true, email: true, phone: true, password: true, role: true, address: true,
 });
 export const insertServiceProviderSchema = createInsertSchema(serviceProviders).pick({
   businessName: true, description: true, experience: true, address: true,
@@ -279,6 +282,9 @@ export const insertInvoiceSchema = createInsertSchema(invoices).pick({
 });
 export const insertServiceTemplateSchema = createInsertSchema(serviceTemplates).pick({
   categorySlug: true, subCategory: true, name: true, defaultPrice: true, imageUrl: true,
+});
+export const insertStreetFoodItemSchema = createInsertSchema(streetFoodItems).pick({
+  name: true, description: true, imageUrl: true, category: true, price: true, isVeg: true, isAvailable: true, spicyLevel: true, providerId: true
 });
 export const insertServiceOfferingSchema = z.object({
   providerId: z.string(),
@@ -317,6 +323,7 @@ export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type ServiceTemplate = typeof serviceTemplates.$inferSelect;
 export type InsertServiceTemplate = z.infer<typeof insertServiceTemplateSchema>;
+export type InsertStreetFoodItem = z.infer<typeof insertStreetFoodItemSchema>;
 export type ServiceOffering = typeof serviceOfferings.$inferSelect;
 export type InsertServiceOffering = z.infer<typeof insertServiceOfferingSchema>;
 

@@ -20,16 +20,7 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 export function calculateDeliveryFee(distanceInMeters: number): number {
     const distanceInKm = Math.floor((distanceInMeters / 1000) * 10) / 10; // Floor to 1 decimal place
 
-    // Base Charge: ₹18 (Fixed for the first km or start)
-    // Variable Charge: ₹9 per km
-    // Formula: Total_Fee = 18 + (Distance_in_KM * 9)
-
-    // Note: The prompt says "Fixed for the first km or start". 
-    // Usually this means if distance < 1km, fee is 18. 
-    // But the formula `18 + (Distance_in_KM * 9)` implies 18 is base and we add 9 * dist.
-    // If dist is 0.5km, fee = 18 + 0.5*9 = 22.5.
-    // If dist is 1.5km, fee = 18 + 1.5*9 = 31.5.
-    // This seems consistent with "Base Charge + Variable Charge".
-
-    return 18 + (distanceInKm * 9);
+    // Charge: ₹9 per km
+    // Updated as per user request "delivery charge should be 9rs per km"
+    return Math.ceil(distanceInKm) * 9;
 }

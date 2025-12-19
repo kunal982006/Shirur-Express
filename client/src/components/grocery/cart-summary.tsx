@@ -11,17 +11,17 @@ interface CartSummaryProps {
   onProceedToCheckout: () => void;
 }
 
-export default function CartSummary({ 
-  items, 
-  onUpdateQuantity, 
-  onProceedToCheckout 
+export default function CartSummary({
+  items,
+  onUpdateQuantity,
+  onProceedToCheckout
 }: CartSummaryProps) {
   const [expanded, setExpanded] = useState(false);
-  
+
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const platformFee = subtotal * 0.01; // 1% platform fee
+  const platformFee = subtotal * 0.05; // 5% platform fee
   const distance = 3.5; // Mock distance - in real app this would be calculated
-  const deliveryFee = distance * 7; // ₹7 per km
+  const deliveryFee = distance * 9; // ₹9 per km
   const total = subtotal + platformFee + deliveryFee;
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -61,8 +61,8 @@ export default function CartSummary({
                 <div key={item.id} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center space-x-3 flex-1">
                     {item.imageUrl && (
-                      <img 
-                        src={item.imageUrl} 
+                      <img
+                        src={item.imageUrl}
                         alt={item.name}
                         className="w-10 h-10 rounded object-cover"
                       />
@@ -107,28 +107,15 @@ export default function CartSummary({
         )}
 
         {/* Price Breakdown */}
+        {/* Price Breakdown - Hidden per user request (visible at billing/checkout) */}
         <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
+          <div className="flex justify-between font-semibold">
+            <span>Subtotal (excluding fees)</span>
             <span>₹{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Platform Fee (1%)</span>
-            <span>₹{platformFee.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">
-              Delivery Charges ({distance} km × ₹7)
-            </span>
-            <span>₹{deliveryFee.toFixed(2)}</span>
-          </div>
-          <div className="border-t border-border pt-2 flex justify-between font-semibold">
-            <span>Total</span>
-            <span>₹{total.toFixed(2)}</span>
           </div>
         </div>
 
-        <Button 
+        <Button
           className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-3 mt-3"
           onClick={onProceedToCheckout}
           data-testid="button-checkout"

@@ -171,7 +171,6 @@ export default function Grocery() {
         name: product.name,
         price: parseFloat(product.price),
         imageUrl: product.imageUrl || undefined,
-        quantity: 1, // Store 'quantity' 1 se start karega
         providerId: product.providerId, // Pass providerId
       });
       toast({
@@ -217,10 +216,8 @@ export default function Grocery() {
               {gmartProvider ? gmartProvider.description : "Fresh groceries..."}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Delivery Charges</p>
-            <p className="text-lg font-semibold">₹7 per km + 1% platform fee</p>
-          </div>
+
+          {/* Removed Delivery Charges Info as per user request */}
         </div>
 
         {/* Categories Navigation (Horizontal Scroll) */}
@@ -359,7 +356,12 @@ export default function Grocery() {
             {filteredProducts.map((product: GroceryProduct) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                product={{
+                  ...product,
+                  weight: product.weight || undefined,
+                  imageUrl: product.imageUrl || undefined,
+                  mrp: product.mrp || undefined
+                }}
                 onAddToCart={() => handleAddToCart(product)}
                 quantity={items.find(item => item.id === product.id)?.quantity || 0}
                 onIncreaseQuantity={() => updateQuantity(product.id, 1)}

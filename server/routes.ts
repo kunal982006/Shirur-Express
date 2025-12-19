@@ -23,6 +23,7 @@ import {
   serviceProviders, // NAYA IMPORT
   insertRestaurantOrderSchema, // NAYA IMPORT
   groceryProducts, // NAYA IMPORT
+  cakeProducts, // Fix: Import this
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -198,6 +199,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("GET /api/auth/me error:", error);
       res.status(500).json({ user: null, message: error.message || "Error fetching user data" });
+    }
+  });
+
+  app.patch("/api/auth/profile", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const { username, email, phone, address } = req.body;
+
+      // Basic validation
+      if (!username && !email && !phone && !address) {
+        return res.status(400).json({ message: "No updates provided" });
+      }
+
+      // Check duplicates if changing username/email
+      if (username) {
+        const existing = await storage.getUserByUsername(username.toLowerCase());
+        if (existing && existing.id !== userId) {
+          return res.status(400).json({ message: "Username already taken" });
+        }
+      }
+      if (email) {
+        const existing = await storage.getUserByEmail(email);
+        if (existing && existing.id !== userId) {
+          return res.status(400).json({ message: "Email already taken" });
+        }
+      }
+
+      const updates: any = {};
+      if (username) updates.username = username.toLowerCase();
+      if (email) updates.email = email;
+      if (phone) updates.phone = phone;
+      if (address) updates.address = address;
+
+      const updatedUser = await storage.updateUser(userId, updates);
+
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json({ user: userWithoutPassword, message: "Profile updated successfully" });
+
+    } catch (error: any) {
+      console.error("Profile update error:", error);
+      res.status(500).json({ message: error.message || "Error updating profile" });
     }
   });
 
@@ -1061,6 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const providerId = req.provider!.id;
       const { categorySlug, itemId } = req.params;
       const updates = req.body;
+      console.log(`[DEBUG] PATCH Menu Item: ${itemId} | Category: ${categorySlug} | Updates:`, JSON.stringify(updates, null, 2));
 
       const updatedItem = await storage.updateMenuItem(itemId, providerId, categorySlug, updates);
       if (!updatedItem) {
@@ -1087,6 +1130,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Delete menu item error:", error);
       res.status(500).json({ message: error.message || "Error deleting menu item" });
+    }
+  });
+
+  // --- RESTAURANT SPECIFIC MENU ROUTE ---
+  app.get("/api/restaurant-menu-items", async (req: Request, res: Response) => {
+    try {
+      const { providerId } = req.query;
+      const items = await storage.getRestaurantMenuItems(providerId as string);
+      res.json(items);
+    } catch (error: any) {
+      console.error("Get restaurant menu items error:", error);
+      res.status(500).json({ message: error.message || "Error fetching menu items" });
+    }
+  });
+
+  // --- POPULAR CAKES ROUTE (NEW) ---
+  app.get("/api/cake-shop/popular", async (req: Request, res: Response) => {
+    try {
+      const popularCakes = await db.query.cakeProducts.findMany({
+        where: eq(cakeProducts.isPopular, true),
+        with: {
+          provider: true, // Fetch provider details (businessName, id)
+        },
+        limit: 10, // Limit results
+      });
+
+      res.json(popularCakes);
+    } catch (error: any) {
+      console.error("Get popular cakes error:", error);
+      res.status(500).json({ message: error.message || "Error fetching popular cakes" });
     }
   });
 

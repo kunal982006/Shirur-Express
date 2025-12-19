@@ -4,6 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import ServiceCard from "@/components/service-card";
 import {
   MapPin,
@@ -47,14 +53,14 @@ const offers = [
 export default function Home() {
   const [, navigate] = useLocation();
 
-  const [selectedService, setSelectedService] = useState(""); 
+  const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("Current GPS Location"); // Location bar ke liye initial value
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // useQuery call abhi bhi rakha hai, for best practice
-  const { data: serviceCategories, isLoading } = useQuery({ 
+  const { data: serviceCategories, isLoading } = useQuery({
     queryKey: ["/api/service-categories"],
   });
 
@@ -94,7 +100,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16"> 
+    <div className="min-h-screen bg-gray-50 pb-16">
 
       {/* 1. Top Location Bar (Image Reference: Top Bar) */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4 shadow-md">
@@ -102,7 +108,7 @@ export default function Home() {
           <div className="flex items-center space-x-2 text-sm font-medium text-gray-800 cursor-pointer" onClick={handleLocationClick}>
             <MapPin className="h-5 w-5 text-primary" />
             <span className="text-gray-500 text-xs truncate max-w-[200px] hover:text-primary">
-                {locationStatus === 'loading' ? 'Fetching Location...' : location}
+              {locationStatus === 'loading' ? 'Fetching Location...' : location}
             </span>
             <ChevronRight className="h-4 w-4 text-gray-500" />
           </div>
@@ -111,35 +117,82 @@ export default function Home() {
       </header>
 
       {/* 2. Unified Search Bar (Image Reference: Are you hungry) */}
-      <section className="p-4 bg-white shadow-sm sticky top-[61px] z-30"> 
+      <section className="p-4 bg-white shadow-sm sticky top-[61px] z-30">
         <div className="max-w-7xl mx-auto flex gap-4">
-            <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                    type="text"
-                    placeholder="Search for Services or Products (Electrician, Cake, Rental...)"
-                    className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
-                    value={selectedService}
-                    onChange={(e) => setSelectedService(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSearch();
-                    }}
-                />
-            </div>
-            {/* GPS/Search Button - Isse ab sirf search hoga, GPS toh upar handle ho raha hai */}
-            <Button
-                className="h-12 w-24 flex-shrink-0"
-                onClick={handleSearch}
-                disabled={!selectedService}
-                data-testid="button-hero-search"
-            >
-                Go
-            </Button>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search for Services or Products (Electrician, Cake, Rental...)"
+              className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
+              value={selectedService}
+              onChange={(e) => setSelectedService(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
+            />
+          </div>
+          {/* GPS/Search Button - Isse ab sirf search hoga, GPS toh upar handle ho raha hai */}
+          <Button
+            className="h-12 w-24 flex-shrink-0"
+            onClick={handleSearch}
+            disabled={!selectedService}
+            data-testid="button-hero-search"
+          >
+            Go
+          </Button>
+        </div>
+      </section>
+
+      {/* 4. Special Offers Section (Image Reference: Listing Section jaisa) */}
+      <section id="offers" className="pt-6 pb-4 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-foreground">Exclusive Offers</h2>
+            <Link href="/offers" className="flex items-center text-primary text-sm font-medium hover:underline">
+              View More <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <Carousel
+            plugins={[
+              Autoplay({
+                delay: 3000,
+              }),
+            ]}
+            className="w-full"
+          >
+            <CarouselContent>
+              {offers.map((offer, index) => (
+                <CarouselItem key={index}>
+                  <Card
+                    className={`bg-gradient-to-br ${offer.color === "accent"
+                      ? "from-accent to-accent/80"
+                      : offer.color === "secondary"
+                        ? "from-secondary to-secondary/80"
+                        : "from-primary to-primary/80"
+                      } text-white shadow-xl border-0`}
+                  >
+                    <CardContent className="p-6 flex items-center justify-between min-h-[160px]">
+                      <div className="flex flex-col justify-center">
+                        <span className="w-fit bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-bold uppercase mb-2">
+                          {offer.badge}
+                        </span>
+                        <h3 className="text-2xl font-bold leading-tight">{offer.title}</h3>
+                        <p className="text-sm sm:text-base opacity-95 mt-1">{offer.subtitle}</p>
+                      </div>
+                      <offer.icon className="h-16 w-16 opacity-80 flex-shrink-0 ml-4" />
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         </div>
       </section>
 
       {/* 3. Services Section (Image Reference: What's on Your Mind? - Categories) */}
-      <section id="services" className="pt-8 pb-4 bg-background">
+      <section id="services" className="py-4 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Header jaisa Food UI mein tha */}
@@ -151,13 +204,13 @@ export default function Home() {
           </div>
 
           {/* Service Card Grid (Minimal) */}
-          <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-8 gap-4 overflow-x-auto pb-2">
+          <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-8 gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {/* Ab yahan hum services array ko map karenge, jaisa Food UI mein gol buttons the */}
             {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
               <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
                 {/* ServiceCard ki jagah, chota icon button banao */}
                 <Link to={`/${service.slug}`} className="p-3 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg transition-all">
-                    <service.icon className={`h-6 w-6 text-primary`} />
+                  <service.icon className={`h-6 w-6 text-primary`} />
                 </Link>
                 <span className="text-xs text-center mt-1 font-medium text-gray-600 truncate max-w-full">{service.name}</span>
               </div>
@@ -166,66 +219,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. Special Offers Section (Image Reference: Listing Section jaisa) */}
-      <section id="offers" className="py-4 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-foreground">Exclusive Offers</h2>
-                <Link href="/offers" className="flex items-center text-primary text-sm font-medium hover:underline">
-                    View More <ChevronRight className="h-4 w-4" />
-                </Link>
-            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {offers.map((offer, index) => (
-              <Card
-                key={index}
-                // Styling changed to look like a prominent banner/listing card
-                className={`bg-gradient-to-br ${
-                  offer.color === "accent"
-                    ? "from-accent to-accent/80"
-                    : offer.color === "secondary"
-                    ? "from-secondary to-secondary/80"
-                    : "from-primary to-primary/80"
-                } text-white shadow-xl`}
-                data-testid={`card-offer-${index}`}
-              >
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div>
-                    <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-bold uppercase">
-                      {offer.badge}
-                    </span>
-                    <h3 className="text-xl font-bold mt-1">{offer.title}</h3>
-                    <p className="text-sm opacity-90">{offer.subtitle}</p>
-                  </div>
-                  <offer.icon className="h-8 w-8 opacity-80" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Listing Placeholder (Yahan tumhare Top Rated Providers aayenge) */}
-      <section className="mt-6 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Top Rated Services (Electrician, Plumber)</h2>
-            <Link href="/top-providers" className="flex items-center text-primary text-sm font-medium hover:underline">
-              View All <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-          {/* Yahan Provider Cards render honge. Abhi ke liye placeholder hai */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Placeholder Card 1 */}
-            <Card><CardContent className="p-4">Best Electrician</CardContent></Card>
-            {/* Placeholder Card 2 */}
-            <Card><CardContent className="p-4">Best Plumber</CardContent></Card>
-            {/* Placeholder Card 3 */}
-            <Card><CardContent className="p-4">Best Cake Shop</CardContent></Card>
-          </div>
-        </div>
-      </section>
 
       {/* NOTE: Bottom Navbar ko abhi delete kiya hai, kyunki wo tumhare app structure par depend karega */}
     </div>

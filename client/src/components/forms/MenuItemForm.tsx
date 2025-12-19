@@ -1,6 +1,5 @@
-// client/src/components/forms/MenuItemForm.tsx (FIXED API CALLS)
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Camera, Upload, Image as ImageIcon } from "lucide-react";
 
 // --- Schemas and Options (Yeh sab waise hi rahenge) ---
 const beautyCategories = [{ value: "Hair", label: "Hair Services" }, { value: "Skin", label: "Skin Care" }, { value: "Nails", label: "Nail Care" }, { value: "Makeup", label: "Makeup" }, { value: "Spa", label: "Spa & Massage" }, { value: "Bridal", label: "Bridal Services" },];
@@ -39,6 +38,7 @@ const foodSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional
 const cakeSchema = baseSchema.extend({
   category: z.enum(cakeCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
   weight: z.string().optional(), // Added weight to schema
+  isPopular: z.boolean().default(false).optional(), // Added isPopular
 });
 const restaurantSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional(), category: z.enum(restaurantCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), cuisine: z.string().optional(), });
 
@@ -57,7 +57,9 @@ type MenuItemFormProps = { providerId: string; categorySlug: string; initialData
 const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, initialData, onSuccess }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [currentSubCategories, setCurrentSubCategories] = useState<{ value: string; label: string; }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getSchema = () => {
     switch (categorySlug) {
@@ -80,7 +82,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       stockQuantity: initialData.stockQuantity?.toString(),
       isVeg: initialData.isVeg ?? true,
       inStock: initialData.inStock ?? true,
-    } : { isVeg: true, inStock: true },
+      isPopular: initialData.isPopular === true || initialData.isPopular === "true" || !!initialData.is_popular,
+    } : { isVeg: true, inStock: true, isPopular: false },
   });
 
   useEffect(() => {
@@ -91,7 +94,9 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       stockQuantity: initialData.stockQuantity?.toString(),
       isVeg: initialData.isVeg ?? true,
       inStock: initialData.inStock ?? true,
-    } : { isVeg: true, inStock: true });
+      isPopular: initialData.isPopular === true || initialData.isPopular === "true" || !!initialData.is_popular,
+    } : { isVeg: true, inStock: true, isPopular: false });
+
 
     if (categorySlug === "beauty" && initialData?.category) {
       setCurrentSubCategories(beautySubCategories[initialData.category as keyof typeof beautySubCategories] || []);
@@ -109,6 +114,55 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       setCurrentSubCategories([]);
     }
   }, [selectedCategory, categorySlug, form, initialData]);
+
+
+  // Image Upload Handler
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Image size should be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("images", file); // API expects 'images' key for array, but works with single too hopefully or we adapt
+
+    try {
+      // We will use the existing /api/upload endpoint which expects 'images' field (array)
+      // and returns { urls: string[] }
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.urls && res.data.urls.length > 0) {
+        form.setValue("imageUrl", res.data.urls[0]);
+        toast({ title: "Success", description: "Image uploaded successfully" });
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: error.response?.data?.message || "Could not upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset input so same file can be selected again if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
 
   // --- BUG FIX 3: onSubmit FUNCTION POORA FIX KAR DIYA ---
   const onSubmit = async (values: FormValues) => {
@@ -142,6 +196,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
         payload.stockQuantity = values.stockQuantity ? parseInt(values.stockQuantity) : 0;
       } else if (categorySlug === "cake-shop") {
         payload.weight = values.weight || null;
+        payload.isPopular = values.isPopular;
       }
 
       // API call ko theek kiya
@@ -205,9 +260,49 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Image URL (Optional)</FormLabel>
+                <FormLabel>Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://..." {...field} />
+                  <div className="space-y-2">
+                    {/* Hidden File Input */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      capture="environment" // Encourages camera use on mobile
+                    />
+
+                    {/* Image Preview & Upload Button */}
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-20 h-20 border-2 border-dashed rounded-md flex items-center justify-center bg-muted cursor-pointer overflow-hidden relative"
+                        onClick={handleFileClick}
+                      >
+                        {field.value ? (
+                          <img src={field.value} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon className="text-muted-foreground w-8 h-8" />
+                        )}
+                        {isUploading && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 className="animate-spin text-white w-6 h-6" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={handleFileClick} disabled={isUploading}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          {field.value ? "Change Image" : "Upload Image"}
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={handleFileClick} className="text-xs text-muted-foreground" disabled={isUploading}>
+                          <Camera className="mr-2 h-3 w-3" />
+                          Take Photo
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -502,11 +597,26 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="isPopular"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Popular Cake?</FormLabel>
+                      <FormDescription>Show in popular cakes carousel</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={isSubmitting || isUploading}>
+            {(isSubmitting || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Update Item" : "Add Item"}
           </Button>
         </form>

@@ -31,6 +31,7 @@ import {
   type GroceryProduct,
   type Review,
   type StreetFoodItem,
+  type InsertStreetFoodItem,
   type RestaurantMenuItem,
 
   type Invoice,
@@ -61,6 +62,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<InsertUser>): Promise<User>;
   updateStripeCustomerId(userId: string, customerId: string): Promise<User>;
   updateUserStripeInfo(
     userId: string,
@@ -202,13 +204,14 @@ export interface IStorage {
   updateOrderWithRazorpayOrderId(
     orderId: string,
     razorpayOrderId: string,
-  ): Promise<GroceryOrder | undefined>;
+    orderType?: 'grocery' | 'street_food' | 'restaurant',
+  ): Promise<GroceryOrder | StreetFoodOrder | RestaurantOrder | undefined>;
   verifyAndUpdateOrderPayment(
     orderId: string,
     rzpPaymentId: string,
     rzpSignature: string,
-    orderType?: 'grocery' | 'street_food',
-  ): Promise<GroceryOrder | StreetFoodOrder | undefined>;
+    orderType?: 'grocery' | 'street_food' | 'restaurant',
+  ): Promise<GroceryOrder | StreetFoodOrder | RestaurantOrder | undefined>;
 
   // Reviews
   createReview(review: {
@@ -259,14 +262,24 @@ export interface IStorage {
   getStreetFoodOrder(id: string): Promise<StreetFoodOrder | undefined>;
   getRunnerOrders(runnerId?: string): Promise<StreetFoodOrder[]>;
   updateStreetFoodOrderStatus(id: string, status: string): Promise<StreetFoodOrder>;
-  createStreetFoodVendor(vendor: InsertServiceProvider): Promise<ServiceProvider>;
+  createStreetFoodVendor(vendor: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider>;
   deleteStreetFoodVendor(id: string): Promise<void>;
   createStreetFoodItem(item: InsertStreetFoodItem): Promise<StreetFoodItem>;
   deleteStreetFoodItem(id: string): Promise<void>;
   updateStreetFoodItem(id: string, updates: Partial<InsertStreetFoodItem>): Promise<StreetFoodItem | undefined>;
+
+  // Missing Grocery Order Methods
+  getGroceryOrdersByUser(userId: string): Promise<GroceryOrder[]>;
+  getGroceryOrdersByProvider(providerId: string): Promise<GroceryOrder[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // ... existing methods ...
+  // ... I need to be careful with replace_file_content not to delete the whole class.
+  // The interface update is lines ~266.
+  // The implementation update is lines ~1281.
+  // I will do two separate Replace calls or one MULTI replace.
+
   updateStripeCustomerId(userId: string, customerId: string): Promise<User> {
     throw new Error("Method not implemented.");
   }
@@ -289,6 +302,19 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUser(id: string, updates: Partial<InsertUser>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    return updatedUser;
   }
 
 
@@ -1047,37 +1073,7 @@ export class DatabaseStorage implements IStorage {
       where: eq(restaurantMenuItems.isAvailable, true),
     });
   }
-  async createTableBooking(
-    booking: InsertTableBooking & { userId: string; providerId: string },
-  ): Promise<TableBooking> {
-    const [newBooking] = await db
-      .insert(tableBookings)
-      .values(booking)
-      .returning();
-    return newBooking;
-  }
-  async getTableBooking(id: string): Promise<TableBooking | undefined> {
-    return db.query.tableBookings.findFirst({
-      where: eq(tableBookings.id, id),
-    });
-  }
-  async updateTableBookingStatus(
-    id: string,
-    status: string,
-  ): Promise<TableBooking> {
-    const [booking] = await db
-      .update(tableBookings)
-      .set({ status })
-      .where(eq(tableBookings.id, id))
-      .returning();
-    return booking;
-  }
-  async getUserTableBookings(userId: string): Promise<TableBooking[]> {
-    return db.query.tableBookings.findMany({
-      where: eq(tableBookings.userId, userId),
-      orderBy: [desc(tableBookings.createdAt)],
-    });
-  }
+
 
   async getRentalProperties(filters: {
     propertyType?: string;
@@ -1215,12 +1211,21 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(table)
       .where(and(eq(idField, itemId), eq(providerIdField, providerId)));
-    if (!itemToUpdate) return null;
+
+    if (!itemToUpdate) {
+      console.log(`[DEBUG] Item not found for update: ${itemId}`);
+      return null;
+    }
+
+    console.log(`[DEBUG] Updating item ${itemId} with:`, updates);
+
     const [updatedItem] = await db
       .update(table)
       .set(updates)
       .where(eq(idField, itemId))
       .returning();
+
+    console.log(`[DEBUG] Item updated result:`, updatedItem);
     return updatedItem;
   }
   async deleteMenuItem(
@@ -1278,8 +1283,20 @@ export class DatabaseStorage implements IStorage {
 
   // --- STREET FOOD MANAGEMENT (RUNNER) ---
 
-  async createStreetFoodVendor(vendor: InsertServiceProvider): Promise<ServiceProvider> {
-    const [newVendor] = await db.insert(serviceProviders).values(vendor).returning();
+  async createStreetFoodVendor(vendor: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider> {
+    const providerToInsert = {
+      businessName: vendor.businessName,
+      description: vendor.description,
+      experience: vendor.experience,
+      address: vendor.address,
+      latitude: vendor.latitude,
+      longitude: vendor.longitude,
+      specializations: vendor.specializations,
+      profileImageUrl: vendor.profileImageUrl,
+      userId: vendor.userId,
+      categoryId: vendor.categoryId,
+    };
+    const [newVendor] = await db.insert(serviceProviders).values(providerToInsert).returning();
     return newVendor;
   }
 

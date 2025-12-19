@@ -8,6 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Star, MapPin, Clock, Award, Cake, ShoppingBag, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
+import Autoplay from "embla-carousel-autoplay";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
 
 const cakeCategories = [
   { name: "All Cakes", active: true },
@@ -66,6 +74,89 @@ const mockCakeShops = [
   }
 ];
 
+
+function PopularCakesSection() {
+  const [, setLocation] = useLocation();
+  const { data: popularCakes, isLoading } = useQuery({
+    queryKey: ["popularCakes"],
+    queryFn: async () => {
+      const res = await fetch("/api/cake-shop/popular");
+      if (!res.ok) throw new Error("Failed to fetch popular cakes");
+      return res.json();
+    },
+  });
+
+  if (isLoading || !popularCakes || popularCakes.length === 0) return null;
+
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-2 mb-4">
+        <Award className="h-5 w-5 text-amber-500" />
+        <h3 className="text-xl font-bold">Popular Cakes</h3>
+      </div>
+
+      <Carousel
+        plugins={[
+          Autoplay({
+            delay: 3000,
+          }),
+        ]}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-2 md:-ml-4">
+          {popularCakes.map((cake: any) => (
+            <CarouselItem key={cake.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+              <div className="p-1">
+                <Card className="overflow-hidden border-0 shadow-md">
+                  <CardContent className="p-0">
+                    <div className="aspect-square relative">
+                      <img
+                        src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"}
+                        alt={cake.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600">
+                        Top Rated
+                      </Badge>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-semibold truncate mb-1" title={cake.name}>{cake.name}</h4>
+
+                      {/* Provider Info & Action */}
+                      <div className="flex flex-col gap-2 mt-2">
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <span className="truncate max-w-[150px] font-medium text-foreground">
+                            {cake.provider?.businessName}
+                          </span>
+                        </div>
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="w-full text-xs h-8"
+                          onClick={() => {
+                            // Find the shop section on this page and scroll to it/expand it
+                            const element = document.getElementById(`shop-${cake.providerId}`);
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }}
+                        >
+                          View Full Menu
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
+  );
+}
+
 export default function CakeShop() {
   const [, setLocation] = useLocation();
   const [activeCategory, setActiveCategory] = useState("All Cakes");
@@ -103,7 +194,6 @@ export default function CakeShop() {
         name: cake.name,
         price: parseFloat(cake.price),
         imageUrl: cake.imageUrl || undefined,
-        quantity: 1,
         providerId: shopId // Ensure we track which shop this is from
       });
       toast({
@@ -133,6 +223,9 @@ export default function CakeShop() {
             Order delicious custom cakes for every occasion
           </p>
         </div>
+
+        {/* Popular Cakes Carousel */}
+        <PopularCakesSection />
 
         {/* Cake Categories */}
         <div className="mb-6 flex flex-wrap gap-2">
@@ -204,8 +297,8 @@ export default function CakeShop() {
                                 <Star
                                   key={i}
                                   className={`h-4 w-4 ${i < Math.floor(parseFloat(shop.rating))
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
+                                    ? "text-yellow-500 fill-current"
+                                    : "text-gray-300"
                                     }`}
                                 />
                               ))}

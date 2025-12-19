@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import BookingSlotForm from "@/components/booking-slot-form";
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Star, 
-  Briefcase, 
+import {
+  ArrowLeft,
+  MapPin,
+  Star,
+  Briefcase,
   CheckCircle2,
   Clock,
   Phone,
@@ -19,23 +19,35 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem, User, ServiceCategory } from "@shared/schema";
 
-type ElectricianProviderDetail = ServiceProvider & { 
-  user: User; 
-  category: ServiceCategory; 
+type ElectricianProviderDetail = ServiceProvider & {
+  user: User;
+  category: ServiceCategory;
 };
 
 export default function ElectricianDetail() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/electrician/:id");
-  const [selectedProblem, setSelectedProblem] = useState<{id: string; name: string} | null>(null);
+  const [selectedProblem, setSelectedProblem] = useState<{ id: string; name: string } | null>(null);
   const [showBooking, setShowBooking] = useState(false);
 
   const providerId = params?.id;
 
+  // Auto-select problem if present in URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const preSelectedProblemId = searchParams.get("problemId");
+    const preSelectedProblemName = searchParams.get("problemName");
+
+    if (preSelectedProblemId && preSelectedProblemName) {
+      setSelectedProblem({ id: preSelectedProblemId, name: preSelectedProblemName });
+      setShowBooking(true);
+    }
+  }, []); // Run once on mount
+
   // Get electrician details (FIXED)
   const { data: provider, isLoading } = useQuery<ElectricianProviderDetail>({
     queryKey: ["service-provider-detail", providerId],
-    queryFn: () => 
+    queryFn: () =>
       apiRequest("GET", `/api/service-providers/${providerId}`)
         .then(res => res.json()),
     enabled: !!providerId,
@@ -44,7 +56,7 @@ export default function ElectricianDetail() {
   // Get all appliances (parent problems) (FIXED)
   const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
     queryKey: ["service-problems", "electrician"],
-    queryFn: () => 
+    queryFn: () =>
       apiRequest("GET", "/api/service-problems?category=electrician")
         .then(res => res.json()),
     enabled: !!provider, // Jab provider load ho jaye tab
@@ -169,47 +181,20 @@ export default function ElectricianDetail() {
             </Card>
           </div>
 
-          {/* Problems This Electrician Can Handle */}
+          {/* Problems This Electrician Can Handle OR Booking Form */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Electrical Problems I Can Fix</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Select a problem to book a service slot
-                </p>
-              </CardHeader>
-              <CardContent>
-                {appliancesLoading ? (
-                   <p className="text-center text-muted-foreground py-8">Loading problems...</p>
-                ) : appliances && appliances.length > 0 ? (
-                  <div className="space-y-6">
-                    {/* Sirf wohi appliances dikhao jo provider specialize karta hai */}
-                    {appliances
-                      .filter(appliance => provider.specializations?.includes(appliance.name))
-                      .map((appliance: any) => (
-                      <ApplianceProblems
-                        key={appliance.id}
-                        appliance={appliance}
-                        selectedProblemId={selectedProblem?.id || ""}
-                        onProblemSelect={handleProblemSelect}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No problems listed
-                  </p>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Booking Section - Shown when problem is selected */}
-            {showBooking && selectedProblem && (
-              <Card className="mt-6">
+            {showBooking && selectedProblem ? (
+              <Card className="mt-0 border-primary/20 shadow-md">
                 <CardHeader>
-                  <CardTitle>Book a Service Slot</CardTitle>
+                  <div className="flex justify-between items-center mb-2">
+                    <CardTitle>Book Service Slot</CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
+                      Change Problem
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    You selected: <span className="text-primary font-medium">{selectedProblem.name}</span>
+                    Selected Issue: <span className="text-primary font-bold text-lg">{selectedProblem.name}</span>
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -218,10 +203,41 @@ export default function ElectricianDetail() {
                     problemId={selectedProblem.id}
                     problemName={selectedProblem.name}
                     onSuccess={() => {
-                      setShowBooking(false);
-                      setSelectedProblem(null);
+                      // Maybe redirect or show success
                     }}
                   />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Electrical Problems I Can Fix</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select a problem to book a service slot
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {appliancesLoading ? (
+                    <p className="text-center text-muted-foreground py-8">Loading problems...</p>
+                  ) : appliances && appliances.length > 0 ? (
+                    <div className="space-y-6">
+                      {/* Sirf wohi appliances dikhao jo provider specialize karta hai */}
+                      {appliances
+                        .filter(appliance => provider.specializations?.includes(appliance.name) || appliance.name === 'Others')
+                        .map((appliance: any) => (
+                          <ApplianceProblems
+                            key={appliance.id}
+                            appliance={appliance}
+                            selectedProblemId={selectedProblem?.id || ""}
+                            onProblemSelect={handleProblemSelect}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      No problems listed
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -249,7 +265,7 @@ function ApplianceProblems({
       "electrician",
       appliance.id, // Parent ID
     ],
-    queryFn: () => 
+    queryFn: () =>
       apiRequest("GET", `/api/service-problems?category=electrician&parentId=${appliance.id}`)
         .then(res => res.json()),
     enabled: !!appliance.id,

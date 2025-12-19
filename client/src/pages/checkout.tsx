@@ -90,7 +90,7 @@ export default function Checkout() {
 
   // Fees calculation
   const subtotal = getTotalPrice();
-  const platformFee = subtotal * 0.01; // 1%
+  const platformFee = subtotal * 0.05; // 5%
 
   // Dynamic Delivery Fee
   let deliveryFee = 0;
@@ -137,12 +137,37 @@ export default function Checkout() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
         setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lat: latitude,
+          lng: longitude
         });
-        setIsLocating(false);
+
+        // Attempt reverse geocoding
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+
+          if (data && data.display_name) {
+            // Only update if the field is empty to avoid overwriting user edits? 
+            // Or always update since user clicked "Detect Location"?
+            // Let's assume on "Detect" we should provide the address.
+            form.setValue("deliveryAddress", data.display_name);
+            toast({ title: "Address Found", description: "Location address updated." });
+          } else {
+            toast({ title: "Location Detected", description: "Could not fetch street address. Please enter details." });
+          }
+        } catch (error) {
+          console.error("Reverse geocoding failed", error);
+          // Fallback or just silent fail for address text
+          toast({ title: "Location Detected", description: "Please enter your specific address." });
+        } finally {
+          setIsLocating(false);
+        }
       },
       (error) => {
         console.error("Geolocation error:", error);
@@ -512,7 +537,7 @@ export default function Checkout() {
                       <span>₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Platform Fee (1%)</span>
+                      <span className="text-muted-foreground">Platform Fee (5%)</span>
                       <span>₹{platformFee.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">

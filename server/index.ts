@@ -115,6 +115,7 @@ app.use((req, res, next) => {
     port,
     host: "0.0.0.0",
   }, () => {
+    console.log(`[DEBUG] Server restarted. Debug logs active.`);
     log(`serving on port ${port}`);
   });
 })();

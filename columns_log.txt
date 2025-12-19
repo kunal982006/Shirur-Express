@@ -1,0 +1,1 @@
+Columns in 'users' table: ["is_verified","created_at","email","phone","password","role","stripe_customer_id","stripe_subscription_id","id","address","username"]

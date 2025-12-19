@@ -45,7 +45,9 @@ export default function ProductCard({
         </div>
       )}
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg truncate">{product.name}</h3>
+        <h3 className="font-semibold text-lg leading-tight min-h-[1.5rem]">
+          {product.name.charAt(0).toUpperCase() + product.name.slice(1).toLowerCase()}
+        </h3>
         {product.weight && <p className="text-sm text-muted-foreground">{product.weight}</p>}
         <div className="flex flex-col mt-4">
           <div className="flex items-center gap-2">

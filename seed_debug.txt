@@ -1,0 +1,49 @@
+Seeding Pizza Burger Express...
+Restaurant Category ID: 6810f39a-bceb-417a-b2ca-9555b99856da
+User found: nj1colz2grisvgvnep3o35xq
+Provider ID: e0kmuyuszqmc960am5d9gkl7
+Adding new menu items...
+Added: Marghrita Pizza (Reg)
+Added: Marghrita Pizza (Medium)
+Added: Chesse And Corn (Reg)
+Added: Chesse And Corn (Medium)
+Added: Veggie Feast (Reg)
+Added: Veggie Feast (Medium)
+Added: Spiced Panner (Reg)
+Added: Spiced Panner (Medium)
+Added: Garden Veggie (Reg)
+Added: Garden Veggie (Medium)
+Added: Veggie Lover (Reg)
+Added: Veggie Lover (Medium)
+Added: Veggie Suprim (Reg)
+Added: Veggie Suprim (Medium)
+Added: Veggie Exotic (Reg)
+Added: Veggie Exotic (Medium)
+Added: Double Panner Sup (Reg)
+Added: Double Panner Sup (Medium)
+Added: Veg Fried Momos
+Added: Box of Two (Spiced Panner + Corn & Chesse)
+Added: Box of Four (Marghrita, Corn & Chesse, Veggi Feast, Spiced Paneer)
+Added: Clasic Burger
+Added: Crispy Veg
+Added: Mexican
+Added: Jumbo
+Added: Double Patty Mahi
+Added: Clasic Burger + French Fries
+Added: Crispy Veg + Frech Fries + Pepsi
+Added: Jumbo Burger + Fries + Pepsi
+Added: Chesse (Reg)
+Added: Chesse (Medium)
+Added: Chesse Slice
+Added: Mayonise Dip
+Added: Extra Veggi (Reg)
+Added: Extra Veggi (Medium)
+Added: Panner (Reg)
+Added: Panner (Medium)
+Added: Chesse Brust (Reg)
+Added: Chesse Brust (Medium)
+Added: Sated Fries
+Added: Peri Peri Fries
+Added: Nachos
+Added: Masala Nachos
+Seed completed successfully!

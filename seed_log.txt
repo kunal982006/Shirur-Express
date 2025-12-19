@@ -1,0 +1,80 @@
+Starting check...
+Restaurant category found.
+Variations of 'Pizza Burger Express Shirur' found.
+Found 19 menu items.
+- Jumbo: 139.00
+- Double Patty Mahi: 159.00
+- Clasic Burger + French Fries: 139.00
+- Crispy Veg + Frech Fries + Pepsi: 189.00
+- Jumbo Burger + Fries + Pepsi: 219.00
+- Chesse (Reg): 29.00
+- Chesse (Medium): 49.00
+- Chesse Slice: 20.00
+- Mayonise Dip: 30.00
+- Extra Veggi (Reg): 19.00
+- Extra Veggi (Medium): 29.00
+- Panner (Reg): 19.00
+- Panner (Medium): 29.00
+- Chesse Brust (Reg): 39.00
+- Chesse Brust (Medium): 49.00
+- Sated Fries: 59.00
+- Peri Peri Fries: 89.00
+- Nachos: 69.00
+- Masala Nachos: 89.00
+Starting check...
+Restaurant category found.
+Found provider: Punjabi Dhaba Restaurant (742da398-5d37-485c-939b-83ed3b713a2d)
+Found provider: Chinese Wok Express (1dd1be8a-4342-4d6f-ab21-9b8848b93ba8)
+Found provider: Ganga Grand Resto (ppgqtr9mfcoe4rn3dsezqkjo)
+Found provider: Pizza burger Express (rjawf1f4xpr8a7hht2v68mrt)
+Found provider: Pizza Burger Express Shirur (e0kmuyuszqmc960am5d9gkl7)
+Found provider: Chicken affair (zlmm45sqa3qjn4n0wzjh6vo4)
+Found provider: restaurant1 (avwzoypfbwpbx6s1b4m5m422)
+Found provider: Hotel Friendly Kitchen (pmh84sku6wz0ydfjdej4ksqe)
+Found provider: Test Restaurant (obj21ehrxzhlqdxbnl11ie79)
+Found provider: Restaurant rasa bhakri (wbbg7q9vv4wi2q0wm10omzes)
+Selected target: e0kmuyuszqmc960am5d9gkl7
+Found 43 menu items.
+- Marghrita Pizza (Reg): 119.00
+- Marghrita Pizza (Medium): 189.00
+- Chesse And Corn (Reg): 139.00
+- Chesse And Corn (Medium): 199.00
+- Veggie Feast (Reg): 139.00
+- Veggie Feast (Medium): 199.00
+- Spiced Panner (Reg): 149.00
+- Spiced Panner (Medium): 219.00
+- Garden Veggie (Reg): 169.00
+- Garden Veggie (Medium): 229.00
+- Veggie Lover (Reg): 179.00
+- Veggie Lover (Medium): 239.00
+- Veggie Suprim (Reg): 189.00
+- Veggie Suprim (Medium): 249.00
+- Veggie Exotic (Reg): 199.00
+- Veggie Exotic (Medium): 259.00
+- Double Panner Sup (Reg): 219.00
+- Double Panner Sup (Medium): 279.00
+- Veg Fried Momos: 79.00
+- Box of Two (Spiced Panner + Corn & Chesse): 249.00
+- Box of Four (Marghrita, Corn & Chesse, Veggi Feast, Spiced Paneer): 549.00
+- Clasic Burger: 89.00
+- Crispy Veg: 99.00
+- Mexican: 119.00
+- Jumbo: 139.00
+- Double Patty Mahi: 159.00
+- Clasic Burger + French Fries: 139.00
+- Crispy Veg + Frech Fries + Pepsi: 189.00
+- Jumbo Burger + Fries + Pepsi: 219.00
+- Chesse (Reg): 29.00
+- Chesse (Medium): 49.00
+- Chesse Slice: 20.00
+- Mayonise Dip: 30.00
+- Extra Veggi (Reg): 19.00
+- Extra Veggi (Medium): 29.00
+- Panner (Reg): 19.00
+- Panner (Medium): 29.00
+- Chesse Brust (Reg): 39.00
+- Chesse Brust (Medium): 49.00
+- Sated Fries: 59.00
+- Peri Peri Fries: 89.00
+- Nachos: 69.00
+- Masala Nachos: 89.00

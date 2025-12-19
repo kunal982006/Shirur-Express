@@ -16,6 +16,7 @@ import {
   ServiceOffering, // NAYA
   RestaurantOrder, // NAYA
   RentalProperty, // NAYA
+  GroceryOrder, // NAYA
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -1296,6 +1297,10 @@ const BeautyServiceSelector: React.FC<{
         duration: 30, // Default
         imageUrl: t.imageUrl,
         isActive: false,
+        description: null,
+        categorySlug: null,
+        createdAt: null,
+        updatedAt: null,
       }));
       setServicesList(prefilled);
     }

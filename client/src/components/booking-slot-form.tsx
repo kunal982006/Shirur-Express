@@ -1,5 +1,6 @@
 // client/src/components/booking-slot-form.tsx (FIXED)
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,7 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { CalendarIcon, Clock, Loader2, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -66,6 +67,7 @@ export default function BookingSlotForm({
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const [isLocating, setIsLocating] = useState(false);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -75,6 +77,53 @@ export default function BookingSlotForm({
       notes: "",
     },
   });
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Error",
+        description: "Geolocation is not supported by your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Attempt reverse geocoding with OpenStreetMap Nominatim
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          if (data && data.display_name) {
+            form.setValue("userAddress", data.display_name);
+            toast({ title: "Location Detected", description: "Address updated successfully." });
+          } else {
+            form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
+            toast({ title: "Location Detected", description: "Could not fetch address name, using coordinates." });
+          }
+        } catch (error) {
+          form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
+          toast({ title: "Location Detected", description: "Using coordinates (Address fetch failed)." });
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        console.error("Geolocation error:", error);
+        toast({
+          title: "Location Access Denied",
+          description: "Please enter your address manually in the box below.",
+          variant: "destructive",
+        });
+      }
+    );
+  };
 
   const createBookingMutation = useMutation({
     mutationFn: async (data: BookingFormValues) => {
@@ -88,7 +137,7 @@ export default function BookingSlotForm({
         hours += 12;
       }
       if (modifier === 'AM' && hours === 12) {
-        hours = 0; 
+        hours = 0;
       }
 
       const combinedDateTime = new Date(
@@ -104,9 +153,9 @@ export default function BookingSlotForm({
       const bookingData = {
         userId: user?.id || "",
         providerId, // <-- Yeh jaa raha hai, bilkul sahi
-        serviceType: "electrician", 
+        serviceType: "electrician",
         problemId,
-        scheduledAt: scheduledAtISO, 
+        scheduledAt: scheduledAtISO,
         preferredTimeSlots: [data.preferredTimeSlot],
         userPhone: data.userPhone,
         userAddress: data.userAddress,
@@ -276,14 +325,35 @@ export default function BookingSlotForm({
             name="userAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Complete Address</FormLabel>
+                <div className="flex justify-between items-center mb-1">
+                  <FormLabel>Your Complete Address</FormLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-2 text-primary"
+                    onClick={handleDetectLocation}
+                    disabled={isLocating}
+                  >
+                    {isLocating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <MapPin className="h-3 w-3" />
+                    )}
+                    {isLocating ? "Detecting..." : "Use My Location"}
+                  </Button>
+                </div>
                 <FormControl>
                   <Textarea
-                    placeholder="Enter your full address..."
+                    placeholder="Enter your full address or click 'Use My Location'..."
                     {...field}
                     data-testid="input-address"
+                    className="resize-none"
                   />
                 </FormControl>
+                <p className="text-xs text-muted-foreground mt-1">
+                  If location detection fails, please enter address manually.
+                </p>
                 <FormMessage />
               </FormItem>
             )}

@@ -18,8 +18,10 @@ import Grocery from "@/pages/grocery";
 import Rental from "@/pages/rental";
 import StreetFood from "@/pages/street-food";
 import StreetFoodDetail from "@/pages/StreetFoodDetail";
-import Restaurants from "@/pages/restaurants";
+import RestaurantsIndex from "@/pages/restaurants/index";
+import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
 import Checkout from "@/pages/checkout";
+import Settings from "@/pages/settings"; // NAYA IMPORT
 import ProviderDashboard from "@/pages/provider-dashboard";
 import MyBookings from "@/pages/my-bookings";
 import InvoicePayment from "@/pages/invoice-payment";
@@ -57,8 +59,10 @@ function RouterComponent() {
       <Route path="/list-property" component={PropertyListingForm} />
       <Route path="/street-food" component={StreetFood} />
       <Route path="/street-food/:vendorId" component={StreetFoodDetail} />
-      <Route path="/restaurants" component={Restaurants} />
+      <Route path="/restaurants/:id" component={RestaurantDetail} />
+      <Route path="/restaurants" component={RestaurantsIndex} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/settings" component={Settings} />
       <Route path="/order-success" component={OrderSuccess} />
 
       <Route path="/provider/dashboard" component={ProviderDashboard} />
@@ -86,7 +90,7 @@ function App() {
           <TooltipProvider>
             <div className="min-h-screen bg-background text-foreground flex flex-col">
               <Header />
-              <main className="flex-1">
+              <main className="flex-1 pb-16 md:pb-0">
                 <RouterComponent />
               </main>
               <Footer />
