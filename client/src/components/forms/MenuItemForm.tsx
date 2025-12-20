@@ -32,15 +32,15 @@ const restaurantCategories = [{ value: "Starters", label: "Starters" }, { value:
 // --- YEH NAYA SCHEMA HAI 'GROCERY' KE LIYE ---
 const groceryCategories = [{ value: "fruits", label: "Fruits" }, { value: "vegetables", label: "Vegetables" }, { value: "dairy", label: "Dairy" }, { value: "bakery", label: "Bakery" }, { value: "snacks", label: "Snacks" }, { value: "beverages", label: "Beverages" }, { value: "staples", label: "Staples" }, { value: "toiletries", label: "Toiletries" }, { value: "personal-care", label: "Personal Care" },];
 
-const baseSchema = z.object({ name: z.string().min(2, { message: "Name must be at least 2 characters." }), description: z.string().optional(), imageUrl: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")), price: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: "Invalid price format" }), });
-const beautySchema = baseSchema.extend({ duration: z.string().regex(/^\d+$/, { message: "Duration must be a number in minutes." }).optional().or(z.literal("")), category: z.enum(beautyCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), subCategory: z.string().optional(), });
-const foodSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional(), spicyLevel: z.enum(spicyLevels.map(s => s.value) as [string, ...string[]]).optional(), category: z.enum(foodCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), });
+const baseSchema = z.object({ name: z.string().min(2, { message: "Name must be at least 2 characters." }), description: z.string().nullable().optional().or(z.literal("")), imageUrl: z.string().url({ message: "Invalid URL" }).nullable().optional().or(z.literal("")), price: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: "Invalid price format" }), });
+const beautySchema = baseSchema.extend({ duration: z.string().regex(/^\d+$/, { message: "Duration must be a number in minutes." }).nullable().optional().or(z.literal("")), category: z.enum(beautyCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), subCategory: z.string().nullable().optional(), });
+const foodSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional(), spicyLevel: z.enum(spicyLevels.map(s => s.value) as [string, ...string[]]).nullable().optional(), category: z.enum(foodCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), });
 const cakeSchema = baseSchema.extend({
   category: z.enum(cakeCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }),
-  weight: z.string().optional(), // Added weight to schema
+  weight: z.string().nullable().optional(), // Added weight to schema
   isPopular: z.boolean().default(false).optional(), // Added isPopular
 });
-const restaurantSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional(), category: z.enum(restaurantCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), cuisine: z.string().optional(), });
+const restaurantSchema = baseSchema.extend({ isVeg: z.boolean().default(true).optional(), category: z.enum(restaurantCategories.map(c => c.value) as [string, ...string[]], { message: "Please select a category." }), cuisine: z.string().nullable().optional().or(z.literal("")), });
 
 // --- YEH NAYA SCHEMA HAI 'GROCERY' KE LIYE ---
 const grocerySchema = baseSchema.extend({
@@ -117,6 +117,53 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
   }, [selectedCategory, categorySlug, form, initialData]);
 
 
+  // Image Compression Utility
+  const compressImage = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error("Failed to get canvas context"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("Compression failed"));
+          }, 'image/jpeg', 0.7);
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   // Image Upload Handler
   const handleGalleryClick = () => {
     galleryInputRef.current?.click();
@@ -130,22 +177,40 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
     const file = event.target.files?.[0];
     if (!file) return;
 
+    let fileToUpload = file;
+
+    // Check if compression is needed (file > 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Image size should be less than 5MB",
-        variant: "destructive",
-      });
-      return;
+      try {
+        toast({
+          title: "Compressing Image...",
+          description: "Your image is large, we are optimizing it for you.",
+        });
+        const compressedBlob = await compressImage(file);
+        // Create a new File object from the Blob
+        fileToUpload = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
+
+        toast({
+          title: "Image Optimized",
+          description: "Image successfully compressed and ready for upload.",
+        });
+      } catch (error) {
+        console.error("Compression check/fail:", error);
+        toast({
+          title: "Warning",
+          description: "Could not compress image. Uploading original file.",
+          variant: "destructive",
+        });
+        // Fallback to original file
+        fileToUpload = file;
+      }
     }
 
     setIsUploading(true);
     const formData = new FormData();
-    formData.append("images", file); // API expects 'images' key for array, but works with single too hopefully or we adapt
+    formData.append("images", fileToUpload);
 
     try {
-      // We will use the existing /api/upload endpoint which expects 'images' field (array)
-      // and returns { urls: string[] }
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -163,7 +228,6 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       });
     } finally {
       setIsUploading(false);
-      // Reset input so same file can be selected again if needed
       if (galleryInputRef.current) galleryInputRef.current.value = "";
       if (cameraInputRef.current) cameraInputRef.current.value = "";
     }
@@ -252,7 +316,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Description (Optional)</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Describe the service/item" {...field} />
                 </FormControl>
@@ -561,7 +625,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
               name="cuisine"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cuisine</FormLabel>
+                  <FormLabel>Cuisine (Optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Indian, Chinese" {...field} />
                   </FormControl>
