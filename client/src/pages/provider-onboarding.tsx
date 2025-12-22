@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Briefcase, MapPin, CheckCircle } from "lucide-react";
+import { Briefcase, MapPin, CheckCircle, Truck } from "lucide-react";
 
 const profileSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
@@ -44,6 +44,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProviderOnboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/service-categories"],
@@ -63,15 +64,27 @@ export default function ProviderOnboarding() {
     },
   });
 
+  // Watch for category changes to handle delivery partner redirect
+  const watchedCategoryId = form.watch("categoryId");
+
+  useEffect(() => {
+    if (watchedCategoryId && categories) {
+      const selectedCategory = (categories as any[]).find((c: any) => c.id === watchedCategoryId);
+      if (selectedCategory) {
+        setSelectedCategorySlug(selectedCategory.slug);
+      }
+    }
+  }, [watchedCategoryId, categories]);
+
   const createProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormValues) => {
       const profileData = {
         ...data,
-        specializations: data.specializations 
+        specializations: data.specializations
           ? data.specializations.split(',').map(s => s.trim()).filter(Boolean)
           : [],
       };
-      
+
       const response = await apiRequest("POST", "/api/provider/profile", profileData);
       return response.json();
     },
@@ -92,6 +105,11 @@ export default function ProviderOnboarding() {
   });
 
   const onSubmit = (data: ProfileFormValues) => {
+    // If delivery partner category is selected, redirect to delivery partner onboarding
+    if (selectedCategorySlug === "delivery-partner") {
+      setLocation("/delivery-partner/onboarding");
+      return;
+    }
     createProfileMutation.mutate(data);
   };
 

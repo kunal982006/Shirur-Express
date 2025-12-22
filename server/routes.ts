@@ -24,6 +24,9 @@ import {
   insertRestaurantOrderSchema, // NAYA IMPORT
   groceryProducts, // NAYA IMPORT
   cakeProducts, // Fix: Import this
+  insertDeliveryPartnerSchema, // DELIVERY PARTNER IMPORT
+  deliveryPartners, // DELIVERY PARTNER TABLE
+  restaurantOrders, // FOR RIDER QUERIES
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -51,6 +54,15 @@ interface CustomRequest extends Request {
 interface AuthRequest extends Request {
   userId?: string;
 }
+interface DeliveryPartnerRequest extends Request {
+  userId?: string;
+  deliveryPartner?: {
+    id: string;
+    userId: string;
+    vehicleType: string;
+    isOnline: boolean;
+  };
+}
 
 // Middleware: Check if user is logged in
 const isLoggedIn = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -75,10 +87,38 @@ const isProvider = async (req: CustomRequest, res: Response, next: NextFunction)
   next();
 };
 
+// Middleware: Check if user is a delivery partner
+const isDeliveryPartner = async (req: DeliveryPartnerRequest, res: Response, next: NextFunction) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "You are not logged in." });
+  }
+  const partner = await storage.getDeliveryPartnerByUserId(req.session.userId);
+  if (!partner) {
+    return res.status(403).json({ message: "You are not registered as a delivery partner." });
+  }
+  req.deliveryPartner = partner;
+  req.userId = req.session.userId;
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const httpServer = createServer(app);
 
   // --- AUTHENTICATION ROUTES (No Change) ---
+
+  console.log("Registering Grocery Routes..."); // DEBUG LOG
+  app.post("/api/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const orderData = insertGroceryOrderSchema.parse(req.body);
+      const order = await storage.createGroceryOrder({ ...orderData, userId });
+      console.log("Created Grocery Order:", order); // DEBUG LOG
+      res.status(201).json(order);
+    } catch (error: any) {
+      console.error("Create grocery order error:", error);
+      res.status(400).json({ message: error.message || "Error creating grocery order" });
+    }
+  });
 
   console.log("Registering Street Food Routes..."); // DEBUG LOG
   app.post("/api/street-food-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
@@ -103,8 +143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/signup", async (req: Request, res: Response) => {
     try {
       const { username, email, password, role, phone } = req.body;
-      if (!username || !email || !password || !role) {
-        return res.status(400).json({ message: "Username, email, password, and role are required." });
+      if (!username || !email || !password || !role || !phone) {
+        return res.status(400).json({ message: "Username, email, password, role, and phone are required." });
       }
       const existingUser = await storage.getUserByUsername(username.toLowerCase());
       if (existingUser) {
@@ -926,7 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (orderType === 'street_food') {
           updatedOrder = await storage.updateStreetFoodOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
         } else if (orderType === 'restaurant') {
-          updatedOrder = await storage.updateRestaurantOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
+          updatedOrder = await storage.updateRestaurantOrderStatus(database_order_id, "paid", null, razorpay_payment_id, razorpay_order_id);
         } else {
           updatedOrder = await storage.updateGroceryOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
         }
@@ -1216,5 +1256,282 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  return app;
+  // =========================================
+  // CUSTOMER ORDER ROUTES
+  // =========================================
+
+  // Get Customer's Restaurant Orders
+  app.get("/api/customer/restaurant-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const orders = await storage.getRestaurantOrdersByUserId(userId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get customer restaurant orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
+    }
+  });
+
+  // Get Provider's Restaurant Orders
+  app.get("/api/provider/restaurant-orders", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const orders = await storage.getRestaurantOrdersByProviderId(providerId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get provider restaurant orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
+    }
+  });
+
+  // Update Restaurant Order Status (accept, prepare, ready)
+  app.patch("/api/provider/restaurant-orders/:orderId/status", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { orderId } = req.params;
+      const { status } = req.body;
+
+      // Validate status transition
+      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup', 'declined'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const order = await storage.updateProviderOrderStatus(orderId, providerId, status);
+      res.json(order);
+    } catch (error: any) {
+      console.error("Update order status error:", error);
+      res.status(400).json({ message: error.message || "Error updating order status" });
+    }
+  });
+
+  // Get Provider's Grocery Orders
+  app.get("/api/provider/grocery-orders", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const orders = await storage.getGroceryOrdersByProvider(providerId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get provider grocery orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
+    }
+  });
+
+  // Update Grocery Order Status (accept, prepare, ready)
+  app.patch("/api/provider/grocery-orders/:orderId/status", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { orderId } = req.params;
+      const { status } = req.body;
+
+      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup', 'declined'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const order = await storage.updateGroceryOrderStatusByProvider(orderId, providerId, status);
+      res.json(order);
+    } catch (error: any) {
+      console.error("Update grocery order status error:", error);
+      res.status(400).json({ message: error.message || "Error updating order status" });
+    }
+  });
+
+  // =========================================
+  // DELIVERY PARTNER ROUTES
+  // =========================================
+
+  // Create Delivery Partner Profile
+  app.post("/api/delivery-partner/profile", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+
+      // Check if already registered
+      const existing = await storage.getDeliveryPartnerByUserId(userId);
+      if (existing) {
+        return res.status(400).json({ message: "You are already registered as a delivery partner." });
+      }
+
+      const partnerData = insertDeliveryPartnerSchema.parse(req.body);
+      const partner = await storage.createDeliveryPartner({ ...partnerData, userId });
+      res.status(201).json(partner);
+    } catch (error: any) {
+      console.error("Create delivery partner error:", error);
+      res.status(400).json({ message: error.message || "Error creating delivery partner profile" });
+    }
+  });
+
+  // Get own Delivery Partner Profile
+  app.get("/api/delivery-partner/profile", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const partner = await storage.getDeliveryPartnerByUserId(userId);
+      if (!partner) {
+        return res.status(404).json({ message: "Delivery partner profile not found" });
+      }
+      res.json(partner);
+    } catch (error: any) {
+      console.error("Get delivery partner profile error:", error);
+      res.status(500).json({ message: error.message || "Error fetching profile" });
+    }
+  });
+
+  // Toggle Online/Offline Status
+  app.patch("/api/delivery-partner/status", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const partnerId = req.deliveryPartner!.id;
+      const { isOnline } = req.body;
+
+      const updated = await storage.updateDeliveryPartnerStatus(partnerId, isOnline);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Update delivery partner status error:", error);
+      res.status(500).json({ message: error.message || "Error updating status" });
+    }
+  });
+
+  // Update Location
+  app.patch("/api/delivery-partner/location", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const partnerId = req.deliveryPartner!.id;
+      const { latitude, longitude } = req.body;
+
+      const updated = await storage.updateDeliveryPartnerLocation(partnerId, latitude, longitude);
+      res.json({ message: "Location updated", partner: updated });
+    } catch (error: any) {
+      console.error("Update delivery partner location error:", error);
+      res.status(500).json({ message: error.message || "Error updating location" });
+    }
+  });
+
+  // Get Available Orders for Riders (ready_for_pickup status, no rider assigned) - includes ALL order types
+  app.get("/api/rider/orders/available", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const availableOrders = await storage.getAllAvailableOrdersForRider();
+      res.json(availableOrders);
+    } catch (error: any) {
+      console.error("Get available orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching available orders" });
+    }
+  });
+
+  // Get Rider's Active/Assigned Orders - includes ALL order types
+  app.get("/api/rider/orders/my-active", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const riderId = req.userId!;
+      const myOrders = await storage.getAllRiderOrders(riderId);
+      res.json(myOrders);
+    } catch (error: any) {
+      console.error("Get rider orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
+    }
+  });
+
+  // Accept/Claim an Order (works for both restaurant and grocery orders)
+  app.post("/api/rider/orders/:id/accept", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+      const { orderType } = req.body; // 'restaurant' or 'grocery'
+
+      let order;
+      if (orderType === 'grocery') {
+        order = await storage.acceptGroceryOrderAsRider(orderId, riderId);
+      } else {
+        order = await storage.acceptOrderAsRider(orderId, riderId);
+      }
+      res.json({ message: "Order accepted!", order });
+    } catch (error: any) {
+      console.error("Accept order error:", error);
+      res.status(400).json({ message: error.message || "Error accepting order" });
+    }
+  });
+
+  // Mark Arrived at Pickup
+  app.post("/api/rider/orders/:id/arrived-at-pickup", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+
+      const order = await storage.updateOrderStatus(orderId, riderId, 'arrived_at_pickup');
+      res.json({ message: "Marked as arrived at pickup", order });
+    } catch (error: any) {
+      console.error("Arrived at pickup error:", error);
+      res.status(400).json({ message: error.message || "Error updating status" });
+    }
+  });
+
+  // Mark Order Picked Up (generates OTP for delivery) - handles both order types
+  app.post("/api/rider/orders/:id/picked-up", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+      const { orderType } = req.body;
+
+      let result;
+      if (orderType === 'grocery') {
+        result = await storage.markGroceryOrderPickedUp(orderId, riderId);
+      } else {
+        result = await storage.markOrderPickedUp(orderId, riderId);
+      }
+      res.json({ message: "Order picked up! OTP generated for delivery.", order: result.order, deliveryOtp: result.otp });
+    } catch (error: any) {
+      console.error("Pick up order error:", error);
+      res.status(400).json({ message: error.message || "Error picking up order" });
+    }
+  });
+
+  // Verify Delivery OTP and Complete - handles both order types
+  app.post("/api/rider/orders/:id/verify-delivery", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+      const { otp, orderType } = req.body;
+
+      if (!otp) {
+        return res.status(400).json({ message: "OTP is required" });
+      }
+
+      let order;
+      if (orderType === 'grocery') {
+        order = await storage.verifyGroceryDeliveryOtp(orderId, riderId, otp);
+      } else {
+        order = await storage.verifyDeliveryOtp(orderId, riderId, otp);
+      }
+      res.json({ message: "Delivery completed successfully!", order });
+    } catch (error: any) {
+      console.error("Verify delivery error:", error);
+      res.status(400).json({ message: error.message || "Error verifying delivery" });
+    }
+  });
+
+  // Customer: Track Order
+  app.get("/api/orders/:id/track", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const userId = req.userId!;
+
+      const trackingInfo = await storage.getOrderTrackingInfo(orderId, userId);
+      res.json(trackingInfo);
+    } catch (error: any) {
+      console.error("Track order error:", error);
+      res.status(400).json({ message: error.message || "Error tracking order" });
+    }
+  });
+
+  // Provider: Mark Order Ready for Pickup
+  app.post("/api/provider/orders/:id/mark-ready", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const providerId = req.provider!.id;
+
+      const order = await storage.markOrderReadyForPickup(orderId, providerId);
+      res.json({ message: "Order marked ready for pickup!", order });
+    } catch (error: any) {
+      console.error("Mark ready error:", error);
+      res.status(400).json({ message: error.message || "Error marking order ready" });
+    }
+  });
+
+  return httpServer;
 }

@@ -54,10 +54,17 @@ export default function Settings() {
     // Update form values when user data loads
     useEffect(() => {
         if (user) {
+            // Strip +91 or 91 if present for display
+            let phone = user.phone || "";
+            if (phone.startsWith("+91")) phone = phone.slice(3);
+            else if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
+            // clean non-digits just in case
+            phone = phone.replace(/\D/g, '');
+
             form.reset({
                 username: user.username,
                 email: user.email,
-                phone: user.phone || "",
+                phone: phone,
                 address: user.address || "",
             });
         }
@@ -66,6 +73,10 @@ export default function Settings() {
     const onSubmit = async (values: ProfileFormValues) => {
         setIsSaving(true);
         try {
+            // Save as is (10 digits) or prepend +91? 
+            // The user wants to "write only phone number". 
+            // Saving standard local format is fine if backend handles +91 for SMS. 
+            // We'll save it as they type (10 digits).
             await api.patch("/auth/profile", values);
 
             // Invalidate auth query to refresh user data globally
@@ -165,9 +176,22 @@ export default function Settings() {
                                         <FormItem>
                                             <FormLabel>Phone Number</FormLabel>
                                             <FormControl>
-                                                <div className="relative">
-                                                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                    <Input placeholder="9876543210" {...field} className="pl-10" />
+                                                <div className="flex relative">
+                                                    <div className="flex items-center justify-center px-3 border rounded-l-md bg-muted text-muted-foreground text-sm font-medium border-r-0">
+                                                        +91
+                                                    </div>
+                                                    <Input
+                                                        placeholder="9876543210"
+                                                        {...field}
+                                                        className="rounded-l-none"
+                                                        maxLength={10}
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        onChange={(e) => {
+                                                            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                            field.onChange(value);
+                                                        }}
+                                                    />
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -188,8 +212,7 @@ export default function Settings() {
                                                         <Input
                                                             placeholder="Select location on map..."
                                                             {...field}
-                                                            className="pl-10 bg-muted/50"
-                                                            readOnly
+                                                            className="pl-10"
                                                         />
                                                     </div>
                                                     <LocationPicker

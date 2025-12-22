@@ -297,23 +297,19 @@ export default function BookingSlotForm({
             )}
           />
 
-          {/* Phone Number */}
           <FormField
             control={form.control}
             name="userPhone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Phone Number (with Country Code)</FormLabel>
+                <FormLabel>Your Phone Number</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
                     {...field}
                     data-testid="input-phone"
                   />
                 </FormControl>
-                <p className="text-sm text-muted-foreground">
-                  Include country code (e.g., +91, +1)
-                </p>
                 <FormMessage />
               </FormItem>
             )}

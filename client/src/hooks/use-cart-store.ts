@@ -11,7 +11,7 @@ interface CartItem {
   imageUrl?: string;
   quantity: number;
   providerId?: string;
-  itemType?: 'grocery' | 'street_food' | 'service' | 'restaurant'; // Added itemType
+  itemType?: 'grocery' | 'street_food' | 'service' | 'restaurant' | 'cake'; // Added itemType
 }
 
 // Define the state and actions for our cart store

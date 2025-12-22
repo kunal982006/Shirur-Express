@@ -1,6 +1,8 @@
 
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 import {
   DropdownMenu,
@@ -11,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, Settings, LogOut, Package, User, LayoutDashboard } from "lucide-react"; // LayoutDashboard icon add kiya
+import { Home, Settings, LogOut, Package, User, LayoutDashboard, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,6 +29,28 @@ export default function Header() {
 
   const { user, isLoading, logout } = useAuth();
   const { toast } = useToast();
+
+  // Check if user is a delivery partner
+  const { data: deliveryPartnerProfile } = useQuery({
+    queryKey: ["deliveryPartnerProfile"],
+    queryFn: async () => {
+      try {
+        const res = await api.get("/delivery-partner/profile");
+        return res.data;
+      } catch (error: any) {
+        // Return null if not a delivery partner (404)
+        if (error.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: !!user, // Only fetch if user is logged in
+    retry: false, // Don't retry on 404
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  const isDeliveryPartner = !!deliveryPartnerProfile;
 
   const handleLogout = async () => {
     try {
@@ -77,13 +101,24 @@ export default function Header() {
                   {item.name}
                 </Button>
               ))}
-              {user?.role === 'provider' && (
+              {/* Show Dashboard based on user type */}
+              {isDeliveryPartner && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setLocation("/delivery-partner/dashboard")}
+                  className="text-sm font-medium"
+                >
+                  <Truck className="mr-2 h-4 w-4" />
+                  Delivery Dashboard
+                </Button>
+              )}
+              {user?.role === 'provider' && !isDeliveryPartner && (
                 <Button
                   variant="ghost"
                   onClick={() => setLocation("/provider/dashboard")}
                   className="text-sm font-medium"
                 >
-                  <LayoutDashboard className="mr-2 h-4 w-4" /> {/* Icon ke saath */}
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
                   Provider Dashboard
                 </Button>
               )}
@@ -128,8 +163,14 @@ export default function Header() {
                     <Package className="mr-2 h-4 w-4" />
                     <span>My Bookings</span>
                   </DropdownMenuItem>
-                  {/* Desktop Dropdown: Provider Dashboard link */}
-                  {user.role === 'provider' && (
+                  {/* Desktop Dropdown: Dashboard link based on user type */}
+                  {isDeliveryPartner && (
+                    <DropdownMenuItem onClick={() => setLocation("/delivery-partner/dashboard")}>
+                      <Truck className="mr-2 h-4 w-4" />
+                      <span>Delivery Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
+                  {user.role === 'provider' && !isDeliveryPartner && (
                     <DropdownMenuItem onClick={() => setLocation("/provider/dashboard")}>
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Provider Dashboard</span>
@@ -177,8 +218,18 @@ export default function Header() {
           <span className="text-[10px] font-medium">Bookings</span>
         </Button>
 
-        {/* Provider Dashboard */}
-        {user?.role === 'provider' && (
+        {/* Dashboard - show delivery or provider based on user type */}
+        {isDeliveryPartner && (
+          <Button
+            variant="ghost"
+            className="flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent"
+            onClick={() => setLocation("/delivery-partner/dashboard")}
+          >
+            <Truck className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Deliveries</span>
+          </Button>
+        )}
+        {user?.role === 'provider' && !isDeliveryPartner && (
           <Button
             variant="ghost"
             className="flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent"

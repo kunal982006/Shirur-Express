@@ -1606,6 +1606,205 @@ const BeautyServiceSelector: React.FC<{
   );
 };
 
+// --- COMPONENT: GROCERY ORDERS MANAGER (For Grocery and Cake Shop providers) ---
+const GroceryOrdersManager: React.FC<{
+  providerProfile: ProviderProfileWithCategory;
+}> = ({ providerProfile }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch Grocery Orders (Polling every 10 seconds)
+  const { data: orders, isLoading } = useQuery<GroceryOrder[]>({
+    queryKey: ["providerGroceryOrders", providerProfile.id],
+    queryFn: async () => {
+      const res = await api.get("/provider/grocery-orders");
+      return res.data;
+    },
+    refetchInterval: 10000,
+  });
+
+  // Update Status Mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/provider/grocery-orders/${orderId}/status`, { status }),
+    onSuccess: (data) => {
+      toast({
+        title: "Order Updated",
+        description: `Order status changed to ${data.data.status}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["providerGroceryOrders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading orders...
+      </div>
+    );
+  }
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <h3 className="text-xl font-semibold">No Orders Yet</h3>
+        <p className="text-muted-foreground mt-2">
+          New orders will appear here automatically.
+        </p>
+      </div>
+    );
+  }
+
+  // Filter orders by status
+  const pendingOrders = orders.filter((o) => o.status === "pending");
+  const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled", "out_for_delivery"].includes(o.status || ""));
+
+  return (
+    <Tabs defaultValue="pending" className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="pending" className="relative">
+          Pending
+          {pendingOrders.length > 0 && (
+            <Badge variant="destructive" className="ml-2 absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full">
+              {pendingOrders.length}
+            </Badge>
+          )}
+        </TabsTrigger>
+        <TabsTrigger value="active">Active ({activeOrders.length})</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pending" className="mt-6 space-y-4">
+        {pendingOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No pending orders.</p>
+        ) : (
+          pendingOrders.map((order) => (
+            <GroceryOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isPending={true}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="active" className="mt-6 space-y-4">
+        {activeOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No active orders.</p>
+        ) : (
+          activeOrders.map((order) => (
+            <GroceryOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="history" className="mt-6 space-y-4">
+        {pastOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No order history.</p>
+        ) : (
+          pastOrders.map((order) => (
+            <GroceryOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isHistory={true}
+            />
+          ))
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const GroceryOrderCard: React.FC<{
+  order: GroceryOrder;
+  onStatusChange: (id: string, status: string) => void;
+  isPending?: boolean;
+  isHistory?: boolean;
+}> = ({ order, onStatusChange, isPending, isHistory }) => {
+  return (
+    <Card className={`shadow-md ${isPending ? "border-l-4 border-green-500 animate-in fade-in slide-in-from-bottom-2" : ""}`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
+            <CardDescription>
+              {new Date(order.createdAt || new Date()).toLocaleTimeString()}
+            </CardDescription>
+          </div>
+          <Badge variant={isPending ? "destructive" : "outline"}>
+            {(order.status || 'pending').toUpperCase().replace(/_/g, " ")}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="bg-muted/50 p-3 rounded-md mb-3">
+          {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+            <div key={idx} className="flex justify-between text-sm mb-1">
+              <span>{item.quantity} x {item.name || item.productId}</span>
+              <span className="font-medium">₹{item.price * item.quantity}</span>
+            </div>
+          ))}
+          <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+            <span>Total</span>
+            <span>₹{order.total}</span>
+          </div>
+        </div>
+        <div className="text-sm space-y-1">
+          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+        </div>
+      </CardContent>
+      {!isHistory && (
+        <CardFooter className="flex justify-end gap-2 pt-2">
+          {isPending ? (
+            <>
+              <Button variant="destructive" size="sm" onClick={() => onStatusChange(order.id, "declined")}>
+                Decline
+              </Button>
+              <Button className="bg-green-600 hover:bg-green-700" size="sm" onClick={() => onStatusChange(order.id, "accepted")}>
+                Accept Order
+              </Button>
+            </>
+          ) : (
+            <>
+              {order.status === "accepted" && (
+                <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+                  Start Preparing
+                </Button>
+              )}
+              {order.status === "preparing" && (
+                <Button className="bg-orange-500 hover:bg-orange-600" size="sm" onClick={() => onStatusChange(order.id, "ready_for_pickup")}>
+                  Ready for Pickup
+                </Button>
+              )}
+              {order.status === "ready_for_pickup" && (
+                <span className="text-sm text-muted-foreground italic">Waiting for delivery partner...</span>
+              )}
+            </>
+          )}
+        </CardFooter>
+      )}
+    </Card>
+  );
+};
+
 // --- COMPONENT 5: RESTAURANT ORDERS MANAGER (NEW) ---
 const RestaurantOrdersManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
@@ -1615,9 +1814,9 @@ const RestaurantOrdersManager: React.FC<{
 
   // Fetch Live Orders (Polling every 10 seconds)
   const { data: orders, isLoading } = useQuery<RestaurantOrder[]>({
-    queryKey: ["restaurantOrders", providerProfile.id],
+    queryKey: ["providerRestaurantOrders", providerProfile.id],
     queryFn: async () => {
-      const res = await api.get("/restaurant/orders/live");
+      const res = await api.get("/provider/restaurant-orders");
       return res.data;
     },
     refetchInterval: 10000, // Poll every 10 seconds
@@ -1626,13 +1825,13 @@ const RestaurantOrdersManager: React.FC<{
   // Update Status Mutation
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
-      api.patch(`/restaurant/orders/${orderId}/status`, { status }),
+      api.patch(`/provider/restaurant-orders/${orderId}/status`, { status }),
     onSuccess: (data) => {
       toast({
         title: "Order Updated",
         description: `Order status changed to ${data.data.status}.`,
       });
-      queryClient.invalidateQueries({ queryKey: ["restaurantOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["providerRestaurantOrders"] });
     },
     onError: (error: any) => {
       toast({
@@ -2200,6 +2399,12 @@ const ProviderDashboard: React.FC = () => {
     if (type === "menu") {
       tabs.unshift({ value: "menu", label: "Menu / Services" });
       tabs.unshift({ value: "bookings", label: "Bookings" }); // Menu waalon ko bhi booking aa sakti hai
+
+      // Grocery and Cake Shop providers get orders tab
+      const slug = providerProfile.category?.slug;
+      if (slug === "grocery" || slug === "cake-shop") {
+        tabs.unshift({ value: "grocery-orders", label: "Live Orders" });
+      }
     }
     // Beauty Parlor Logic
     if (type === "menu" && providerProfile.category.slug === "beauty") {
@@ -2259,6 +2464,10 @@ const ProviderDashboard: React.FC = () => {
           {type === "restaurant" ? (
             <RestaurantOrdersManager providerProfile={providerProfile} />
           ) : null}
+        </TabsContent>
+
+        <TabsContent value="grocery-orders" className="mt-6">
+          <GroceryOrdersManager providerProfile={providerProfile} />
         </TabsContent>
 
         <TabsContent value="beauty-services" className="mt-6">

@@ -24,7 +24,7 @@ import { Network, User, Briefcase } from "lucide-react";
 const signupSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
+  phone: z.string().min(10, "Phone number must be valid (10 digits)"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
   role: z.enum(["customer", "provider"], {
@@ -201,13 +201,26 @@ export default function Signup() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone (Optional)</FormLabel>
+                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="+91 98765 43210"
-                        {...field}
-                        data-testid="input-phone"
-                      />
+                      <div className="flex">
+                        <div className="flex items-center justify-center px-3 border rounded-l-md bg-muted text-muted-foreground text-sm font-medium border-r-0">
+                          +91
+                        </div>
+                        <Input
+                          placeholder="9876543210"
+                          {...field}
+                          className="rounded-l-none"
+                          maxLength={10}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          data-testid="input-phone"
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            field.onChange(value);
+                          }}
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

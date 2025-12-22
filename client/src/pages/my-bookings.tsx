@@ -15,10 +15,13 @@ import {
   Loader2,
   DollarSign,
   Wrench,
-  ShoppingBag
+  ShoppingBag,
+  Navigation,
+  UtensilsCrossed
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { GroceryOrder } from "@shared/schema";
+import api from "@/lib/api";
+import { GroceryOrder, RestaurantOrder } from "@shared/schema";
 
 type BookingWithDetails = {
   id: string;
@@ -63,6 +66,15 @@ export default function MyBookings() {
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/customer/grocery-orders");
       return response.json();
+    },
+    enabled: !!user && isAuthenticated,
+  });
+
+  const { data: restaurantOrders, isLoading: isLoadingRestaurantOrders } = useQuery<RestaurantOrder[]>({
+    queryKey: ["/api/customer/restaurant-orders"],
+    queryFn: async () => {
+      const response = await api.get("/customer/restaurant-orders");
+      return response.data;
     },
     enabled: !!user && isAuthenticated,
   });
@@ -158,7 +170,7 @@ export default function MyBookings() {
     );
   }
 
-  if (isLoadingBookings || isLoadingOrders) {
+  if (isLoadingBookings || isLoadingOrders || isLoadingRestaurantOrders) {
     return (
       <div className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -179,10 +191,11 @@ export default function MyBookings() {
           </p>
         </div>
 
-        <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8">
-            <TabsTrigger value="services">Service Bookings</TabsTrigger>
-            <TabsTrigger value="orders">My Orders</TabsTrigger>
+        <Tabs defaultValue="orders" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 max-w-[500px] mb-8">
+            <TabsTrigger value="orders">Food Orders</TabsTrigger>
+            <TabsTrigger value="grocery">Grocery</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="services">
@@ -300,6 +313,82 @@ export default function MyBookings() {
           </TabsContent>
 
           <TabsContent value="orders">
+            {!Array.isArray(restaurantOrders) || restaurantOrders.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-semibold mb-2">No food orders yet</p>
+                  <p className="text-muted-foreground mb-4">Order from your favorite restaurants!</p>
+                  <Button onClick={() => setLocation("/restaurants")}>
+                    Browse Restaurants
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {restaurantOrders.map((order) => (
+                  <Card key={order.id} className="border-l-4 border-orange-500">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg mb-2 flex items-center gap-2">
+                            <UtensilsCrossed className="h-5 w-5 text-orange-500" />
+                            Restaurant Order
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Order #{order.id.slice(0, 8)} • {format(new Date(order.createdAt || new Date()), "PPP p")}
+                          </p>
+                        </div>
+                        <Badge variant="default" className="bg-orange-600">
+                          {(order.status || 'pending').replace(/_/g, ' ').toUpperCase()}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="bg-muted p-4 rounded-lg">
+                          <h4 className="font-medium mb-2">Items</h4>
+                          <div className="space-y-2">
+                            {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+                              <div key={idx} className="flex justify-between text-sm">
+                                <span>{item.name} x {item.quantity}</span>
+                                <span>₹{item.price * item.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="border-t mt-3 pt-3 flex justify-between font-bold">
+                            <span>Total</span>
+                            <span>₹{order.totalAmount}</span>
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>{order.deliveryAddress}</span>
+                          </div>
+                        </div>
+
+                        {/* Track Order Button */}
+                        {!['delivered', 'cancelled', 'declined'].includes(order.status || '') && (
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setLocation(`/order/${order.id}/track`)}
+                          >
+                            <Navigation className="mr-2 h-4 w-4" />
+                            Track Order
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="grocery">
             {!Array.isArray(groceryOrders) || groceryOrders.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">

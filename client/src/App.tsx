@@ -37,6 +37,9 @@ import PropertyDetail from "@/pages/property-detail";
 import PropertyListingForm from "@/pages/property-listing-form";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
+import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
+import OrderTracking from "@/pages/order-tracking";
 
 function RouterComponent() {
   return (
@@ -75,6 +78,11 @@ function RouterComponent() {
       <Route path="/runner/dashboard" component={RunnerDashboard} />
       <Route path="/runner/management" component={RunnerManagement} />
       <Route path="/rider/dashboard" component={RiderDashboard} />
+
+      {/* Delivery Partner Routes */}
+      <Route path="/delivery-partner/onboarding" component={DeliveryPartnerOnboarding} />
+      <Route path="/delivery-partner/dashboard" component={DeliveryPartnerDashboard} />
+      <Route path="/order/:orderId/track" component={OrderTracking} />
 
       {/* Fallback for 404 */}
       <Route component={NotFound} />

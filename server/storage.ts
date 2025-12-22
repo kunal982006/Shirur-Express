@@ -49,6 +49,10 @@ import {
   restaurantOrders,
   type RestaurantOrder,
   type InsertRestaurantOrder,
+  // DELIVERY PARTNER IMPORTS
+  deliveryPartners,
+  type DeliveryPartner,
+  type InsertDeliveryPartner,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, asc, gt, lt, gte, lte } from "drizzle-orm";
@@ -206,6 +210,11 @@ export interface IStorage {
     razorpayOrderId: string,
     orderType?: 'grocery' | 'street_food' | 'restaurant',
   ): Promise<GroceryOrder | StreetFoodOrder | RestaurantOrder | undefined>;
+
+  updateGroceryOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<GroceryOrder>;
+  updateStreetFoodOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<StreetFoodOrder>;
+  updateRestaurantOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<RestaurantOrder>;
+  updateGroceryOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<GroceryOrder>;
   verifyAndUpdateOrderPayment(
     orderId: string,
     rzpPaymentId: string,
@@ -234,7 +243,7 @@ export interface IStorage {
   getRestaurantOrder(id: string): Promise<RestaurantOrder | undefined>;
   getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]>;
   getRiderOrders(riderId?: string): Promise<RestaurantOrder[]>;
-  updateRestaurantOrderStatus(id: string, status: string, riderId?: string): Promise<RestaurantOrder>;
+  updateRestaurantOrderStatus(id: string, status: string, riderId?: string | null, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<RestaurantOrder>;
   // Menu Management
   createMenuItem(
     itemData: any,
@@ -261,16 +270,44 @@ export interface IStorage {
   createStreetFoodOrder(order: InsertStreetFoodOrder & { userId: string }): Promise<StreetFoodOrder>;
   getStreetFoodOrder(id: string): Promise<StreetFoodOrder | undefined>;
   getRunnerOrders(runnerId?: string): Promise<StreetFoodOrder[]>;
-  updateStreetFoodOrderStatus(id: string, status: string): Promise<StreetFoodOrder>;
+  updateStreetFoodOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<StreetFoodOrder>;
   createStreetFoodVendor(vendor: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider>;
   deleteStreetFoodVendor(id: string): Promise<void>;
   createStreetFoodItem(item: InsertStreetFoodItem): Promise<StreetFoodItem>;
   deleteStreetFoodItem(id: string): Promise<void>;
   updateStreetFoodItem(id: string, updates: Partial<InsertStreetFoodItem>): Promise<StreetFoodItem | undefined>;
 
-  // Missing Grocery Order Methods
+  // Grocery Order Methods
   getGroceryOrdersByUser(userId: string): Promise<GroceryOrder[]>;
   getGroceryOrdersByProvider(providerId: string): Promise<GroceryOrder[]>;
+  updateGroceryOrderStatusByProvider(orderId: string, providerId: string, status: string): Promise<GroceryOrder>;
+
+  // Delivery Partner Operations
+  getDeliveryPartnerByUserId(userId: string): Promise<DeliveryPartner | undefined>;
+  createDeliveryPartner(partner: InsertDeliveryPartner & { userId: string }): Promise<DeliveryPartner>;
+  updateDeliveryPartnerStatus(partnerId: string, isOnline: boolean): Promise<DeliveryPartner>;
+  updateDeliveryPartnerLocation(partnerId: string, latitude: string, longitude: string): Promise<DeliveryPartner>;
+
+  // Rider Order Operations (supports both restaurant and grocery orders)
+  getAllAvailableOrdersForRider(): Promise<any[]>; // Returns combined orders
+  getAllRiderOrders(riderId: string): Promise<any[]>; // Returns rider's orders from all types
+  getAvailableOrdersForRider(): Promise<RestaurantOrder[]>;
+  getRiderOrders(riderId: string): Promise<RestaurantOrder[]>;
+  getAvailableGroceryOrdersForRider(): Promise<GroceryOrder[]>;
+  getRiderGroceryOrders(riderId: string): Promise<GroceryOrder[]>;
+  getRestaurantOrdersByUserId(userId: string): Promise<RestaurantOrder[]>;
+  getRestaurantOrdersByProviderId(providerId: string): Promise<RestaurantOrder[]>;
+  updateProviderOrderStatus(orderId: string, providerId: string, status: string): Promise<RestaurantOrder>;
+  acceptOrderAsRider(orderId: string, riderId: string): Promise<RestaurantOrder>;
+  acceptGroceryOrderAsRider(orderId: string, riderId: string): Promise<GroceryOrder>;
+  updateOrderStatus(orderId: string, riderId: string, status: string): Promise<RestaurantOrder>;
+  updateGroceryOrderStatusByRider(orderId: string, riderId: string, status: string): Promise<GroceryOrder>;
+  markOrderPickedUp(orderId: string, riderId: string): Promise<{ order: RestaurantOrder; otp: string }>;
+  markGroceryOrderPickedUp(orderId: string, riderId: string): Promise<{ order: GroceryOrder; otp: string }>;
+  verifyDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<RestaurantOrder>;
+  verifyGroceryDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<GroceryOrder>;
+  getOrderTrackingInfo(orderId: string, userId: string): Promise<any>;
+  markOrderReadyForPickup(orderId: string, providerId: string): Promise<RestaurantOrder>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -851,6 +888,45 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateGroceryOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<GroceryOrder> {
+    const [order] = await db
+      .update(groceryOrders)
+      .set({ razorpayOrderId: razorpayOrderId })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+    return order;
+  }
+
+  async updateStreetFoodOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<StreetFoodOrder> {
+    const [order] = await db
+      .update(streetFoodOrders)
+      .set({ razorpayOrderId: razorpayOrderId })
+      .where(eq(streetFoodOrders.id, orderId))
+      .returning();
+    return order;
+  }
+
+  async updateRestaurantOrderRazorpayId(orderId: string, razorpayOrderId: string): Promise<RestaurantOrder> {
+    const [order] = await db
+      .update(restaurantOrders)
+      .set({ razorpayOrderId: razorpayOrderId })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+    return order;
+  }
+
+  async updateGroceryOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<GroceryOrder> {
+    const updates: any = { status };
+    if (razorpayPaymentId) updates.razorpayPaymentId = razorpayPaymentId;
+
+    const [order] = await db
+      .update(groceryOrders)
+      .set(updates)
+      .where(eq(groceryOrders.id, id))
+      .returning();
+    return order;
+  }
+
   async verifyAndUpdateOrderPayment(
     orderId: string,
     rzpPaymentId: string,
@@ -1272,10 +1348,13 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt));
   }
 
-  async updateStreetFoodOrderStatus(id: string, status: string): Promise<StreetFoodOrder> {
+  async updateStreetFoodOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<StreetFoodOrder> {
+    const updates: any = { status };
+    if (razorpayPaymentId) updates.razorpayPaymentId = razorpayPaymentId;
+
     const [updatedOrder] = await db
       .update(streetFoodOrders)
-      .set({ status })
+      .set(updates)
       .where(eq(streetFoodOrders.id, id))
       .returning();
     return updatedOrder;
@@ -1363,10 +1442,51 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateRestaurantOrderStatus(id: string, status: string, riderId?: string): Promise<RestaurantOrder> {
+  async getRestaurantOrdersByUserId(userId: string): Promise<RestaurantOrder[]> {
+    return db.query.restaurantOrders.findMany({
+      where: eq(restaurantOrders.userId, userId),
+      with: { provider: true },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    }) as any;
+  }
+
+  async getRestaurantOrdersByProviderId(providerId: string): Promise<RestaurantOrder[]> {
+    return db.query.restaurantOrders.findMany({
+      where: eq(restaurantOrders.providerId, providerId),
+      with: { user: true },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    }) as any;
+  }
+
+  async updateProviderOrderStatus(orderId: string, providerId: string, status: string): Promise<RestaurantOrder> {
+    // Verify order belongs to this provider
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.providerId, providerId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not authorized");
+    }
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({ status })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async updateRestaurantOrderStatus(id: string, status: string, riderId?: string | null, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<RestaurantOrder> {
     const updates: any = { status };
     if (riderId) {
       updates.riderId = riderId;
+    }
+    if (razorpayPaymentId) {
+      updates.razorpayPaymentId = razorpayPaymentId;
     }
     const [updatedOrder] = await db
       .update(restaurantOrders)
@@ -1374,6 +1494,466 @@ export class DatabaseStorage implements IStorage {
       .where(eq(restaurantOrders.id, id))
       .returning();
     return updatedOrder;
+  }
+
+  // =========================================
+  // DELIVERY PARTNER METHODS
+  // =========================================
+
+  async getDeliveryPartnerByUserId(userId: string): Promise<DeliveryPartner | undefined> {
+    return db.query.deliveryPartners.findFirst({
+      where: eq(deliveryPartners.userId, userId),
+    });
+  }
+
+  async createDeliveryPartner(partner: InsertDeliveryPartner & { userId: string }): Promise<DeliveryPartner> {
+    const [newPartner] = await db.insert(deliveryPartners).values(partner).returning();
+    return newPartner;
+  }
+
+  async updateDeliveryPartnerStatus(partnerId: string, isOnline: boolean): Promise<DeliveryPartner> {
+    const [updated] = await db
+      .update(deliveryPartners)
+      .set({ isOnline })
+      .where(eq(deliveryPartners.id, partnerId))
+      .returning();
+    return updated;
+  }
+
+  async updateDeliveryPartnerLocation(partnerId: string, latitude: string, longitude: string): Promise<DeliveryPartner> {
+    const [updated] = await db
+      .update(deliveryPartners)
+      .set({
+        currentLatitude: latitude,
+        currentLongitude: longitude,
+        lastLocationUpdate: new Date(),
+      })
+      .where(eq(deliveryPartners.id, partnerId))
+      .returning();
+    return updated;
+  }
+
+  // =========================================
+  // RIDER ORDER METHODS
+  // =========================================
+
+  async getAvailableOrdersForRider(): Promise<RestaurantOrder[]> {
+    // Get orders that are ready for pickup and don't have a rider assigned
+    return db.query.restaurantOrders.findMany({
+      where: and(
+        eq(restaurantOrders.status, 'ready_for_pickup'),
+        sql`${restaurantOrders.riderId} IS NULL`
+      ),
+      with: {
+        user: true,
+        provider: true,
+      },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    }) as any;
+  }
+
+  async acceptOrderAsRider(orderId: string, riderId: string): Promise<RestaurantOrder> {
+    // First check if order is still available
+    const order = await db.query.restaurantOrders.findFirst({
+      where: eq(restaurantOrders.id, orderId),
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.riderId) {
+      throw new Error("Order already claimed by another rider");
+    }
+    if (order.status !== 'ready_for_pickup') {
+      throw new Error("Order is not ready for pickup");
+    }
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({
+        riderId,
+        status: 'assigned',
+        riderAcceptedAt: new Date(),
+      })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async updateOrderStatus(orderId: string, riderId: string, status: string): Promise<RestaurantOrder> {
+    // Verify rider owns this order
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not the assigned rider");
+    }
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({ status })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async markOrderPickedUp(orderId: string, riderId: string): Promise<{ order: RestaurantOrder; otp: string }> {
+    // Verify rider owns this order
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not the assigned rider");
+    }
+
+    // Generate 4-digit OTP for delivery
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({
+        status: 'out_for_delivery',
+        pickedUpAt: new Date(),
+        deliveryOtp: otp,
+        deliveryOtpGeneratedAt: new Date(),
+      })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    // TODO: Send OTP to customer via SMS
+    // await sendOtpNotification(customerPhone, otp);
+
+    return { order: updated, otp };
+  }
+
+  async verifyDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<RestaurantOrder> {
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not the assigned rider");
+    }
+    if (order.status !== 'out_for_delivery') {
+      throw new Error("Order is not out for delivery");
+    }
+    if (order.deliveryOtp !== otp) {
+      throw new Error("Invalid OTP");
+    }
+
+    // OTP verified - mark as delivered
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({
+        status: 'delivered',
+        deliveredAt: new Date(),
+        deliveryOtp: null, // Clear OTP after use
+      })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    // Update rider's delivery count
+    const partner = await this.getDeliveryPartnerByUserId(riderId);
+    if (partner) {
+      await db
+        .update(deliveryPartners)
+        .set({ totalDeliveries: (partner.totalDeliveries || 0) + 1 })
+        .where(eq(deliveryPartners.id, partner.id));
+    }
+
+    return updated;
+  }
+
+  async getOrderTrackingInfo(orderId: string, userId: string): Promise<any> {
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.userId, userId)
+      ),
+      with: {
+        provider: true,
+        rider: true,
+      },
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    // If rider is assigned, get their current location
+    let riderLocation = null;
+    if (order.riderId) {
+      const partner = await this.getDeliveryPartnerByUserId(order.riderId);
+      if (partner && partner.currentLatitude && partner.currentLongitude) {
+        riderLocation = {
+          latitude: partner.currentLatitude,
+          longitude: partner.currentLongitude,
+          lastUpdate: partner.lastLocationUpdate,
+        };
+      }
+    }
+
+    return {
+      order,
+      riderLocation,
+      statusTimeline: this.getStatusTimeline(order),
+    };
+  }
+
+  private getStatusTimeline(order: RestaurantOrder) {
+    const statuses = [
+      { key: 'pending', label: 'Order Placed', completed: true, time: order.createdAt },
+      { key: 'accepted', label: 'Order Accepted', completed: ['accepted', 'preparing', 'ready_for_pickup', 'assigned', 'out_for_delivery', 'delivered'].includes(order.status || ''), time: null },
+      { key: 'preparing', label: 'Preparing', completed: ['preparing', 'ready_for_pickup', 'assigned', 'out_for_delivery', 'delivered'].includes(order.status || ''), time: null },
+      { key: 'ready_for_pickup', label: 'Ready for Pickup', completed: ['ready_for_pickup', 'assigned', 'out_for_delivery', 'delivered'].includes(order.status || ''), time: null },
+      { key: 'out_for_delivery', label: 'Out for Delivery', completed: ['out_for_delivery', 'delivered'].includes(order.status || ''), time: order.pickedUpAt },
+      { key: 'delivered', label: 'Delivered', completed: order.status === 'delivered', time: order.deliveredAt },
+    ];
+    return statuses;
+  }
+
+  async markOrderReadyForPickup(orderId: string, providerId: string): Promise<RestaurantOrder> {
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.providerId, providerId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not the provider");
+    }
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({ status: 'ready_for_pickup' })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  // =========================================
+  // GROCERY ORDER METHODS FOR PROVIDERS AND RIDERS
+  // =========================================
+
+  async updateGroceryOrderStatusByProvider(orderId: string, providerId: string, status: string): Promise<GroceryOrder> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: and(
+        eq(groceryOrders.id, orderId),
+        eq(groceryOrders.providerId, providerId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or you are not authorized");
+    }
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({ status })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async getAvailableGroceryOrdersForRider(): Promise<GroceryOrder[]> {
+    return db.query.groceryOrders.findMany({
+      where: and(
+        eq(groceryOrders.status, 'ready_for_pickup'),
+        sql`${groceryOrders.riderId} IS NULL`
+      ),
+      orderBy: [desc(groceryOrders.createdAt)],
+    }) as any;
+  }
+
+  async getRiderGroceryOrders(riderId: string): Promise<GroceryOrder[]> {
+    return db.query.groceryOrders.findMany({
+      where: eq(groceryOrders.riderId, riderId),
+      orderBy: [desc(groceryOrders.createdAt)],
+    }) as any;
+  }
+
+  async getAllAvailableOrdersForRider(): Promise<any[]> {
+    // Get available restaurant orders
+    const restaurantOrdersList = await db.query.restaurantOrders.findMany({
+      where: and(
+        eq(restaurantOrders.status, 'ready_for_pickup'),
+        sql`${restaurantOrders.riderId} IS NULL`
+      ),
+      with: { user: true, provider: true },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    });
+
+    // Get available grocery orders
+    const groceryOrdersList = await db.query.groceryOrders.findMany({
+      where: and(
+        eq(groceryOrders.status, 'ready_for_pickup'),
+        sql`${groceryOrders.riderId} IS NULL`
+      ),
+      orderBy: [desc(groceryOrders.createdAt)],
+    });
+
+    // Combine and tag with orderType
+    const combined = [
+      ...restaurantOrdersList.map(o => ({ ...o, orderType: 'restaurant' })),
+      ...groceryOrdersList.map(o => ({ ...o, orderType: 'grocery' })),
+    ];
+
+    // Sort by createdAt
+    combined.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return combined;
+  }
+
+  async getAllRiderOrders(riderId: string): Promise<any[]> {
+    const restaurantOrdersList = await db.query.restaurantOrders.findMany({
+      where: eq(restaurantOrders.riderId, riderId),
+      with: { user: true, provider: true },
+      orderBy: [desc(restaurantOrders.createdAt)],
+    });
+
+    const groceryOrdersList = await db.query.groceryOrders.findMany({
+      where: eq(groceryOrders.riderId, riderId),
+      orderBy: [desc(groceryOrders.createdAt)],
+    });
+
+    const combined = [
+      ...restaurantOrdersList.map(o => ({ ...o, orderType: 'restaurant' })),
+      ...groceryOrdersList.map(o => ({ ...o, orderType: 'grocery' })),
+    ];
+
+    combined.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return combined;
+  }
+
+  async acceptGroceryOrderAsRider(orderId: string, riderId: string): Promise<GroceryOrder> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: eq(groceryOrders.id, orderId),
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.riderId) {
+      throw new Error("Order already claimed by another rider");
+    }
+    if (order.status !== 'ready_for_pickup') {
+      throw new Error("Order is not ready for pickup");
+    }
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({
+        riderId,
+        status: 'assigned',
+        riderAcceptedAt: new Date(),
+      })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async updateGroceryOrderStatusByRider(orderId: string, riderId: string, status: string): Promise<GroceryOrder> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: and(
+        eq(groceryOrders.id, orderId),
+        eq(groceryOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({ status })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async markGroceryOrderPickedUp(orderId: string, riderId: string): Promise<{ order: GroceryOrder; otp: string }> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: and(
+        eq(groceryOrders.id, orderId),
+        eq(groceryOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({
+        status: 'out_for_delivery',
+        deliveryOtp: otp,
+        deliveryOtpGeneratedAt: new Date(),
+        pickedUpAt: new Date(),
+      })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return { order: updated, otp };
+  }
+
+  async verifyGroceryDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<GroceryOrder> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: and(
+        eq(groceryOrders.id, orderId),
+        eq(groceryOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    if (order.deliveryOtp !== otp) {
+      throw new Error("Invalid OTP");
+    }
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({
+        status: 'delivered',
+        deliveredAt: new Date(),
+      })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return updated;
   }
 }
 

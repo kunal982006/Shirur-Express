@@ -1,15 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Trie } from "@/lib/trie";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+
 import ServiceCard from "@/components/service-card";
 import {
   MapPin,
@@ -20,9 +16,6 @@ import {
   Cake,
   ShoppingBasket,
   Home as HomeIcon,
-  Gift,
-  Percent,
-  Sparkles,
   Share,
   Sandwich,
   UtensilsCrossed,
@@ -43,21 +36,46 @@ const services = [
   { name: "Restaurants", slug: "restaurants", icon: UtensilsCrossed, description: "Book tables and browse menus from top restaurants", badge: "Reserve Now", color: "destructive" },
 ];
 
-const offers = [
-  { title: "50% OFF", subtitle: "On your first electrician or plumber service", code: "WELCOME50", badge: "New User", color: "accent", icon: Gift },
-  { title: "Free Delivery", subtitle: "On orders above ₹500 from GMart", code: "FREEDEL500", badge: "Grocery", color: "secondary", icon: Percent },
-  { title: "20% Cashback", subtitle: "On all beauty parlor bookings this week", code: "BEAUTY20", badge: "Beauty", color: "primary", icon: Sparkles },
-];
+
 
 
 export default function Home() {
   const [, navigate] = useLocation();
 
   const [selectedService, setSelectedService] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [location, setLocation] = useState("Current GPS Location"); // Location bar ke liye initial value
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const trie = useMemo(() => {
+    const t = new Trie();
+    services.forEach(service => t.insert(service.name));
+    // Add common keywords or aliases if needed
+    t.insert("Food");
+    t.insert("Repair");
+    return t;
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSelectedService(value);
+    if (value) {
+      const results = trie.search(value);
+      setSuggestions(results);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSelectedService(suggestion);
+    setShowSuggestions(false);
+  };
 
   // useQuery call abhi bhi rakha hai, for best practice
   const { data: serviceCategories, isLoading } = useQuery({
@@ -116,7 +134,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 2. Unified Search Bar (Image Reference: Are you hungry) */}
+      {/* 4. Unified Search Bar (Image Reference: Are you hungry) */}
       <section className="p-4 bg-white shadow-sm sticky top-[61px] z-30">
         <div className="max-w-7xl mx-auto flex gap-4">
           <div className="relative flex-1">
@@ -126,11 +144,33 @@ export default function Home() {
               placeholder="Search for Services or Products (Electrician, Cake, Rental...)"
               className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
               value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
+              onChange={handleInputChange}
+              onFocus={() => {
+                if (selectedService.length > 0) setShowSuggestions(true);
+              }}
+              onBlur={() => {
+                // Delay hiding suggestions to allow clicking them
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch();
               }}
             />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                <ul className="py-1">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-700"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           {/* GPS/Search Button - Isse ab sirf search hoga, GPS toh upar handle ho raha hai */}
           <Button
@@ -144,53 +184,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. Special Offers Section (Image Reference: Listing Section jaisa) */}
-      <section id="offers" className="pt-6 pb-4 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Exclusive Offers</h2>
-            <Link href="/offers" className="flex items-center text-primary text-sm font-medium hover:underline">
-              View More <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <Carousel
-            plugins={[
-              Autoplay({
-                delay: 3000,
-              }),
-            ]}
-            className="w-full"
-          >
-            <CarouselContent>
-              {offers.map((offer, index) => (
-                <CarouselItem key={index}>
-                  <Card
-                    className={`bg-gradient-to-br ${offer.color === "accent"
-                      ? "from-accent to-accent/80"
-                      : offer.color === "secondary"
-                        ? "from-secondary to-secondary/80"
-                        : "from-primary to-primary/80"
-                      } text-white shadow-xl border-0`}
-                  >
-                    <CardContent className="p-6 flex items-center justify-between min-h-[160px]">
-                      <div className="flex flex-col justify-center">
-                        <span className="w-fit bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-bold uppercase mb-2">
-                          {offer.badge}
-                        </span>
-                        <h3 className="text-2xl font-bold leading-tight">{offer.title}</h3>
-                        <p className="text-sm sm:text-base opacity-95 mt-1">{offer.subtitle}</p>
-                      </div>
-                      <offer.icon className="h-16 w-16 opacity-80 flex-shrink-0 ml-4" />
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-      </section>
-
       {/* 3. Services Section (Image Reference: What's on Your Mind? - Categories) */}
       <section id="services" className="py-4 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,9 +191,7 @@ export default function Home() {
           {/* Header jaisa Food UI mein tha */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">Explore Categories</h2>
-            <Link href="/categories" className="flex items-center text-primary text-sm font-medium hover:underline">
-              View All <ChevronRight className="h-4 w-4" />
-            </Link>
+
           </div>
 
           {/* Service Card Grid (Minimal) */}

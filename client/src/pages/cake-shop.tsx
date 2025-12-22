@@ -194,7 +194,8 @@ export default function CakeShop() {
         name: cake.name,
         price: parseFloat(cake.price),
         imageUrl: cake.imageUrl || undefined,
-        providerId: shopId // Ensure we track which shop this is from
+        providerId: shopId, // Ensure we track which shop this is from
+        itemType: 'cake'
       });
       toast({
         title: "✅ Added to Cart!",

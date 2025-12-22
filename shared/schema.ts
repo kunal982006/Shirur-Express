@@ -246,7 +246,34 @@ export const groceryOrders = pgTable("grocery_orders", {
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
   razorpaySignature: text("razorpay_signature"),
-  providerId: varchar("provider_id"), // Added providerId for multi-vendor support
+  providerId: varchar("provider_id"),
+  riderId: varchar("rider_id"), // Delivery partner assigned
+  deliveryOtp: text("delivery_otp"),
+  deliveryOtpGeneratedAt: timestamp("delivery_otp_generated_at"),
+  riderAcceptedAt: timestamp("rider_accepted_at"),
+  pickedUpAt: timestamp("picked_up_at"),
+  deliveredAt: timestamp("delivered_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// =========================================
+// DELIVERY PARTNERS TABLE
+// =========================================
+
+export const deliveryPartners = pgTable("delivery_partners", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id").notNull().unique(), // Links to users table
+  vehicleType: text("vehicle_type").notNull(), // bike, scooter, car
+  vehicleNumber: text("vehicle_number"),
+  licenseNumber: text("license_number"),
+  profileImageUrl: text("profile_image_url"),
+  isActive: boolean("is_active").default(true),
+  isOnline: boolean("is_online").default(false), // Currently accepting orders
+  currentLatitude: decimal("current_latitude", { precision: 10, scale: 8 }),
+  currentLongitude: decimal("current_longitude", { precision: 11, scale: 8 }),
+  lastLocationUpdate: timestamp("last_location_update"),
+  totalDeliveries: integer("total_deliveries").default(0),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("5.00"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -326,18 +353,29 @@ export type InsertServiceTemplate = z.infer<typeof insertServiceTemplateSchema>;
 export type InsertStreetFoodItem = z.infer<typeof insertStreetFoodItemSchema>;
 export type ServiceOffering = typeof serviceOfferings.$inferSelect;
 export type InsertServiceOffering = z.infer<typeof insertServiceOfferingSchema>;
+export type DeliveryPartner = typeof deliveryPartners.$inferSelect;
+
+export const insertDeliveryPartnerSchema = createInsertSchema(deliveryPartners).pick({
+  vehicleType: true, vehicleNumber: true, licenseNumber: true, profileImageUrl: true,
+});
+export type InsertDeliveryPartner = z.infer<typeof insertDeliveryPartnerSchema>;
 
 // =========================================
 // 6. RELATIONS (STRICTLY AT THE BOTTOM)
 // =========================================
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   serviceProviders: many(serviceProviders),
   bookings: many(bookings),
   reviews: many(reviews),
   rentalProperties: many(rentalProperties),
   groceryOrders: many(groceryOrders),
   invoices: many(invoices),
+  deliveryPartner: one(deliveryPartners, { fields: [users.id], references: [deliveryPartners.userId] }),
+}));
+
+export const deliveryPartnersRelations = relations(deliveryPartners, ({ one }) => ({
+  user: one(users, { fields: [deliveryPartners.userId], references: [users.id] }),
 }));
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({
@@ -448,9 +486,14 @@ export const restaurantOrders = pgTable("restaurant_orders", {
   items: jsonb("items").$type<Array<{ menuItemId: string; quantity: number; name: string; price: number }>>(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
-  status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, delivered, declined, cancelled
+  status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, out_for_delivery, delivered, declined, cancelled
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
+  deliveryOtp: text("delivery_otp"),
+  deliveryOtpGeneratedAt: timestamp("delivery_otp_generated_at"),
+  riderAcceptedAt: timestamp("rider_accepted_at"),
+  pickedUpAt: timestamp("picked_up_at"),
+  deliveredAt: timestamp("delivered_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

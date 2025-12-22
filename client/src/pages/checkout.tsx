@@ -90,10 +90,19 @@ export default function Checkout() {
 
   // Fees calculation
   const subtotal = getTotalPrice();
-  const platformFee = subtotal * 0.05; // 5%
+  const platformFee = 0; // Platform fee removed as per request
 
-  // Dynamic Delivery Fee
-  let deliveryFee = 0;
+
+  // Determine Delivery Fee directly based on item type
+  const isGrocery = items.some(item => item.itemType === 'grocery');
+  const isCake = items.some(item => item.itemType === 'cake');
+
+  let deliveryFee = 50; // Default fixed delivery fee as per request
+  if (isGrocery) {
+    deliveryFee = 20;
+  }
+
+  // Deliverability Check (based on distance if available)
   let isDeliverable = true;
   let distanceInKm = 0;
 
@@ -101,8 +110,6 @@ export default function Checkout() {
     distanceInKm = distanceInMeters / 1000;
     if (distanceInKm > 10) {
       isDeliverable = false;
-    } else {
-      deliveryFee = calculateDeliveryFee(distanceInMeters);
     }
   } else {
     // Default or fallback if location not yet fetched? 
@@ -536,10 +543,7 @@ export default function Checkout() {
                       <span>Subtotal</span>
                       <span>₹{subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Platform Fee (5%)</span>
-                      <span>₹{platformFee.toFixed(2)}</span>
-                    </div>
+
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
                         Delivery Fee
@@ -548,7 +552,7 @@ export default function Checkout() {
                         )}
                       </span>
                       <span>
-                        {distanceInMeters !== null ? `₹${deliveryFee.toFixed(2)}` : "Calculating..."}
+                        ₹{deliveryFee.toFixed(2)}
                       </span>
                     </div>
                     <Separator />
