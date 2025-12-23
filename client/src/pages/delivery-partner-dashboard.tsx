@@ -141,9 +141,10 @@ export default function DeliveryPartnerDashboard() {
 
     // Arrived at Pickup
     const arrivedMutation = useMutation({
-        mutationFn: (orderId: string) => api.post(`/rider/orders/${orderId}/arrived-at-pickup`),
+        mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
+            api.post(`/rider/orders/${orderId}/arrived-at-pickup`, { orderType }),
         onSuccess: () => {
-            toast({ title: "Marked as Arrived", description: "Wait for restaurant to hand over the order." });
+            toast({ title: "Marked as Arrived", description: "Wait for store to hand over the order." });
             queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
         },
     });
@@ -295,7 +296,7 @@ export default function DeliveryPartnerDashboard() {
                                     key={order.id}
                                     order={order}
                                     type="active"
-                                    onArrived={() => arrivedMutation.mutate(order.id)}
+                                    onArrived={() => arrivedMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onPickup={() => pickupMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onDeliver={() => handleDeliverClick(order.id, order.orderType || 'restaurant')}
                                     isProcessing={arrivedMutation.isPending || pickupMutation.isPending}

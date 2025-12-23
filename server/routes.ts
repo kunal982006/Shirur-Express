@@ -1447,13 +1447,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mark Arrived at Pickup
+  // Mark Arrived at Pickup - handles both order types
   app.post("/api/rider/orders/:id/arrived-at-pickup", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
       const orderId = req.params.id;
       const riderId = req.userId!;
+      const { orderType } = req.body;
 
-      const order = await storage.updateOrderStatus(orderId, riderId, 'arrived_at_pickup');
+      let order;
+      if (orderType === 'grocery') {
+        order = await storage.updateGroceryOrderStatusByRider(orderId, riderId, 'arrived_at_pickup');
+      } else {
+        order = await storage.updateOrderStatus(orderId, riderId, 'arrived_at_pickup');
+      }
       res.json({ message: "Marked as arrived at pickup", order });
     } catch (error: any) {
       console.error("Arrived at pickup error:", error);
