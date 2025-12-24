@@ -104,6 +104,24 @@ const isDeliveryPartner = async (req: DeliveryPartnerRequest, res: Response, nex
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
+  // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
+  app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
+    const assetlinks = [
+      {
+        relation: ["delegate_permission/common.handle_all_urls"],
+        target: {
+          namespace: "android_app",
+          package_name: "com.onrender.shirur_express.twa",
+          sha256_cert_fingerprints: [
+            "5C:FC:35:97:A6:87:42:02:A2:25:20:85:81:C4:A6:56:8B:64:EC:5F:8C:33:FC:BD:F8:94:C0:3A:0B:BD:8C:76"
+          ]
+        }
+      }
+    ];
+    res.setHeader("Content-Type", "application/json");
+    res.json(assetlinks);
+  });
+
   // --- AUTHENTICATION ROUTES (No Change) ---
 
   console.log("Registering Grocery Routes..."); // DEBUG LOG
