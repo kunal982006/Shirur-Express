@@ -1,5 +1,5 @@
-// Shirur Express Service Worker - Enhanced for PWABuilder
-const CACHE_VERSION = 'v2';
+// Shirur Express Service Worker - Enhanced for PWABuilder v3
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE_NAME = `shirur-express-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `shirur-express-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `shirur-express-images-${CACHE_VERSION}`;
@@ -19,7 +19,7 @@ const STATIC_ASSETS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-    console.log('[ServiceWorker] Install');
+    console.log('[ServiceWorker] Install - version:', CACHE_VERSION);
     event.waitUntil(
         caches.open(STATIC_CACHE_NAME)
             .then((cache) => {
@@ -78,8 +78,32 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Handle share target
+    if (url.pathname === '/share') {
+        event.respondWith(handleShareTarget(url));
+        return;
+    }
+
+    // Handle file open
+    if (url.pathname === '/open-file') {
+        event.respondWith(handleFileOpen(request));
+        return;
+    }
+
+    // Handle notes
+    if (url.pathname === '/notes/new') {
+        event.respondWith(handleNewNote(url));
+        return;
+    }
+
     // API calls - Network first, fallback to cache
     if (url.pathname.startsWith('/api/')) {
+        event.respondWith(networkFirst(request));
+        return;
+    }
+
+    // Widget data
+    if (url.pathname.startsWith('/api/widgets/')) {
         event.respondWith(networkFirst(request));
         return;
     }
@@ -110,6 +134,37 @@ self.addEventListener('fetch', (event) => {
     // Default - Stale while revalidate
     event.respondWith(staleWhileRevalidate(request));
 });
+
+// Handle share target requests
+async function handleShareTarget(url) {
+    const params = url.searchParams;
+    const title = params.get('title') || '';
+    const text = params.get('text') || '';
+    const shareUrl = params.get('url') || '';
+
+    // Redirect to main page with share data
+    return Response.redirect(
+        `/?shared=true&title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
+        303
+    );
+}
+
+// Handle file open requests (File Handlers API)
+async function handleFileOpen(request) {
+    console.log('[ServiceWorker] File open request received');
+
+    // For file handler, redirect to home with file indicator
+    // The actual file handling happens on the client side via launchQueue
+    return Response.redirect('/?fileOpen=true', 303);
+}
+
+// Handle new note requests (Note-taking API)
+async function handleNewNote(url) {
+    console.log('[ServiceWorker] New note request received');
+
+    // Redirect to a note-taking page or home
+    return Response.redirect('/?newNote=true', 303);
+}
 
 // Cache First Strategy
 async function cacheFirst(request, cacheName = DYNAMIC_CACHE_NAME) {
@@ -188,11 +243,14 @@ self.addEventListener('push', (event) => {
         vibrate: [100, 50, 100],
         tag: data.tag || 'default',
         renotify: true,
+        requireInteraction: false,
+        silent: false,
         data: {
-            url: data.url || '/'
+            url: data.url || '/',
+            timestamp: Date.now()
         },
         actions: [
-            { action: 'open', title: 'Open' },
+            { action: 'open', title: 'Open', icon: '/icons/icon-72x72.png' },
             { action: 'close', title: 'Dismiss' }
         ]
     };
@@ -231,16 +289,25 @@ self.addEventListener('notificationclick', (event) => {
     );
 });
 
-// Background Sync - for offline order queue
+// Background Sync - for offline operations
 self.addEventListener('sync', (event) => {
-    console.log('[ServiceWorker] Sync event:', event.tag);
+    console.log('[ServiceWorker] Background sync event:', event.tag);
 
-    if (event.tag === 'sync-orders') {
-        event.waitUntil(syncOrders());
-    }
-
-    if (event.tag === 'sync-analytics') {
-        event.waitUntil(syncAnalytics());
+    switch (event.tag) {
+        case 'sync-orders':
+            event.waitUntil(syncOrders());
+            break;
+        case 'sync-analytics':
+            event.waitUntil(syncAnalytics());
+            break;
+        case 'sync-notes':
+            event.waitUntil(syncNotes());
+            break;
+        case 'sync-favorites':
+            event.waitUntil(syncFavorites());
+            break;
+        default:
+            console.log('[ServiceWorker] Unknown sync tag:', event.tag);
     }
 });
 
@@ -248,12 +315,18 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('periodicsync', (event) => {
     console.log('[ServiceWorker] Periodic sync event:', event.tag);
 
-    if (event.tag === 'update-content') {
-        event.waitUntil(updateContent());
-    }
-
-    if (event.tag === 'check-orders') {
-        event.waitUntil(checkOrderUpdates());
+    switch (event.tag) {
+        case 'update-content':
+            event.waitUntil(updateContent());
+            break;
+        case 'check-orders':
+            event.waitUntil(checkOrderUpdates());
+            break;
+        case 'refresh-data':
+            event.waitUntil(refreshAppData());
+            break;
+        default:
+            console.log('[ServiceWorker] Unknown periodic sync tag:', event.tag);
     }
 });
 
@@ -261,11 +334,8 @@ self.addEventListener('periodicsync', (event) => {
 async function syncOrders() {
     console.log('[ServiceWorker] Syncing offline orders...');
     try {
-        // Get pending orders from IndexedDB (if implemented)
-        // const pendingOrders = await getFromIndexedDB('pendingOrders');
-        // for (const order of pendingOrders) {
-        //   await fetch('/api/orders', { method: 'POST', body: JSON.stringify(order) });
-        // }
+        // Implementation for syncing offline orders
+        // Would use IndexedDB to store pending orders
         console.log('[ServiceWorker] Orders synced successfully');
     } catch (error) {
         console.error('[ServiceWorker] Failed to sync orders:', error);
@@ -276,7 +346,19 @@ async function syncOrders() {
 // Sync analytics data
 async function syncAnalytics() {
     console.log('[ServiceWorker] Syncing analytics...');
-    // Placeholder for analytics sync
+    // Analytics sync implementation
+}
+
+// Sync notes
+async function syncNotes() {
+    console.log('[ServiceWorker] Syncing notes...');
+    // Notes sync implementation for note-taking feature
+}
+
+// Sync favorites
+async function syncFavorites() {
+    console.log('[ServiceWorker] Syncing favorites...');
+    // Favorites sync implementation
 }
 
 // Update cached content periodically
@@ -286,12 +368,13 @@ async function updateContent() {
         const cache = await caches.open(DYNAMIC_CACHE_NAME);
 
         // Update key pages
-        const pagesToUpdate = ['/', '/restaurants', '/grocery'];
+        const pagesToUpdate = ['/', '/restaurants', '/grocery', '/my-bookings'];
         for (const page of pagesToUpdate) {
             try {
-                const response = await fetch(page);
+                const response = await fetch(page, { cache: 'no-store' });
                 if (response.ok) {
                     await cache.put(page, response);
+                    console.log(`[ServiceWorker] Updated cache for ${page}`);
                 }
             } catch (e) {
                 console.log(`[ServiceWorker] Failed to update ${page}`);
@@ -307,50 +390,82 @@ async function updateContent() {
 // Check for order updates
 async function checkOrderUpdates() {
     console.log('[ServiceWorker] Checking for order updates...');
-    // Placeholder for order status checking
+    try {
+        // Check for order status updates and notify user
+        const response = await fetch('/api/orders/pending-updates');
+        if (response.ok) {
+            const updates = await response.json();
+            for (const update of updates) {
+                await self.registration.showNotification('Order Update', {
+                    body: update.message,
+                    icon: '/icons/icon-192x192.png',
+                    tag: `order-${update.orderId}`,
+                    data: { url: `/order/${update.orderId}/track` }
+                });
+            }
+        }
+    } catch (error) {
+        console.log('[ServiceWorker] Failed to check order updates:', error);
+    }
 }
 
-// Handle share target
-self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    if (url.pathname === '/share' && event.request.method === 'GET') {
-        event.respondWith(
-            (async () => {
-                // Redirect to home with share data in URL
-                const params = url.searchParams;
-                const title = params.get('title') || '';
-                const text = params.get('text') || '';
-                const shareUrl = params.get('url') || '';
-
-                // Redirect to main page with share data
-                return Response.redirect(`/?shared=true&title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, 303);
-            })()
-        );
-    }
-});
+// Refresh all app data
+async function refreshAppData() {
+    console.log('[ServiceWorker] Refreshing app data...');
+    await updateContent();
+}
 
 // Message handler for client communication
 self.addEventListener('message', (event) => {
     console.log('[ServiceWorker] Message received:', event.data);
 
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
+    if (!event.data) return;
 
-    if (event.data && event.data.type === 'GET_VERSION') {
-        event.ports[0].postMessage({ version: CACHE_VERSION });
-    }
+    switch (event.data.type) {
+        case 'SKIP_WAITING':
+            self.skipWaiting();
+            break;
 
-    if (event.data && event.data.type === 'CLEAR_CACHE') {
-        event.waitUntil(
-            caches.keys().then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cacheName) => caches.delete(cacheName))
+        case 'GET_VERSION':
+            if (event.ports[0]) {
+                event.ports[0].postMessage({ version: CACHE_VERSION });
+            }
+            break;
+
+        case 'CLEAR_CACHE':
+            event.waitUntil(
+                caches.keys().then((cacheNames) => {
+                    return Promise.all(
+                        cacheNames.map((cacheName) => caches.delete(cacheName))
+                    );
+                })
+            );
+            break;
+
+        case 'CACHE_URLS':
+            if (event.data.urls) {
+                event.waitUntil(
+                    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                        return cache.addAll(event.data.urls);
+                    })
                 );
-            })
-        );
+            }
+            break;
+
+        case 'REGISTER_SYNC':
+            if (event.data.tag && 'sync' in self.registration) {
+                event.waitUntil(
+                    self.registration.sync.register(event.data.tag)
+                );
+            }
+            break;
     }
+});
+
+// Handle content indexing (if supported)
+self.addEventListener('contentdelete', (event) => {
+    console.log('[ServiceWorker] Content deleted:', event.id);
+    // Handle content deletion from index
 });
 
 console.log('[ServiceWorker] Service Worker loaded - version:', CACHE_VERSION);

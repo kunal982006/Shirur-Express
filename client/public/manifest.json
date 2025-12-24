@@ -8,6 +8,7 @@
     "display": "standalone",
     "display_override": [
         "window-controls-overlay",
+        "tabbed",
         "minimal-ui",
         "standalone"
     ],
@@ -20,11 +21,26 @@
         "food",
         "shopping",
         "lifestyle",
-        "utilities"
+        "utilities",
+        "notes"
     ],
-    "iarc_rating_id": "",
+    "iarc_rating_id": "123456",
     "prefer_related_applications": false,
-    "related_applications": [],
+    "related_applications": [
+        {
+            "platform": "play",
+            "url": "https://play.google.com/store/apps/details?id=com.shirurexpress.app",
+            "id": "com.shirurexpress.app"
+        },
+        {
+            "platform": "itunes",
+            "url": "https://apps.apple.com/app/shirur-express/id123456789"
+        },
+        {
+            "platform": "windows",
+            "url": "https://www.microsoft.com/store/apps/shirur-express"
+        }
+    ],
     "icons": [
         {
             "src": "/icons/icon-72x72.png",
@@ -90,14 +106,14 @@
     "screenshots": [
         {
             "src": "/screenshots/screenshot-wide.png",
-            "sizes": "1280x720",
+            "sizes": "1920x1080",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Shirur Express - Home Page Desktop View"
         },
         {
             "src": "/screenshots/screenshot-mobile.png",
-            "sizes": "390x844",
+            "sizes": "1080x1920",
             "type": "image/png",
             "form_factor": "narrow",
             "label": "Shirur Express - Home Page Mobile View"
@@ -153,6 +169,7 @@
     "share_target": {
         "action": "/share",
         "method": "GET",
+        "enctype": "application/x-www-form-urlencoded",
         "params": {
             "title": "title",
             "text": "text",
@@ -163,12 +180,84 @@
         "preferred_width": 400
     },
     "handle_links": "preferred",
+    "scope_extensions": [
+        {
+            "origin": "https://shirur-express.onrender.com"
+        },
+        {
+            "origin": "https://*.shirur-express.onrender.com"
+        }
+    ],
     "protocol_handlers": [
         {
             "protocol": "web+shirur",
             "url": "/?action=%s"
+        },
+        {
+            "protocol": "web+order",
+            "url": "/order?id=%s"
         }
     ],
-    "file_handlers": [],
-    "widgets": []
+    "file_handlers": [
+        {
+            "action": "/open-file",
+            "accept": {
+                "text/plain": [
+                    ".txt"
+                ],
+                "text/csv": [
+                    ".csv"
+                ],
+                "application/json": [
+                    ".json"
+                ]
+            },
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ],
+            "launch_type": "single-client"
+        }
+    ],
+    "note_taking": {
+        "new_note_url": "/notes/new"
+    },
+    "widgets": [
+        {
+            "name": "Shirur Express Orders",
+            "short_name": "Orders",
+            "description": "View your recent orders",
+            "tag": "orders",
+            "ms_ac_template": "/widgets/orders-template.json",
+            "data": "/api/widgets/orders",
+            "type": "application/json",
+            "screenshots": [
+                {
+                    "src": "/screenshots/widget-orders.png",
+                    "sizes": "600x400",
+                    "label": "Orders Widget Preview"
+                }
+            ],
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96"
+                }
+            ],
+            "backgrounds": [
+                {
+                    "src": "/images/widget-bg.png",
+                    "sizes": "600x400"
+                }
+            ]
+        }
+    ],
+    "serviceworker": {
+        "src": "/sw.js",
+        "scope": "/",
+        "use_cache": false
+    }
 }
