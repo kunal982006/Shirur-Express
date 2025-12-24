@@ -7,15 +7,14 @@
     "scope": "/",
     "display": "standalone",
     "display_override": [
-        "window-controls-overlay",
-        "tabbed",
-        "minimal-ui",
-        "standalone"
+        "standalone",
+        "fullscreen",
+        "minimal-ui"
     ],
     "orientation": "any",
     "dir": "ltr",
     "lang": "en-US",
-    "theme_color": "#7c3aed",
+    "theme_color": "#1a1a2e",
     "background_color": "#1a1a2e",
     "categories": [
         "food",
