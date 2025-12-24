@@ -1,20 +1,30 @@
 {
+    "id": "/shirur-express-pwa",
     "name": "Shirur Express",
     "short_name": "Shirur Express",
-    "description": "Your one-stop solution for local services, food delivery, and more in Shirur",
+    "description": "Your one-stop solution for local services, food delivery, grocery, and more in Shirur",
     "start_url": "/",
-    "display": "standalone",
-    "background_color": "#1a1a2e",
-    "theme_color": "#7c3aed",
-    "orientation": "portrait-primary",
     "scope": "/",
-    "lang": "en",
+    "display": "standalone",
+    "display_override": [
+        "window-controls-overlay",
+        "minimal-ui",
+        "standalone"
+    ],
+    "orientation": "any",
+    "dir": "ltr",
+    "lang": "en-US",
+    "theme_color": "#7c3aed",
+    "background_color": "#1a1a2e",
     "categories": [
         "food",
         "shopping",
         "lifestyle",
         "utilities"
     ],
+    "iarc_rating_id": "",
+    "prefer_related_applications": false,
+    "related_applications": [],
     "icons": [
         {
             "src": "/icons/icon-72x72.png",
@@ -83,14 +93,14 @@
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide",
-            "label": "Shirur Express Desktop View"
+            "label": "Shirur Express - Home Page Desktop View"
         },
         {
             "src": "/screenshots/screenshot-mobile.png",
-            "sizes": "750x1334",
+            "sizes": "390x844",
             "type": "image/png",
             "form_factor": "narrow",
-            "label": "Shirur Express Mobile View"
+            "label": "Shirur Express - Home Page Mobile View"
         }
     ],
     "shortcuts": [
@@ -102,7 +112,8 @@
             "icons": [
                 {
                     "src": "/icons/shortcut-food.png",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/png"
                 }
             ]
         },
@@ -114,11 +125,50 @@
             "icons": [
                 {
                     "src": "/icons/shortcut-orders.png",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Grocery Store",
+            "short_name": "Grocery",
+            "description": "Shop groceries online",
+            "url": "/grocery",
+            "icons": [
+                {
+                    "src": "/icons/shortcut-grocery.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
                 }
             ]
         }
     ],
-    "related_applications": [],
-    "prefer_related_applications": false
+    "launch_handler": {
+        "client_mode": [
+            "focus-existing",
+            "auto"
+        ]
+    },
+    "share_target": {
+        "action": "/share",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+    "handle_links": "preferred",
+    "protocol_handlers": [
+        {
+            "protocol": "web+shirur",
+            "url": "/?action=%s"
+        }
+    ],
+    "file_handlers": [],
+    "widgets": []
 }

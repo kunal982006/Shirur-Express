@@ -1,72 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+
+  <!-- SEO Meta Tags -->
+  <title>Shirur Express - Local Services & Delivery</title>
+  <meta name="description"
+    content="Shirur Express - Your one-stop solution for local services, food delivery, grocery, and more in Shirur. Order food, groceries, book services, and more!" />
+  <meta name="keywords" content="Shirur, delivery, food, grocery, services, local, express, order" />
+  <meta name="author" content="Shirur Express" />
 
   <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#7c3aed" />
+  <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: dark)" />
   <meta name="background-color" content="#1a1a2e" />
-  <meta name="description"
-    content="Shirur Express - Your one-stop solution for local services, food delivery, grocery, and more in Shirur" />
+  <meta name="color-scheme" content="light dark" />
 
   <!-- Apple PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Shirur Express" />
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png" />
+
+  <!-- Apple Splash Screens (Optional - improves iOS experience) -->
+  <meta name="apple-touch-fullscreen" content="yes" />
 
   <!-- Microsoft PWA Meta Tags -->
   <meta name="msapplication-TileColor" content="#7c3aed" />
   <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
   <meta name="msapplication-config" content="/browserconfig.xml" />
+  <meta name="msapplication-navbutton-color" content="#7c3aed" />
+  <meta name="msapplication-starturl" content="/" />
 
-  <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
   <link rel="shortcut icon" href="/favicon.ico" />
 
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Shirur Express - Local Services & Delivery" />
+  <meta property="og:description"
+    content="Your one-stop solution for local services, food delivery, grocery, and more in Shirur" />
+  <meta property="og:image" content="/icons/icon-512x512.png" />
+  <meta property="og:site_name" content="Shirur Express" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Shirur Express" />
+  <meta name="twitter:description" content="Local services and delivery in Shirur" />
+  <meta name="twitter:image" content="/icons/icon-512x512.png" />
+
+  <!-- Mobile Optimization -->
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap"
-    rel="stylesheet">
+    rel="stylesheet" />
 
   <!-- Razorpay -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <title>Shirur Express</title>
-
   <!-- Service Worker Registration -->
   <script>
+    // Service Worker Registration with enhanced features
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('ServiceWorker registration successful with scope:', registration.scope);
-
-            // Check for updates periodically
-            setInterval(() => {
-              registration.update();
-            }, 60000); // Check every minute
-          })
-          .catch((error) => {
-            console.log('ServiceWorker registration failed:', error);
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+            updateViaCache: 'none'
           });
+
+          console.log('ServiceWorker registered:', registration.scope);
+
+          // Check for updates on page load
+          registration.update();
+
+          // Check for updates periodically
+          setInterval(() => {
+            registration.update();
+          }, 60000); // Every minute
+
+          // Handle updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            console.log('Service Worker update found');
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available
+                console.log('New version available! Refresh to update.');
+
+                // Optional: Show update notification to user
+                if (window.confirm('New version available! Refresh to update?')) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              }
+            });
+          });
+
+          // Register for periodic background sync (if supported)
+          if ('periodicSync' in registration) {
+            try {
+              await registration.periodicSync.register('update-content', {
+                minInterval: 24 * 60 * 60 * 1000 // 24 hours
+              });
+              console.log('Periodic sync registered');
+            } catch (error) {
+              console.log('Periodic sync not available:', error);
+            }
+          }
+
+          // Register for push notifications (if supported)
+          if ('pushManager' in registration) {
+            console.log('Push notifications supported');
+          }
+
+        } catch (error) {
+          console.error('ServiceWorker registration failed:', error);
+        }
+      });
+
+      // Handle controller change (new SW activated)
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('New service worker activated');
       });
     }
+
+    // Handle beforeinstallprompt for custom install button
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('beforeinstallprompt fired');
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Dispatch custom event for React to handle
+      window.dispatchEvent(new CustomEvent('pwaInstallAvailable', { detail: e }));
+    });
+
+    // Track installation
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA installed successfully');
+      deferredPrompt = null;
+
+      // Optional: Track installation in analytics
+      if (window.gtag) {
+        gtag('event', 'pwa_installed');
+      }
+    });
+
+    // Expose install function globally
+    window.installPWA = async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Install prompt outcome:', outcome);
+        deferredPrompt = null;
+        return outcome;
+      }
+      return null;
+    };
   </script>
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/icons/icon-192x192.png" as="image" />
 </head>
 
 <body>
   <noscript>
-    <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-      <h1>JavaScript Required</h1>
-      <p>Please enable JavaScript to use Shirur Express.</p>
+    <div
+      style="padding: 2rem; text-align: center; font-family: 'Inter', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div>
+        <h1 style="color: #7c3aed; margin-bottom: 1rem;">JavaScript Required</h1>
+        <p>Please enable JavaScript to use Shirur Express.</p>
+      </div>
     </div>
   </noscript>
   <div id="root"></div>
