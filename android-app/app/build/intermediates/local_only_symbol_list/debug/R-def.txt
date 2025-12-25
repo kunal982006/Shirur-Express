@@ -1,0 +1,33 @@
+R_DEF: Internal format may change without notice
+local
+color background_dark
+color background_darker
+color black
+color ic_launcher_background
+color navigation_bar
+color purple_200
+color purple_500
+color purple_700
+color status_bar
+color teal_200
+color teal_700
+color text_primary
+color text_secondary
+color white
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+drawable ic_no_internet
+drawable splash_background
+id errorView
+id progressBar
+id retryButton
+id swipeRefresh
+id webView
+layout activity_main
+mipmap ic_launcher
+mipmap ic_launcher_foreground
+mipmap ic_launcher_round
+string app_name
+style Theme.ShirurExpress
+style Theme.ShirurExpress.Splash
+xml network_security_config

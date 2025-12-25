@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#7C3AED</color>
+    <color name="purple_700">#6D28D9</color>
+    
+    <!-- Secondary Colors -->
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    
+    <!-- Background Colors -->
+    <color name="background_dark">#1A1A2E</color>
+    <color name="background_darker">#16213E</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A1A1AA</color>
+    
+    <!-- Status Bar -->
+    <color name="status_bar">#1A1A2E</color>
+    <color name="navigation_bar">#1A1A2E</color>
+    
+    <!-- Other -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
