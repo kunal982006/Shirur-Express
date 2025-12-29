@@ -2326,7 +2326,7 @@ const ProviderDashboard: React.FC = () => {
       const res = await api.get("/provider/profile");
       return res.data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && user.role === 'provider',
     retry: false,
   });
 

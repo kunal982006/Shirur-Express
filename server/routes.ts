@@ -211,6 +211,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!validPassword) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
+
+      // Check for delivery partner profile
+      const deliveryPartner = await storage.getDeliveryPartnerByUserId(user.id);
+
       req.session.userId = user.id;
       req.session.userRole = user.role || 'customer';
       req.session.save((err) => {
@@ -219,7 +223,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ message: "Login successful, but session could not be established." });
         }
         const { password: _, ...userWithoutPassword } = user;
-        res.json({ user: userWithoutPassword, message: "Logged in successfully!" });
+        // Include isDeliveryPartner flag in the response
+        res.json({
+          user: {
+            ...userWithoutPassword,
+            isDeliveryPartner: !!deliveryPartner
+          },
+          message: "Logged in successfully!"
+        });
       });
     } catch (error: any) {
       console.error("Login error:", error);

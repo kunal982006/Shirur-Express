@@ -22,6 +22,7 @@ import RestaurantsIndex from "@/pages/restaurants/index";
 import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
 import Checkout from "@/pages/checkout";
 import Settings from "@/pages/settings"; // NAYA IMPORT
+import DeleteAccount from "@/pages/delete-account";
 import ProviderDashboard from "@/pages/provider-dashboard";
 import MyBookings from "@/pages/my-bookings";
 import InvoicePayment from "@/pages/invoice-payment";
@@ -36,7 +37,7 @@ import PropertySearch from "@/pages/property-search";
 import PropertyDetail from "@/pages/property-detail";
 import PropertyListingForm from "@/pages/property-listing-form";
 import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
+
 import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
 import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
 import OrderTracking from "@/pages/order-tracking";
@@ -66,6 +67,7 @@ function RouterComponent() {
       <Route path="/restaurants" component={RestaurantsIndex} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/settings" component={Settings} />
+      <Route path="/delete-account" component={DeleteAccount} />
       <Route path="/order-success" component={OrderSuccess} />
 
       <Route path="/provider/dashboard" component={ProviderDashboard} />
@@ -101,7 +103,7 @@ function App() {
               <main className="flex-1 pb-16 md:pb-0">
                 <RouterComponent />
               </main>
-              <Footer />
+
             </div>
             <Toaster />
           </TooltipProvider>
