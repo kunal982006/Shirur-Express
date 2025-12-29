@@ -23,6 +23,7 @@ import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
 import Checkout from "@/pages/checkout";
 import Settings from "@/pages/settings"; // NAYA IMPORT
 import DeleteAccount from "@/pages/delete-account";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import ProviderDashboard from "@/pages/provider-dashboard";
 import MyBookings from "@/pages/my-bookings";
 import InvoicePayment from "@/pages/invoice-payment";
@@ -68,6 +69,7 @@ function RouterComponent() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/settings" component={Settings} />
       <Route path="/delete-account" component={DeleteAccount} />
+      <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/order-success" component={OrderSuccess} />
 
       <Route path="/provider/dashboard" component={ProviderDashboard} />
