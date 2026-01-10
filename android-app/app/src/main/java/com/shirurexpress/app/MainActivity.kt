@@ -2,6 +2,7 @@ package com.shirurexpress.app
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.IntentSender
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -14,6 +15,14 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
+import androidx.core.content.ContextCompat
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.Task
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +30,36 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var errorView: View
+
+    // Location Permission Launcher
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) ||
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                // Location access granted.
+                checkGpsEnabled()
+            }
+            else -> {
+                // No location access granted.
+                Toast.makeText(this, "Location permission is required for delivery features", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    // GPS Enable Launcher
+    private val enableGpsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Toast.makeText(this, "GPS Enabled", Toast.LENGTH_SHORT).show()
+            // Reload page to ensure location APIs work immediately
+            webView.reload()
+        } else {
+            Toast.makeText(this, "GPS is required for location features", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     companion object {
         private const val WEBSITE_URL = "https://shirur-express.onrender.com"
@@ -57,6 +96,48 @@ class MainActivity : AppCompatActivity() {
 
         // Handle deep links
         handleIntent(intent)
+        
+        // Request Location Permissions
+        checkAndRequestLocationPermission()
+    }
+
+    private fun checkAndRequestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            checkGpsEnabled()
+        } else {
+            locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    private fun checkGpsEnabled() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build()
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener { 
+            // All location settings are satisfied.
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in enableGpsLauncher
+                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    enableGpsLauncher.launch(intentSenderRequest)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
