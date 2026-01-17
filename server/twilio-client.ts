@@ -150,6 +150,7 @@ export async function sendBookingNotification(
   }
 }
 
+
 // --- YEH NAYA FUNCTION ADD KIYA HAI ---
 /**
  * Customer ko Service OTP SMS se bhejta hai
@@ -158,6 +159,12 @@ export async function sendOtpNotification(
   to: string,
   otp: string
 ) {
+  // --- MOCK OTP LOGIC FOR TESTING ---
+  if (process.env.NODE_ENV === "test" || process.env.MOCK_OTP === "true") {
+    log(`[MOCK OTP] Would send OTP ${otp} to ${to}. Skipping actual SMS.`);
+    return { sid: 'mock-sms-sid', status: 'queued' };
+  }
+
   try {
     // Ensure number has +91 prefix if not present
     let formattedTo = to;
@@ -182,6 +189,13 @@ export async function sendOtpNotification(
     log(`❌ ERROR in sendOtpNotification: ${error.message}`);
     // Log full error object to see Twilio specific codes
     console.error('Twilio Full Error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+
+    // Check for specific Twilio error codes
+    if (error.code === 20003) {
+      console.error("Twilio Authentication Error: Check Account SID and Auth Token.");
+    } else if (error.code === 21211) {
+      console.error("Twilio Invalid Phone Number Error.");
+    }
 
     // Re-throw original error so routes.ts can see it
     throw error;

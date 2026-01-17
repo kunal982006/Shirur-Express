@@ -24,7 +24,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Clock, Loader2, MapPin } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CalendarIcon, Clock, Loader2, MapPin, Zap, Calendar as CalendarIconLucide } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -45,6 +52,7 @@ const bookingSchema = z.object({
     required_error: "Please select a date",
   }),
   preferredTimeSlot: z.string().min(1, "Please select a time slot"),
+  bookingType: z.enum(["instant", "scheduled"]), // Added bookingType
   notes: z.string().optional(),
 });
 
@@ -75,8 +83,24 @@ export default function BookingSlotForm({
       userPhone: user?.phone || "",
       userAddress: "",
       notes: "",
+      bookingType: "scheduled", // Default to scheduled
+      scheduledDate: undefined,
     },
   });
+
+  // Watch booking type to toggle UI
+  const bookingType = form.watch("bookingType");
+
+  const handleBookingTypeChange = (type: "instant" | "scheduled") => {
+    form.setValue("bookingType", type);
+    if (type === "instant") {
+      form.setValue("scheduledDate", new Date());
+      form.setValue("preferredTimeSlot", "INSTANT");
+    } else {
+      form.setValue("preferredTimeSlot", "");
+      form.setValue("scheduledDate", undefined as any);
+    }
+  };
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
@@ -130,23 +154,30 @@ export default function BookingSlotForm({
 
       const date = data.scheduledDate;
       const timeSlot = data.preferredTimeSlot;
-      const [time, modifier] = timeSlot.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
+      let combinedDateTime = new Date();
 
-      if (modifier === 'PM' && hours !== 12) {
-        hours += 12;
-      }
-      if (modifier === 'AM' && hours === 12) {
-        hours = 0;
-      }
+      if (data.bookingType === "scheduled") {
+        const [time, modifier] = timeSlot.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
 
-      const combinedDateTime = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        hours,
-        minutes
-      );
+        if (modifier === 'PM' && hours !== 12) {
+          hours += 12;
+        }
+        if (modifier === 'AM' && hours === 12) {
+          hours = 0;
+        }
+
+        combinedDateTime = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          hours,
+          minutes
+        );
+      } else {
+        // Instant booking - just use current time or maybe strictly handle on backend
+        // For now sending current time
+      }
 
       const scheduledAtISO = combinedDateTime.toISOString();
 
@@ -224,78 +255,132 @@ export default function BookingSlotForm({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Date Selection */}
-          <FormField
-            control={form.control}
-            name="scheduledDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Select Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                        data-testid="button-select-date"
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP") // e.g., "November 13, 2025"
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0)) // Aaj se pehle ki date disable karo
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Booking Type Selection */}
+          <div className="grid grid-cols-2 gap-4">
+            <div
+              onClick={() => handleBookingTypeChange("instant")}
+              className={cn(
+                "cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-accent/5",
+                bookingType === "instant"
+                  ? "border-primary bg-primary/5 ring-1 ring-primary"
+                  : "border-muted hover:border-primary/50"
+              )}
+            >
+              <div className={cn("p-2 rounded-full", bookingType === "instant" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                <Zap className="h-6 w-6" />
+              </div>
+              <div className="text-center">
+                <p className="font-bold text-sm">Instant</p>
+                <p className="text-[10px] text-muted-foreground">Within 60 mins</p>
+              </div>
+            </div>
 
-          {/* Time Slot Selection */}
-          <FormField
-            control={form.control}
-            name="preferredTimeSlot"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Preferred Time Slot
-                </FormLabel>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {timeSlots.map((slot) => (
-                    <Button
-                      key={slot}
-                      type="button"
-                      variant={field.value === slot ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => field.onChange(slot)}
-                      data-testid={`button-timeslot-${slot.replace(/\s/g, '-')}`}
-                    >
-                      {slot}
-                    </Button>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div
+              onClick={() => handleBookingTypeChange("scheduled")}
+              className={cn(
+                "cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-accent/5",
+                bookingType === "scheduled"
+                  ? "border-primary bg-primary/5 ring-1 ring-primary"
+                  : "border-muted hover:border-primary/50"
+              )}
+            >
+              <div className={cn("p-2 rounded-full", bookingType === "scheduled" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                <CalendarIconLucide className="h-6 w-6" />
+              </div>
+              <div className="text-center">
+                <p className="font-bold text-sm">Book Slot</p>
+                <p className="text-[10px] text-muted-foreground">Schedule for later</p>
+              </div>
+            </div>
+          </div>
+
+          {bookingType === "scheduled" && (
+            <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Date Selection */}
+                <FormField
+                  control={form.control}
+                  name="scheduledDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Select Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal h-11", // Matching Select height
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date < new Date(new Date().setHours(0, 0, 0, 0))
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Time Slot Selection - DROPDOWN */}
+                <FormField
+                  control={form.control}
+                  name="preferredTimeSlot"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time Slot
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Select a time slot" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot} value={slot}>
+                              {slot}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+
+          {bookingType === "instant" && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md flex items-start gap-3 animate-in fade-in duration-300">
+              <Zap className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-bold">Lightning Fast Service!</p>
+                <p>A provider will be assigned immediately and will arrive within 60 minutes.</p>
+              </div>
+            </div>
+          )}
 
           <FormField
             control={form.control}

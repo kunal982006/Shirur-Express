@@ -1,0 +1,120 @@
+package com.shirurexpress.app
+
+import android.app.KeyguardManager
+import android.content.Context
+import android.content.Intent
+import android.media.AudioAttributes
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class IncomingOrderActivity : AppCompatActivity() {
+
+    private var ringtone: Ringtone? = null
+    private val timeoutHandler = Handler(Looper.getMainLooper())
+    private val timeoutRunnable = Runnable { declineOrder() }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Unlock screen and wake up device
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            keyguardManager.requestDismissKeyguard(this, null)
+        } else {
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+            )
+        }
+
+        setContentView(R.layout.activity_incoming_order)
+
+        // Parse data
+        val customerName = intent.getStringExtra("customerName") ?: "Unknown User"
+        val amount = intent.getStringExtra("amount") ?: "0"
+        val pickup = intent.getStringExtra("pickupAddress") ?: ""
+        val drop = intent.getStringExtra("dropAddress") ?: ""
+        val orderId = intent.getStringExtra("orderId")
+
+        findViewById<TextView>(R.id.customerNameText).text = customerName
+        findViewById<TextView>(R.id.amountText).text = "₹$amount"
+        findViewById<TextView>(R.id.pickupText).text = "Pickup: $pickup"
+        findViewById<TextView>(R.id.dropText).text = "Drop: $drop"
+
+        // Setup Buttons
+        findViewById<Button>(R.id.btnAccept).setOnClickListener {
+            acceptOrder(orderId)
+        }
+
+        findViewById<Button>(R.id.btnDecline).setOnClickListener {
+            declineOrder()
+        }
+
+        // Start Ringing
+        playRingtone()
+
+        // Auto-decline after 30 seconds
+        timeoutHandler.postDelayed(timeoutRunnable, 30000)
+    }
+
+    private fun playRingtone() {
+        try {
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            ringtone = RingtoneManager.getRingtone(applicationContext, uri)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ringtone?.isLooping = true
+            }
+            ringtone?.play()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopRingtone() {
+        try {
+            ringtone?.stop()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun acceptOrder(orderId: String?) {
+        stopRingtone()
+        timeoutHandler.removeCallbacks(timeoutRunnable)
+
+        // Open Main Activity (WebView) deep linked to the order
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            // Assuming your web app handles /provider/orders/:id
+            data = Uri.parse("https://shirur-express.onrender.com/provider/orders/$orderId")
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun declineOrder() {
+        stopRingtone()
+        timeoutHandler.removeCallbacks(timeoutRunnable)
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopRingtone()
+        timeoutHandler.removeCallbacks(timeoutRunnable)
+    }
+}

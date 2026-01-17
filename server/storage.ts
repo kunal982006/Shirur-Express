@@ -72,6 +72,7 @@ export interface IStorage {
     userId: string,
     info: { customerId: string; subscriptionId: string },
   ): Promise<User>;
+  updateUserFcmToken(userId: string, token: string): Promise<User>;
   // Service provider operations
   getServiceProviders(
     categorySlug?: string,
@@ -351,6 +352,15 @@ export class DatabaseStorage implements IStorage {
     if (!updatedUser) {
       throw new Error(`User with id ${id} not found`);
     }
+    return updatedUser;
+  }
+
+  async updateUserFcmToken(userId: string, token: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ fcmToken: token })
+      .where(eq(users.id, userId))
+      .returning();
     return updatedUser;
   }
 

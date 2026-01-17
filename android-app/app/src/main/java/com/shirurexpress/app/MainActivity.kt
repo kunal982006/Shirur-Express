@@ -16,7 +16,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.Manifest
+import android.app.AlarmManager
+import android.app.NotificationManager
 import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.ContextCompat
@@ -31,30 +35,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var errorView: View
 
-    // Location Permission Launcher
-    private val locationPermissionRequest = registerForActivityResult(
+    // Unified permission request launcher
+    private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        when {
-            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) ||
-            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                // Location access granted.
-                checkGpsEnabled()
-            }
-            else -> {
-                // No location access granted.
-                Toast.makeText(this, "Location permission is required for delivery features", Toast.LENGTH_LONG).show()
-            }
+        val deniedPermissions = permissions.filter { !it.value }.map { it.key }
+        
+        if (deniedPermissions.isEmpty()) {
+            // All requested permissions granted
+            checkGpsEnabled()
+            checkSpecialPermissions()
+        } else {
+            // Some permissions denied. Show rationale or guide to settings.
+            showPermissionRationale(deniedPermissions)
         }
     }
 
-    // GPS Enable Launcher
     private val enableGpsLauncher = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             Toast.makeText(this, "GPS Enabled", Toast.LENGTH_SHORT).show()
-            // Reload page to ensure location APIs work immediately
             webView.reload()
         } else {
             Toast.makeText(this, "GPS is required for location features", Toast.LENGTH_SHORT).show()
@@ -97,23 +98,107 @@ class MainActivity : AppCompatActivity() {
         // Handle deep links
         handleIntent(intent)
         
-        // Request Location Permissions
-        checkAndRequestLocationPermission()
+        // Request All Necessary Permissions at Startup
+        checkAllPermissions()
     }
 
-    private fun checkAndRequestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        ) {
-            checkGpsEnabled()
-        } else {
-            locationPermissionRequest.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+    private fun checkAllPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        // 1. Notifications (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
+
+        // 2. Camera
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.CAMERA)
+        }
+
+        // 3. Location
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            // All core permissions are already granted
+            checkGpsEnabled()
+            checkSpecialPermissions()
+        }
+    }
+
+    private fun checkSpecialPermissions() {
+        // 1. Android 14+ Full Screen Intent Check (Important for Ringing)
+        if (Build.VERSION.SDK_INT >= 34) { // Android 14 (U)
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            if (notificationManager != null && !notificationManager.canUseFullScreenIntent()) {
+                AlertDialog.Builder(this)
+                    .setTitle("Full Screen Access Needed")
+                    .setMessage("To allow the app to ring for new orders even when your phone is locked, please enable 'Full Screen Intent' in settings.")
+                    .setPositiveButton("Go to Settings") { _, _ ->
+                        try {
+                            // Using string literal as the constant might not be available in all build environments
+                            val intent = Intent("android.settings.MANAGE_FULL_SCREEN_INTENT")
+                            intent.data = Uri.fromParts("package", packageName, null)
+                            startActivity(intent)
+                        } catch (e: Exception) {
+                            val intent = Intent(Settings.ACTION_SETTINGS)
+                            startActivity(intent)
+                        }
+                    }
+                    .setNegativeButton("Later", null)
+                    .show()
+            }
+        }
+
+        // 2. Exact Alarm Permission (Android 12+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(AlarmManager::class.java)
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                AlertDialog.Builder(this)
+                    .setTitle("Precise Notifications")
+                    .setMessage("To ensure order alerts arrive exactly on time, please allow the app to set exact alarms.")
+                    .setPositiveButton("Settings") { _, _ ->
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        intent.data = Uri.fromParts("package", packageName, null)
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("Later", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun showPermissionRationale(deniedPermissions: List<String>) {
+        val message = StringBuilder("This app needs the following permissions to function correctly:\n")
+        
+        if (deniedPermissions.contains(Manifest.permission.POST_NOTIFICATIONS)) {
+            message.append("- Notifications: To alert you of new orders\n")
+        }
+        if (deniedPermissions.contains(Manifest.permission.CAMERA)) {
+            message.append("- Camera: To upload profile and item photos\n")
+        }
+        if (deniedPermissions.contains(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            message.append("- Location: To show delivery routes and track orders\n")
+        }
+
+        message.append("\nPlease grant them in App Settings.")
+
+        AlertDialog.Builder(this)
+            .setTitle("Permissions Required")
+            .setMessage(message.toString())
+            .setPositiveButton("Open Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun checkGpsEnabled() {
@@ -129,8 +214,6 @@ class MainActivity : AppCompatActivity() {
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
                 try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in enableGpsLauncher
                     val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
                     enableGpsLauncher.launch(intentSenderRequest)
                 } catch (sendEx: IntentSender.SendIntentException) {

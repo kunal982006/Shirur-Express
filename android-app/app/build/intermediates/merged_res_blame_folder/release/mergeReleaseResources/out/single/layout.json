@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.shirurexpress.app-mergeReleaseResources-40:/layout/activity_main.xml",
+        "source": "com.shirurexpress.app-main-43:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.shirurexpress.app-mergeReleaseResources-40:/layout/activity_incoming_order.xml",
+        "source": "com.shirurexpress.app-main-43:/layout/activity_incoming_order.xml"
+    }
+]

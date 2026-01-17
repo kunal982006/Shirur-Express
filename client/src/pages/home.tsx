@@ -22,7 +22,28 @@ import {
   Loader2,
   ChevronRight, // Layout element for sections
   Bell, // Top Notification Icon
+  ChevronDown,
+  LogOut,
+  Package,
+  Settings,
+  Truck,
+  LayoutDashboard,
+  User,
 } from "lucide-react";
+
+import { useAuth } from "@/hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { LocationPicker } from "@/components/location-picker";
+import { useToast } from "@/hooks/use-toast";
 
 // NOTE: Yeh static data tumhari original file se hai.
 const services = [
@@ -45,10 +66,28 @@ export default function Home() {
   const [selectedService, setSelectedService] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [location, setLocation] = useState("Current GPS Location"); // Location bar ke liye initial value
+  const [location, setLocation] = useState("Select your location");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({ title: "Logged Out", description: "Successfully logged out" });
+    } catch (e) {
+      toast({ title: "Error", description: "Logout failed", variant: "destructive" });
+    }
+  };
+
+  const handleAddressSelect = (address: string) => {
+    setLocation(address);
+    setIsLocationOpen(false);
+  };
 
   const trie = useMemo(() => {
     const t = new Trie();
@@ -120,17 +159,85 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
 
-      {/* 1. Top Location Bar (Image Reference: Top Bar) */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4 shadow-md">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2 text-sm font-medium text-gray-800 cursor-pointer" onClick={handleLocationClick}>
-            <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-gray-500 text-xs truncate max-w-[200px] hover:text-primary">
-              {locationStatus === 'loading' ? 'Fetching Location...' : location}
-            </span>
-            <ChevronRight className="h-4 w-4 text-gray-500" />
+      {/* 1. Top Location Header (Zomato Style) */}
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between p-3 max-w-7xl mx-auto">
+          {/* Location Picker Trigger */}
+          <Dialog open={isLocationOpen} onOpenChange={setIsLocationOpen}>
+            <DialogTrigger asChild>
+              <div className="flex flex-col cursor-pointer max-w-[70%]">
+                <div className="flex items-center gap-1 text-primary font-extrabold text-lg leading-tight">
+                  <MapPin className="h-5 w-5 text-primary fill-current" />
+                  <span className="truncate">Home</span>
+                  <ChevronDown className="h-4 w-4 text-gray-600" />
+                </div>
+                <p className="text-xs text-muted-foreground truncate pl-6 font-medium">
+                  {location}
+                </p>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
+              <div className="p-4 bg-primary text-primary-foreground">
+                <h2 className="font-bold text-lg">Select Location</h2>
+                <p className="text-xs opacity-90">Choose your delivery location</p>
+              </div>
+              <div className="p-4">
+                <LocationPicker onAddressSelect={handleAddressSelect} currentAddress={location} />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Profile & Notifications */}
+          <div className="flex items-center gap-3">
+            <Bell className="h-6 w-6 text-gray-700 cursor-pointer hover:text-primary transition-colors" />
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="h-9 w-9 cursor-pointer border-2 border-primary/10">
+                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                      {user.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <p className="text-sm font-medium">{user.username}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/my-bookings")}>
+                    <Package className="mr-2 h-4 w-4" />
+                    <span>My Bookings</span>
+                  </DropdownMenuItem>
+                  {user.role === 'provider' && (
+                    <DropdownMenuItem onClick={() => navigate("/provider/dashboard")}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Provider Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => navigate("/login")}
+                className="rounded-full px-4 font-bold"
+              >
+                Login
+              </Button>
+            )}
           </div>
-          <Bell className="h-5 w-5 text-gray-500 cursor-pointer hover:text-primary" />
         </div>
       </header>
 

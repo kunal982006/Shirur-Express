@@ -25,7 +25,7 @@ const navItems = [
 ];
 
 export default function Header() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const { user, isLoading, logout } = useAuth();
   const { toast } = useToast();
@@ -68,6 +68,12 @@ export default function Header() {
       });
     }
   };
+
+  // DEBUG: Check location
+  // console.log("Current Location:", location);
+
+  // Hide Global Header on Home Page to allow Custom Header
+  if (location === "/" || location === "") return null;
 
   return (
     <>

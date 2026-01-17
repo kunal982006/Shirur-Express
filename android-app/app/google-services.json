@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "580513716834",
+    "project_id": "shirur-express",
+    "storage_bucket": "shirur-express.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:580513716834:android:977f27834b04dc934acf3b",
+        "android_client_info": {
+          "package_name": "com.shirurexpress.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDP4uAvK5OPSXweM4ck3hlEImUQt_356dY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,12 +3,12 @@
     dir="C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app"
     name=":app"
     type="APP"
-    maven="ShirurExpress:app:"
-    agpVersion="8.2.0"
+    maven="ShirurExpress:app:unspecified"
+    agpVersion="8.13.2"
     buildFolder="build"
-    bootClassPath="C:\Users\Sai\AppData\Local\Android\Sdk\platforms\android-34\android.jar;C:\Users\Sai\AppData\Local\Android\Sdk\build-tools\34.0.0\core-lambda-stubs.jar"
+    bootClassPath="C:\Users\Sai\AppData\Local\Android\Sdk\platforms\android-36\android.jar;C:\Users\Sai\AppData\Local\Android\Sdk\build-tools\35.0.0\core-lambda-stubs.jar"
     javaSourceLevel="1.8"
-    compileTarget="android-34">
+    compileTarget="android-36">
   <lintOptions
       abortOnError="true"
       absolutePaths="true"

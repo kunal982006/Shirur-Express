@@ -36,6 +36,7 @@ import { z } from "zod";
 
 import twilio from "twilio";
 import { sendBookingNotification } from "./twilio-client";
+import { sendPushNotification } from "./firebase";
 
 let twilioClient: any = null;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
@@ -131,6 +132,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderData = insertGroceryOrderSchema.parse(req.body);
       const order = await storage.createGroceryOrder({ ...orderData, userId });
       console.log("Created Grocery Order:", order); // DEBUG LOG
+
+      // --- PUSH NOTIFICATION (RINGING) ---
+      if (order.providerId) {
+        try {
+          const provider = await storage.getServiceProvider(order.providerId);
+          if (provider && provider.user && provider.user.fcmToken) {
+            console.log(`[FCM] Sending Ring to Provider ${provider.businessName}`);
+            await sendPushNotification(provider.user.fcmToken, {
+              type: 'ORDER_REQUEST',
+              title: 'New Grocery Order!',
+              body: `Order #${order.id.slice(0, 8)} needs your attention.`,
+              data: {
+                orderId: order.id,
+                customerName: "Customer", // You might want to fetch user name
+                amount: order.total.toString(),
+                pickupAddress: "Store Location",
+                dropAddress: order.deliveryAddress
+              }
+            });
+          }
+        } catch (fcmError) {
+          console.error("[FCM Error]", fcmError);
+        }
+      }
+      // -----------------------------------
+
       res.status(201).json(order);
     } catch (error: any) {
       console.error("Create grocery order error:", error);
@@ -150,6 +177,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
       console.log("Created Street Food Order:", order); // DEBUG LOG
+
+      // --- PUSH NOTIFICATION ---
+      // For Street Food, we verify if providerId exists and notify them
+      if (order.providerId) {
+        try {
+          const provider = await storage.getServiceProvider(order.providerId);
+          if (provider && provider.user && provider.user.fcmToken) {
+            await sendPushNotification(provider.user.fcmToken, {
+              type: 'ORDER_REQUEST',
+              title: 'New Street Food Order!',
+              body: `Order #${order.id.slice(0, 8)} received.`,
+              data: {
+                orderId: order.id,
+                customerName: "Customer",
+                amount: order.totalAmount.toString(),
+                pickupAddress: provider.address,
+                dropAddress: order.deliveryAddress
+              }
+            });
+          }
+        } catch (e) { console.error("[FCM Error]", e); }
+      }
+      // -------------------------
+
       res.status(201).json(order);
     } catch (error: any) {
       // FIXED: Safe error logging to prevent crash
@@ -309,6 +360,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Profile update error:", error);
       res.status(500).json({ message: error.message || "Error updating profile" });
+    }
+  });
+
+  // NAYA: Save FCM Token
+  app.post("/api/users/fcm-token", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const { token } = req.body;
+      if (!token) return res.status(400).json({ message: "Token is required" });
+
+      await storage.updateUserFcmToken(userId, token);
+      res.json({ message: "FCM token updated" });
+    } catch (error: any) {
+      console.error("FCM Token save error:", error);
+      res.status(500).json({ message: "Error saving FCM token" });
     }
   });
 
@@ -668,6 +734,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const booking = await storage.createBooking({ ...bookingData, userId });
+
+      // --- PUSH NOTIFICATION (RINGING) ---
+      if (booking.providerId) {
+        try {
+          // Fetch provider to get FCM token
+          const provider = await storage.getServiceProvider(booking.providerId);
+          if (provider && provider.user && provider.user.fcmToken) {
+            console.log(`[FCM] Sending Booking Alert to ${provider.businessName}`);
+            await sendPushNotification(provider.user.fcmToken, {
+              type: 'ORDER_REQUEST', // Re-using ORDER_REQUEST to trigger the same Ringing screen
+              title: 'New Service Booking!',
+              body: `New booking for ${booking.serviceType}`,
+              data: {
+                orderId: booking.id,
+                customerName: booking.userPhone, // Sending phone as name for now
+                amount: "Check App",
+                pickupAddress: "User's Location",
+                dropAddress: booking.userAddress
+              }
+            });
+          }
+        } catch (fcmError) {
+          console.error("[FCM Error]", fcmError);
+        }
+      }
+      // -----------------------------------
+
       res.status(201).json(booking);
     } catch (error: any) {
       console.error("Create booking error:", error);
