@@ -48,7 +48,7 @@ app.use(
     cookie: {
       secure: app.get("env") === "production", // Render par ye TRUE hona chahiye, dev mein FALSE
       sameSite: "lax", // Ye zaroori hai
-      maxAge: 24 * 60 * 60 * 1000 // 1 din
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     },
     store: new PgStore({
       pool,

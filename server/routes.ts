@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray, ilike } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -1325,25 +1325,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // --- GROCERY PRODUCTS ROUTE (NEW) ---
+  // --- GROCERY PRODUCTS ROUTE (OPTIMIZED) ---
   app.get("/api/grocery-products", async (req: Request, res: Response) => {
     try {
-      const { providerId, search } = req.query;
+      const { providerId, search, category, categories, limit = "50", offset = "0" } = req.query;
       if (!providerId) {
         return res.status(400).json({ message: "Provider ID is required" });
       }
 
       const conditions = [eq(groceryProducts.providerId, providerId as string)];
 
-      const products = await db.select().from(groceryProducts).where(
-        and(...conditions)
-      );
-
-      if (search) {
-        const s = (search as string).toLowerCase();
-        const filtered = products.filter(p => p.name.toLowerCase().includes(s));
-        return res.json(filtered);
+      // Handle multiple categories (comma-separated or array)
+      if (categories) {
+        const catList = (categories as string).split(',');
+        conditions.push(inArray(groceryProducts.category, catList));
+      } else if (category && category !== "") {
+        // Fallback for single category legacy/simple use
+        conditions.push(eq(groceryProducts.category, category as string));
       }
+
+      // Server-side search with ILIKE
+      if (search) {
+        conditions.push(ilike(groceryProducts.name, `%${search}%`));
+      }
+
+      // Execute optimized query
+      const products = await db.select()
+        .from(groceryProducts)
+        .where(and(...conditions))
+        .limit(parseInt(limit as string)) // pagination helps performance
+        .offset(parseInt(offset as string));
 
       res.json(products);
     } catch (error: any) {
@@ -1359,7 +1370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Provider ID is required" });
       }
 
-      // Fetch all products for this provider to extract metadata
+      // Optimize: Only fetch `category` and `brand` columns
       const products = await db.select({
         category: groceryProducts.category,
         brand: groceryProducts.brand

@@ -1,6 +1,7 @@
 // client/src/pages/Grocery.tsx (MODIFIED FOR providerId)
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, type QueryFunctionContext } from "@tanstack/react-query";
+
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,37 +63,51 @@ const fetchGmartProvider = async (): Promise<GMartProvider | undefined> => {
   return providers[0];
 };
 
-// API function grocery products fetch karne ke liye (ab providerId lega)
-const fetchGroceryProducts = async ({ queryKey }: { queryKey: [string, string | undefined, string] }): Promise<GroceryProduct[]> => {
-  const [, providerId, search] = queryKey;
+// API function grocery products fetch karne ke liye (ab providerId aur filters lega)
+const fetchGroceryProducts = async ({
+  queryKey,
+  pageParam = 0
+}: {
+  queryKey: [string, string | undefined, string, string[]];
+  pageParam?: number;
+}): Promise<GroceryProduct[]> => {
+  const [, providerId, search, categories] = queryKey;
 
   if (!providerId) {
-    // Agar providerId nahi hai, toh fetch mat karo
     return [];
   }
 
-  const url = `/api/grocery-products?providerId=${providerId}&${search ? `search=${search}` : ''}`;
-  const res = await fetch(url);
+  // Construct URL with query parameters
+  const params = new URLSearchParams();
+  params.append("providerId", providerId);
+  const limit = 24; // Optimised batch size (multiple of 3 and 4)
+  params.append("limit", limit.toString());
+  params.append("offset", pageParam.toString());
+
+  if (search) {
+    params.append("search", search);
+  }
+
+  if (categories && categories.length > 0) {
+    params.append("categories", categories.join(","));
+  }
+
+  const res = await fetch(`/api/grocery-products?${params.toString()}`);
   if (!res.ok) {
     throw new Error('Failed to fetch grocery products');
   }
   return res.json();
 };
 
-// --- YEH HAI NAYA LOADING COMPONENT ---
 function GMartLoading() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-      {[...Array(8)].map((_, i) => (
-        <Card key={i} className="animate-pulse">
-          <div className="aspect-square bg-muted"></div>
-          <CardContent className="p-3">
-            <div className="h-4 bg-muted rounded mb-2"></div>
-            <div className="h-3 bg-muted rounded mb-2"></div>
-            <div className="flex justify-between items-center">
-              <div className="h-4 bg-muted rounded w-16"></div>
-              <div className="w-8 h-8 bg-muted rounded-full"></div>
-            </div>
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-8">
+      {[...Array(12)].map((_, i) => ( // Show more skeletons
+        <Card key={i} className="animate-pulse border-none shadow-none">
+          <div className="aspect-square bg-gray-100 rounded-md mb-2"></div>
+          <CardContent className="p-0">
+            <div className="h-3 bg-gray-100 rounded w-3/4 mb-1"></div>
+            <div className="h-3 bg-gray-100 rounded w-1/2"></div>
           </CardContent>
         </Card>
       ))}
@@ -102,25 +117,49 @@ function GMartLoading() {
 
 export default function Grocery() {
   const [, setLocation] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Yeh abhi sirf UI ke liye hai
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
   const { toast } = useToast();
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // --- STEP 1: GMart Provider ko fetch karo ---
   const { data: gmartProvider, isLoading: isLoadingProvider } = useQuery({
     queryKey: ["gmartProvider"],
     queryFn: fetchGmartProvider,
+    staleTime: 1000 * 60 * 60, // Cache provider fetch for 1 hour (optimization)
   });
 
   const gmartProviderId = gmartProvider?.id;
 
-  // --- STEP 2: Provider ID milne ke baad hi products fetch karo ---
-  const { data: products, isLoading: isLoadingProducts } = useQuery({
-    queryKey: ["groceryProducts", gmartProviderId, searchQuery],
-    queryFn: fetchGroceryProducts,
-    enabled: !!gmartProviderId, // Yeh query tabhi chalegi jab providerId mil jayega
+  // --- STEP 2: Use Infinite Query for Pagination ---
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingProducts
+  } = useInfiniteQuery<GroceryProduct[]>({
+    queryKey: ["groceryProducts", gmartProviderId, searchQuery, selectedCategories],
+    queryFn: (context: QueryFunctionContext) => fetchGroceryProducts({
+      queryKey: context.queryKey as [string, string | undefined, string, string[]],
+      pageParam: context.pageParam as number
+    }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: GroceryProduct[], allPages: GroceryProduct[][]) => {
+      // If last page has fewer items than limit, we reached the end
+      if (lastPage.length < 24) return undefined;
+      return allPages.length * 24;
+    },
+    enabled: !!gmartProviderId,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
+
+  // Flatten pages
+  const products = data ? data.pages.flat() : [];
 
   // --- Metadata (Categories & Brands) ---
   const { data: metadata } = useQuery({
@@ -131,12 +170,9 @@ export default function Grocery() {
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
-    enabled: !!gmartProviderId
+    enabled: !!gmartProviderId,
+    staleTime: 1000 * 60 * 10, // Cache metadata for 10 mins
   });
-
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const toggleCategory = (cat: string) => {
     setSelectedCategories(prev =>
@@ -171,7 +207,7 @@ export default function Grocery() {
         name: product.name,
         price: parseFloat(product.price),
         imageUrl: product.imageUrl || undefined,
-        providerId: product.providerId, // Pass providerId
+        providerId: product.providerId,
       });
       toast({
         title: "✅ Added to Cart!",
@@ -180,14 +216,15 @@ export default function Grocery() {
     }
   };
 
-  // Filtered products (client-side category filter)
+  // Filtered products (Now mostly handled by server, but we keep generic brand filter or fallback)
+  // Since we don't have server-side brand filtering yet, we filter brands on the client on the FETCHED set.
+  // Note: This has limitations with pagination (user might not find brand if not in top 100), but acceptable for MVP optimization.
   const filteredProducts = products
     ? products.filter(product => {
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+      // Search and Categories are already filtered by Server.
+      // Only filter brands client-side if selected.
       const matchesBrand = selectedBrands.length === 0 || (product.brand && selectedBrands.includes(product.brand));
-      // Search is mainly handled by API but let's double check if we can refine
-      const matchesSearch = !searchQuery || product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesBrand && matchesSearch;
+      return matchesBrand;
     })
     : [];
 
@@ -368,6 +405,27 @@ export default function Grocery() {
                 onDecreaseQuantity={() => updateQuantity(product.id, -1)}
               />
             ))}
+          </div>
+        )}
+
+        {/* Load More Button */}
+        {hasNextPage && (
+          <div className="flex justify-center mb-24">
+            <Button
+              variant="outline"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="w-full sm:w-auto"
+            >
+              {isFetchingNextPage ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading more...
+                </>
+              ) : (
+                "Load More Products"
+              )}
+            </Button>
           </div>
         )}
 

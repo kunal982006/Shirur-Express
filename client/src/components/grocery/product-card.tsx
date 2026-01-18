@@ -50,6 +50,7 @@ export default function ProductCard({
             src={product.imageUrl}
             alt={product.name}
             className="w-full h-full object-contain mix-blend-multiply"
+            loading="lazy"
           />
         ) : (
           <ShoppingBag className="h-6 w-6 text-gray-300" />
