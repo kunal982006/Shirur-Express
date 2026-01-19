@@ -42,6 +42,7 @@ import Header from "@/components/layout/header";
 import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
 import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
 import OrderTracking from "@/pages/order-tracking";
+import OfferDetailsPage from "@/pages/offer-details";
 
 function RouterComponent() {
   return (
@@ -87,6 +88,9 @@ function RouterComponent() {
       <Route path="/delivery-partner/onboarding" component={DeliveryPartnerOnboarding} />
       <Route path="/delivery-partner/dashboard" component={DeliveryPartnerDashboard} />
       <Route path="/order/:orderId/track" component={OrderTracking} />
+
+      {/* Offer Details Route */}
+      <Route path="/offer/:id" component={OfferDetailsPage} />
 
       {/* Fallback for 404 */}
       <Route component={NotFound} />

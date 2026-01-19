@@ -44,6 +44,7 @@ import {
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LocationPicker } from "@/components/location-picker";
 import { useToast } from "@/hooks/use-toast";
+import { OffersCarousel } from "@/components/offers-carousel";
 
 // NOTE: Yeh static data tumhari original file se hai.
 const services = [
@@ -288,6 +289,13 @@ export default function Home() {
           >
             Go
           </Button>
+        </div>
+      </section>
+
+      {/* Offers Carousel (Amazon/Zepto Style) */}
+      <section className="px-4 py-3 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <OffersCarousel />
         </div>
       </section>
 

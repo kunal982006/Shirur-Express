@@ -279,6 +279,30 @@ export const deliveryPartners = pgTable("delivery_partners", {
 });
 
 // =========================================
+// PROVIDER OFFERS TABLE (Dynamic Offers Carousel)
+// =========================================
+
+export const providerOffers = pgTable("provider_offers", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  providerId: varchar("provider_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(), // Poster image from Cloudinary
+  productType: text("product_type").notNull(), // grocery, restaurant, cake, street_food
+  productIds: jsonb("product_ids").$type<string[]>(), // Array of product IDs
+  discountedPrices: jsonb("discounted_prices").$type<Record<string, number>>(), // productId -> discounted price
+  comboDetails: jsonb("combo_details").$type<Array<{
+    name: string;
+    originalPrice: number;
+    discountedPrice: number;
+    productIds: string[];
+  }>>(),
+  expiryDate: timestamp("expiry_date").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// =========================================
 // 5. ZOD SCHEMAS (Defined after tables)
 // =========================================
 
@@ -361,6 +385,26 @@ export const insertDeliveryPartnerSchema = createInsertSchema(deliveryPartners).
 });
 export type InsertDeliveryPartner = z.infer<typeof insertDeliveryPartnerSchema>;
 
+// Provider Offers schema and types
+export const insertProviderOfferSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  imageUrl: z.string().min(1, "Poster image is required"),
+  productType: z.enum(["grocery", "restaurant", "cake", "street_food"]),
+  productIds: z.array(z.string()).optional(),
+  discountedPrices: z.record(z.string(), z.number()).optional(),
+  comboDetails: z.array(z.object({
+    name: z.string(),
+    originalPrice: z.number(),
+    discountedPrice: z.number(),
+    productIds: z.array(z.string()),
+  })).optional(),
+  expiryDate: z.string().or(z.date()),
+  isActive: z.boolean().optional(),
+});
+export type ProviderOffer = typeof providerOffers.$inferSelect;
+export type InsertProviderOffer = z.infer<typeof insertProviderOfferSchema>;
+
 // =========================================
 // 6. RELATIONS (STRICTLY AT THE BOTTOM)
 // =========================================
@@ -409,6 +453,7 @@ export const serviceProvidersRelations = relations(serviceProviders, ({ one, man
   restaurantOrders: many(restaurantOrders),
   groceryProducts: many(groceryProducts),
   invoices: many(invoices),
+  offers: many(providerOffers), // Dynamic Offers Carousel
 }));
 
 export const serviceOfferingsRelations = relations(serviceOfferings, ({ one }) => ({
@@ -524,5 +569,16 @@ export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) =
   rider: one(users, {
     fields: [restaurantOrders.riderId],
     references: [users.id],
+  }),
+}));
+
+// =========================================
+// PROVIDER OFFERS RELATIONS
+// =========================================
+
+export const providerOffersRelations = relations(providerOffers, ({ one }) => ({
+  provider: one(serviceProviders, {
+    fields: [providerOffers.providerId],
+    references: [serviceProviders.id],
   }),
 }));

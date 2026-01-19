@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, inArray, ilike } from "drizzle-orm";
+import { eq, and, inArray, ilike, gt } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -24,9 +24,14 @@ import {
   insertRestaurantOrderSchema, // NAYA IMPORT
   groceryProducts, // NAYA IMPORT
   cakeProducts, // Fix: Import this
+  streetFoodItems, // Product search support
+  restaurantMenuItems, // Product search support
+  serviceOfferings, // Beauty Parlor service combo support
   insertDeliveryPartnerSchema, // DELIVERY PARTNER IMPORT
   deliveryPartners, // DELIVERY PARTNER TABLE
   restaurantOrders, // FOR RIDER QUERIES
+  providerOffers, // OFFERS CAROUSEL
+  insertProviderOfferSchema, // OFFERS CAROUSEL
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -579,6 +584,356 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get customer bookings error:", error);
       res.status(500).json({ message: error.message || "Error fetching customer bookings" });
+    }
+  });
+
+  // --- PROVIDER OFFERS ROUTES (Dynamic Offers Carousel) ---
+
+  // Create a new offer
+  app.post("/api/provider/offers", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const offerData = insertProviderOfferSchema.parse(req.body);
+
+      const offer = await db.insert(providerOffers).values({
+        ...offerData,
+        providerId,
+        expiryDate: new Date(offerData.expiryDate),
+      }).returning();
+
+      res.status(201).json(offer[0]);
+    } catch (error: any) {
+      console.error("Create offer error:", error);
+      res.status(400).json({ message: error.message || "Error creating offer" });
+    }
+  });
+
+  // Get provider's offers
+  app.get("/api/provider/offers", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const offers = await db.query.providerOffers.findMany({
+        where: eq(providerOffers.providerId, providerId),
+        orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+      });
+      res.json(offers);
+    } catch (error: any) {
+      console.error("Get provider offers error:", error);
+      res.status(500).json({ message: error.message || "Error fetching offers" });
+    }
+  });
+
+  // Update an offer
+  app.put("/api/provider/offers/:id", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { id } = req.params;
+
+      // Check if offer belongs to this provider
+      const existingOffer = await db.query.providerOffers.findFirst({
+        where: and(eq(providerOffers.id, id), eq(providerOffers.providerId, providerId)),
+      });
+
+      if (!existingOffer) {
+        return res.status(404).json({ message: "Offer not found or access denied" });
+      }
+
+      const updateData = req.body;
+      if (updateData.expiryDate) {
+        updateData.expiryDate = new Date(updateData.expiryDate);
+      }
+
+      const [updatedOffer] = await db.update(providerOffers)
+        .set(updateData)
+        .where(eq(providerOffers.id, id))
+        .returning();
+
+      res.json(updatedOffer);
+    } catch (error: any) {
+      console.error("Update offer error:", error);
+      res.status(500).json({ message: error.message || "Error updating offer" });
+    }
+  });
+
+  // Delete an offer
+  app.delete("/api/provider/offers/:id", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { id } = req.params;
+
+      // Check if offer belongs to this provider
+      const existingOffer = await db.query.providerOffers.findFirst({
+        where: and(eq(providerOffers.id, id), eq(providerOffers.providerId, providerId)),
+      });
+
+      if (!existingOffer) {
+        return res.status(404).json({ message: "Offer not found or access denied" });
+      }
+
+      await db.delete(providerOffers).where(eq(providerOffers.id, id));
+      res.json({ message: "Offer deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ message: error.message || "Error deleting offer" });
+    }
+  });
+
+  // Get all active offers (for homepage carousel) - PUBLIC
+  app.get("/api/offers/active", async (_req: Request, res: Response) => {
+    try {
+      const now = new Date();
+      const offers = await db.query.providerOffers.findMany({
+        where: and(
+          eq(providerOffers.isActive, true),
+          gt(providerOffers.expiryDate, now)
+        ),
+        with: {
+          provider: {
+            columns: {
+              id: true,
+              businessName: true,
+              profileImageUrl: true,
+            }
+          }
+        },
+        orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+      });
+      res.json(offers);
+    } catch (error: any) {
+      console.error("Get active offers error:", error);
+      res.status(500).json({ message: error.message || "Error fetching active offers" });
+    }
+  });
+
+  // Get single offer with products (for offer details page) - PUBLIC
+  app.get("/api/offers/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const offer = await db.query.providerOffers.findFirst({
+        where: eq(providerOffers.id, id),
+        with: {
+          provider: {
+            columns: {
+              id: true,
+              businessName: true,
+              profileImageUrl: true,
+              address: true,
+            }
+          }
+        }
+      });
+
+      if (!offer) {
+        return res.status(404).json({ message: "Offer not found" });
+      }
+
+      // Fetch products based on productType and productIds
+      let products: any[] = [];
+      if (offer.productIds && offer.productIds.length > 0) {
+        switch (offer.productType) {
+          case 'grocery':
+            products = await db.query.groceryProducts.findMany({
+              where: inArray(groceryProducts.id, offer.productIds),
+            });
+            break;
+          case 'restaurant':
+            const { restaurantMenuItems } = await import('@shared/schema');
+            products = await db.query.restaurantMenuItems.findMany({
+              where: inArray(restaurantMenuItems.id, offer.productIds),
+            });
+            break;
+          case 'cake':
+            products = await db.query.cakeProducts.findMany({
+              where: inArray(cakeProducts.id, offer.productIds),
+            });
+            break;
+          case 'street_food':
+            const { streetFoodItems } = await import('@shared/schema');
+            products = await db.query.streetFoodItems.findMany({
+              where: inArray(streetFoodItems.id, offer.productIds),
+            });
+            break;
+          case 'beauty_parlor':
+          case 'beauty-parlor':
+            products = await db.query.serviceOfferings.findMany({
+              where: inArray(serviceOfferings.id, offer.productIds),
+            });
+            break;
+        }
+      }
+
+      res.json({ ...offer, products });
+    } catch (error: any) {
+      console.error("Get offer details error:", error);
+      res.status(500).json({ message: error.message || "Error fetching offer details" });
+    }
+  });
+
+  // --- PROVIDER PRODUCTS SEARCH (Optimized for Offers Modal) ---
+  app.get("/api/provider/products/search", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const {
+        productType,
+        search = "",
+        category = "",
+        limit = "10",
+        offset = "0"
+      } = req.query as Record<string, string>;
+
+      if (!productType) {
+        return res.status(400).json({ message: "productType is required (grocery, restaurant, cake, street_food)" });
+      }
+
+      let products: any[] = [];
+      const limitNum = Math.min(parseInt(limit) || 10, 20); // Max 20 items
+      const offsetNum = parseInt(offset) || 0;
+
+      switch (productType) {
+        case 'grocery': {
+          const conditions = [eq(groceryProducts.providerId, providerId)];
+          if (search) {
+            conditions.push(ilike(groceryProducts.name, `%${search}%`));
+          }
+          if (category) {
+            conditions.push(eq(groceryProducts.category, category));
+          }
+          products = await db.select()
+            .from(groceryProducts)
+            .where(and(...conditions))
+            .limit(limitNum)
+            .offset(offsetNum);
+          break;
+        }
+        case 'restaurant': {
+          const conditions = [eq(restaurantMenuItems.providerId, providerId)];
+          if (search) {
+            conditions.push(ilike(restaurantMenuItems.name, `%${search}%`));
+          }
+          if (category) {
+            conditions.push(eq(restaurantMenuItems.category, category));
+          }
+          products = await db.select()
+            .from(restaurantMenuItems)
+            .where(and(...conditions))
+            .limit(limitNum)
+            .offset(offsetNum);
+          break;
+        }
+        case 'cake': {
+          const conditions = [eq(cakeProducts.providerId, providerId)];
+          if (search) {
+            conditions.push(ilike(cakeProducts.name, `%${search}%`));
+          }
+          if (category) {
+            conditions.push(eq(cakeProducts.category, category));
+          }
+          products = await db.select()
+            .from(cakeProducts)
+            .where(and(...conditions))
+            .limit(limitNum)
+            .offset(offsetNum);
+          break;
+        }
+        case 'street_food': {
+          const conditions = [eq(streetFoodItems.providerId, providerId)];
+          if (search) {
+            conditions.push(ilike(streetFoodItems.name, `%${search}%`));
+          }
+          if (category) {
+            conditions.push(eq(streetFoodItems.category, category));
+          }
+          products = await db.select()
+            .from(streetFoodItems)
+            .where(and(...conditions))
+            .limit(limitNum)
+            .offset(offsetNum);
+          break;
+        }
+        case 'beauty_parlor': {
+          const conditions = [eq(serviceOfferings.providerId, providerId)];
+          if (search) {
+            conditions.push(ilike(serviceOfferings.name, `%${search}%`));
+          }
+          if (category) {
+            // category maps to 'section' in serviceOfferings (Hair, Skin Care, Makeover, etc.)
+            conditions.push(eq(serviceOfferings.section, category));
+          }
+          products = await db.select()
+            .from(serviceOfferings)
+            .where(and(...conditions))
+            .limit(limitNum)
+            .offset(offsetNum);
+          break;
+        }
+        default:
+          return res.status(400).json({ message: "Invalid productType" });
+      }
+
+      res.json(products);
+    } catch (error: any) {
+      console.error("Product search error:", error);
+      res.status(500).json({ message: error.message || "Error searching products" });
+    }
+  });
+
+  // Get product categories for a provider (for category dropdown)
+  app.get("/api/provider/products/categories", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { productType } = req.query as Record<string, string>;
+
+      if (!productType) {
+        return res.status(400).json({ message: "productType is required" });
+      }
+
+      let categories: string[] = [];
+
+      switch (productType) {
+        case 'grocery': {
+          const products = await db.select({ category: groceryProducts.category })
+            .from(groceryProducts)
+            .where(eq(groceryProducts.providerId, providerId));
+          categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort() as string[];
+          break;
+        }
+        case 'restaurant': {
+          const products = await db.select({ category: restaurantMenuItems.category })
+            .from(restaurantMenuItems)
+            .where(eq(restaurantMenuItems.providerId, providerId));
+          categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort() as string[];
+          break;
+        }
+        case 'cake': {
+          const products = await db.select({ category: cakeProducts.category })
+            .from(cakeProducts)
+            .where(eq(cakeProducts.providerId, providerId));
+          categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort() as string[];
+          break;
+        }
+        case 'street_food': {
+          const products = await db.select({ category: streetFoodItems.category })
+            .from(streetFoodItems)
+            .where(eq(streetFoodItems.providerId, providerId));
+          categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort() as string[];
+          break;
+        }
+        case 'beauty_parlor': {
+          // For beauty parlor, 'section' acts as category (Hair, Skin Care, Makeover, etc.)
+          const services = await db.select({ section: serviceOfferings.section })
+            .from(serviceOfferings)
+            .where(eq(serviceOfferings.providerId, providerId));
+          categories = Array.from(new Set(services.map(s => s.section).filter(Boolean))).sort() as string[];
+          break;
+        }
+        default:
+          return res.status(400).json({ message: "Invalid productType" });
+      }
+
+      res.json(categories);
+    } catch (error: any) {
+      console.error("Get categories error:", error);
+      res.status(500).json({ message: error.message || "Error fetching categories" });
     }
   });
 

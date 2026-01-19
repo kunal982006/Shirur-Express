@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { Loader2, MapPin } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Loader2, MapPin, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
-const MAPPLS_API_KEY = "42efe16c5428370049af77c0998cb927";
+const GOOGLE_MAPS_API_KEY = "AIzaSyA9Oh5VpGkUF8GhcM45gEFmEFgQTgpXEB8";
 
 interface LocationPickerProps {
     onAddressSelect: (address: string) => void;
@@ -11,284 +12,276 @@ interface LocationPickerProps {
 
 declare global {
     interface Window {
-        mappls: any;
-        MapmyIndia: any;
+        initGoogleMapsCallback?: () => void;
     }
 }
 
 export function LocationPicker({ onAddressSelect, currentAddress }: LocationPickerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-    // Removed isSatellite state as requested
-    const mapRef = useRef<any>(null);
-    const markerRef = useRef<any>(null);
-    const searchRef = useRef<any>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+    const [showPredictions, setShowPredictions] = useState(false);
+    const [mapLoaded, setMapLoaded] = useState(false);
+
+    const mapRef = useRef<google.maps.Map | null>(null);
+    const markerRef = useRef<google.maps.Marker | null>(null);
+    const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+    const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+    const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+
     const { toast } = useToast();
-    const mapId = "mappls-map-container";
-    const searchId = "mappls-search-container";
+    const mapContainerId = "google-map-container";
 
-    // Removed toggleSatellite function as requested
-
-    useEffect(() => {
-        const loadMapScript = () => {
-            // Check if already loaded
-            if (window.mappls && window.mappls.Map && window.mappls.search && window.mappls.Geolocation) {
-                initMap();
-                return;
-            }
-
-            // Load Map SDK with all libraries
-            const script = document.createElement('script');
-            script.src = `https://apis.mappls.com/advancedmaps/api/${MAPPLS_API_KEY}/map_sdk?layer=vector&v=3.0&libraries=services,search,nearby,geolocation`;
-            script.async = true;
-            script.onload = () => {
-                console.log("Mappls SDK Loaded");
-                initMap();
-            };
-            script.onerror = () => {
-                setIsLoading(false);
-                toast({
-                    title: "Error",
-                    description: "Failed to load MapMyIndia maps",
-                    variant: "destructive"
-                });
-            };
-            document.head.appendChild(script);
-        };
-
-        const initMap = () => {
-            if (!window.mappls) return;
-
-            const mapElement = document.getElementById(mapId);
-            if (!mapElement) {
-                console.warn("Map element not found, skipping initialization");
-                return;
-            }
-
-            const mapProps = {
-                center: { lat: 18.8285, lng: 74.3734 },
-                zoom: 15,
-                location: true,
-                draggable: true,
-            };
-
-            try {
-                if (!mapRef.current) {
-                    try {
-                        mapRef.current = new window.mappls.Map(mapId, mapProps);
-                    } catch (err) {
-                        console.error("Map constructor failed", err);
-                        setIsLoading(false);
-                        return;
-                    }
-
-                    mapRef.current.addListener('load', () => {
-                        setIsLoading(false);
-                        initSearchWidget();
-                    });
-
-                    mapRef.current.addListener('click', (e: any) => {
-                        if (e && e.lngLat) {
-                            const lat = e.lngLat.lat;
-                            const lng = e.lngLat.lng;
-                            handleMapClick(lat, lng);
-                        }
-                    });
-                } else {
-                    // Check if map is properly attached to DOM? 
-                    // Mappls map might lose context if element was removed and recreated
-                    // Re-instantiating might be safer if the element was replaced
-                    const currentMapElement = mapRef.current.getDiv?.();
-                    if (currentMapElement && !document.body.contains(currentMapElement)) {
-                        // Map instance exists but its element is gone from DOM. 
-                        // We are likely in a new render of the component.
-                        // We should probably re-initialize.
-                        console.log("Map instance detached, re-initializing...");
-                        mapRef.current.remove?.();
-                        mapRef.current = new window.mappls.Map(mapId, mapProps);
-                        mapRef.current.addListener('load', () => {
-                            setIsLoading(false);
-                            initSearchWidget();
-                        });
-                        mapRef.current.addListener('click', (e: any) => {
-                            if (e && e.lngLat) {
-                                const lat = e.lngLat.lat;
-                                const lng = e.lngLat.lng;
-                                handleMapClick(lat, lng);
-                            }
-                        });
-                    } else {
-                        setIsLoading(false);
-                        if (!searchRef.current) initSearchWidget();
-                    }
-                }
-            } catch (error) {
-                console.error("Error initializing map:", error);
-                setIsLoading(false);
-            }
-        };
-
-        const initSearchWidget = () => {
-            if (!mapRef.current || !window.mappls || searchRef.current) return;
-
-            const searchElement = document.getElementById(searchId);
-            if (!searchElement) {
-                console.warn("Search element not found, skipping initialization");
-                return;
-            }
-
-            try {
-                if (typeof window.mappls.search === 'function') {
-                    const options = {
-                        map: mapRef.current,
-                        placeholder: "Search for a location...",
-                        callback: (data: any) => {
-                            if (data) {
-                                const lat = parseFloat(data.latitude || data.lat);
-                                const lng = parseFloat(data.longitude || data.lng);
-                                if (!isNaN(lat) && !isNaN(lng)) {
-                                    mapRef.current.setCenter({ lat, lng });
-                                    mapRef.current.setZoom(17);
-                                    handleMapClick(lat, lng);
-                                }
-                            }
-                        }
-                    };
-                    searchRef.current = new window.mappls.search(searchElement, options);
-                }
-            } catch (e) {
-                console.warn("Error initializing search widget", e);
-            }
+    // Initialize map after script loads
+    const initMap = useCallback(() => {
+        const mapElement = document.getElementById(mapContainerId);
+        if (!mapElement || !window.google?.maps) {
+            console.warn("Map element or Google Maps not found");
+            setIsLoading(false);
+            return;
         }
 
-        loadMapScript();
-
-        return () => {
-            if (mapRef.current && typeof mapRef.current.remove === 'function') {
-                try {
-                    mapRef.current.remove();
-                } catch (e) {
-                    console.warn("Failed to cleanup map instance", e);
-                }
-            }
-        };
-
-    }, []);
-
-    const fetchAddress = async (lat: number, lng: number) => {
-        setIsLoadingAddress(true);
-
-        const handleGeocodeResponse = (data: any) => {
-            setIsLoadingAddress(false);
-            const getAddr = (obj: any) => obj?.formatted_address || obj?.addressString;
-
-            let address = "";
-            if (Array.isArray(data) && data.length > 0) address = getAddr(data[0]);
-            else if (data?.results?.[0]) address = getAddr(data.results[0]);
-            else if (data && typeof data === 'object') address = getAddr(data);
-
-            if (address) {
-                onAddressSelect(address);
-            } else {
-                toast({
-                    title: "Info",
-                    description: "Address details not found.",
-                    variant: "default"
-                });
-            }
-        };
-
-        // Attempt 1: SDK Static
-        if (typeof window.mappls.reverseGeocoding === 'function') {
-            try {
-                window.mappls.reverseGeocoding({ lat, lng }, (data: any) => {
-                    handleGeocodeResponse(data);
-                });
-                return;
-            } catch (e) { console.warn(e); }
-        }
-
-        // Attempt 2: REST API
         try {
-            const response = await fetch(`https://apis.mappls.com/advancedmaps/v1/${MAPPLS_API_KEY}/rev_geocode?lat=${lat}&lng=${lng}`);
-            if (!response.ok) throw new Error("API Error");
-            const data = await response.json();
-            handleGeocodeResponse(data);
-        } catch (e: any) {
-            console.error("Geocoding failed", e);
-            setIsLoadingAddress(false);
+            // Default center: Shirur, Maharashtra
+            const defaultCenter = { lat: 18.8285, lng: 74.3734 };
+
+            mapRef.current = new google.maps.Map(mapElement, {
+                center: defaultCenter,
+                zoom: 15,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+                zoomControl: true,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            // Initialize services
+            autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+            geocoderRef.current = new google.maps.Geocoder();
+            placesServiceRef.current = new google.maps.places.PlacesService(mapRef.current);
+
+            // Add click listener
+            mapRef.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+                if (e.latLng) {
+                    handleMapClick(e.latLng.lat(), e.latLng.lng());
+                }
+            });
+
+            setIsLoading(false);
+            setMapLoaded(true);
+        } catch (error) {
+            console.error("Error initializing map:", error);
+            setIsLoading(false);
             toast({
                 title: "Error",
-                description: `Failed to fetch address details.`,
+                description: "Failed to initialize Google Maps",
                 variant: "destructive"
             });
         }
-    };
+    }, [toast]);
 
-    const handleMapClick = async (lat: number, lng: number) => {
-        if (!mapRef.current || !window.mappls) return;
+    // Load Google Maps Script
+    useEffect(() => {
+        // Check if already loaded
+        if (window.google?.maps) {
+            initMap();
+            return;
+        }
 
-        const position = { lat: Number(lat), lng: Number(lng) };
+        // Check if script is already being loaded
+        const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+        if (existingScript) {
+            existingScript.addEventListener('load', initMap);
+            return;
+        }
+
+        // Define callback before loading script
+        window.initGoogleMapsCallback = () => {
+            initMap();
+        };
+
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsCallback`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = () => {
+            setIsLoading(false);
+            toast({
+                title: "Error",
+                description: "Failed to load Google Maps. Please check your API key.",
+                variant: "destructive"
+            });
+        };
+        document.head.appendChild(script);
+
+        return () => {
+            // Cleanup callback
+            delete window.initGoogleMapsCallback;
+            // Cleanup marker
+            if (markerRef.current) {
+                markerRef.current.setMap(null);
+            }
+        };
+    }, [initMap, toast]);
+
+    // Handle search input
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchQuery(value);
+
+        if (!value.trim() || !autocompleteServiceRef.current) {
+            setPredictions([]);
+            setShowPredictions(false);
+            return;
+        }
+
+        autocompleteServiceRef.current.getPlacePredictions(
+            {
+                input: value,
+                componentRestrictions: { country: 'in' }, // Restrict to India
+            },
+            (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    setPredictions(results);
+                    setShowPredictions(true);
+                } else {
+                    setPredictions([]);
+                    setShowPredictions(false);
+                }
+            }
+        );
+    }, []);
+
+    // Handle place selection from autocomplete
+    const handlePlaceSelect = useCallback((placeId: string, description: string) => {
+        setShowPredictions(false);
+        setSearchQuery(description);
+        setIsLoadingAddress(true);
+
+        if (!placesServiceRef.current) {
+            setIsLoadingAddress(false);
+            return;
+        }
+
+        placesServiceRef.current.getDetails(
+            { placeId, fields: ['geometry', 'formatted_address'] },
+            (place, status) => {
+                setIsLoadingAddress(false);
+                if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+
+                    mapRef.current?.setCenter({ lat, lng });
+                    mapRef.current?.setZoom(17);
+
+                    updateMarker(lat, lng);
+                    onAddressSelect(place.formatted_address || description);
+                }
+            }
+        );
+    }, [onAddressSelect]);
+
+    // Reverse geocode to get address from coordinates
+    const fetchAddress = useCallback((lat: number, lng: number) => {
+        setIsLoadingAddress(true);
+
+        if (!geocoderRef.current) {
+            setIsLoadingAddress(false);
+            return;
+        }
+
+        geocoderRef.current.geocode(
+            { location: { lat, lng } },
+            (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+                setIsLoadingAddress(false);
+                if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
+                    const address = results[0].formatted_address;
+                    onAddressSelect(address);
+                    setSearchQuery(address);
+                } else {
+                    toast({
+                        title: "Info",
+                        description: "Address details not found.",
+                        variant: "default"
+                    });
+                }
+            }
+        );
+    }, [onAddressSelect, toast]);
+
+    // Update or create marker
+    const updateMarker = useCallback((lat: number, lng: number) => {
+        const position = { lat, lng };
 
         if (markerRef.current) {
             markerRef.current.setPosition(position);
-        } else {
-            markerRef.current = new window.mappls.Marker({
+        } else if (mapRef.current) {
+            markerRef.current = new google.maps.Marker({
                 map: mapRef.current,
                 position: position,
-                draggable: true
+                draggable: true,
+                animation: google.maps.Animation.DROP
             });
-            markerRef.current.addListener('dragend', (e: any) => {
-                const newPos = e.target.getPosition();
-                let newLat = newPos.lat;
-                let newLng = newPos.lng;
-                if (typeof newLat === 'function') newLat = newLat();
-                if (typeof newLng === 'function') newLng = newLng();
-                fetchAddress(newLat, newLng);
+
+            markerRef.current.addListener('dragend', () => {
+                const newPosition = markerRef.current?.getPosition();
+                if (newPosition) {
+                    fetchAddress(newPosition.lat(), newPosition.lng());
+                }
             });
         }
-        fetchAddress(lat, lng);
-    };
+    }, [fetchAddress]);
 
-    const handleCurrentLocation = () => {
+    // Handle map click
+    const handleMapClick = useCallback((lat: number, lng: number) => {
+        updateMarker(lat, lng);
+        fetchAddress(lat, lng);
+    }, [updateMarker, fetchAddress]);
+
+    // Get current location
+    const handleCurrentLocation = useCallback(() => {
         setIsLoadingAddress(true);
 
-        const onGeoSuccess = (lat: number, lng: number) => {
-            setIsLoadingAddress(false);
-            if (!isNaN(lat) && !isNaN(lng)) {
-                if (mapRef.current) {
-                    mapRef.current.setCenter({ lat, lng });
-                    mapRef.current.setZoom(17);
-                }
-                handleMapClick(lat, lng);
-            } else {
-                toast({ title: "Error", description: "Invalid location received.", variant: "destructive" });
-            }
-        };
-
-        const onGeoFail = (err: any) => {
-            console.error("Geolocation failed:", err);
-            setIsLoadingAddress(false);
-            let msg = "Could not fetch location.";
-            if (err.code === 1) msg = "Location permission denied.";
-            toast({ title: "Error", description: msg, variant: "destructive" });
-        };
-
-        // Use browser geolocation directly
-        fallbackToBrowserGeo(onGeoSuccess, onGeoFail);
-    };
-
-    const fallbackToBrowserGeo = (successCb: Function, failCb: Function) => {
         if (!navigator.geolocation) {
-            failCb({ message: "Geolocation not supported" });
+            setIsLoadingAddress(false);
+            toast({
+                title: "Error",
+                description: "Geolocation not supported",
+                variant: "destructive"
+            });
             return;
         }
+
         navigator.geolocation.getCurrentPosition(
-            (pos) => successCb(pos.coords.latitude, pos.coords.longitude),
-            (err) => failCb(err),
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                mapRef.current?.setCenter({ lat, lng });
+                mapRef.current?.setZoom(17);
+
+                updateMarker(lat, lng);
+                fetchAddress(lat, lng);
+            },
+            (error) => {
+                setIsLoadingAddress(false);
+                let msg = "Could not fetch location.";
+                if (error.code === 1) msg = "Location permission denied.";
+                toast({
+                    title: "Error",
+                    description: msg,
+                    variant: "destructive"
+                });
+            },
             { enableHighAccuracy: true }
         );
-    };
+    }, [updateMarker, fetchAddress, toast]);
 
     return (
         <div className="space-y-4">
@@ -296,24 +289,55 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
                 <p className="text-xs text-muted-foreground">
                     Search or pin your exact location
                 </p>
-                <div className="flex gap-2">
-                    {/* Satellite button removed as requested */}
-                    <button
-                        type="button"
-                        onClick={handleCurrentLocation}
-                        className="text-xs flex items-center gap-1.5 text-primary font-medium hover:underline bg-primary/5 px-2 py-1 rounded-md transition-colors"
-                    >
-                        <MapPin className="h-3 w-3" />
-                        Use Current Location
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={handleCurrentLocation}
+                    className="text-xs flex items-center gap-1.5 text-primary font-medium hover:underline bg-primary/5 px-2 py-1 rounded-md transition-colors"
+                >
+                    <MapPin className="h-3 w-3" />
+                    Use Current Location
+                </button>
             </div>
 
-            <div id={searchId} className="w-full relative z-10" style={{ minHeight: '40px' }} />
+            {/* Search Input */}
+            <div className="relative">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search for a location..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        onFocus={() => predictions.length > 0 && setShowPredictions(true)}
+                        onBlur={() => setTimeout(() => setShowPredictions(false), 200)}
+                        className="pl-10"
+                    />
+                </div>
 
+                {/* Autocomplete Predictions */}
+                {showPredictions && predictions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {predictions.map((prediction) => (
+                            <button
+                                key={prediction.place_id}
+                                type="button"
+                                className="w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors border-b last:border-b-0"
+                                onMouseDown={() => handlePlaceSelect(prediction.place_id, prediction.description)}
+                            >
+                                <div className="flex items-start gap-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span className="line-clamp-2">{prediction.description}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Map Container */}
             <div className="relative rounded-lg overflow-hidden border">
                 <div
-                    id={mapId}
+                    id={mapContainerId}
                     style={{ width: '100%', height: '300px' }}
                     className="bg-muted/20"
                 />

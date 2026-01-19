@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
+import { OffersManager } from "@/components/offers/OffersManager";
 import {
   Dialog,
   DialogContent,
@@ -2429,6 +2430,11 @@ const ProviderDashboard: React.FC = () => {
       tabs.unshift({ value: "rental-listings", label: "My Properties" });
     }
 
+    // Add Offers tab for all providers except rental
+    if (type !== "rental" && type !== "booking") {
+      tabs.push({ value: "offers", label: "Offers" });
+    }
+
     return tabs;
   };
 
@@ -2476,6 +2482,10 @@ const ProviderDashboard: React.FC = () => {
 
         <TabsContent value="rental-listings" className="mt-6">
           <RentalManager providerProfile={providerProfile} />
+        </TabsContent>
+
+        <TabsContent value="offers" className="mt-6">
+          <OffersManager providerId={providerProfile.id} categorySlug={providerProfile.category?.slug || ''} />
         </TabsContent>
 
 

@@ -168,11 +168,13 @@ export default function ProviderOnboarding() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories?.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                          {categories
+                            ?.filter((c: any) => c.slug !== 'grocery')
+                            .map((category: any) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
