@@ -556,9 +556,9 @@ m
 STATE_
 n
 ad_click
-1.0.3
 CONTINUE
 CloudMessagingReceiver
+1.0.4
 r
 DRIVE_EXTERNAL_STORAGE_REQUIRED
 s
@@ -583,6 +583,7 @@ MyFirebaseMsgService
 SwipeRefreshLayout
 com.google.android.gms.measurement.in...
 has_realtime
+empty
 isTagEnabled
 PASSIVE
 last_bundled_timestamp
@@ -832,6 +833,7 @@ measurement.dma_consent.service_npa_r...
 measurement.log_tag
 RECONNECTION_TIMED_OUT
 intrface
+android.settings.MANAGE_APP_USE_FULL_...
 yMMMM
 ATTACH
 setValue
@@ -1032,6 +1034,7 @@ MOBILE_MMS
 purchase_refund
 ACCESSIBILITY_CLICKABLE_SPAN_ID
 circles
+AndroidBridge
 CODENAME
 gcm.
 ACTION_PAGE_LEFT
@@ -1159,7 +1162,6 @@ adservices_extension_too_old
 measurement.client.click_identifier_c...
 01110000
 _removedRef
-android.settings.MANAGE_FULL_SCREEN_I...
 CANCELED
 common_google_play_services_resolutio...
 SINT64_LIST_PACKED
@@ -1188,6 +1190,7 @@ dclid
 common_google_play_services_sign_in_f...
 kotlin.Cloneable
 measurement.service.click_identifier_...
+displayOverApps
 dep
 config_fetched_time
 qosTier
@@ -1284,6 +1287,7 @@ DynamiteModule
 utm_source
 font_weight
 some
+fullScreenIntent
 TERMINATED
 getEventName
 ACTION_SET_SELECTION
@@ -1840,6 +1844,7 @@ notification_dismiss
 ga_screen
 _exp_timeout
 measurement.sdk.collection.last_deep_...
+android.settings.action.MANAGE_OVERLA...
 android.intent.extra.PROCESS_TEXT_REA...
 Chip
 measurement
@@ -1867,6 +1872,7 @@ androidx.lifecycle.BundlableSavedStat...
 _epc
 DEVELOPER_ERROR
 measurement.upload.max_realtime_event...
+this$1
 this$0
 Loaders:
 google.c.a.m_c
@@ -2308,6 +2314,7 @@ Dispatchers.Main
 SOURCE_CLIPBOARD
 XA
 XB
+android.settings.APP_NOTIFICATION_SET...
 notify_manager
 Cancelled
 RatingBar
@@ -2514,6 +2521,7 @@ _r
 INT32_LIST
 _s
 inline
+$message
 screen_view
 _v
 mIsChildViewEnabled
@@ -2604,6 +2612,7 @@ DAY_VIEW_DECORATOR_KEY
 _aeid
 REL
 ACTION_NEXT_AT_MOVEMENT_GRANULARITY
+android.settings.IGNORE_BATTERY_OPTIM...
 android.support.PARENT_ACTIVITY
 last_sampling_rate
 font
@@ -2645,8 +2654,10 @@ JobInfoScheduler
 swipeRefresh
 NAVIGATION_PREV_TAG
 ᠌ ဈဇ
+AndroidApp
 0E0
 ACTION_ACCESSIBILITY_FOCUS
+android.provider.extra.APP_PACKAGE
 AD_PERSONALIZATION
 translationAlpha
 SignInCoordinator
@@ -2844,6 +2855,7 @@ timestamp_millis
 BITWISE_OR
 android.support.v13.view.inputmethod....
 createAsync
+batteryOptimization
 rowid
 .Companion
 whatsapp:
@@ -3056,6 +3068,7 @@ WEB
 EVDO_0
 com.google.android.gms.ads.identifier...
 ACTION_FOCUS
+notifications
 set_mock_mode_with_callback
 င ဉဉဇ
 last_upload
@@ -3088,6 +3101,7 @@ filter
 %032x
 A11yActionCompat
 elements
+android.settings.REQUEST_IGNORE_BATTE...
 timed_out_event_name
 strokeAlpha
 /raw/

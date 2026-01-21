@@ -173,4 +173,18 @@
     background: hsl(217, 91%, 60%);
     color: white;
   }
+
+  /* Animation for permission banner */
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
 }

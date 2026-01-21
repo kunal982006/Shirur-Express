@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
-import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag } from "lucide-react";
+import { useParams, Link, useLocation } from "wouter";
+import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useCartStore } from "@/hooks/use-cart-store";
 
 interface Product {
     id: string;
@@ -37,6 +38,8 @@ interface OfferDetails {
 export default function OfferDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const { toast } = useToast();
+    const [, setLocation] = useLocation();
+    const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
 
     const { data: offer, isLoading, error } = useQuery<OfferDetails>({
         queryKey: [`/api/offers/${id}`],
@@ -45,6 +48,26 @@ export default function OfferDetailsPage() {
 
     // Check if offer is expired
     const isExpired = offer ? new Date(offer.expiryDate) < new Date() : false;
+
+    // Get the correct shop URL based on product type
+    const getShopUrl = (): string | null => {
+        if (!offer?.provider?.id || !offer.productType) return null;
+
+        switch (offer.productType) {
+            case 'grocery':
+                return '/grocery';
+            case 'restaurant':
+                return `/restaurants/${offer.provider.id}`;
+            case 'cake':
+                return '/cake-shop';
+            case 'street_food':
+                return `/street-food/${offer.provider.id}`;
+            case 'beauty_parlor':
+                return `/beauty/${offer.provider.id}`;
+            default:
+                return null;
+        }
+    };
 
     // Calculate time remaining
     const getTimeRemaining = () => {
@@ -76,12 +99,60 @@ export default function OfferDetailsPage() {
         return null;
     };
 
+    // Map product type to cart item type
+    const getItemType = (): 'grocery' | 'street_food' | 'service' | 'restaurant' | 'cake' => {
+        if (!offer) return 'grocery';
+        switch (offer.productType) {
+            case 'grocery': return 'grocery';
+            case 'restaurant': return 'restaurant';
+            case 'cake': return 'cake';
+            case 'street_food': return 'street_food';
+            case 'beauty_parlor': return 'service';
+            default: return 'grocery';
+        }
+    };
+
+    // Get quantity of item in cart
+    const getCartQuantity = (productId: string): number => {
+        const item = items.find(i => i.id === productId);
+        return item?.quantity || 0;
+    };
+
     const handleAddToCart = (product: Product) => {
-        // TODO: Integrate with actual cart system based on product type
-        toast({
-            title: "Added to Cart",
-            description: `${product.name} added to your cart`,
-        });
+        if (isExpired) return;
+
+        const discountedPrice = offer?.discountedPrices?.[product.id];
+        const priceToUse = discountedPrice ?? getOriginalPrice(product);
+
+        const existingItem = items.find(item => item.id === product.id);
+        if (existingItem) {
+            updateQuantity(product.id, 1);
+            toast({
+                title: "➕ Quantity Updated!",
+                description: `${product.name} quantity increased to ${existingItem.quantity + 1}.`,
+            });
+        } else {
+            addItem({
+                id: product.id,
+                name: product.name,
+                price: priceToUse,
+                imageUrl: product.imageUrl || undefined,
+                providerId: offer?.providerId,
+                itemType: getItemType(),
+            });
+            toast({
+                title: "✅ Added to Cart!",
+                description: `${product.name} has been added to your cart.`,
+            });
+        }
+    };
+
+    const handleIncreaseQuantity = (productId: string) => {
+        updateQuantity(productId, 1);
+    };
+
+    const handleDecreaseQuantity = (productId: string) => {
+        updateQuantity(productId, -1);
     };
 
     if (isLoading) {
@@ -170,9 +241,11 @@ export default function OfferDetailsPage() {
                                 <p className="text-sm text-gray-500 truncate">{offer.provider.address}</p>
                             )}
                         </div>
-                        <Link href={`/provider/${offer.provider.id}`}>
-                            <Button variant="outline" size="sm">View Shop</Button>
-                        </Link>
+                        {getShopUrl() && (
+                            <Link href={getShopUrl()!}>
+                                <Button variant="outline" size="sm">View Shop</Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             )}
@@ -189,7 +262,7 @@ export default function OfferDetailsPage() {
             )}
 
             {/* Products Grid */}
-            <div className="max-w-4xl mx-auto p-4">
+            <div className="max-w-4xl mx-auto p-4 pb-28">
                 <div className="flex items-center gap-2 mb-4">
                     <Tag className="h-5 w-5 text-primary" />
                     <h3 className="font-bold text-lg">Products in this offer</h3>
@@ -201,6 +274,7 @@ export default function OfferDetailsPage() {
                             const originalPrice = getOriginalPrice(product);
                             const discountedPrice = getDiscountedPrice(product.id, product);
                             const hasDiscount = discountedPrice !== null && discountedPrice < originalPrice;
+                            const cartQuantity = getCartQuantity(product.id);
 
                             return (
                                 <Card key={product.id} className="overflow-hidden">
@@ -236,15 +310,39 @@ export default function OfferDetailsPage() {
                                                 <span className="font-bold text-primary">₹{originalPrice}</span>
                                             )}
                                         </div>
-                                        <Button
-                                            className="w-full mt-3 h-8 text-sm"
-                                            size="sm"
-                                            onClick={() => handleAddToCart(product)}
-                                            disabled={isExpired}
-                                        >
-                                            <ShoppingCart className="h-3 w-3 mr-1" />
-                                            Add
-                                        </Button>
+
+                                        {/* Quantity Controls or Add Button */}
+                                        {cartQuantity > 0 ? (
+                                            <div className="flex items-center justify-between mt-3 h-8 bg-primary rounded-md">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary/90"
+                                                    onClick={() => handleDecreaseQuantity(product.id)}
+                                                >
+                                                    <Minus className="h-4 w-4" />
+                                                </Button>
+                                                <span className="font-bold text-primary-foreground">{cartQuantity}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary/90"
+                                                    onClick={() => handleIncreaseQuantity(product.id)}
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                className="w-full mt-3 h-8 text-sm"
+                                                size="sm"
+                                                onClick={() => handleAddToCart(product)}
+                                                disabled={isExpired}
+                                            >
+                                                <ShoppingCart className="h-3 w-3 mr-1" />
+                                                Add
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             );
@@ -256,6 +354,24 @@ export default function OfferDetailsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Floating Cart Bar */}
+            {items.length > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-lg border-t z-50 animate-slide-up-fast">
+                    <div className="max-w-4xl mx-auto flex justify-between items-center">
+                        <div>
+                            <p className="text-sm text-muted-foreground">
+                                {items.reduce((total, item) => total + item.quantity, 0)} Items
+                            </p>
+                            <p className="text-xl font-bold">₹{getTotalPrice().toFixed(2)}</p>
+                        </div>
+                        <Button onClick={() => setLocation("/checkout")} size="lg">
+                            Proceed to Checkout
+                            <ShoppingBag className="ml-2 h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

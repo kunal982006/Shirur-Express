@@ -3,8 +3,8 @@
 # min_api: 24
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.2"}
-# pg_map_id: 61df81d8e7230abae4353dbc3545be6372e983b229c9dc2b51ca57d86fd69a9c
-# pg_map_hash: SHA-256 61df81d8e7230abae4353dbc3545be6372e983b229c9dc2b51ca57d86fd69a9c
+# pg_map_id: 95139135c4814010d8c18842a879449eee55c8d8b6f4eb85dd65562a8cc3e67f
+# pg_map_hash: SHA-256 95139135c4814010d8c18842a879449eee55c8d8b6f4eb85dd65562a8cc3e67f
 android.app.AppComponentFactory -> android.app.AppComponentFactory:
 # {"id":"com.android.tools.r8.synthesized"}
     void <clinit>() -> <clinit>
@@ -3071,14 +3071,17 @@ androidx.appcompat.app.AlertDialog$Builder -> d.h:
     172:174:androidx.appcompat.app.AlertDialog create():990:990 -> a
     175:178:androidx.appcompat.app.AlertDialog create():991:991 -> a
     179:182:androidx.appcompat.app.AlertDialog create():992:992 -> a
-    1:6:androidx.appcompat.app.AlertDialog$Builder setPositiveButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):486:486 -> b
+    1:6:androidx.appcompat.app.AlertDialog$Builder setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Ljava/lang/String;Lcom/shirurexpress/app/i;)V"}
+    7:9:androidx.appcompat.app.AlertDialog$Builder setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> b
+    1:6:androidx.appcompat.app.AlertDialog$Builder setPositiveButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):486:486 -> c
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ljava/lang/String;Landroid/content/DialogInterface$OnClickListener;)V"}
-    7:9:androidx.appcompat.app.AlertDialog$Builder setPositiveButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):487:487 -> b
-    1:4:androidx.appcompat.app.AlertDialog show():1008:1008 -> c
-      # {"id":"com.android.tools.r8.residualsignature","signature":"()V"}
-    5:8:androidx.appcompat.app.AlertDialog show():1009:1009 -> c
+    7:9:androidx.appcompat.app.AlertDialog$Builder setPositiveButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):487:487 -> c
     1:11:boolean com.google.android.material.bottomsheet.BottomSheetBehavior$6.perform(android.view.View,androidx.core.view.accessibility.AccessibilityViewCommand$CommandArguments):2421:2421 -> d
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroid/view/View;)Z"}
+    1:4:androidx.appcompat.app.AlertDialog show():1008:1008 -> e
+      # {"id":"com.android.tools.r8.residualsignature","signature":"()V"}
+    5:8:androidx.appcompat.app.AlertDialog show():1009:1009 -> e
 androidx.appcompat.app.AppCompatActivity -> d.l:
 # {"id":"sourceFile","fileName":"AppCompatActivity.java"}
     androidx.appcompat.app.AppCompatDelegate mDelegate -> mDelegate
@@ -43000,53 +43003,53 @@ androidx.core.content.res.ResourcesCompat -> y.n:
     56:64:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477 -> b
     56:64:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):615 -> b
     56:64:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    65:80:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477:477 -> b
-    65:80:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):615 -> b
-    65:80:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    81:92:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):623:623 -> b
-    81:92:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    93:96:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):624:624 -> b
-    93:96:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    97:102:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):626:626 -> b
-    97:102:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    103:109:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):628:628 -> b
-    103:109:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    110:120:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):630:630 -> b
-    110:120:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    121:132:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):635:635 -> b
-    121:132:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    133:134:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639:639 -> b
-    133:134:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    135:145:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):218:218 -> b
-    135:145:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
-    135:145:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    146:149:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):221:221 -> b
-    146:149:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
-    146:149:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    150:156:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):222:222 -> b
-    150:156:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
-    150:156:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    157:165:android.os.Handler androidx.core.content.res.ResourcesCompat$FontCallback.getHandler(android.os.Handler):494:494 -> b
-    157:165:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477 -> b
-    157:165:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):643 -> b
-    157:165:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    166:176:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477:477 -> b
-    166:176:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):643 -> b
-    166:176:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    177:180:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):645:645 -> b
-    177:180:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    181:190:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):653:653 -> b
-    181:190:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    191:201:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):651:651 -> b
-    191:201:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    202:211:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):656:656 -> b
-    202:211:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    212:220:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):569:569 -> b
-    221:241:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):570:570 -> b
-    242:262:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):597:597 -> b
-    242:262:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
-    263:285:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):598:598 -> b
-    263:285:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    65:81:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477:477 -> b
+    65:81:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):615 -> b
+    65:81:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    82:93:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):623:623 -> b
+    82:93:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    94:97:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):624:624 -> b
+    94:97:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    98:103:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):626:626 -> b
+    98:103:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    104:110:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):628:628 -> b
+    104:110:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    111:121:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):630:630 -> b
+    111:121:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    122:133:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):635:635 -> b
+    122:133:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    134:135:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639:639 -> b
+    134:135:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    136:146:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):218:218 -> b
+    136:146:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
+    136:146:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    147:150:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):221:221 -> b
+    147:150:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
+    147:150:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    151:157:android.graphics.Typeface androidx.core.graphics.TypefaceCompat.createFromResourcesFontFile(android.content.Context,android.content.res.Resources,int,java.lang.String,int,int):222:222 -> b
+    151:157:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):639 -> b
+    151:157:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    158:166:android.os.Handler androidx.core.content.res.ResourcesCompat$FontCallback.getHandler(android.os.Handler):494:494 -> b
+    158:166:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477 -> b
+    158:166:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):643 -> b
+    158:166:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    167:178:void androidx.core.content.res.ResourcesCompat$FontCallback.callbackSuccessAsync(android.graphics.Typeface,android.os.Handler):477:477 -> b
+    167:178:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):643 -> b
+    167:178:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    179:182:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):645:645 -> b
+    179:182:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    183:192:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):653:653 -> b
+    183:192:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    193:203:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):651:651 -> b
+    193:203:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    204:213:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):656:656 -> b
+    204:213:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    214:222:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):569:569 -> b
+    223:243:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):570:570 -> b
+    244:264:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):597:597 -> b
+    244:264:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
+    265:287:android.graphics.Typeface loadFont(android.content.Context,android.content.res.Resources,android.util.TypedValue,int,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):598:598 -> b
+    265:287:android.graphics.Typeface loadFont(android.content.Context,int,android.util.TypedValue,int,androidx.core.content.res.ResourcesCompat$FontCallback,android.os.Handler,boolean,boolean):566 -> b
 androidx.core.content.res.ResourcesCompat$Api21Impl -> y.i:
 # {"id":"sourceFile","fileName":"ResourcesCompat.java"}
     1:5:android.graphics.drawable.Drawable getDrawable(android.content.res.Resources,int,android.content.res.Resources$Theme):701:701 -> a
@@ -83417,12 +83420,12 @@ com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedul
     74:75:com.google.android.datatransport.runtime.scheduling.jobscheduling.Uploader com.google.android.datatransport.runtime.TransportRuntime.getUploader():146:146 -> onStartJob
     74:75:boolean onStartJob(android.app.job.JobParameters):48 -> onStartJob
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    76:85:boolean onStartJob(android.app.job.JobParameters):49:49 -> onStartJob
-    86:87:void com.google.android.datatransport.runtime.scheduling.jobscheduling.Uploader.upload(com.google.android.datatransport.runtime.TransportContext,int,java.lang.Runnable):94:94 -> onStartJob
-    86:87:boolean onStartJob(android.app.job.JobParameters):49 -> onStartJob
+    76:86:boolean onStartJob(android.app.job.JobParameters):49:49 -> onStartJob
+    87:88:void com.google.android.datatransport.runtime.scheduling.jobscheduling.Uploader.upload(com.google.android.datatransport.runtime.TransportContext,int,java.lang.Runnable):94:94 -> onStartJob
+    87:88:boolean onStartJob(android.app.job.JobParameters):49 -> onStartJob
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    88:97:void com.google.android.datatransport.runtime.scheduling.jobscheduling.Uploader.upload(com.google.android.datatransport.runtime.TransportContext,int,java.lang.Runnable):94:94 -> onStartJob
-    88:97:boolean onStartJob(android.app.job.JobParameters):49 -> onStartJob
+    89:98:void com.google.android.datatransport.runtime.scheduling.jobscheduling.Uploader.upload(com.google.android.datatransport.runtime.TransportContext,int,java.lang.Runnable):94:94 -> onStartJob
+    89:98:boolean onStartJob(android.app.job.JobParameters):49 -> onStartJob
     1:2:boolean onStopJob(android.app.job.JobParameters):0:0 -> onStopJob
 com.google.android.datatransport.runtime.scheduling.jobscheduling.SchedulerConfig -> R8$$REMOVED$$CLASS$$149:
 # {"id":"sourceFile","fileName":"SchedulerConfig.java"}
@@ -177845,14 +177848,14 @@ com.google.firebase.messaging.ImageDownload$$ExternalSyntheticLambda0 -> com.goo
     168:175:void run():0 -> run
     176:176:void androidx.appcompat.app.AppLocalesStorageHelper$SerialExecutor.lambda$execute$0(java.lang.Runnable):238:238 -> run
     176:176:void run():0 -> run
-    177:184:void run():0:0 -> run
-    185:188:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):72:72 -> run
-    185:188:void run():0 -> run
-    189:193:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):73:73 -> run
-    189:193:void run():0 -> run
-    194:200:void com.google.android.gms.tasks.TaskCompletionSource.setException(java.lang.Exception):1:1 -> run
-    194:200:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):75 -> run
-    194:200:void run():0 -> run
+    177:208:void run():0:0 -> run
+    209:212:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):72:72 -> run
+    209:212:void run():0 -> run
+    213:217:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):73:73 -> run
+    213:217:void run():0 -> run
+    218:224:void com.google.android.gms.tasks.TaskCompletionSource.setException(java.lang.Exception):1:1 -> run
+    218:224:void com.google.firebase.messaging.ImageDownload.lambda$start$0(com.google.android.gms.tasks.TaskCompletionSource):75 -> run
+    218:224:void run():0 -> run
 com.google.firebase.messaging.Metadata -> com.google.firebase.messaging.q:
 # {"id":"sourceFile","fileName":"Metadata.java"}
     int gmsVersionCode -> a
@@ -180145,172 +180148,163 @@ com.shirurexpress.app.MainActivity -> com.shirurexpress.app.MainActivity:
     androidx.activity.result.ActivityResultLauncher permissionLauncher -> permissionLauncher
       # {"id":"com.android.tools.r8.residualsignature","signature":"Landroidx/activity/result/d;"}
     1:9:void <clinit>():0:0 -> <clinit>
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> <init>
-    1:3:void <init>():31 -> <init>
-    4:6:void <init>():40:40 -> <init>
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> <init>
+    1:3:void <init>():33 -> <init>
+    4:6:void <init>():42:42 -> <init>
     7:9:void androidx.activity.result.contract.ActivityResultContract.<init>():29:29 -> <init>
     7:9:void androidx.activity.result.contract.ActivityResultContracts$RequestMultiplePermissions.<init>():137 -> <init>
-    7:9:void <init>():40 -> <init>
-    10:26:void <init>():39:39 -> <init>
-    27:29:void <init>():55:55 -> <init>
+    7:9:void <init>():42 -> <init>
+    10:26:void <init>():41:41 -> <init>
+    27:29:void <init>():57:57 -> <init>
     30:32:void androidx.activity.result.contract.ActivityResultContract.<init>():29:29 -> <init>
     30:32:void androidx.activity.result.contract.ActivityResultContracts$StartIntentSenderForResult.<init>():96 -> <init>
-    30:32:void <init>():55 -> <init>
-    33:48:void <init>():54:54 -> <init>
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$getErrorView$p
-    1:3:android.view.View access$getErrorView$p(com.shirurexpress.app.MainActivity):31 -> access$getErrorView$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$getProgressBar$p
-    1:3:android.widget.ProgressBar access$getProgressBar$p(com.shirurexpress.app.MainActivity):31 -> access$getProgressBar$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$getSwipeRefresh$p
-    1:3:androidx.swiperefreshlayout.widget.SwipeRefreshLayout access$getSwipeRefresh$p(com.shirurexpress.app.MainActivity):31 -> access$getSwipeRefresh$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$getWebView$p
-    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$injectCustomCSS
-    1:4:void access$injectCustomCSS(com.shirurexpress.app.MainActivity):31 -> access$injectCustomCSS
-    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):31:31 -> access$showErrorPage
-    1:4:void access$showErrorPage(com.shirurexpress.app.MainActivity):31 -> access$showErrorPage
-    1:5:void checkAllPermissions():106:106 -> checkAllPermissions
-    6:11:void checkAllPermissions():109:109 -> checkAllPermissions
-    12:19:void checkAllPermissions():110:110 -> checkAllPermissions
-    20:22:void checkAllPermissions():111:111 -> checkAllPermissions
-    23:30:void checkAllPermissions():116:116 -> checkAllPermissions
-    31:33:void checkAllPermissions():117:117 -> checkAllPermissions
-    34:41:void checkAllPermissions():121:121 -> checkAllPermissions
-    42:44:void checkAllPermissions():122:122 -> checkAllPermissions
-    45:49:void checkAllPermissions():123:123 -> checkAllPermissions
-    50:55:void checkAllPermissions():126:126 -> checkAllPermissions
-    56:58:void checkAllPermissions():127:127 -> checkAllPermissions
+    30:32:void <init>():57 -> <init>
+    33:48:void <init>():56:56 -> <init>
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getErrorView$p
+    1:3:android.view.View access$getErrorView$p(com.shirurexpress.app.MainActivity):33 -> access$getErrorView$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getProgressBar$p
+    1:3:android.widget.ProgressBar access$getProgressBar$p(com.shirurexpress.app.MainActivity):33 -> access$getProgressBar$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getSwipeRefresh$p
+    1:3:androidx.swiperefreshlayout.widget.SwipeRefreshLayout access$getSwipeRefresh$p(com.shirurexpress.app.MainActivity):33 -> access$getSwipeRefresh$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getWebView$p
+    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$injectCustomCSS
+    1:4:void access$injectCustomCSS(com.shirurexpress.app.MainActivity):33 -> access$injectCustomCSS
+    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$showErrorPage
+    1:4:void access$showErrorPage(com.shirurexpress.app.MainActivity):33 -> access$showErrorPage
+    1:5:void checkAllPermissions():108:108 -> checkAllPermissions
+    6:11:void checkAllPermissions():111:111 -> checkAllPermissions
+    12:19:void checkAllPermissions():112:112 -> checkAllPermissions
+    20:22:void checkAllPermissions():113:113 -> checkAllPermissions
+    23:30:void checkAllPermissions():118:118 -> checkAllPermissions
+    31:33:void checkAllPermissions():119:119 -> checkAllPermissions
+    34:41:void checkAllPermissions():123:123 -> checkAllPermissions
+    42:44:void checkAllPermissions():124:124 -> checkAllPermissions
+    45:49:void checkAllPermissions():125:125 -> checkAllPermissions
+    50:55:void checkAllPermissions():128:128 -> checkAllPermissions
+    56:58:void checkAllPermissions():129:129 -> checkAllPermissions
     59:64:java.lang.Object[] kotlin.collections.ArraysKt__ArraysJVMKt.toTypedArray(java.util.Collection):38:38 -> checkAllPermissions
-    59:64:void checkAllPermissions():127 -> checkAllPermissions
-    65:68:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> checkAllPermissions
-    65:68:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47 -> checkAllPermissions
-    65:68:void checkAllPermissions():127 -> checkAllPermissions
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
-    69:71:void checkAllPermissions():130:130 -> checkAllPermissions
-    72:75:void checkAllPermissions():131:131 -> checkAllPermissions
+    59:64:void checkAllPermissions():129 -> checkAllPermissions
+    65:68:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> checkAllPermissions
+    65:68:void checkAllPermissions():129 -> checkAllPermissions
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    69:71:void checkAllPermissions():132:132 -> checkAllPermissions
+    72:75:void checkAllPermissions():133:133 -> checkAllPermissions
     1:6:com.google.android.gms.location.LocationRequest com.google.android.gms.location.LocationRequest$Builder.build():1:1 -> checkGpsEnabled
-    1:6:void checkGpsEnabled():205 -> checkGpsEnabled
+    1:6:void checkGpsEnabled():214 -> checkGpsEnabled
     7:10:com.google.android.gms.location.LocationRequest com.google.android.gms.location.LocationRequest$Builder.build():3:3 -> checkGpsEnabled
-    7:10:void checkGpsEnabled():205 -> checkGpsEnabled
+    7:10:void checkGpsEnabled():214 -> checkGpsEnabled
     11:53:com.google.android.gms.location.LocationRequest com.google.android.gms.location.LocationRequest$Builder.build():4:4 -> checkGpsEnabled
-    11:53:void checkGpsEnabled():205 -> checkGpsEnabled
+    11:53:void checkGpsEnabled():214 -> checkGpsEnabled
     54:58:void com.google.android.gms.location.LocationSettingsRequest$Builder.<init>():1:1 -> checkGpsEnabled
-    54:58:void checkGpsEnabled():206 -> checkGpsEnabled
+    54:58:void checkGpsEnabled():215 -> checkGpsEnabled
     59:61:com.google.android.gms.location.LocationSettingsRequest$Builder com.google.android.gms.location.LocationSettingsRequest$Builder.addLocationRequest(com.google.android.gms.location.LocationRequest):1:1 -> checkGpsEnabled
-    59:61:void checkGpsEnabled():206 -> checkGpsEnabled
-    62:63:void checkGpsEnabled():207:207 -> checkGpsEnabled
+    59:61:void checkGpsEnabled():215 -> checkGpsEnabled
+    62:63:void checkGpsEnabled():216:216 -> checkGpsEnabled
     64:65:com.google.android.gms.location.SettingsClient com.google.android.gms.location.LocationServices.getSettingsClient(android.app.Activity):1:1 -> checkGpsEnabled
-    64:65:void checkGpsEnabled():207 -> checkGpsEnabled
+    64:65:void checkGpsEnabled():216 -> checkGpsEnabled
     66:69:void com.google.android.gms.internal.location.zzce.<init>(android.app.Activity):1:1 -> checkGpsEnabled
     66:69:com.google.android.gms.location.SettingsClient com.google.android.gms.location.LocationServices.getSettingsClient(android.app.Activity):1 -> checkGpsEnabled
-    66:69:void checkGpsEnabled():207 -> checkGpsEnabled
+    66:69:void checkGpsEnabled():216 -> checkGpsEnabled
     70:78:void com.google.android.gms.common.api.GoogleApi.<init>(android.app.Activity,com.google.android.gms.common.api.Api,com.google.android.gms.common.api.Api$ApiOptions,com.google.android.gms.common.api.GoogleApi$Settings):1:1 -> checkGpsEnabled
     70:78:void com.google.android.gms.internal.location.zzce.<init>(android.app.Activity):1 -> checkGpsEnabled
     70:78:com.google.android.gms.location.SettingsClient com.google.android.gms.location.LocationServices.getSettingsClient(android.app.Activity):1 -> checkGpsEnabled
-    70:78:void checkGpsEnabled():207 -> checkGpsEnabled
+    70:78:void checkGpsEnabled():216 -> checkGpsEnabled
     79:84:com.google.android.gms.location.LocationSettingsRequest com.google.android.gms.location.LocationSettingsRequest$Builder.build():1:1 -> checkGpsEnabled
-    79:84:void checkGpsEnabled():208 -> checkGpsEnabled
+    79:84:void checkGpsEnabled():217 -> checkGpsEnabled
     85:86:com.google.android.gms.common.api.internal.TaskApiCall$Builder com.google.android.gms.common.api.internal.TaskApiCall.builder():0:0 -> checkGpsEnabled
     85:86:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):1 -> checkGpsEnabled
-    85:86:void checkGpsEnabled():208 -> checkGpsEnabled
+    85:86:void checkGpsEnabled():217 -> checkGpsEnabled
     87:92:void com.google.android.gms.common.api.internal.TaskApiCall$Builder.<init>(com.google.android.gms.common.api.internal.zacw):0:0 -> checkGpsEnabled
     87:92:com.google.android.gms.common.api.internal.TaskApiCall$Builder com.google.android.gms.common.api.internal.TaskApiCall.builder():0 -> checkGpsEnabled
     87:92:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):1 -> checkGpsEnabled
-    87:92:void checkGpsEnabled():208 -> checkGpsEnabled
+    87:92:void checkGpsEnabled():217 -> checkGpsEnabled
     93:97:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):1:1 -> checkGpsEnabled
-    93:97:void checkGpsEnabled():208 -> checkGpsEnabled
+    93:97:void checkGpsEnabled():217 -> checkGpsEnabled
     98:101:com.google.android.gms.common.api.internal.TaskApiCall$Builder com.google.android.gms.common.api.internal.TaskApiCall$Builder.run(com.google.android.gms.common.api.internal.RemoteCall):0:0 -> checkGpsEnabled
     98:101:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):2 -> checkGpsEnabled
-    98:101:void checkGpsEnabled():208 -> checkGpsEnabled
+    98:101:void checkGpsEnabled():217 -> checkGpsEnabled
     102:103:com.google.android.gms.common.api.internal.TaskApiCall$Builder com.google.android.gms.common.api.internal.TaskApiCall$Builder.setMethodKey(int):0:0 -> checkGpsEnabled
     102:103:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):3 -> checkGpsEnabled
-    102:103:void checkGpsEnabled():208 -> checkGpsEnabled
+    102:103:void checkGpsEnabled():217 -> checkGpsEnabled
     104:116:com.google.android.gms.common.api.internal.TaskApiCall com.google.android.gms.common.api.internal.TaskApiCall$Builder.build():1:1 -> checkGpsEnabled
     104:116:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):4 -> checkGpsEnabled
-    104:116:void checkGpsEnabled():208 -> checkGpsEnabled
+    104:116:void checkGpsEnabled():217 -> checkGpsEnabled
     117:120:com.google.android.gms.tasks.Task com.google.android.gms.common.api.GoogleApi.doRead(com.google.android.gms.common.api.internal.TaskApiCall):2:2 -> checkGpsEnabled
     117:120:com.google.android.gms.tasks.Task com.google.android.gms.internal.location.zzce.checkLocationSettings(com.google.android.gms.location.LocationSettingsRequest):5 -> checkGpsEnabled
-    117:120:void checkGpsEnabled():208 -> checkGpsEnabled
-    121:125:void checkGpsEnabled():208:208 -> checkGpsEnabled
-    126:133:void checkGpsEnabled$lambda$8(kotlin.jvm.functions.Function1,java.lang.Object):210:210 -> checkGpsEnabled
-    126:133:void checkGpsEnabled():210 -> checkGpsEnabled
+    117:120:void checkGpsEnabled():217 -> checkGpsEnabled
+    121:125:void checkGpsEnabled():217:217 -> checkGpsEnabled
+    126:133:void checkGpsEnabled$lambda$8(kotlin.jvm.functions.Function1,java.lang.Object):219:219 -> checkGpsEnabled
+    126:133:void checkGpsEnabled():219 -> checkGpsEnabled
     134:138:com.google.android.gms.tasks.Task com.google.android.gms.tasks.zzw.addOnSuccessListener(com.google.android.gms.tasks.OnSuccessListener):5:5 -> checkGpsEnabled
-    134:138:void checkGpsEnabled():210 -> checkGpsEnabled
-    139:146:void checkGpsEnabled():214:214 -> checkGpsEnabled
+    134:138:void checkGpsEnabled():219 -> checkGpsEnabled
+    139:146:void checkGpsEnabled():223:223 -> checkGpsEnabled
     147:150:com.google.android.gms.tasks.Task com.google.android.gms.tasks.zzw.addOnFailureListener(com.google.android.gms.tasks.OnFailureListener):5:5 -> checkGpsEnabled
-    147:150:void checkGpsEnabled():214 -> checkGpsEnabled
-    6:9:void checkGpsEnabled$lambda$8(kotlin.jvm.functions.Function1,java.lang.Object):210:210 -> checkGpsEnabled$lambda$8
+    147:150:void checkGpsEnabled():223 -> checkGpsEnabled
+    6:9:void checkGpsEnabled$lambda$8(kotlin.jvm.functions.Function1,java.lang.Object):219:219 -> checkGpsEnabled$lambda$8
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls5/l;Ljava/lang/Object;)V"}
-    11:14:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):215:215 -> checkGpsEnabled$lambda$9
-    15:16:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217:217 -> checkGpsEnabled$lambda$9
+    11:14:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):224:224 -> checkGpsEnabled$lambda$9
+    15:16:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226:226 -> checkGpsEnabled$lambda$9
     17:18:com.google.android.gms.common.api.Status com.google.android.gms.common.api.ApiException.getStatus():0:0 -> checkGpsEnabled$lambda$9
     17:18:android.app.PendingIntent com.google.android.gms.common.api.ResolvableApiException.getResolution():1 -> checkGpsEnabled$lambda$9
-    17:18:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217 -> checkGpsEnabled$lambda$9
+    17:18:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226 -> checkGpsEnabled$lambda$9
     19:20:android.app.PendingIntent com.google.android.gms.common.api.Status.getResolution():0:0 -> checkGpsEnabled$lambda$9
     19:20:android.app.PendingIntent com.google.android.gms.common.api.ResolvableApiException.getResolution():1 -> checkGpsEnabled$lambda$9
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    19:20:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217 -> checkGpsEnabled$lambda$9
-    21:25:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217:217 -> checkGpsEnabled$lambda$9
-    26:34:void onCreate(android.os.Bundle):86:86 -> checkGpsEnabled$lambda$9
-    26:34:void androidx.activity.result.IntentSenderRequest$Builder.<init>(android.app.PendingIntent):86 -> checkGpsEnabled$lambda$9
-    26:34:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217 -> checkGpsEnabled$lambda$9
-    35:41:androidx.activity.result.IntentSenderRequest androidx.activity.result.IntentSenderRequest$Builder.build():158:158 -> checkGpsEnabled$lambda$9
-    35:41:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):217 -> checkGpsEnabled$lambda$9
-    42:43:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):218:218 -> checkGpsEnabled$lambda$9
-    44:47:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> checkGpsEnabled$lambda$9
-    44:47:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47 -> checkGpsEnabled$lambda$9
-    44:47:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):218 -> checkGpsEnabled$lambda$9
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
-    1:9:void checkSpecialPermissions():137:137 -> checkSpecialPermissions
-    10:19:void checkSpecialPermissions():138:138 -> checkSpecialPermissions
-    20:25:void checkSpecialPermissions():139:139 -> checkSpecialPermissions
-    26:34:void checkSpecialPermissions():140:140 -> checkSpecialPermissions
-    35:36:void checkSpecialPermissions():141:141 -> checkSpecialPermissions
-    37:38:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
-    37:38:void checkSpecialPermissions():141 -> checkSpecialPermissions
-    39:40:void checkSpecialPermissions():142:142 -> checkSpecialPermissions
-    41:42:void loadUrl(java.lang.String):418:418 -> checkSpecialPermissions
-    41:42:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418 -> checkSpecialPermissions
-    41:42:void checkSpecialPermissions():142 -> checkSpecialPermissions
-    43:53:void checkSpecialPermissions():143:143 -> checkSpecialPermissions
-    54:55:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> checkSpecialPermissions
-    54:55:void checkSpecialPermissions():154 -> checkSpecialPermissions
-    56:57:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> checkSpecialPermissions
-    56:57:void checkSpecialPermissions():154 -> checkSpecialPermissions
-    58:64:void checkSpecialPermissions():155:155 -> checkSpecialPermissions
-    65:74:void checkSpecialPermissions():161:161 -> checkSpecialPermissions
-    75:80:void checkSpecialPermissions():162:162 -> checkSpecialPermissions
-    81:89:void checkSpecialPermissions():163:163 -> checkSpecialPermissions
-    90:91:void checkSpecialPermissions():164:164 -> checkSpecialPermissions
-    92:93:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
-    92:93:void checkSpecialPermissions():164 -> checkSpecialPermissions
-    94:95:void checkSpecialPermissions():165:165 -> checkSpecialPermissions
-    96:97:void loadUrl(java.lang.String):418:418 -> checkSpecialPermissions
-    96:97:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418 -> checkSpecialPermissions
-    96:97:void checkSpecialPermissions():165 -> checkSpecialPermissions
-    98:108:void checkSpecialPermissions():166:166 -> checkSpecialPermissions
-    109:110:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> checkSpecialPermissions
-    109:110:void checkSpecialPermissions():171 -> checkSpecialPermissions
-    111:112:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> checkSpecialPermissions
-    111:112:void checkSpecialPermissions():171 -> checkSpecialPermissions
-    113:116:void checkSpecialPermissions():172:172 -> checkSpecialPermissions
-    6:12:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):146:146 -> checkSpecialPermissions$lambda$5
-    13:26:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):147:147 -> checkSpecialPermissions$lambda$5
-    27:30:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):148:148 -> checkSpecialPermissions$lambda$5
-    31:37:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):150:150 -> checkSpecialPermissions$lambda$5
-    38:41:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):151:151 -> checkSpecialPermissions$lambda$5
-    6:12:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):167:167 -> checkSpecialPermissions$lambda$6
-    13:26:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):168:168 -> checkSpecialPermissions$lambda$6
-    27:30:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):169:169 -> checkSpecialPermissions$lambda$6
+    19:20:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226 -> checkGpsEnabled$lambda$9
+    21:25:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226:226 -> checkGpsEnabled$lambda$9
+    26:34:void androidx.activity.result.IntentSenderRequest$Builder.<init>(android.app.PendingIntent):86:86 -> checkGpsEnabled$lambda$9
+    26:34:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226 -> checkGpsEnabled$lambda$9
+    35:41:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):158:158 -> checkGpsEnabled$lambda$9
+    35:41:androidx.activity.result.IntentSenderRequest androidx.activity.result.IntentSenderRequest$Builder.build():158 -> checkGpsEnabled$lambda$9
+    35:41:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):226 -> checkGpsEnabled$lambda$9
+    42:43:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):227:227 -> checkGpsEnabled$lambda$9
+    44:47:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> checkGpsEnabled$lambda$9
+    44:47:void checkGpsEnabled$lambda$9(com.shirurexpress.app.MainActivity,java.lang.Exception):227 -> checkGpsEnabled$lambda$9
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    1:9:void checkSpecialPermissions():139:139 -> checkSpecialPermissions
+    10:19:void checkSpecialPermissions():140:140 -> checkSpecialPermissions
+    20:25:void checkSpecialPermissions():141:141 -> checkSpecialPermissions
+    26:30:void checkSpecialPermissions():142:142 -> checkSpecialPermissions
+    31:38:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
+    31:38:void checkSpecialPermissions():143 -> checkSpecialPermissions
+    39:40:void checkSpecialPermissions():144:144 -> checkSpecialPermissions
+    41:42:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> checkSpecialPermissions
+    41:42:void checkSpecialPermissions():144 -> checkSpecialPermissions
+    43:53:void checkSpecialPermissions():145:145 -> checkSpecialPermissions
+    54:56:void checkSpecialPermissions():163:163 -> checkSpecialPermissions
+    57:63:void checkSpecialPermissions():164:164 -> checkSpecialPermissions
+    64:73:void checkSpecialPermissions():170:170 -> checkSpecialPermissions
+    74:79:void checkSpecialPermissions():171:171 -> checkSpecialPermissions
+    80:84:void checkSpecialPermissions():172:172 -> checkSpecialPermissions
+    85:92:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
+    85:92:void checkSpecialPermissions():173 -> checkSpecialPermissions
+    93:94:void checkSpecialPermissions():174:174 -> checkSpecialPermissions
+    95:96:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> checkSpecialPermissions
+    95:96:void checkSpecialPermissions():174 -> checkSpecialPermissions
+    97:107:void checkSpecialPermissions():175:175 -> checkSpecialPermissions
+    108:110:void checkSpecialPermissions():180:180 -> checkSpecialPermissions
+    111:114:void checkSpecialPermissions():181:181 -> checkSpecialPermissions
+    6:12:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):148:148 -> checkSpecialPermissions$lambda$5
+    13:26:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):149:149 -> checkSpecialPermissions$lambda$5
+    27:30:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):150:150 -> checkSpecialPermissions$lambda$5
+    31:37:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):154:154 -> checkSpecialPermissions$lambda$5
+    38:46:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):155:155 -> checkSpecialPermissions$lambda$5
+    47:50:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):156:156 -> checkSpecialPermissions$lambda$5
+    51:57:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):158:158 -> checkSpecialPermissions$lambda$5
+    58:61:void checkSpecialPermissions$lambda$5(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):159:159 -> checkSpecialPermissions$lambda$5
+    6:12:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):176:176 -> checkSpecialPermissions$lambda$6
+    13:26:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):177:177 -> checkSpecialPermissions$lambda$6
+    27:30:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):178:178 -> checkSpecialPermissions$lambda$6
     1:4:void $r8$lambda$NyhQ3V9HEUiO-Xi-B6iJ-Akz5Mw(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> e
       # {"id":"com.android.tools.r8.synthesized"}
     6:11:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):59:59 -> enableGpsLauncher$lambda$3
     6:11:int androidx.activity.result.ActivityResult.getResultCode():59 -> enableGpsLauncher$lambda$3
-    6:11:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):57 -> enableGpsLauncher$lambda$3
+    6:11:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):59 -> enableGpsLauncher$lambda$3
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
-    12:20:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):58:58 -> enableGpsLauncher$lambda$3
-    21:35:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):59:59 -> enableGpsLauncher$lambda$3
-    36:45:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):61:61 -> enableGpsLauncher$lambda$3
+    12:20:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):60:60 -> enableGpsLauncher$lambda$3
+    21:35:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):61:61 -> enableGpsLauncher$lambda$3
+    36:45:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):63:63 -> enableGpsLauncher$lambda$3
     1:4:void $r8$lambda$RQV54oGgcHz5LHv9nHuxJuDtywc(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):0:0 -> f
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
@@ -180318,134 +180312,132 @@ com.shirurexpress.app.MainActivity -> com.shirurexpress.app.MainActivity:
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$mQ0yiMcCbIZ0YcPz4H9cqQqR2tw(com.shirurexpress.app.MainActivity):0:0 -> h
       # {"id":"com.android.tools.r8.synthesized"}
-    1:6:void handleIntent(android.content.Intent):458:458 -> handleIntent
-    7:18:void handleIntent(android.content.Intent):459:459 -> handleIntent
-    19:31:void handleIntent(android.content.Intent):460:460 -> handleIntent
+    1:6:void handleIntent(android.content.Intent):470:470 -> handleIntent
+    7:18:void handleIntent(android.content.Intent):471:471 -> handleIntent
+    19:31:void handleIntent(android.content.Intent):472:472 -> handleIntent
     1:4:void $r8$lambda$okkGTJRD5jZm_cqVugeNovOt0i0(s5.Function1,java.lang.Object):0:0 -> i
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls5/l;Ljava/lang/Object;)V"}
-    1:7:void injectCustomCSS():442:442 -> injectCustomCSS
-    8:17:void injectCustomCSS():445:445 -> injectCustomCSS
-    18:20:void injectCustomCSS():442:442 -> injectCustomCSS
-    21:22:void injectCustomCSS():445:445 -> injectCustomCSS
-    23:29:void injectCustomCSS():442:442 -> injectCustomCSS
-    30:44:void injectCustomCSS():449:449 -> injectCustomCSS
+    1:7:void injectCustomCSS():454:454 -> injectCustomCSS
+    8:17:void injectCustomCSS():457:457 -> injectCustomCSS
+    18:20:void injectCustomCSS():454:454 -> injectCustomCSS
+    21:22:void injectCustomCSS():457:457 -> injectCustomCSS
+    23:29:void injectCustomCSS():454:454 -> injectCustomCSS
+    30:44:void injectCustomCSS():461:461 -> injectCustomCSS
     1:4:void $r8$lambda$pmL1jxSIPqDRtmnTXm_bKUUumkE(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> j
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$uoBG_3gxyXM3GzNfPRxhr0FbbnU(com.shirurexpress.app.MainActivity,java.util.Map):0:0 -> k
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$yjf2Z0RZxclgGpiQMcpIAFeLXWI(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> l
       # {"id":"com.android.tools.r8.synthesized"}
-    1:10:void loadUrl(java.lang.String):418:418 -> loadUrl
-    11:20:void loadUrl(java.lang.String):419:419 -> loadUrl
-    21:32:void loadUrl(java.lang.String):420:420 -> loadUrl
-    33:36:void loadUrl(java.lang.String):419:419 -> loadUrl
-    37:42:void loadUrl(java.lang.String):418:418 -> loadUrl
-    1:3:void onCreate(android.os.Bundle):72:72 -> onCreate
-    4:8:void onCreate(android.os.Bundle):73:73 -> onCreate
-    9:23:void onCreate(android.os.Bundle):76:76 -> onCreate
-    24:36:void onCreate(android.os.Bundle):77:77 -> onCreate
-    37:49:void onCreate(android.os.Bundle):78:78 -> onCreate
-    50:60:void onCreate(android.os.Bundle):79:79 -> onCreate
-    61:63:void onCreate(android.os.Bundle):82:82 -> onCreate
-    64:79:void onCreate(android.os.Bundle):85:85 -> onCreate
-    80:92:void onCreate(android.os.Bundle):86:86 -> onCreate
-    93:97:void onCreate(android.os.Bundle):91:91 -> onCreate
-    98:102:void onCreate(android.os.Bundle):95:95 -> onCreate
-    103:114:void onCreate(android.os.Bundle):99:99 -> onCreate
-    115:118:void onCreate(android.os.Bundle):102:102 -> onCreate
-    119:122:void onCreate(android.os.Bundle):86:86 -> onCreate
-    123:126:void onCreate(android.os.Bundle):85:85 -> onCreate
-    6:20:void onCreate$lambda$4(com.shirurexpress.app.MainActivity):87:87 -> onCreate$lambda$4
-    1:7:void onDestroy():485:485 -> onDestroy
-    8:11:void onDestroy():486:486 -> onDestroy
-    12:18:void onDestroy():485:485 -> onDestroy
-    1:5:void onNewIntent(android.content.Intent):453:453 -> onNewIntent
-    6:9:void onNewIntent(android.content.Intent):454:454 -> onNewIntent
-    1:3:void onPause():480:480 -> onPause
-    4:18:void onPause():481:481 -> onPause
-    6:8:void onRestoreInstanceState(android.os.Bundle):470:470 -> onRestoreInstanceState
-    9:23:void onRestoreInstanceState(android.os.Bundle):471:471 -> onRestoreInstanceState
-    1:3:void onResume():475:475 -> onResume
-    4:18:void onResume():476:476 -> onResume
-    6:11:void onRetryClick(android.view.View):491:491 -> onRetryClick
-    6:8:void onSaveInstanceState(android.os.Bundle):465:465 -> onSaveInstanceState
-    9:23:void onSaveInstanceState(android.os.Bundle):466:466 -> onSaveInstanceState
-    6:8:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42:42 -> permissionLauncher$lambda$2
+    1:10:void loadUrl(java.lang.String):430:430 -> loadUrl
+    11:20:void loadUrl(java.lang.String):431:431 -> loadUrl
+    21:32:void loadUrl(java.lang.String):432:432 -> loadUrl
+    33:36:void loadUrl(java.lang.String):431:431 -> loadUrl
+    37:42:void loadUrl(java.lang.String):430:430 -> loadUrl
+    1:3:void onCreate(android.os.Bundle):74:74 -> onCreate
+    4:8:void onCreate(android.os.Bundle):75:75 -> onCreate
+    9:23:void onCreate(android.os.Bundle):78:78 -> onCreate
+    24:36:void onCreate(android.os.Bundle):79:79 -> onCreate
+    37:49:void onCreate(android.os.Bundle):80:80 -> onCreate
+    50:60:void onCreate(android.os.Bundle):81:81 -> onCreate
+    61:63:void onCreate(android.os.Bundle):84:84 -> onCreate
+    64:79:void onCreate(android.os.Bundle):87:87 -> onCreate
+    80:92:void onCreate(android.os.Bundle):88:88 -> onCreate
+    93:97:void onCreate(android.os.Bundle):93:93 -> onCreate
+    98:102:void onCreate(android.os.Bundle):97:97 -> onCreate
+    103:114:void onCreate(android.os.Bundle):101:101 -> onCreate
+    115:118:void onCreate(android.os.Bundle):104:104 -> onCreate
+    119:122:void onCreate(android.os.Bundle):88:88 -> onCreate
+    123:126:void onCreate(android.os.Bundle):87:87 -> onCreate
+    6:20:void onCreate$lambda$4(com.shirurexpress.app.MainActivity):89:89 -> onCreate$lambda$4
+    1:7:void onDestroy():497:497 -> onDestroy
+    8:11:void onDestroy():498:498 -> onDestroy
+    12:18:void onDestroy():497:497 -> onDestroy
+    1:5:void onNewIntent(android.content.Intent):465:465 -> onNewIntent
+    6:9:void onNewIntent(android.content.Intent):466:466 -> onNewIntent
+    1:3:void onPause():492:492 -> onPause
+    4:18:void onPause():493:493 -> onPause
+    6:8:void onRestoreInstanceState(android.os.Bundle):482:482 -> onRestoreInstanceState
+    9:23:void onRestoreInstanceState(android.os.Bundle):483:483 -> onRestoreInstanceState
+    1:3:void onResume():487:487 -> onResume
+    4:18:void onResume():488:488 -> onResume
+    6:11:void onRetryClick(android.view.View):503:503 -> onRetryClick
+    6:8:void onSaveInstanceState(android.os.Bundle):477:477 -> onSaveInstanceState
+    9:23:void onSaveInstanceState(android.os.Bundle):478:478 -> onSaveInstanceState
+    6:8:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44:44 -> permissionLauncher$lambda$2
     9:13:java.util.Map kotlin.collections.MapsKt__MapsKt.filter(java.util.Map,kotlin.jvm.functions.Function1):526:526 -> permissionLauncher$lambda$2
-    9:13:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
+    9:13:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
     14:33:java.util.Map kotlin.collections.MapsKt__MapsKt.filterTo(java.util.Map,java.util.Map,kotlin.jvm.functions.Function1):511:511 -> permissionLauncher$lambda$2
-    14:33:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
-    34:45:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42:42 -> permissionLauncher$lambda$2
+    14:33:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
+    34:45:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44:44 -> permissionLauncher$lambda$2
     46:57:java.util.Map kotlin.collections.MapsKt__MapsKt.filterTo(java.util.Map,java.util.Map,kotlin.jvm.functions.Function1):513:513 -> permissionLauncher$lambda$2
-    46:57:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
+    46:57:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
     58:66:java.util.List kotlin.collections.MapsKt___MapsKt.map(java.util.Map,kotlin.jvm.functions.Function1):125:125 -> permissionLauncher$lambda$2
-    58:66:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
+    58:66:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
     67:86:java.util.Collection kotlin.collections.MapsKt___MapsKt.mapTo(java.util.Map,java.util.Collection,kotlin.jvm.functions.Function1):152:152 -> permissionLauncher$lambda$2
-    67:86:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
-    87:92:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42:42 -> permissionLauncher$lambda$2
+    67:86:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
+    87:92:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44:44 -> permissionLauncher$lambda$2
     93:96:java.util.Collection kotlin.collections.MapsKt___MapsKt.mapTo(java.util.Map,java.util.Collection,kotlin.jvm.functions.Function1):153:153 -> permissionLauncher$lambda$2
-    93:96:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):42 -> permissionLauncher$lambda$2
-    97:102:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44:44 -> permissionLauncher$lambda$2
-    103:105:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):46:46 -> permissionLauncher$lambda$2
-    106:109:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> permissionLauncher$lambda$2
-    110:113:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):50:50 -> permissionLauncher$lambda$2
-    1:13:void setupBackPressHandler():400:400 -> setupBackPressHandler
-    1:12:void setupWebView():228:228 -> setupWebView
-    13:15:void setupWebView():230:230 -> setupWebView
-    16:18:void setupWebView():233:233 -> setupWebView
-    19:21:void setupWebView():236:236 -> setupWebView
-    22:45:void setupWebView():239:239 -> setupWebView
-    46:49:void setupWebView():242:242 -> setupWebView
-    50:52:void setupWebView():243:243 -> setupWebView
-    53:55:void setupWebView():246:246 -> setupWebView
-    56:59:void setupWebView():247:247 -> setupWebView
-    60:62:void setupWebView():250:250 -> setupWebView
-    63:65:void setupWebView():253:253 -> setupWebView
-    66:69:void setupWebView():254:254 -> setupWebView
-    70:72:void setupWebView():257:257 -> setupWebView
-    73:75:void setupWebView():260:260 -> setupWebView
-    76:78:void setupWebView():263:263 -> setupWebView
-    79:81:void setupWebView():264:264 -> setupWebView
-    82:84:void setupWebView():267:267 -> setupWebView
-    85:96:void setupWebView():271:271 -> setupWebView
-    97:108:void setupWebView():347:347 -> setupWebView
-    109:112:void setupWebView():396:396 -> setupWebView
-    113:116:void setupWebView():347:347 -> setupWebView
-    117:120:void setupWebView():271:271 -> setupWebView
-    121:124:void setupWebView():228:228 -> setupWebView
-    1:10:void showErrorPage():424:424 -> showErrorPage
-    11:18:void showErrorPage():425:425 -> showErrorPage
-    19:25:void showErrorPage():426:426 -> showErrorPage
-    26:39:void showErrorPage():427:427 -> showErrorPage
-    40:45:void showErrorPage():426:426 -> showErrorPage
-    46:51:void showErrorPage():425:425 -> showErrorPage
-    52:57:void showErrorPage():424:424 -> showErrorPage
-    1:7:void showPermissionRationale(java.util.List):178:178 -> showPermissionRationale
-    8:15:void showPermissionRationale(java.util.List):180:180 -> showPermissionRationale
-    16:20:void showPermissionRationale(java.util.List):181:181 -> showPermissionRationale
-    21:28:void showPermissionRationale(java.util.List):183:183 -> showPermissionRationale
-    29:33:void showPermissionRationale(java.util.List):184:184 -> showPermissionRationale
-    34:41:void showPermissionRationale(java.util.List):186:186 -> showPermissionRationale
-    42:46:void showPermissionRationale(java.util.List):187:187 -> showPermissionRationale
-    47:51:void showPermissionRationale(java.util.List):190:190 -> showPermissionRationale
-    52:60:void showPermissionRationale(java.util.List):192:192 -> showPermissionRationale
-    61:62:void showPermissionRationale(java.util.List):193:193 -> showPermissionRationale
+    93:96:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):44 -> permissionLauncher$lambda$2
+    97:102:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):46:46 -> permissionLauncher$lambda$2
+    103:105:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):48:48 -> permissionLauncher$lambda$2
+    106:109:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):49:49 -> permissionLauncher$lambda$2
+    110:113:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):52:52 -> permissionLauncher$lambda$2
+    1:13:void setupBackPressHandler():412:412 -> setupBackPressHandler
+    1:12:void setupWebView():237:237 -> setupWebView
+    13:15:void setupWebView():239:239 -> setupWebView
+    16:18:void setupWebView():242:242 -> setupWebView
+    19:21:void setupWebView():245:245 -> setupWebView
+    22:45:void setupWebView():248:248 -> setupWebView
+    46:49:void setupWebView():251:251 -> setupWebView
+    50:52:void setupWebView():252:252 -> setupWebView
+    53:55:void setupWebView():255:255 -> setupWebView
+    56:59:void setupWebView():256:256 -> setupWebView
+    60:62:void setupWebView():259:259 -> setupWebView
+    63:65:void setupWebView():262:262 -> setupWebView
+    66:69:void setupWebView():263:263 -> setupWebView
+    70:72:void setupWebView():266:266 -> setupWebView
+    73:75:void setupWebView():269:269 -> setupWebView
+    76:78:void setupWebView():272:272 -> setupWebView
+    79:81:void setupWebView():273:273 -> setupWebView
+    82:84:void setupWebView():276:276 -> setupWebView
+    85:98:void setupWebView():280:280 -> setupWebView
+    99:110:void setupWebView():283:283 -> setupWebView
+    111:122:void setupWebView():359:359 -> setupWebView
+    123:126:void setupWebView():408:408 -> setupWebView
+    127:130:void setupWebView():359:359 -> setupWebView
+    131:134:void setupWebView():283:283 -> setupWebView
+    135:138:void setupWebView():280:280 -> setupWebView
+    139:142:void setupWebView():237:237 -> setupWebView
+    1:10:void showErrorPage():436:436 -> showErrorPage
+    11:18:void showErrorPage():437:437 -> showErrorPage
+    19:25:void showErrorPage():438:438 -> showErrorPage
+    26:39:void showErrorPage():439:439 -> showErrorPage
+    40:45:void showErrorPage():438:438 -> showErrorPage
+    46:51:void showErrorPage():437:437 -> showErrorPage
+    52:57:void showErrorPage():436:436 -> showErrorPage
+    1:7:void showPermissionRationale(java.util.List):187:187 -> showPermissionRationale
+    8:15:void showPermissionRationale(java.util.List):189:189 -> showPermissionRationale
+    16:20:void showPermissionRationale(java.util.List):190:190 -> showPermissionRationale
+    21:28:void showPermissionRationale(java.util.List):192:192 -> showPermissionRationale
+    29:33:void showPermissionRationale(java.util.List):193:193 -> showPermissionRationale
+    34:41:void showPermissionRationale(java.util.List):195:195 -> showPermissionRationale
+    42:46:void showPermissionRationale(java.util.List):196:196 -> showPermissionRationale
+    47:51:void showPermissionRationale(java.util.List):199:199 -> showPermissionRationale
+    52:60:void showPermissionRationale(java.util.List):201:201 -> showPermissionRationale
+    61:62:void showPermissionRationale(java.util.List):202:202 -> showPermissionRationale
     63:64:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> showPermissionRationale
-    63:64:void showPermissionRationale(java.util.List):193 -> showPermissionRationale
-    65:68:void showPermissionRationale(java.util.List):194:194 -> showPermissionRationale
-    69:70:void loadUrl(java.lang.String):418:418 -> showPermissionRationale
-    69:70:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418 -> showPermissionRationale
-    69:70:void showPermissionRationale(java.util.List):194 -> showPermissionRationale
-    71:81:void showPermissionRationale(java.util.List):195:195 -> showPermissionRationale
-    82:86:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> showPermissionRationale
-    82:86:void showPermissionRationale(java.util.List):200 -> showPermissionRationale
-    87:88:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> showPermissionRationale
-    87:88:void showPermissionRationale(java.util.List):200 -> showPermissionRationale
-    89:92:void showPermissionRationale(java.util.List):201:201 -> showPermissionRationale
-    6:12:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):196:196 -> showPermissionRationale$lambda$7
-    13:26:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):197:197 -> showPermissionRationale$lambda$7
-    27:30:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):198:198 -> showPermissionRationale$lambda$7
+    63:64:void showPermissionRationale(java.util.List):202 -> showPermissionRationale
+    65:68:void showPermissionRationale(java.util.List):203:203 -> showPermissionRationale
+    69:70:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> showPermissionRationale
+    69:70:void showPermissionRationale(java.util.List):203 -> showPermissionRationale
+    71:81:void showPermissionRationale(java.util.List):204:204 -> showPermissionRationale
+    82:87:void showPermissionRationale(java.util.List):209:209 -> showPermissionRationale
+    88:91:void showPermissionRationale(java.util.List):210:210 -> showPermissionRationale
+    6:12:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):205:205 -> showPermissionRationale$lambda$7
+    13:26:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):206:206 -> showPermissionRationale$lambda$7
+    27:30:void showPermissionRationale$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):207:207 -> showPermissionRationale$lambda$7
 com.shirurexpress.app.MainActivity$$ExternalSyntheticApiModelOutline0 -> com.shirurexpress.app.c:
 # {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
 # {"id":"com.android.tools.r8.synthesized"}
@@ -180529,128 +180521,245 @@ com.shirurexpress.app.MainActivity$$ExternalSyntheticLambda5 -> com.shirurexpres
       # {"id":"com.android.tools.r8.synthesized"}
     1:30:void onClick(android.content.DialogInterface,int):0:0 -> onClick
       # {"id":"com.android.tools.r8.synthesized"}
+com.shirurexpress.app.MainActivity$AndroidBridge -> com.shirurexpress.app.MainActivity$AndroidBridge:
+# {"id":"sourceFile","fileName":"MainActivity.kt"}
+    1:6:void <init>(com.shirurexpress.app.MainActivity):510:510 -> <init>
+    1:4:void $r8$lambda$1-OqC-MWpew7w2VueV53U_d3apY(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):0:0 -> a
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:6:boolean areAllPermissionsGranted():714:714 -> areAllPermissionsGranted
+    7:12:boolean areAllPermissionsGranted():715:715 -> areAllPermissionsGranted
+    13:22:boolean areAllPermissionsGranted():716:716 -> areAllPermissionsGranted
+    1:4:void $r8$lambda$DOL7Gm6HvUdmfi6xRiwpvN4z28I(com.shirurexpress.app.MainActivity,java.lang.String):0:0 -> b
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:4:void $r8$lambda$JY43M0vUtusNXbunEBh4Cs6UfGE(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> c
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:4:void $r8$lambda$eX0LOhU7FO-pjE0IcbnKws79c30(com.shirurexpress.app.MainActivity):0:0 -> d
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:4:void $r8$lambda$is5ZeSaStarK0h8EodYPdZzhztA(com.shirurexpress.app.MainActivity):0:0 -> e
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:9:java.lang.String getFcmToken():518:518 -> getFcmToken
+    10:21:java.lang.String getFcmToken():519:519 -> getFcmToken
+    22:73:java.lang.String getFcmToken():520:520 -> getFcmToken
+    1:8:java.lang.String getPermissionStatus():610:610 -> getPermissionStatus
+    9:15:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
+    9:15:java.lang.String getPermissionStatus():610 -> getPermissionStatus
+    16:23:java.lang.String getPermissionStatus():611:611 -> getPermissionStatus
+    24:30:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
+    24:30:java.lang.String getPermissionStatus():611 -> getPermissionStatus
+    31:38:java.lang.String getPermissionStatus():612:612 -> getPermissionStatus
+    39:45:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
+    39:45:java.lang.String getPermissionStatus():612 -> getPermissionStatus
+    46:53:java.lang.String getPermissionStatus():613:613 -> getPermissionStatus
+    54:60:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
+    54:60:java.lang.String getPermissionStatus():613 -> getPermissionStatus
+    61:64:java.lang.String getPermissionStatus():613:613 -> getPermissionStatus
+    65:77:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55:55 -> getPermissionStatus
+    65:77:java.lang.String getPermissionStatus():609 -> getPermissionStatus
+    78:79:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421:421 -> getPermissionStatus
+    78:79:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
+    78:79:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
+    78:79:java.lang.String getPermissionStatus():609 -> getPermissionStatus
+    80:81:java.lang.Object kotlin.Pair.component1():0:0 -> getPermissionStatus
+    80:81:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421 -> getPermissionStatus
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    80:81:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
+    80:81:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
+    80:81:java.lang.String getPermissionStatus():609 -> getPermissionStatus
+    82:83:java.lang.Object kotlin.Pair.component2():0:0 -> getPermissionStatus
+    82:83:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421 -> getPermissionStatus
+    82:83:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
+    82:83:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
+    82:83:java.lang.String getPermissionStatus():609 -> getPermissionStatus
+    84:89:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):422:422 -> getPermissionStatus
+    84:89:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
+    84:89:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
+    84:89:java.lang.String getPermissionStatus():609 -> getPermissionStatus
+    90:104:java.lang.String getPermissionStatus():615:615 -> getPermissionStatus
+    1:15:boolean isBatteryOptimizationDisabled():566:566 -> isBatteryOptimizationDisabled
+    16:26:boolean isBatteryOptimizationDisabled():567:567 -> isBatteryOptimizationDisabled
+    1:7:boolean isDisplayOverAppsGranted():553:553 -> isDisplayOverAppsGranted
+    1:6:boolean isFullScreenIntentGranted():595:595 -> isFullScreenIntentGranted
+    7:18:boolean isFullScreenIntentGranted():596:596 -> isFullScreenIntentGranted
+    19:27:boolean isFullScreenIntentGranted():597:597 -> isFullScreenIntentGranted
+    1:2:boolean isNativeApp():0:0 -> isNativeApp
+    1:7:boolean isNotificationPermissionGranted():579:579 -> isNotificationPermissionGranted
+    8:9:boolean isNotificationPermissionGranted():581:581 -> isNotificationPermissionGranted
+    10:11:boolean isNotificationPermissionGranted():582:582 -> isNotificationPermissionGranted
+    12:21:boolean isNotificationPermissionGranted():580:580 -> isNotificationPermissionGranted
+    1:12:void requestBatteryOptimization():646:646 -> requestBatteryOptimization
+    6:12:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):649:649 -> requestBatteryOptimization$lambda$2
+    13:26:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):650:650 -> requestBatteryOptimization$lambda$2
+    27:31:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):651:651 -> requestBatteryOptimization$lambda$2
+    32:38:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):653:653 -> requestBatteryOptimization$lambda$2
+    39:45:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):656:656 -> requestBatteryOptimization$lambda$2
+    46:49:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):657:657 -> requestBatteryOptimization$lambda$2
+    50:60:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):659:659 -> requestBatteryOptimization$lambda$2
+    1:12:void requestDisplayOverApps():626:626 -> requestDisplayOverApps
+    6:12:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):629:629 -> requestDisplayOverApps$lambda$1
+    13:26:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):630:630 -> requestDisplayOverApps$lambda$1
+    27:31:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):631:631 -> requestDisplayOverApps$lambda$1
+    32:38:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):633:633 -> requestDisplayOverApps$lambda$1
+    39:49:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):634:634 -> requestDisplayOverApps$lambda$1
+    1:12:void requestSystemPermissions():672:672 -> requestSystemPermissions
+    11:15:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):674:674 -> requestSystemPermissions$lambda$4
+    16:23:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> requestSystemPermissions$lambda$4
+    16:23:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):675 -> requestSystemPermissions$lambda$4
+    24:25:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):676:676 -> requestSystemPermissions$lambda$4
+    26:27:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> requestSystemPermissions$lambda$4
+    26:27:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):676 -> requestSystemPermissions$lambda$4
+    28:37:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):680:680 -> requestSystemPermissions$lambda$4
+    38:43:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):703:703 -> requestSystemPermissions$lambda$4
+    44:47:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):704:704 -> requestSystemPermissions$lambda$4
+    11:16:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):682:682 -> requestSystemPermissions$lambda$4$lambda$3
+    17:20:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):683:683 -> requestSystemPermissions$lambda$4$lambda$3
+    21:26:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):684:684 -> requestSystemPermissions$lambda$4$lambda$3
+    27:30:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):685:685 -> requestSystemPermissions$lambda$4$lambda$3
+    31:36:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):686:686 -> requestSystemPermissions$lambda$4$lambda$3
+    37:42:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):689:689 -> requestSystemPermissions$lambda$4$lambda$3
+    43:49:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):690:690 -> requestSystemPermissions$lambda$4$lambda$3
+    50:63:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):691:691 -> requestSystemPermissions$lambda$4$lambda$3
+    64:67:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):692:692 -> requestSystemPermissions$lambda$4$lambda$3
+    68:74:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):695:695 -> requestSystemPermissions$lambda$4$lambda$3
+    75:83:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):696:696 -> requestSystemPermissions$lambda$4$lambda$3
+    84:87:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):697:697 -> requestSystemPermissions$lambda$4$lambda$3
+    88:98:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):700:700 -> requestSystemPermissions$lambda$4$lambda$3
+    6:17:void showToast(java.lang.String):539:539 -> showToast
+    12:19:void showToast$lambda$0(com.shirurexpress.app.MainActivity,java.lang.String):540:540 -> showToast$lambda$0
+com.shirurexpress.app.MainActivity$AndroidBridge$$ExternalSyntheticLambda0 -> com.shirurexpress.app.g:
+# {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
+# {"id":"com.android.tools.r8.synthesized"}
+    int $r8$classId -> i
+      # {"id":"com.android.tools.r8.synthesized"}
+    com.shirurexpress.app.MainActivity com.shirurexpress.app.MainActivity$AndroidBridge$$InternalSyntheticLambda$1$0440b6f730257fa5294752781256ef2ca1f33789cb7bd69f9599e33ae96e60bc$0.f$0 -> j
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:8:void <init>(com.shirurexpress.app.MainActivity,int):0:0 -> <init>
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:18:void run():0:0 -> run
+      # {"id":"com.android.tools.r8.synthesized"}
+com.shirurexpress.app.MainActivity$AndroidBridge$$ExternalSyntheticLambda3 -> com.shirurexpress.app.h:
+# {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
+# {"id":"com.android.tools.r8.synthesized"}
+    com.shirurexpress.app.MainActivity$AndroidBridge com.shirurexpress.app.MainActivity$AndroidBridge$$InternalSyntheticLambda$1$a06327e38de6b690f5a47fafbf56b7bb0d1aad81b2c5a88cf9b8440b6d2345b7$0.f$0 -> i
+      # {"id":"com.android.tools.r8.synthesized"}
+    com.shirurexpress.app.MainActivity com.shirurexpress.app.MainActivity$AndroidBridge$$InternalSyntheticLambda$1$a06327e38de6b690f5a47fafbf56b7bb0d1aad81b2c5a88cf9b8440b6d2345b7$0.f$1 -> j
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:8:void <init>(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):0:0 -> <init>
+      # {"id":"com.android.tools.r8.synthesized"}
+    1:8:void onClick(android.content.DialogInterface,int):0:0 -> onClick
+      # {"id":"com.android.tools.r8.synthesized"}
 com.shirurexpress.app.MainActivity$Companion -> com.shirurexpress.app.MainActivity$Companion:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
     1:1:void <init>(kotlin.jvm.internal.DefaultConstructorMarker):0:0 -> <init>
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lt5/e;)V"}
-    2:2:void <init>():65:65 -> <init>
+    2:2:void <init>():67:67 -> <init>
 com.shirurexpress.app.MainActivity$checkGpsEnabled$1 -> com.shirurexpress.app.MainActivity$checkGpsEnabled$1:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
     1:8:void <clinit>():0:0 -> <clinit>
     1:5:void <init>():0:0 -> <init>
-    1:1:java.lang.Object invoke(java.lang.Object):210:210 -> invoke
-    2:2:void invoke(com.google.android.gms.location.LocationSettingsResponse):211:211 -> invoke
+    1:1:java.lang.Object invoke(java.lang.Object):219:219 -> invoke
+    2:2:void invoke(com.google.android.gms.location.LocationSettingsResponse):220:220 -> invoke
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lx2/c;)V"}
 com.shirurexpress.app.MainActivity$setupBackPressHandler$1 -> com.shirurexpress.app.MainActivity$setupBackPressHandler$1:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
-    4:7:void <init>(com.shirurexpress.app.MainActivity):400:400 -> <init>
+    4:7:void <init>(com.shirurexpress.app.MainActivity):412:412 -> <init>
     1:4:void $r8$lambda$0FR9ktEEGQKy12G9BkyTVF7G7bY(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> a
       # {"id":"com.android.tools.r8.synthesized"}
-    1:17:void handleOnBackPressed():402:402 -> handleOnBackPressed
-    18:33:void handleOnBackPressed():403:403 -> handleOnBackPressed
-    34:44:void handleOnBackPressed():406:406 -> handleOnBackPressed
-    45:46:void handleOnBackPressed():407:407 -> handleOnBackPressed
-    47:48:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> handleOnBackPressed
-    47:48:void handleOnBackPressed():407 -> handleOnBackPressed
-    49:50:void handleOnBackPressed():408:408 -> handleOnBackPressed
+    1:17:void handleOnBackPressed():414:414 -> handleOnBackPressed
+    18:33:void handleOnBackPressed():415:415 -> handleOnBackPressed
+    34:40:void handleOnBackPressed():418:418 -> handleOnBackPressed
+    41:48:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> handleOnBackPressed
+    41:48:void handleOnBackPressed():419 -> handleOnBackPressed
+    49:50:void handleOnBackPressed():420:420 -> handleOnBackPressed
     51:52:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> handleOnBackPressed
-    51:52:void handleOnBackPressed():408 -> handleOnBackPressed
-    53:65:void handleOnBackPressed():409:409 -> handleOnBackPressed
-    66:67:void handleOnBackPressed():410:410 -> handleOnBackPressed
-    68:69:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> handleOnBackPressed
-    68:69:void handleOnBackPressed():410 -> handleOnBackPressed
-    70:71:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> handleOnBackPressed
-    70:71:void handleOnBackPressed():410 -> handleOnBackPressed
-    72:75:void handleOnBackPressed():411:411 -> handleOnBackPressed
-    76:79:void handleOnBackPressed():402:402 -> handleOnBackPressed
-    6:9:void handleOnBackPressed$lambda$0(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):409:409 -> handleOnBackPressed$lambda$0
+    51:52:void handleOnBackPressed():420 -> handleOnBackPressed
+    53:65:void handleOnBackPressed():421:421 -> handleOnBackPressed
+    66:70:void handleOnBackPressed():422:422 -> handleOnBackPressed
+    71:74:void handleOnBackPressed():423:423 -> handleOnBackPressed
+    75:78:void handleOnBackPressed():414:414 -> handleOnBackPressed
+    6:9:void handleOnBackPressed$lambda$0(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):421:421 -> handleOnBackPressed$lambda$0
 com.shirurexpress.app.MainActivity$setupWebView$2 -> com.shirurexpress.app.MainActivity$setupWebView$2:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
-    3:6:void <init>(com.shirurexpress.app.MainActivity):271:271 -> <init>
-    1:3:void onPageFinished(android.webkit.WebView,java.lang.String):280:280 -> onPageFinished
-    4:17:void onPageFinished(android.webkit.WebView,java.lang.String):281:281 -> onPageFinished
-    18:29:void onPageFinished(android.webkit.WebView,java.lang.String):282:282 -> onPageFinished
-    30:35:void onPageFinished(android.webkit.WebView,java.lang.String):285:285 -> onPageFinished
-    36:41:void onPageFinished(android.webkit.WebView,java.lang.String):282:282 -> onPageFinished
-    42:47:void onPageFinished(android.webkit.WebView,java.lang.String):281:281 -> onPageFinished
-    1:3:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):274:274 -> onPageStarted
-    4:16:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):275:275 -> onPageStarted
-    17:36:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):276:276 -> onPageStarted
-    37:42:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):275:275 -> onPageStarted
-    1:5:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):293:293 -> onReceivedError
-    6:12:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):294:294 -> onReceivedError
-    13:18:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):295:295 -> onReceivedError
-    4:17:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):303:303 -> shouldOverrideUrlLoading
-    18:27:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):306:306 -> shouldOverrideUrlLoading
-    28:29:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):311:311 -> shouldOverrideUrlLoading
+    3:6:void <init>(com.shirurexpress.app.MainActivity):283:283 -> <init>
+    1:3:void onPageFinished(android.webkit.WebView,java.lang.String):292:292 -> onPageFinished
+    4:17:void onPageFinished(android.webkit.WebView,java.lang.String):293:293 -> onPageFinished
+    18:29:void onPageFinished(android.webkit.WebView,java.lang.String):294:294 -> onPageFinished
+    30:35:void onPageFinished(android.webkit.WebView,java.lang.String):297:297 -> onPageFinished
+    36:41:void onPageFinished(android.webkit.WebView,java.lang.String):294:294 -> onPageFinished
+    42:47:void onPageFinished(android.webkit.WebView,java.lang.String):293:293 -> onPageFinished
+    1:3:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):286:286 -> onPageStarted
+    4:16:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):287:287 -> onPageStarted
+    17:36:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):288:288 -> onPageStarted
+    37:42:void onPageStarted(android.webkit.WebView,java.lang.String,android.graphics.Bitmap):287:287 -> onPageStarted
+    1:5:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):305:305 -> onReceivedError
+    6:12:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):306:306 -> onReceivedError
+    13:18:void onReceivedError(android.webkit.WebView,android.webkit.WebResourceRequest,android.webkit.WebResourceError):307:307 -> onReceivedError
+    4:17:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):315:315 -> shouldOverrideUrlLoading
+    18:27:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):318:318 -> shouldOverrideUrlLoading
+    28:29:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):323:323 -> shouldOverrideUrlLoading
     30:33:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith(java.lang.String,java.lang.String,boolean):397:397 -> shouldOverrideUrlLoading
     30:33:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object):395 -> shouldOverrideUrlLoading
-    30:33:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):311 -> shouldOverrideUrlLoading
-    34:40:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):311:311 -> shouldOverrideUrlLoading
+    30:33:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):323 -> shouldOverrideUrlLoading
+    34:40:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):323:323 -> shouldOverrideUrlLoading
     41:47:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith(java.lang.String,java.lang.String,boolean):397:397 -> shouldOverrideUrlLoading
     41:47:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object):395 -> shouldOverrideUrlLoading
-    41:47:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):311 -> shouldOverrideUrlLoading
-    48:49:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):318:318 -> shouldOverrideUrlLoading
+    41:47:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):323 -> shouldOverrideUrlLoading
+    48:49:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):330:330 -> shouldOverrideUrlLoading
     50:55:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith(java.lang.String,java.lang.String,boolean):397:397 -> shouldOverrideUrlLoading
     50:55:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object):395 -> shouldOverrideUrlLoading
-    50:55:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):318 -> shouldOverrideUrlLoading
-    56:66:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):319:319 -> shouldOverrideUrlLoading
-    67:72:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):320:320 -> shouldOverrideUrlLoading
-    73:74:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):325:325 -> shouldOverrideUrlLoading
+    50:55:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):330 -> shouldOverrideUrlLoading
+    56:66:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):331:331 -> shouldOverrideUrlLoading
+    67:72:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):332:332 -> shouldOverrideUrlLoading
+    73:74:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):337:337 -> shouldOverrideUrlLoading
     75:80:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith(java.lang.String,java.lang.String,boolean):397:397 -> shouldOverrideUrlLoading
     75:80:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object):395 -> shouldOverrideUrlLoading
-    75:80:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):325 -> shouldOverrideUrlLoading
-    81:91:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):326:326 -> shouldOverrideUrlLoading
-    92:97:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):327:327 -> shouldOverrideUrlLoading
-    98:107:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):332:332 -> shouldOverrideUrlLoading
+    75:80:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):337 -> shouldOverrideUrlLoading
+    81:91:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):338:338 -> shouldOverrideUrlLoading
+    92:97:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):339:339 -> shouldOverrideUrlLoading
+    98:107:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):344:344 -> shouldOverrideUrlLoading
     108:113:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith(java.lang.String,java.lang.String,boolean):397:397 -> shouldOverrideUrlLoading
     108:113:boolean kotlin.text.StringsKt__StringsJVMKt.startsWith$default(java.lang.String,java.lang.String,boolean,int,java.lang.Object):395 -> shouldOverrideUrlLoading
-    108:113:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):332 -> shouldOverrideUrlLoading
-    114:122:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):334:334 -> shouldOverrideUrlLoading
-    123:128:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):335:335 -> shouldOverrideUrlLoading
-    129:140:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):337:337 -> shouldOverrideUrlLoading
-    141:149:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):312:312 -> shouldOverrideUrlLoading
-    150:156:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):313:313 -> shouldOverrideUrlLoading
+    108:113:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):344 -> shouldOverrideUrlLoading
+    114:122:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):346:346 -> shouldOverrideUrlLoading
+    123:128:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):347:347 -> shouldOverrideUrlLoading
+    129:140:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):349:349 -> shouldOverrideUrlLoading
+    141:149:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):324:324 -> shouldOverrideUrlLoading
+    150:156:boolean shouldOverrideUrlLoading(android.webkit.WebView,android.webkit.WebResourceRequest):325:325 -> shouldOverrideUrlLoading
 com.shirurexpress.app.MainActivity$setupWebView$3 -> com.shirurexpress.app.MainActivity$setupWebView$3:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
-    3:6:void <init>(com.shirurexpress.app.MainActivity):347:347 -> <init>
+    3:6:void <init>(com.shirurexpress.app.MainActivity):359:359 -> <init>
     1:4:void $r8$lambda$V7MkZeyuz1OmQm2GQuP4oT7pGuI(android.webkit.JsResult,android.content.DialogInterface,int):0:0 -> a
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$WjXbl3zx76aQbqmx9RDNw-6qK7M(android.webkit.JsResult,android.content.DialogInterface,int):0:0 -> b
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$_KWGNZwwVR7PfqiVzZp5fOVkiNA(android.webkit.JsResult,android.content.DialogInterface,int):0:0 -> c
       # {"id":"com.android.tools.r8.synthesized"}
-    5:8:void onGeolocationPermissionsShowPrompt(java.lang.String,android.webkit.GeolocationPermissions$Callback):391:391 -> onGeolocationPermissionsShowPrompt
-    1:7:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):362:362 -> onJsAlert
+    5:8:void onGeolocationPermissionsShowPrompt(java.lang.String,android.webkit.GeolocationPermissions$Callback):403:403 -> onGeolocationPermissionsShowPrompt
+    1:7:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):374:374 -> onJsAlert
     8:15:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> onJsAlert
-    8:15:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):363 -> onJsAlert
+    8:15:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):375 -> onJsAlert
     16:17:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> onJsAlert
-    16:17:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):364 -> onJsAlert
-    18:29:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):365:365 -> onJsAlert
+    16:17:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):376 -> onJsAlert
+    18:29:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):377:377 -> onJsAlert
     30:31:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setCancelable(boolean):579:579 -> onJsAlert
-    30:31:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):366 -> onJsAlert
-    32:36:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):367:367 -> onJsAlert
-    3:6:void onJsAlert$lambda$0(android.webkit.JsResult,android.content.DialogInterface,int):365:365 -> onJsAlert$lambda$0
-    1:7:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):377:377 -> onJsConfirm
+    30:31:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):378 -> onJsAlert
+    32:36:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):379:379 -> onJsAlert
+    3:6:void onJsAlert$lambda$0(android.webkit.JsResult,android.content.DialogInterface,int):377:377 -> onJsAlert$lambda$0
+    1:7:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):389:389 -> onJsConfirm
     8:15:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> onJsConfirm
-    8:15:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):378 -> onJsConfirm
+    8:15:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):390 -> onJsConfirm
     16:17:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> onJsConfirm
-    16:17:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):379 -> onJsConfirm
-    18:28:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):380:380 -> onJsConfirm
-    29:34:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):381:381 -> onJsConfirm
-    35:38:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):522:522 -> onJsConfirm
-    35:38:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):381 -> onJsConfirm
-    39:41:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setNegativeButton(java.lang.CharSequence,android.content.DialogInterface$OnClickListener):523:523 -> onJsConfirm
-    39:41:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):381 -> onJsConfirm
-    42:43:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setCancelable(boolean):579:579 -> onJsConfirm
-    42:43:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):382 -> onJsConfirm
-    44:48:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):383:383 -> onJsConfirm
-    3:6:void onJsConfirm$lambda$1(android.webkit.JsResult,android.content.DialogInterface,int):380:380 -> onJsConfirm$lambda$1
-    3:6:void onJsConfirm$lambda$2(android.webkit.JsResult,android.content.DialogInterface,int):381:381 -> onJsConfirm$lambda$2
-    1:18:void onProgressChanged(android.webkit.WebView,int):350:350 -> onProgressChanged
-    19:37:void onProgressChanged(android.webkit.WebView,int):352:352 -> onProgressChanged
-    38:41:void onProgressChanged(android.webkit.WebView,int):350:350 -> onProgressChanged
-com.shirurexpress.app.MainActivity$setupWebView$3$$ExternalSyntheticLambda0 -> com.shirurexpress.app.g:
+    16:17:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):391 -> onJsConfirm
+    18:28:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):392:392 -> onJsConfirm
+    29:40:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):393:393 -> onJsConfirm
+    41:42:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setCancelable(boolean):579:579 -> onJsConfirm
+    41:42:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):394 -> onJsConfirm
+    43:47:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):395:395 -> onJsConfirm
+    3:6:void onJsConfirm$lambda$1(android.webkit.JsResult,android.content.DialogInterface,int):392:392 -> onJsConfirm$lambda$1
+    3:6:void onJsConfirm$lambda$2(android.webkit.JsResult,android.content.DialogInterface,int):393:393 -> onJsConfirm$lambda$2
+    1:18:void onProgressChanged(android.webkit.WebView,int):362:362 -> onProgressChanged
+    19:37:void onProgressChanged(android.webkit.WebView,int):364:364 -> onProgressChanged
+    38:41:void onProgressChanged(android.webkit.WebView,int):362:362 -> onProgressChanged
+com.shirurexpress.app.MainActivity$setupWebView$3$$ExternalSyntheticLambda0 -> com.shirurexpress.app.i:
 # {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
 # {"id":"com.android.tools.r8.synthesized"}
     int $r8$classId -> i

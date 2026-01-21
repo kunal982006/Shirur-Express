@@ -1,7 +1,7 @@
 // client/src/pages/provider-dashboard.tsx
 // (POORA REBUILT CODE - BLUEPRINT KE HISAB SE)
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -39,6 +39,7 @@ import {
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
 import { OffersManager } from "@/components/offers/OffersManager";
+import PermissionBanner from "@/components/PermissionBanner";
 import {
   Dialog,
   DialogContent,
@@ -2331,6 +2332,43 @@ const ProviderDashboard: React.FC = () => {
     retry: false,
   });
 
+  // --- FCM TOKEN SYNC FROM ANDROID APP ---
+  useEffect(() => {
+    const syncFcmToken = async () => {
+      // Check if running inside Android native app
+      if (typeof window !== 'undefined' && (window as any).AndroidApp) {
+        try {
+          const token = (window as any).AndroidApp.getFcmToken();
+
+          if (token && token.length > 0) {
+            console.log('[FCM] Token from Android:', token.substring(0, 20) + '...');
+
+            // Send token to server
+            const response = await api.post('/users/fcm-token', { token });
+            console.log('[FCM] Token synced to server successfully:', response.data);
+
+            // Show native toast confirmation (optional)
+            if ((window as any).AndroidApp.showToast) {
+              (window as any).AndroidApp.showToast('Notifications enabled!');
+            }
+          } else {
+            console.log('[FCM] No token available from Android app');
+          }
+        } catch (error) {
+          console.error('[FCM] Error syncing token:', error);
+        }
+      } else {
+        console.log('[FCM] Not running in Android app (WebView detection failed)');
+      }
+    };
+
+    // Only sync when user is logged in and profile is loaded
+    if (user?.id && providerProfile?.id) {
+      syncFcmToken();
+    }
+  }, [user?.id, providerProfile?.id]);
+  // --- FCM TOKEN SYNC END ---
+
   // --- LOADING/ERROR STATES ---
   if (isAuthLoading || (!!user && isLoadingProfile)) {
     return (
@@ -2443,6 +2481,9 @@ const ProviderDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8">
+      {/* Permission Banner for Android App */}
+      <PermissionBanner />
+
       <h1 className="text-3xl font-bold mb-6">
         Welcome, {providerProfile.businessName}!
       </h1>

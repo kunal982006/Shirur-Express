@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,18 @@ export default function PlumberDetail() {
     const [showBooking, setShowBooking] = useState(false);
 
     const providerId = params?.id;
+
+    // Auto-select problem if present in URL
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const preSelectedProblemId = searchParams.get("problemId");
+        const preSelectedProblemName = searchParams.get("problemName");
+
+        if (preSelectedProblemId && preSelectedProblemName) {
+            setSelectedProblem({ id: preSelectedProblemId, name: preSelectedProblemName });
+            setShowBooking(true);
+        }
+    }, []); // Run once on mount
 
     // Get plumber details
     const { data: provider, isLoading } = useQuery<PlumberProviderDetail>({
@@ -168,44 +180,19 @@ export default function PlumberDetail() {
                         </Card>
                     </div>
 
-                    {/* Problems This Plumber Can Handle */}
+                    {/* Problems This Plumber Can Handle OR Booking Form */}
                     <div className="lg:col-span-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Plumbing Problems I Can Fix</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                    Select a problem to book a service slot
-                                </p>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                {appliancesLoading ? (
-                                    <div className="flex justify-center py-8">
-                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                    </div>
-                                ) : appliances && appliances.length > 0 ? (
-                                    appliances.map((appliance) => (
-                                        <ApplianceProblems
-                                            key={appliance.id}
-                                            appliance={appliance}
-                                            selectedProblemId={selectedProblem?.id || ""}
-                                            onProblemSelect={handleProblemSelect}
-                                        />
-                                    ))
-                                ) : (
-                                    <p className="text-center text-muted-foreground py-8">
-                                        No problems listed
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Booking Section - Shown when problem is selected */}
-                        {showBooking && selectedProblem && (
-                            <Card className="mt-6">
+                        {showBooking && selectedProblem ? (
+                            <Card className="mt-0 border-primary/20 shadow-md">
                                 <CardHeader>
-                                    <CardTitle>Book a Service Slot</CardTitle>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <CardTitle>Book Service Slot</CardTitle>
+                                        <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
+                                            Change Problem
+                                        </Button>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">
-                                        You selected: <span className="text-primary font-medium">{selectedProblem.name}</span>
+                                        Selected Issue: <span className="text-primary font-bold text-lg">{selectedProblem.name}</span>
                                     </p>
                                 </CardHeader>
                                 <CardContent>
@@ -214,10 +201,38 @@ export default function PlumberDetail() {
                                         problemId={selectedProblem.id}
                                         problemName={selectedProblem.name}
                                         onSuccess={() => {
-                                            setShowBooking(false);
-                                            setSelectedProblem(null);
+                                            // Maybe redirect or show success
                                         }}
                                     />
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Plumbing Problems I Can Fix</CardTitle>
+                                    <p className="text-sm text-muted-foreground">
+                                        Select a problem to book a service slot
+                                    </p>
+                                </CardHeader>
+                                <CardContent className="max-h-[400px] overflow-y-auto space-y-4">
+                                    {appliancesLoading ? (
+                                        <div className="flex justify-center py-8">
+                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                        </div>
+                                    ) : appliances && appliances.length > 0 ? (
+                                        appliances.map((appliance) => (
+                                            <ApplianceProblems
+                                                key={appliance.id}
+                                                appliance={appliance}
+                                                selectedProblemId={selectedProblem?.id || ""}
+                                                onProblemSelect={handleProblemSelect}
+                                            />
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-muted-foreground py-8">
+                                            No problems listed
+                                        </p>
+                                    )}
                                 </CardContent>
                             </Card>
                         )}
@@ -252,23 +267,24 @@ function ApplianceProblems({
     });
 
     return (
-        <div>
-            <h4 className="font-semibold mb-3 flex items-center">
+        <div className="pb-3 border-b last:border-b-0">
+            <h4 className="font-semibold text-sm mb-2 text-primary">
                 {appliance.name}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading issues...</p>
+                    <p className="text-xs text-muted-foreground">Loading...</p>
                 ) : (
                     problems?.map((problem: any) => (
                         <Button
                             key={problem.id}
                             variant={selectedProblemId === problem.id ? "default" : "outline"}
-                            className="justify-start"
+                            size="sm"
+                            className="justify-start text-xs h-8 px-2"
                             onClick={() => onProblemSelect(problem.id, problem.name)}
                             data-testid={`button-problem-${problem.id}`}
                         >
-                            {problem.name}
+                            <span className="truncate">{problem.name}</span>
                         </Button>
                     ))
                 )}

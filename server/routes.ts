@@ -510,7 +510,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ message: "Profile image updated!", profile: updatedProfile });
       } catch (error: any) {
         console.error("Profile image upload error:", error);
-        res.status(500).json({ message: error.message || "Error uploading image" });
+        const errorMessage = error.message || "Error uploading image";
+        if (errorMessage.includes("api_key") || errorMessage.includes("cloud_name")) {
+          return res.status(500).json({ message: "Server configuration error: Cloudinary keys missing." });
+        }
+        res.status(500).json({ message: errorMessage });
       }
     }
   );
@@ -529,7 +533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ urls });
     } catch (error: any) {
       console.error("Upload error:", error);
-      res.status(500).json({ message: error.message || "Upload failed" });
+      const errorMessage = error.message || "Upload failed";
+      if (errorMessage.includes("api_key") || errorMessage.includes("cloud_name")) {
+        return res.status(500).json({ message: "Server configuration error: Cloudinary keys missing." });
+      }
+      res.status(500).json({ message: errorMessage });
     }
   });
 

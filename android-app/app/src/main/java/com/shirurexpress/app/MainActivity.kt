@@ -1,6 +1,7 @@
 package com.shirurexpress.app
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.graphics.Bitmap
@@ -21,6 +22,7 @@ import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.ContextCompat
@@ -142,13 +144,20 @@ class MainActivity : AppCompatActivity() {
                     .setMessage("To allow the app to ring for new orders even when your phone is locked, please enable 'Full Screen Intent' in settings.")
                     .setPositiveButton("Go to Settings") { _, _ ->
                         try {
-                            // Using string literal as the constant might not be available in all build environments
-                            val intent = Intent("android.settings.MANAGE_FULL_SCREEN_INTENT")
+                            // For Android 14 (API 34+), use the proper settings action
+                            val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
                             intent.data = Uri.fromParts("package", packageName, null)
                             startActivity(intent)
                         } catch (e: Exception) {
-                            val intent = Intent(Settings.ACTION_SETTINGS)
-                            startActivity(intent)
+                            // Fallback to app notification settings
+                            try {
+                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                                startActivity(intent)
+                            } catch (e2: Exception) {
+                                val intent = Intent(Settings.ACTION_SETTINGS)
+                                startActivity(intent)
+                            }
                         }
                     }
                     .setNegativeButton("Later", null)
@@ -266,6 +275,9 @@ class MainActivity : AppCompatActivity() {
             // Geolocation
             setGeolocationEnabled(true)
         }
+
+        // Add JavaScript interface for native bridge
+        webView.addJavascriptInterface(AndroidBridge(), "AndroidApp")
 
         // Set WebView client for handling page navigation
         webView.webViewClient = object : WebViewClient() {
@@ -489,5 +501,219 @@ class MainActivity : AppCompatActivity() {
     // Public method for retry button
     fun onRetryClick(view: View) {
         loadUrl(WEBSITE_URL)
+    }
+
+    /**
+     * JavaScript Interface to expose native Android functionality to the WebView.
+     * The WebView can call window.AndroidApp.getFcmToken() to get the FCM token.
+     */
+    inner class AndroidBridge {
+        
+        /**
+         * Get the FCM token stored in SharedPreferences.
+         * Called from JavaScript: window.AndroidApp.getFcmToken()
+         */
+        @android.webkit.JavascriptInterface
+        fun getFcmToken(): String {
+            val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            val token = prefs.getString("fcm_token", "") ?: ""
+            Log.d("AndroidBridge", "getFcmToken called, token: ${if (token.isNotEmpty()) "exists (length: ${token.length})" else "empty"}")
+            return token
+        }
+
+        /**
+         * Check if running inside the native Android app.
+         * Called from JavaScript: window.AndroidApp.isNativeApp()
+         */
+        @android.webkit.JavascriptInterface
+        fun isNativeApp(): Boolean {
+            return true
+        }
+
+        /**
+         * Show a native Toast message.
+         * Called from JavaScript: window.AndroidApp.showToast("message")
+         */
+        @android.webkit.JavascriptInterface
+        fun showToast(message: String) {
+            runOnUiThread {
+                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // ============ PERMISSION CHECK METHODS ============
+
+        /**
+         * Check if "Display Over Other Apps" permission is granted.
+         * Called from JavaScript: window.AndroidApp.isDisplayOverAppsGranted()
+         */
+        @android.webkit.JavascriptInterface
+        fun isDisplayOverAppsGranted(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Settings.canDrawOverlays(this@MainActivity)
+            } else {
+                true // Permission not needed for older versions
+            }
+        }
+
+        /**
+         * Check if Battery Optimization is disabled for this app.
+         * Called from JavaScript: window.AndroidApp.isBatteryOptimizationDisabled()
+         */
+        @android.webkit.JavascriptInterface
+        fun isBatteryOptimizationDisabled(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                powerManager.isIgnoringBatteryOptimizations(packageName)
+            } else {
+                true // Permission not needed for older versions
+            }
+        }
+
+        /**
+         * Check if Notification permission is granted (Android 13+).
+         * Called from JavaScript: window.AndroidApp.isNotificationPermissionGranted()
+         */
+        @android.webkit.JavascriptInterface
+        fun isNotificationPermissionGranted(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    this@MainActivity, 
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Permission not needed for older versions
+            }
+        }
+
+        /**
+         * Check if Full Screen Intent permission is granted (Android 14+).
+         * Called from JavaScript: window.AndroidApp.isFullScreenIntentGranted()
+         */
+        @android.webkit.JavascriptInterface
+        fun isFullScreenIntentGranted(): Boolean {
+            return if (Build.VERSION.SDK_INT >= 34) {
+                val notificationManager = getSystemService(NotificationManager::class.java)
+                notificationManager?.canUseFullScreenIntent() ?: false
+            } else {
+                true // Permission not needed for older versions
+            }
+        }
+
+        /**
+         * Get all permission statuses as a JSON string.
+         * Called from JavaScript: window.AndroidApp.getPermissionStatus()
+         */
+        @android.webkit.JavascriptInterface
+        fun getPermissionStatus(): String {
+            val status = mapOf(
+                "displayOverApps" to isDisplayOverAppsGranted(),
+                "batteryOptimization" to isBatteryOptimizationDisabled(),
+                "notifications" to isNotificationPermissionGranted(),
+                "fullScreenIntent" to isFullScreenIntentGranted()
+            )
+            return org.json.JSONObject(status).toString()
+        }
+
+        // ============ PERMISSION REQUEST METHODS ============
+
+        /**
+         * Open the Display Over Other Apps settings.
+         * Called from JavaScript: window.AndroidApp.requestDisplayOverApps()
+         */
+        @android.webkit.JavascriptInterface
+        fun requestDisplayOverApps() {
+            runOnUiThread {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    try {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                        intent.data = Uri.fromParts("package", packageName, null)
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("AndroidBridge", "Failed to open overlay settings", e)
+                        Toast.makeText(this@MainActivity, "Please enable 'Display over other apps' in Settings", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+
+        /**
+         * Open the Battery Optimization settings for this app.
+         * Called from JavaScript: window.AndroidApp.requestBatteryOptimization()
+         */
+        @android.webkit.JavascriptInterface
+        fun requestBatteryOptimization() {
+            runOnUiThread {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    try {
+                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        intent.data = Uri.fromParts("package", packageName, null)
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("AndroidBridge", "Failed to open battery optimization settings", e)
+                        // Fallback to general battery settings
+                        try {
+                            val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                            startActivity(fallbackIntent)
+                        } catch (e2: Exception) {
+                            Toast.makeText(this@MainActivity, "Please disable battery optimization for this app in Settings", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Request all system permissions needed for reliable ringing.
+         * Called from JavaScript: window.AndroidApp.requestSystemPermissions()
+         */
+        @android.webkit.JavascriptInterface
+        fun requestSystemPermissions() {
+            runOnUiThread {
+                // Show a dialog explaining what permissions are needed
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Enable Reliable Notifications")
+                    .setMessage("To ensure you never miss an order, please enable these settings:\n\n" +
+                            "1. Display over other apps\n" +
+                            "2. Disable battery optimization\n\n" +
+                            "This allows the order alert to ring even when your phone is sleeping.")
+                    .setPositiveButton("Open Settings") { _, _ ->
+                        // Open battery optimization first (most important)
+                        if (!isBatteryOptimizationDisabled()) {
+                            requestBatteryOptimization()
+                        } else if (!isDisplayOverAppsGranted()) {
+                            requestDisplayOverApps()
+                        } else if (!isFullScreenIntentGranted()) {
+                            // Open notification settings for full screen intent
+                            try {
+                                if (Build.VERSION.SDK_INT >= 34) {
+                                    val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                                    intent.data = Uri.fromParts("package", packageName, null)
+                                    startActivity(intent)
+                                }
+                            } catch (e: Exception) {
+                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                                startActivity(intent)
+                            }
+                        } else {
+                            Toast.makeText(this@MainActivity, "All permissions are already granted!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .setNegativeButton("Later", null)
+                    .show()
+            }
+        }
+
+        /**
+         * Check if all required permissions for ringing are granted.
+         * Called from JavaScript: window.AndroidApp.areAllPermissionsGranted()
+         */
+        @android.webkit.JavascriptInterface
+        fun areAllPermissionsGranted(): Boolean {
+            return isNotificationPermissionGranted() && 
+                   isBatteryOptimizationDisabled() && 
+                   isFullScreenIntentGranted()
+        }
     }
 }

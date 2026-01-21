@@ -1,38 +1,45 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import ProviderCard from "@/components/provider-card";
-import { ArrowLeft, Search, Loader2 } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Loader2, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import type { ServiceProvider, ServiceProblem, User, ServiceCategory } from "@shared/schema";
+import type { ServiceProvider, ServiceProblem } from "@shared/schema";
 
-type PlumberProvider = ServiceProvider & { user: User; category: ServiceCategory };
+const IMAGE_MAPPING: Record<string, string> = {
+  "Leakage": "/images/plumber/leakage.png",
+  "Water Pipes": "/images/plumber/pipes.png",
+  "Taps & Faucets": "/images/plumber/tap.png",
+  "Toilet & Commode": "/images/plumber/toilet.png",
+  "Drainage": "/images/plumber/drainage.png",
+  "Water Tank": "/images/plumber/tank.png",
+  "Geyser/Water Heater": "/images/plumber/geyser.png",
+  "Motors & Pumps": "/images/plumber/motor.png",
+  "Others": "/images/plumber/others.png"
+};
 
 export default function Plumber() {
   const [, setLocation] = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAppliance, setSelectedAppliance] = useState("");
-  const [selectedProblem, setSelectedProblem] = useState("");
+  const [selectedAppliance, setSelectedAppliance] = useState<ServiceProblem | null>(null);
 
-  // 1. Get all plumbers (Profiles)
-  const { data: providers, isLoading: providersLoading } = useQuery<PlumberProvider[]>({
+  // 1. Get the Plumber Provider (single provider like electrician)
+  const { data: providers, isLoading: providersLoading } = useQuery<ServiceProvider[]>({
     queryKey: ["service-providers", "plumber"],
     queryFn: () =>
       apiRequest("GET", "/api/service-providers?category=plumber")
         .then(res => res.json()),
   });
 
-  // 2. Get appliance categories (Parent Problems)
+  const adminProviderId = providers?.[0]?.id;
+
+  // 2. Get appliance/item categories (Parent Problems)
   const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
     queryKey: ["service-problems", "plumber"],
     queryFn: () =>
@@ -40,210 +47,117 @@ export default function Plumber() {
         .then(res => res.json()),
   });
 
-  // 3. Get problems for selected appliance (Child Problems)
-  const { data: problems, isLoading: problemsLoading } = useQuery<ServiceProblem[]>({
-    queryKey: ["service-problems", "plumber", selectedAppliance],
+  // 3. Get child problems for Selected Appliance (when dialog is open)
+  const { data: childProblems, isLoading: childProblemsLoading } = useQuery<ServiceProblem[]>({
+    queryKey: ["service-problems", "plumber", selectedAppliance?.id],
     queryFn: () =>
-      apiRequest("GET", `/api/service-problems?category=plumber&parentId=${selectedAppliance}`)
+      apiRequest("GET", `/api/service-problems?category=plumber&parentId=${selectedAppliance?.id}`)
         .then(res => res.json()),
-    enabled: !!selectedAppliance,
+    enabled: !!selectedAppliance?.id,
   });
 
-  // Filter providers based on search and selected problem/appliance
-  const filteredProviders = useMemo(() => {
-    if (!providers) return [];
-
-    let filtered = providers;
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter((provider) =>
-        provider.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        provider.address?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Specialization (Appliance) filter
-    if (selectedAppliance) {
-      const applianceName = appliances?.find(a => a.id === selectedAppliance)?.name;
-      if (applianceName) {
-        filtered = filtered.filter(provider =>
-          provider.specializations?.includes(applianceName)
-        );
-      }
-    }
-
-    return filtered;
-  }, [providers, searchQuery, selectedAppliance, appliances]);
-
-  const handleApplianceChange = (value: string) => {
-    setSelectedAppliance(value);
-    setSelectedProblem(""); // Reset problem selection
+  const handleApplianceClick = (appliance: ServiceProblem) => {
+    setSelectedAppliance(appliance);
   };
 
+  const handleProblemClick = (problem: ServiceProblem) => {
+    if (!adminProviderId) {
+      console.error("No plumber provider found!");
+      return;
+    }
+    // Navigate to detail page with pre-selected problem
+    setLocation(`/plumber/${adminProviderId}?problemId=${problem.id}&problemName=${encodeURIComponent(problem.name)}`);
+  };
+
+  const isLoading = providersLoading || appliancesLoading;
+
   return (
-    <div className="py-16 bg-background">
+    <div className="py-8 bg-background min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
           variant="ghost"
           className="mb-6 flex items-center space-x-2"
           onClick={() => setLocation("/")}
-          data-testid="button-back"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Services</span>
         </Button>
 
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Find Plumbers</h2>
-          <p className="text-muted-foreground">
-            Search by name or filter by appliance and problem
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold mb-2">Plumbing Services</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Select a category to see available services. We provide expert plumbing repairs and installations.
           </p>
         </div>
 
-        {/* Search and Filter Bar */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search plumbers by name or location..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  data-testid="input-search-plumber"
-                />
-              </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {appliances?.map((appliance) => {
+              // Fallback image logic
+              const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
 
-              {/* Appliance and Problem Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Appliance Dropdown */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Select Appliance
-                  </label>
-                  <Select
-                    value={selectedAppliance}
-                    onValueChange={handleApplianceChange}
-                    disabled={appliancesLoading}
-                  >
-                    <SelectTrigger data-testid="select-appliance">
-                      <SelectValue placeholder={appliancesLoading ? "Loading..." : "Choose an appliance"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {appliances?.map((appliance: any) => (
-                        <SelectItem
-                          key={appliance.id}
-                          value={appliance.id}
-                          data-testid={`appliance-${appliance.id}`}
-                        >
-                          {appliance.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              return (
+                <Card
+                  key={appliance.id}
+                  className="cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1 border-primary/10"
+                  onClick={() => handleApplianceClick(appliance)}
+                >
+                  <CardContent className="p-4 flex flex-col items-center text-center h-full">
+                    <div className="w-full aspect-square mb-4 relative flex items-center justify-center p-2 bg-blue-50 rounded-lg">
+                      <img
+                        src={imageUrl}
+                        alt={appliance.name}
+                        className="w-full h-full object-contain drop-shadow-sm transition-transform hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://via.placeholder.com/150?text=" + appliance.name.substring(0, 2);
+                        }}
+                      />
+                    </div>
+                    <h3 className="font-semibold text-lg">{appliance.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-2">View Issues</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Problems Dialog */}
+        <Dialog open={!!selectedAppliance} onOpenChange={(open) => !open && setSelectedAppliance(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedAppliance?.name} - Select Issue
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 mt-4 max-h-[60vh] overflow-y-auto">
+              {childProblemsLoading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-
-                {/* Problem Dropdown */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Select Problem
-                  </label>
-                  <Select
-                    value={selectedProblem}
-                    onValueChange={setSelectedProblem}
-                    disabled={!selectedAppliance || problemsLoading}
-                  >
-                    <SelectTrigger data-testid="select-problem">
-                      <SelectValue placeholder={
-                        problemsLoading ? "Loading..." :
-                          selectedAppliance
-                            ? "Choose a problem"
-                            : "Select appliance first"
-                      } />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {problems?.map((problem: any) => (
-                        <SelectItem
-                          key={problem.id}
-                          value={problem.id}
-                          data-testid={`problem-${problem.id}`}
-                        >
-                          {problem.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Active Filters Display */}
-              {(selectedAppliance || selectedProblem) && (
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="text-sm text-muted-foreground">
-                    Active filters:
-                  </span>
-                  {selectedAppliance && (
-                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                      {appliances?.find((a: any) => a.id === selectedAppliance)?.name}
-                    </span>
-                  )}
-                  {selectedProblem && (
-                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                      {problems?.find((p: any) => p.id === selectedProblem)?.name}
-                    </span>
-                  )}
+              ) : childProblems?.length === 0 ? (
+                <p className="text-center text-muted-foreground">No specific issues listed. Please contact support.</p>
+              ) : (
+                childProblems?.map((problem) => (
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedAppliance("");
-                      setSelectedProblem("");
-                    }}
-                    data-testid="button-clear-filters"
+                    key={problem.id}
+                    variant="outline"
+                    className="w-full justify-between h-auto py-3 px-4 hover:bg-primary/5 hover:text-primary hover:border-primary"
+                    onClick={() => handleProblemClick(problem)}
                   >
-                    Clear filters
+                    <span className="text-left font-medium">{problem.name}</span>
+                    <ChevronRight className="h-4 w-4 opacity-50" />
                   </Button>
-                </div>
+                ))
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Plumbers List */}
-        <div>
-          <h3 className="text-xl font-semibold mb-4">
-            Available Plumbers ({filteredProviders?.length || 0})
-          </h3>
-
-          {providersLoading ? (
-            <div className="text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
-              <p className="text-muted-foreground mt-2">Loading plumbers...</p>
-            </div>
-          ) : filteredProviders?.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">
-                  No plumbers found. Try adjusting your filters.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProviders?.map((provider: any) => (
-                <ProviderCard
-                  key={provider.id}
-                  provider={provider}
-                  categorySlug="plumber"
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

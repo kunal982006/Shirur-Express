@@ -1,10 +1,16 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
+// Check if required environment variables are present
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.error("❌ CLOUDINARY CONFIG ERROR: Missing Cloudinary environment variables. Image uploads will fail.");
+  console.error("Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your Render environment variables.");
+}
+
 // Yeh code Replit Secrets se keys uthaakar Cloudinary se connection banayega
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
@@ -30,7 +36,7 @@ export const uploadToCloudinary = (fileBuffer: Buffer): Promise<string> => {
 
     // Buffer ko stream me convert karke upload stream me bhej do
     const readableStream = new Readable();
-    readableStream._read = () => {};
+    readableStream._read = () => { };
     readableStream.push(fileBuffer);
     readableStream.push(null);
     readableStream.pipe(uploadStream);

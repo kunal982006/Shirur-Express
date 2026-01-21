@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-84:12
-INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-84:12
-INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-84:12
-INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-84:12
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-91:12
+INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-91:12
+INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-91:12
+INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:2:1-91:12
 MERGED from [androidx.databinding:viewbinding:8.13.2] C:\Users\Sai\.gradle\caches\8.13\transforms\300d12c91360e84039d3ed01312ba38e\transformed\viewbinding-8.13.2\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d237957a7c88b9bfb5835a483aed87b5\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
@@ -127,36 +127,42 @@ MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\
 MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\d0b2ed8f1a50bf539a4987af04777163\transformed\transport-runtime-3.1.8\AndroidManifest.xml:22:5-79
 	android:name
 		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:7:22-76
+uses-feature#android.hardware.camera
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:5-85
+	android:required
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:58-82
+	android:name
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:19-57
 uses-permission#android.permission.READ_EXTERNAL_STORAGE
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:5-107
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:13:5-107
 	android:maxSdkVersion
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:78-104
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:13:78-104
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:10:22-77
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:13:22-77
 uses-permission#android.permission.READ_MEDIA_IMAGES
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:11:5-76
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:14:5-76
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:11:22-73
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:14:22-73
 uses-permission#android.permission.CAMERA
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:12:5-65
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:15:5-65
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:12:22-62
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:15:22-62
 uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:15:5-79
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:18:5-79
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:15:22-76
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:18:22-76
 uses-permission#android.permission.ACCESS_COARSE_LOCATION
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:16:5-81
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:19:5-81
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:16:22-78
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:19:22-78
 uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:19:5-77
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:22:5-77
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:23:5-77
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:23:5-77
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:19:22-74
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:22:22-74
 uses-permission#android.permission.WAKE_LOCK
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:20:5-68
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:23:5-68
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:24:5-68
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:24:5-68
 MERGED from [com.google.android.gms:play-services-measurement-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\79e04a38b3398126b3523c46526aaa3d\transformed\play-services-measurement-api-21.5.0\AndroidManifest.xml:24:5-68
@@ -170,18 +176,26 @@ MERGED from [com.google.android.gms:play-services-measurement-impl:21.5.0] C:\Us
 MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\93c977d0a427e7f908144be83aff1b71\transformed\play-services-measurement-sdk-api-21.5.0\AndroidManifest.xml:25:5-68
 MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\93c977d0a427e7f908144be83aff1b71\transformed\play-services-measurement-sdk-api-21.5.0\AndroidManifest.xml:25:5-68
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:20:22-65
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:23:22-65
 uses-permission#android.permission.USE_FULL_SCREEN_INTENT
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:21:5-81
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:24:5-81
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:21:22-78
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:24:22-78
 uses-permission#android.permission.SCHEDULE_EXACT_ALARM
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:22:5-79
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:25:5-79
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:22:22-76
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:25:22-76
+uses-permission#android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:28:5-95
+	android:name
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:28:22-92
+uses-permission#android.permission.SYSTEM_ALERT_WINDOW
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:29:5-78
+	android:name
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:29:22-75
 application
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:24:5-82:19
-INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:24:5-82:19
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:31:5-89:19
+INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:31:5-89:19
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d237957a7c88b9bfb5835a483aed87b5\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d237957a7c88b9bfb5835a483aed87b5\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
@@ -247,103 +261,103 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Sai\.gradle\caches
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\041694bd88729c2778cd9053e8a6ad56\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:29:9-35
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:36:9-35
 	android:label
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:27:9-41
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:34:9-41
 	android:roundIcon
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:28:9-54
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:35:9-54
 	tools:targetApi
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:33:9-29
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:40:9-29
 	android:icon
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:26:9-43
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:33:9-43
 	android:allowBackup
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:25:9-35
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:32:9-35
 	android:theme
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:30:9-51
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:37:9-51
 	android:networkSecurityConfig
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:32:9-69
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:39:9-69
 	android:usesCleartextTraffic
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:31:9-45
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:38:9-45
 activity#com.shirurexpress.app.MainActivity
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:35:9-57:20
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:42:9-64:20
 	android:screenOrientation
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:40:13-49
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:47:13-49
 	android:launchMode
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:39:13-44
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:46:13-44
 	android:windowSoftInputMode
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:41:13-55
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:48:13-55
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:37:13-36
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:44:13-36
 	android:configChanges
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:38:13-74
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:45:13-74
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:36:13-41
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:43:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:43:13-46:29
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:50:13-53:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:44:17-69
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:51:17-69
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:44:25-66
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:51:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:45:17-77
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:52:17-77
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:45:27-74
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:52:27-74
 intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:shirur-express.onrender.com+data:scheme:https
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:49:13-56:29
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:56:13-63:29
 	android:autoVerify
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:49:28-53
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:56:28-53
 action#android.intent.action.VIEW
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:50:17-69
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:57:17-69
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:50:25-66
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:57:25-66
 category#android.intent.category.DEFAULT
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:51:17-76
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:58:17-76
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:51:27-73
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:58:27-73
 category#android.intent.category.BROWSABLE
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:52:17-78
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:59:17-78
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:52:27-75
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:59:27-75
 data
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:53:17-55:66
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:60:17-62:66
 	android:host
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:55:21-63
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:62:21-63
 	android:scheme
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:54:21-43
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:61:21-43
 activity#com.shirurexpress.app.IncomingOrderActivity
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:59:9-64:52
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:66:9-71:52
 	android:screenOrientation
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:64:13-49
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:71:13-49
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:62:13-37
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:69:13-37
 	android:showOnLockScreen
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:63:13-44
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:70:13-44
 	android:theme
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:61:13-63
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:68:13-63
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:60:13-50
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:67:13-50
 service#com.shirurexpress.app.MyFirebaseMessagingService
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:66:9-72:19
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:73:9-79:19
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:68:13-37
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:75:13-37
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:67:13-55
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:74:13-55
 intent-filter#action:name:com.google.firebase.MESSAGING_EVENT
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:69:13-71:29
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:76:13-78:29
 action#com.google.firebase.MESSAGING_EVENT
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:70:17-78
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:77:17-78
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:70:25-75
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:77:25-75
 activity#com.shirurexpress.app.SplashActivity
-ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:75:9-80:20
+ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:82:9-87:20
 	android:noHistory
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:79:13-37
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:86:13-37
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:77:13-36
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:84:13-36
 	android:theme
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:78:13-62
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:85:13-62
 	android:name
-		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:76:13-43
+		ADDED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml:83:13-43
 uses-sdk
 INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Sai\Desktop\The_Shirur_Express\android-app\app\src\main\AndroidManifest.xml
