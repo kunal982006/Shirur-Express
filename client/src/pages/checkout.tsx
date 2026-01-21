@@ -129,7 +129,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (items.length === 0 && !isPlacingOrder) {
-      setLocation('/street-food'); // Ya grocery, jahan se user aaya
+      setLocation('/restaurants'); // Redirect to restaurants when cart is empty
     }
   }, [items.length, setLocation, isPlacingOrder]);
 
@@ -221,29 +221,26 @@ export default function Checkout() {
 
     try {
       // 2. Determine Order Type and Payload
-      const isStreetFood = items.some(item => item.itemType === 'street_food');
       const isRestaurant = items.some(item => item.itemType === 'restaurant');
 
       let endpoint = "/grocery-orders";
-      if (isStreetFood) endpoint = "/street-food-orders";
       if (isRestaurant) endpoint = "/restaurant/orders";
 
       let orderPayload;
 
-      if (isStreetFood || isRestaurant) {
+      if (isRestaurant) {
         orderPayload = {
           items: items.map(item => ({
-            productId: item.id, // For restaurant, this is menuItemId
-            menuItemId: isRestaurant ? item.id : undefined, // Explicitly set menuItemId for restaurant
+            productId: item.id,
+            menuItemId: item.id,
             quantity: item.quantity,
             price: item.price,
             providerId: item.providerId || "unknown",
             name: item.name
           })),
-          totalAmount: total.toFixed(2), // Schema expects totalAmount
+          totalAmount: total.toFixed(2),
           deliveryAddress: values.deliveryAddress,
-          providerId: isRestaurant ? items[0].providerId : undefined, // Restaurant order needs providerId at root
-          // runnerId will be assigned by backend
+          providerId: items[0].providerId,
         };
       } else {
         // Grocery Order Payload
@@ -258,19 +255,12 @@ export default function Checkout() {
         };
       }
 
-      // Validate single provider for Grocery (Street food can be multi-vendor? Schema supports it via JSON items having providerId)
-      // But for now let's keep the single provider check ONLY for grocery if needed, or remove it if we want multi-vendor grocery too.
-      // The user requirement said "Users can add multiple items from a single vendor or multiple vendors to the cart" for Street Food.
-      // So we SKIP the single provider check for Street Food.
-
-      if (!isStreetFood) {
-        // For Grocery AND Restaurant, we enforce single provider
-        const uniqueProviders = new Set(items.map(item => item.providerId).filter(Boolean));
-        if (uniqueProviders.size > 1) {
-          toast({ title: "Multiple Shops Detected", description: "Please order from one shop/restaurant at a time.", variant: "destructive" });
-          setIsPlacingOrder(false);
-          return;
-        }
+      // Validate single provider for orders
+      const uniqueProviders = new Set(items.map(item => item.providerId).filter(Boolean));
+      if (uniqueProviders.size > 1) {
+        toast({ title: "Multiple Shops Detected", description: "Please order from one shop/restaurant at a time.", variant: "destructive" });
+        setIsPlacingOrder(false);
+        return;
       }
 
       const dbOrderResponse = await api.post(endpoint, orderPayload);
@@ -287,7 +277,7 @@ export default function Checkout() {
       // 3. Ab Razorpay ka order create karo
       const rzpOrderResponse = await api.post("/payment/create-order", {
         orderId: databaseOrderId,
-        orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
+        orderType: isRestaurant ? 'restaurant' : 'grocery',
       });
       const rzpOrder = await rzpOrderResponse.data;
 
@@ -309,7 +299,7 @@ export default function Checkout() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               database_order_id: databaseOrderId,
-              orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
+              orderType: isRestaurant ? 'restaurant' : 'grocery',
             });
 
             if (verificationResponse.data.status === 'success') {
@@ -373,7 +363,7 @@ export default function Checkout() {
         <Button
           variant="ghost"
           className="mb-6 flex items-center space-x-2"
-          onClick={() => setLocation("/street-food")} // TODO: Isko dynamic bana sakte ho
+          onClick={() => setLocation("/restaurants")}
           data-testid="button-back"
           disabled={isPlacingOrder}
         >

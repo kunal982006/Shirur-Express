@@ -65,10 +65,9 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
   const getSchema = () => {
     switch (categorySlug) {
       case "beauty": return beautySchema;
-      case "street-food": return foodSchema;
       case "cake-shop": return cakeSchema;
       case "restaurants": return restaurantSchema;
-      case "grocery": return grocerySchema; // --- 'GROCERY' ADD KIYA ---
+      case "grocery": return grocerySchema;
       default: return baseSchema;
     }
   };
@@ -251,14 +250,9 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
       if (categorySlug === "beauty") {
         payload.duration_minutes = values.duration ? parseInt(values.duration) : null;
         payload.subCategory = values.subCategory || null;
-      } else if (categorySlug === "street-food" || categorySlug === "restaurants") {
+      } else if (categorySlug === "restaurants") {
         payload.isVeg = values.isVeg;
-        if (categorySlug === "street-food") {
-          payload.spicyLevel = values.spicyLevel || null;
-        }
-        if (categorySlug === "restaurants") {
-          payload.cuisine = values.cuisine || null;
-        }
+        payload.cuisine = values.cuisine || null;
       } else if (categorySlug === "grocery") {
         payload.weight = values.weight || null;
         payload.unit = values.unit || null;
@@ -549,7 +543,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
           {/* --- NAYA BLOCK KHATAM --- */}
 
 
-          {(categorySlug === "street-food" || categorySlug === "restaurants") && (
+          {categorySlug === "restaurants" && (
             <>
               <FormField
                 control={form.control}
@@ -564,7 +558,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {(categorySlug === "street-food" ? foodCategories : restaurantCategories).map((cat) => (
+                        {restaurantCategories.map((cat) => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
                           </SelectItem>
@@ -592,32 +586,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
             </>
           )}
 
-          {categorySlug === "street-food" && (
-            <FormField
-              control={form.control}
-              name="spicyLevel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Spicy Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select spicy level" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {spicyLevels.map((level) => (
-                        <SelectItem key={level.value} value={level.value}>
-                          {level.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+
 
           {categorySlug === "restaurants" && (
             <FormField

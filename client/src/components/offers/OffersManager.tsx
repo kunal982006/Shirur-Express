@@ -122,7 +122,6 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
             case "restaurant":
             case "restaurants": return "restaurant";
             case "cake-shop": return "cake";
-            case "street-food": return "street_food";
             case "beauty-parlor":
             case "beauty_parlor": return "beauty_parlor";
             default: return "";
@@ -479,7 +478,6 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
                                         <SelectItem value="grocery">Grocery</SelectItem>
                                         <SelectItem value="restaurant">Restaurant Menu</SelectItem>
                                         <SelectItem value="cake">Cake Shop</SelectItem>
-                                        <SelectItem value="street_food">Street Food</SelectItem>
                                         <SelectItem value="beauty_parlor">Beauty Parlor (Services)</SelectItem>
                                     </SelectContent>
                                 </Select>
