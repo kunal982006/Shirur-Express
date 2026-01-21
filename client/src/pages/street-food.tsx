@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -14,6 +14,10 @@ export default function StreetFood() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("sort");
+
+  useEffect(() => {
+    console.log("StreetFood List mounted");
+  }, []);
 
   const { data: vendors, isLoading } = useQuery<ServiceProvider[]>({
     queryKey: ["street-food-vendors"],

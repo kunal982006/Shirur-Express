@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { useCartStore } from "@/hooks/use-cart-store";
 import type { StreetFoodItem, ServiceProvider, RestaurantMenuItem } from "@shared/schema";
@@ -49,8 +49,13 @@ const OverviewTab = ({ vendor }: { vendor: ServiceProvider }) => (
 export default function StreetFoodDetail() {
   const [, params] = useRoute("/street-food/:vendorId");
   const vendorId = params?.vendorId;
-  const { addItem, items, removeItem, updateQuantity } = useCartStore();
+  const { addItem, items, removeItem } = useCartStore();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Verify mount
+  useEffect(() => {
+    console.log("StreetFoodDetail mounted, vendorId:", vendorId);
+  }, [vendorId]);
 
   const { data: vendor, isLoading: loadingVendor } = useQuery<ServiceProvider>({
     queryKey: ["vendor", vendorId],
@@ -79,6 +84,7 @@ export default function StreetFoodDetail() {
   const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
 
   const handleAdd = (item: StreetFoodItem) => {
+    // Explicitly format price as number for cart
     addItem({
       id: item.id,
       name: item.name,
@@ -125,7 +131,6 @@ export default function StreetFoodDetail() {
 
       <div className="max-w-4xl mx-auto">
         <div className="p-4 sticky top-0 bg-background z-10 border-b">
-          {/* Simplified tabs for now - just showing menu directly if complex tabs not needed or we use a basic switch */}
           <OverviewTab vendor={vendor} />
         </div>
 
@@ -135,15 +140,23 @@ export default function StreetFoodDetail() {
             <div key={category} id={category} className="scroll-mt-32">
               <h3 className="font-bold text-xl mb-4 text-foreground">{category} ({items.length})</h3>
               <div className="space-y-4">
-                {items.map(item => (
-                  <FoodItemCard
-                    key={item.id}
-                    item={item as unknown as RestaurantMenuItem} // Casting because FoodItemCard expects RestaurantMenuItem but share compatible fields for display
-                    quantity={getQuantity(item.id)}
-                    onAdd={() => handleAdd(item)}
-                    onRemove={() => removeItem(item.id)}
-                  />
-                ))}
+                {items.map(item => {
+                  // SAFELY convert StreetFoodItem to RestaurantMenuItem shape for the component
+                  const safeItem: any = {
+                    ...item,
+                    price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+                  };
+
+                  return (
+                    <FoodItemCard
+                      key={item.id}
+                      item={safeItem}
+                      quantity={getQuantity(item.id)}
+                      onAdd={() => handleAdd(item)}
+                      onRemove={() => removeItem(item.id)}
+                    />
+                  );
+                })}
               </div>
               <Separator className="my-6" />
             </div>
@@ -157,7 +170,7 @@ export default function StreetFoodDetail() {
         </div>
       </div>
 
-      {/* Cart floating bar check */}
+      {/* Cart floating bar */}
       {items.length > 0 && vendorId === items[0].providerId && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-50">
           <div className="max-w-4xl mx-auto">
