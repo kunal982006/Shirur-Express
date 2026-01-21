@@ -16,7 +16,8 @@ import BookBeauty from "@/pages/book-beauty";
 import CakeShop from "@/pages/cake-shop";
 import Grocery from "@/pages/grocery";
 import Rental from "@/pages/rental";
-
+import StreetFood from "@/pages/street-food";
+import StreetFoodDetail from "@/pages/StreetFoodDetail";
 import RestaurantsIndex from "@/pages/restaurants/index";
 import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
 import Checkout from "@/pages/checkout";
@@ -62,7 +63,8 @@ function RouterComponent() {
       <Route path="/rental" component={PropertySearch} />
       <Route path="/properties/:id" component={PropertyDetail} />
       <Route path="/list-property" component={PropertyListingForm} />
-
+      <Route path="/street-food" component={StreetFood} />
+      <Route path="/street-food/:vendorId" component={StreetFoodDetail} />
       <Route path="/restaurants/:id" component={RestaurantDetail} />
       <Route path="/restaurants" component={RestaurantsIndex} />
       <Route path="/checkout" component={Checkout} />

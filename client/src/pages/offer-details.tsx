@@ -60,6 +60,8 @@ export default function OfferDetailsPage() {
                 return `/restaurants/${offer.provider.id}`;
             case 'cake':
                 return '/cake-shop';
+            case 'street_food':
+                return `/street-food/${offer.provider.id}`;
             case 'beauty_parlor':
                 return `/beauty/${offer.provider.id}`;
             default:
@@ -98,12 +100,13 @@ export default function OfferDetailsPage() {
     };
 
     // Map product type to cart item type
-    const getItemType = (): 'grocery' | 'service' | 'restaurant' | 'cake' => {
+    const getItemType = (): 'grocery' | 'street_food' | 'service' | 'restaurant' | 'cake' => {
         if (!offer) return 'grocery';
         switch (offer.productType) {
             case 'grocery': return 'grocery';
             case 'restaurant': return 'restaurant';
             case 'cake': return 'cake';
+            case 'street_food': return 'street_food';
             case 'beauty_parlor': return 'service';
             default: return 'grocery';
         }

@@ -16,6 +16,7 @@ const services = [
   { name: "Cake Shop", href: "/cake-shop" },
   { name: "Grocery", href: "/grocery" },
   { name: "No Brokerage", href: "/rental" },
+  { name: "Street Food", href: "/street-food" },
   { name: "Restaurants", href: "/restaurants" }
 ];
 

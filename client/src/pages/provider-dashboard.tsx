@@ -40,7 +40,6 @@ import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
 import { OffersManager } from "@/components/offers/OffersManager";
 import PermissionBanner from "@/components/PermissionBanner";
-import MobileBottomNav from "@/components/mobile-bottom-nav";
 import {
   Dialog,
   DialogContent,
@@ -2309,6 +2308,7 @@ const ProfileSettingsManager: React.FC<{
 const menuBasedCategories = [
   "beauty",
   "cake-shop",
+  "street-food",
   "grocery",
 ];
 const bookingBasedCategories = ["electrician", "plumber"];
@@ -2331,25 +2331,6 @@ const ProviderDashboard: React.FC = () => {
     enabled: !!user?.id && user.role === 'provider',
     retry: false,
   });
-
-  // --- ACTIVE TAB STATE (MUST be before any conditional returns!) ---
-  const [activeTab, setActiveTab] = useState<string>("bookings");
-
-  // Calculate default tab based on provider type (computed before conditional returns)
-  const computedDefaultTab = React.useMemo(() => {
-    if (!providerProfile?.category?.slug) return "bookings";
-    const slug = providerProfile.category.slug;
-    if (slug === "restaurants") return "live-orders";
-    if (slug === "rental") return "rental-listings";
-    return "bookings";
-  }, [providerProfile?.category?.slug]);
-
-  // Sync active tab when profile loads  
-  useEffect(() => {
-    if (providerProfile && activeTab === "bookings" && computedDefaultTab !== "bookings") {
-      setActiveTab(computedDefaultTab);
-    }
-  }, [providerProfile, computedDefaultTab, activeTab]);
 
   // --- FCM TOKEN SYNC FROM ANDROID APP ---
   useEffect(() => {
@@ -2499,7 +2480,7 @@ const ProviderDashboard: React.FC = () => {
   const defaultTab = type === "restaurant" ? "live-orders" : (type === "rental" ? "rental-listings" : "bookings"); // Sabse important tab
 
   return (
-    <div className="container mx-auto py-8 pb-24 md:pb-8">
+    <div className="container mx-auto py-8">
       {/* Permission Banner for Android App */}
       <PermissionBanner />
 
@@ -2507,24 +2488,10 @@ const ProviderDashboard: React.FC = () => {
         Welcome, {providerProfile.businessName}!
       </h1>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Desktop: Grid tabs | Mobile: Hidden (using bottom nav instead) */}
-        <TabsList className="hidden md:grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {/* Mobile: Horizontal scrollable tabs (fallback - hidden when bottom nav is visible) */}
-        <TabsList className="md:hidden flex w-full overflow-x-auto scrollbar-hide gap-1 h-auto p-1">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap"
-            >
               {tab.label}
             </TabsTrigger>
           ))}
@@ -2577,14 +2544,6 @@ const ProviderDashboard: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
-
-      {/* Mobile Bottom Navigation - Like Amazon/Flipkart/Blinkit */}
-      <MobileBottomNav
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        tabs={tabs}
-        providerType={type}
-      />
     </div>
   );
 };
