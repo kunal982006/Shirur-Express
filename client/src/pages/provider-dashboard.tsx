@@ -1366,6 +1366,39 @@ const BeautyServiceSelector: React.FC<{
     toast({ title: "Added", description: "Service added to list. Don't forget to Save." });
   };
 
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, serviceId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("images", file);
+
+    try {
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const url = res.data.urls[0];
+
+      if (serviceId === "new") {
+        setNewService(prev => ({ ...prev, imageUrl: url }));
+      } else if (serviceId) {
+        handleUpdateService(serviceId!, "imageUrl", url);
+      }
+      toast({ title: "Image Uploaded", description: "Image successfully uploaded." });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Could not upload image.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       // Ensure no nulls are sent
@@ -1486,6 +1519,29 @@ const BeautyServiceSelector: React.FC<{
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Service Image</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newService.imageUrl}
+                    onChange={(e) => setNewService({ ...newService, imageUrl: e.target.value })}
+                    placeholder="Image URL..."
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={(e) => handleImageUpload(e, "new")}
+                      disabled={isUploading}
+                    />
+                    <Button type="button" variant="outline" size="icon" disabled={isUploading}>
+                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddingOpen(false)}>Cancel</Button>
@@ -1566,14 +1622,29 @@ const BeautyServiceSelector: React.FC<{
                               </div>
 
                               {/* Image URL (Hidden or collapsed usually, but user wants edit) */}
+                              {/* Image URL (Hidden or collapsed usually, but user wants edit) */}
                               <div className="md:col-span-4">
                                 <Label className="text-xs text-muted-foreground md:hidden">Image</Label>
-                                <Input
-                                  value={service.imageUrl || ""}
-                                  onChange={(e) => handleUpdateService(service.id, "imageUrl", e.target.value)}
-                                  placeholder="Image URL..."
-                                  className="text-xs text-muted-foreground"
-                                />
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={service.imageUrl || ""}
+                                    onChange={(e) => handleUpdateService(service.id, "imageUrl", e.target.value)}
+                                    placeholder="Image URL..."
+                                    className="text-xs text-muted-foreground"
+                                  />
+                                  <div className="relative flex-shrink-0">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                      onChange={(e) => handleImageUpload(e, service.id)}
+                                      disabled={isUploading}
+                                    />
+                                    <Button type="button" variant="outline" size="icon" className="h-9 w-9" disabled={isUploading}>
+                                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
