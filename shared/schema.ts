@@ -344,7 +344,7 @@ export const insertServiceOfferingSchema = z.object({
   name: z.string().optional(),
   description: z.string().nullable().optional(),
   duration: z.number().optional(), // minutes
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
   categorySlug: z.string().optional(),
   subCategory: z.string().optional(),
   section: z.string().optional(),

@@ -1367,8 +1367,10 @@ const BeautyServiceSelector: React.FC<{
   };
 
   const [isUploading, setIsUploading] = useState(false);
+  const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, serviceId?: string) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -1382,10 +1384,10 @@ const BeautyServiceSelector: React.FC<{
       });
       const url = res.data.urls[0];
 
-      if (serviceId === "new") {
+      if (activeUploadId === "new") {
         setNewService(prev => ({ ...prev, imageUrl: url }));
-      } else if (serviceId) {
-        handleUpdateService(serviceId!, "imageUrl", url);
+      } else if (activeUploadId) {
+        handleUpdateService(activeUploadId, "imageUrl", url);
       }
       toast({ title: "Image Uploaded", description: "Image successfully uploaded." });
     } catch (error: any) {
@@ -1396,7 +1398,13 @@ const BeautyServiceSelector: React.FC<{
       });
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = ""; // Reset
     }
+  };
+
+  const triggerUpload = (id: string) => {
+    setActiveUploadId(id);
+    fileInputRef.current?.click();
   };
 
   const saveMutation = useMutation({
@@ -1410,7 +1418,7 @@ const BeautyServiceSelector: React.FC<{
         subCategory: s.subCategory || "General", // Validation safety
         price: String(s.price),
         duration: s.duration || 30,
-        imageUrl: s.imageUrl,
+        imageUrl: s.imageUrl || undefined,
         isActive: true, // We are sending the active list
       }));
 
@@ -1428,6 +1436,13 @@ const BeautyServiceSelector: React.FC<{
 
   return (
     <Card className="w-full">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleImageUpload}
+      />
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Manage Services</CardTitle>
@@ -1529,15 +1544,18 @@ const BeautyServiceSelector: React.FC<{
                     placeholder="Image URL..."
                   />
                   <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={(e) => handleImageUpload(e, "new")}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
                       disabled={isUploading}
-                    />
-                    <Button type="button" variant="outline" size="icon" disabled={isUploading}>
-                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      onClick={() => triggerUpload("new")}
+                    >
+                      {isUploading && activeUploadId === "new" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1632,18 +1650,20 @@ const BeautyServiceSelector: React.FC<{
                                     placeholder="Image URL..."
                                     className="text-xs text-muted-foreground"
                                   />
-                                  <div className="relative flex-shrink-0">
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                      onChange={(e) => handleImageUpload(e, service.id)}
-                                      disabled={isUploading}
-                                    />
-                                    <Button type="button" variant="outline" size="icon" className="h-9 w-9" disabled={isUploading}>
-                                      {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                                    </Button>
-                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 flex-shrink-0"
+                                    disabled={isUploading}
+                                    onClick={() => triggerUpload(service.id)}
+                                  >
+                                    {isUploading && activeUploadId === service.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Upload className="h-4 w-4" />
+                                    )}
+                                  </Button>
                                 </div>
                               </div>
                             </div>
