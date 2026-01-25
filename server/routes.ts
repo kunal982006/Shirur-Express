@@ -2243,9 +2243,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await importGmartProducts(csvContent);
 
       res.json({
-        success: true,
-        message: `Successfully imported ${result.imported} products from ${result.totalInCSV} CSV rows`,
-        ...result
+        ...result,
+        message: `Successfully imported ${result.imported} products from ${result.totalInCSV} CSV rows`
       });
 
     } catch (error: any) {

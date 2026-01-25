@@ -43,18 +43,34 @@ export default function ProductCard({
         </div>
       )}
 
-      {/* Image Section - Compact & Aspect Ratio Preserved */}
-      <div className="relative w-full aspect-[1/1] bg-gray-50 flex items-center justify-center p-1.5">
+      {/* Image Section - Fixed Square Container with Consistent Image Display */}
+      <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-contain mix-blend-multiply"
+            className="w-full h-full object-cover"
             loading="lazy"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+            }}
+            onError={(e) => {
+              // If image fails to load, hide it and show placeholder
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              target.parentElement?.classList.add('image-error');
+            }}
           />
         ) : (
-          <ShoppingBag className="h-6 w-6 text-gray-300" />
+          <ShoppingBag className="h-8 w-8 text-gray-300" />
         )}
+        {/* Fallback placeholder when image errors */}
+        <div className="image-error-placeholder absolute inset-0 bg-gray-100 flex items-center justify-center hidden">
+          <ShoppingBag className="h-8 w-8 text-gray-300" />
+        </div>
       </div>
 
       {/* Content Section */}
