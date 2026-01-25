@@ -43,6 +43,7 @@ import { z } from "zod";
 import twilio from "twilio";
 import { sendBookingNotification } from "./twilio-client";
 import { sendPushNotification } from "./firebase";
+import { importGmartProducts } from "./import-gmart-products";
 
 let twilioClient: any = null;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
@@ -2215,6 +2216,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Error in direct ring test"
+      });
+    }
+  });
+
+  // =========================================
+  // ADMIN: GMart Products CSV Import
+  // =========================================
+  app.post("/api/admin/import-gmart-products", upload.single('csv'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "CSV file is required. Upload with field name 'csv'" });
+      }
+
+      // Check file type
+      if (!req.file.originalname.endsWith('.csv')) {
+        return res.status(400).json({ message: "File must be a CSV file" });
+      }
+
+      console.log(`[GMart Import] Received file: ${req.file.originalname} (${req.file.size} bytes)`);
+
+      // Convert buffer to string
+      const csvContent = req.file.buffer.toString('utf-8');
+
+      // Import products
+      const result = await importGmartProducts(csvContent);
+
+      res.json({
+        success: true,
+        message: `Successfully imported ${result.imported} products from ${result.totalInCSV} CSV rows`,
+        ...result
+      });
+
+    } catch (error: any) {
+      console.error("[GMart Import] Error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error importing products"
       });
     }
   });

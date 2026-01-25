@@ -11,7 +11,8 @@
     "check": "tsc",
     "seed:electrician": "tsx server/seed-electrician-problems.ts",
     "seed:plumber": "tsx server/seed-plumber-problems.ts",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "import:gmart": "npx dotenv -- tsx server/run-gmart-import.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -56,6 +57,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
+    "csv-parse": "^6.1.0",
     "date-fns": "^3.6.0",
     "drizzle-kit": "^0.31.6",
     "drizzle-orm": "^0.39.1",
