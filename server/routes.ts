@@ -32,6 +32,7 @@ import {
   restaurantOrders, // FOR RIDER QUERIES
   providerOffers, // OFFERS CAROUSEL
   insertProviderOfferSchema, // OFFERS CAROUSEL
+  users, // FOR FCM DEBUG ENDPOINT
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -1138,31 +1139,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const booking = await storage.createBooking({ ...bookingData, userId });
 
-      // --- PUSH NOTIFICATION (RINGING) ---
+      // --- PUSH NOTIFICATION (RINGING) via Firebase FCM ---
+      // This is the PRIMARY notification method for alerting providers about new bookings
+      // Twilio SMS is NOT used for ringing - only for OTP and status updates to customers
       if (booking.providerId) {
         try {
           // Fetch provider to get FCM token
           const provider = await storage.getServiceProvider(booking.providerId);
+          console.log(`[FCM Ringing] Provider: ${provider?.businessName || 'NOT FOUND'}`);
+          console.log(`[FCM Ringing] FCM Token: ${provider?.user?.fcmToken ? 'EXISTS' : 'MISSING'}`);
+
           if (provider && provider.user && provider.user.fcmToken) {
-            console.log(`[FCM] Sending Booking Alert to ${provider.businessName}`);
-            await sendPushNotification(provider.user.fcmToken, {
-              type: 'ORDER_REQUEST', // Re-using ORDER_REQUEST to trigger the same Ringing screen
-              title: 'New Service Booking!',
-              body: `New booking for ${booking.serviceType}`,
+            const fcmResult = await sendPushNotification(provider.user.fcmToken, {
+              type: 'ORDER_REQUEST',
+              title: '🔔 New Service Booking!',
+              body: `New ${booking.serviceType} booking request`,
               data: {
                 orderId: booking.id,
-                customerName: booking.userPhone, // Sending phone as name for now
+                customerName: booking.userPhone,
                 amount: "Check App",
-                pickupAddress: "User's Location",
+                pickupAddress: "N/A",
                 dropAddress: booking.userAddress
               }
             });
+
+            if (fcmResult.success) {
+              console.log(`🚀 Ringing signal sent via Firebase (Bypassing Twilio) - MessageId: ${fcmResult.messageId}`);
+            } else {
+              console.error(`❌ FCM Ringing failed:`, fcmResult.error);
+            }
+          } else {
+            console.warn(`[FCM Ringing] Cannot send - FCM token not registered for provider`);
           }
-        } catch (fcmError) {
-          console.error("[FCM Error]", fcmError);
+        } catch (fcmError: any) {
+          console.error("[FCM Ringing Error]", fcmError?.message || fcmError);
         }
+      } else {
+        console.log(`[FCM Ringing] Skipping - no providerId assigned to booking`);
       }
-      // -----------------------------------
+      // --- END FIREBASE FCM RINGING ---
 
       res.status(201).json(booking);
     } catch (error: any) {
@@ -2073,6 +2088,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Mark ready error:", error);
       res.status(400).json({ message: error.message || "Error marking order ready" });
+    }
+  });
+
+  // =========================================
+  // DEBUG ENDPOINT - FCM Test
+  // =========================================
+  app.post("/api/debug/fcm-test", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required in request body" });
+      }
+
+      console.log(`[FCM Debug] Testing FCM for userId: ${userId}`);
+
+      // Get user to find FCM token
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.fcmToken) {
+        return res.status(400).json({
+          message: "User has no FCM token registered",
+          username: user.username,
+          userId: user.id
+        });
+      }
+
+      console.log(`[FCM Debug] Found FCM token for ${user.username}: ${user.fcmToken.substring(0, 20)}...`);
+
+      // Send test FCM notification
+      try {
+        const fcmResult = await sendPushNotification(user.fcmToken, {
+          type: 'ORDER_REQUEST',
+          title: '🔧 Test Electrician Order!',
+          body: 'This is a test notification from FCM Debug endpoint.',
+          data: {
+            orderId: 'test-order-123',
+            customerName: 'Test Customer',
+            amount: '₹500',
+            pickupAddress: 'N/A',
+            dropAddress: 'Test Address, Shirur'
+          }
+        });
+
+        console.log(`[FCM Debug] FCM Result:`, JSON.stringify(fcmResult, null, 2));
+
+        res.json({
+          success: true,
+          message: "FCM test notification sent successfully!",
+          fcmResult,
+          username: user.username,
+          fcmTokenPreview: user.fcmToken.substring(0, 30) + "..."
+        });
+      } catch (fcmError: any) {
+        console.error(`[FCM Debug] FCM Error:`, fcmError);
+        res.status(500).json({
+          success: false,
+          message: "FCM notification failed",
+          error: fcmError.message || fcmError,
+          username: user.username
+        });
+      }
+
+    } catch (error: any) {
+      console.error("[FCM Debug] Error:", error);
+      res.status(500).json({ message: error.message || "Error in FCM debug" });
     }
   });
 
