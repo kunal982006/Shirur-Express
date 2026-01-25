@@ -401,6 +401,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db.query.serviceProviders.findFirst({
       where: eq(serviceProviders.id, id),
       with: {
+        user: true, // CRITICAL: Needed to fetch fcmToken for push notifications
         category: true,
         beautyServices: { with: { template: true } },
         cakeProducts: true,
@@ -414,7 +415,12 @@ export class DatabaseStorage implements IStorage {
       (result as any).beautyServices = [];
     }
 
-
+    // Debug logging for FCM token
+    if (result) {
+      console.log(`[getServiceProvider] Fetched provider: ${result.businessName}`);
+      console.log(`[getServiceProvider] User object: ${result.user ? 'EXISTS' : 'MISSING'}`);
+      console.log(`[getServiceProvider] FCM Token in DB: ${result.user?.fcmToken ? 'FOUND (' + result.user.fcmToken.substring(0, 25) + '...)' : 'NOT SET'}`);
+    }
 
     return result as any;
   }

@@ -2163,5 +2163,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =========================================
+  // DIRECT FCM TEST - Bypasses Database Entirely
+  // =========================================
+  app.get("/api/test-my-ring", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({
+          message: "Token is required. Usage: /api/test-my-ring?token=YOUR_FCM_TOKEN_HERE"
+        });
+      }
+
+      console.log(`[Direct Ring Test] Testing FCM with token: ${token.substring(0, 30)}...`);
+      console.log(`[Direct Ring Test] Token length: ${token.length}`);
+
+      // Send high-priority ORDER_REQUEST directly to the provided token
+      const fcmResult = await sendPushNotification(token, {
+        type: 'ORDER_REQUEST',
+        title: '🔔 Direct Ring Test!',
+        body: 'This is a direct FCM test - bypassing database lookup.',
+        data: {
+          orderId: 'direct-test-' + Date.now(),
+          customerName: 'Direct Test',
+          amount: '₹999',
+          pickupAddress: 'Test Location',
+          dropAddress: 'Test Address, Shirur'
+        }
+      });
+
+      if (fcmResult.success) {
+        console.log(`✅ Direct Ring Test SUCCESS - MessageId: ${fcmResult.messageId}`);
+        res.json({
+          success: true,
+          message: "🚀 Direct FCM ring sent successfully!",
+          messageId: fcmResult.messageId,
+          tokenPreview: token.substring(0, 40) + "..."
+        });
+      } else {
+        console.error(`❌ Direct Ring Test FAILED:`, fcmResult.error);
+        res.status(500).json({
+          success: false,
+          message: "FCM ring failed",
+          error: fcmResult.error
+        });
+      }
+
+    } catch (error: any) {
+      console.error("[Direct Ring Test] Error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Error in direct ring test"
+      });
+    }
+  });
+
   return httpServer;
 }
