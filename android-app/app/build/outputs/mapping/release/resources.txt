@@ -913,6 +913,7 @@ _no
 Motion
 _nr
 _nt
+android.permission.READ_MEDIA_IMAGES
 gradient
 measurement.client.sessions.session_i...
 င ဇဇ
@@ -987,6 +988,7 @@ CREATED
 android.text.DynamicLayout$ChangeWatcher
 REGEXP
 SIGNED
+android.intent.category.OPENABLE
 NEGATIVE_BUTTON_CONTENT_DESCRIPTION_KEY
 com.google.android.gms.ads.identifier...
 SHOW
@@ -1119,6 +1121,7 @@ measurement.id.rb.attribution.service
 RESULT_INSTALL_SUCCESS
 Bytes
 campaign_info_source
+android.intent.action.GET_CONTENT
 com.google.android.gms.common.interna...
 uimode
 KEY_COMPONENT_ACTIVITY_REGISTERED_KEYS
@@ -1212,6 +1215,7 @@ active
 SFIXED32_LIST
 TwilightManager
 ON_ANY
+android.intent.extra.ALLOW_MULTIPLE
 com.google.android.gms.measurement
 guava.concurrent.generate_cancellatio...
 makeOptionalFitsSystemWindows
@@ -1475,6 +1479,7 @@ callback
 TokenCreationEpochInSecs
 FOR_IN_LET
 mOnKeyListener
+android.permission.READ_EXTERNAL_STORAGE
 triggered_event_name
 ACTION_PASTE
 android.graphics.FontFamily
@@ -2486,6 +2491,7 @@ rebase
 ဈ ဂဂင
 Loader
 view_item_list
+MainActivity
 INT
 first_open_after_install
 PLUS_EQUALS

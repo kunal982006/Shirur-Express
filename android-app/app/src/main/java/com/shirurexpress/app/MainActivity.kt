@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var errorView: View
+    
+    // File upload callback for WebView file chooser
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
     // Unified permission request launcher
     private val permissionLauncher = registerForActivityResult(
@@ -62,6 +65,34 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "GPS is required for location features", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // File chooser launcher for handling file upload in WebView
+    private val fileChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Handle the file chooser result
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data
+            val resultUris: Array<Uri>? = when {
+                // Handle multiple file selection
+                data?.clipData != null -> {
+                    val clipData = data.clipData!!
+                    Array(clipData.itemCount) { i -> clipData.getItemAt(i).uri }
+                }
+                // Handle single file selection
+                data?.data != null -> {
+                    arrayOf(data.data!!)
+                }
+                else -> null
+            }
+            filePathCallback?.onReceiveValue(resultUris ?: arrayOf())
+        } else {
+            // User cancelled the file picker - MUST call with null to prevent WebView from getting stuck
+            filePathCallback?.onReceiveValue(null)
+        }
+        // Clear the callback after use
+        filePathCallback = null
     }
 
     companion object {
@@ -123,6 +154,18 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
             permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+
+        // 4. Media/Storage Access (for file uploads)
+        // Android 13+ uses READ_MEDIA_IMAGES, older versions use READ_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
         }
 
         if (permissionsToRequest.isNotEmpty()) {
@@ -194,6 +237,11 @@ class MainActivity : AppCompatActivity() {
         }
         if (deniedPermissions.contains(Manifest.permission.ACCESS_FINE_LOCATION)) {
             message.append("- Location: To show delivery routes and track orders\n")
+        }
+        // Handle both old and new storage permissions for file uploads
+        if (deniedPermissions.contains(Manifest.permission.READ_MEDIA_IMAGES) ||
+            deniedPermissions.contains(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            message.append("- Gallery Access: To upload images from your device\n")
         }
 
         message.append("\nPlease grant them in App Settings.")
@@ -401,6 +449,45 @@ class MainActivity : AppCompatActivity() {
                 callback: GeolocationPermissions.Callback?
             ) {
                 callback?.invoke(origin, true, false)
+            }
+
+            /**
+             * Handle file upload requests from WebView (e.g., <input type="file">)
+             * This is called when the user clicks on a file input in the web page.
+             */
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                // If there's a pending callback, cancel it first to prevent the WebView from getting stuck
+                this@MainActivity.filePathCallback?.onReceiveValue(null)
+                
+                // Save the new callback
+                this@MainActivity.filePathCallback = filePathCallback
+                
+                try {
+                    // Create an intent to pick images
+                    val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*" // Accept all image types
+                        
+                        // Allow multiple file selection if the web page supports it
+                        if (fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                        }
+                    }
+                    
+                    // Launch the file chooser
+                    fileChooserLauncher.launch(Intent.createChooser(intent, "Select Image"))
+                    return true
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error launching file chooser", e)
+                    this@MainActivity.filePathCallback?.onReceiveValue(null)
+                    this@MainActivity.filePathCallback = null
+                    Toast.makeText(this@MainActivity, "Cannot open file chooser", Toast.LENGTH_SHORT).show()
+                    return false
+                }
             }
         }
 

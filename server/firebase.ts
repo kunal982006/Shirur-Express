@@ -13,8 +13,12 @@ try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         try {
             serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+            // Fix for 'Invalid PEM' error: replace literal \n with actual newlines
+            if (serviceAccount && serviceAccount.private_key) {
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
         } catch (e) {
-            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var");
+            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var:", e);
         }
     }
 

@@ -66,7 +66,7 @@ interface DeliveryPartnerRequest extends Request {
     id: string;
     userId: string;
     vehicleType: string;
-    isOnline: boolean;
+    isOnline: boolean | null;
   };
 }
 
@@ -1031,6 +1031,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- STREET FOOD ITEMS API (PUBLIC) ---
+  app.get("/api/street-food-items", async (req: Request, res: Response) => {
+    try {
+      const { providerId, search, category } = req.query;
+      console.log("[DEBUG] /api/street-food-items called with providerId:", providerId);
+
+      if (!providerId) {
+        return res.status(400).json({ message: "providerId is required" });
+      }
+
+      const conditions = [eq(streetFoodItems.providerId, providerId as string)];
+
+      if (search) {
+        conditions.push(ilike(streetFoodItems.name, `%${search}%`));
+      }
+      if (category) {
+        conditions.push(eq(streetFoodItems.category, category as string));
+      }
+
+      const items = await db.select()
+        .from(streetFoodItems)
+        .where(and(...conditions));
+
+      console.log("[DEBUG] Street food items found:", items.length);
+      if (items.length === 0) {
+        // Let's also check if there are ANY items for this provider without filtering
+        const allItems = await db.select().from(streetFoodItems);
+        console.log("[DEBUG] Total items in streetFoodItems table:", allItems.length);
+        if (allItems.length > 0) {
+          console.log("[DEBUG] Sample item providerIds:", allItems.slice(0, 3).map(i => i.providerId));
+        }
+      }
+
+      res.json(items);
+    } catch (error: any) {
+      console.error("Get street food items error:", error);
+      res.status(500).json({ message: error.message || "Error fetching street food items" });
+    }
+  });
+
   app.get("/api/service-providers", async (req: Request, res: Response) => {
     try {
       const { category, lat, lng, radius } = req.query;
@@ -1422,7 +1462,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updatedInvoice = await storage.verifyInvoicePayment(
           invoice_id,
           razorpay_payment_id,
-          razorpay_order_id
+          razorpay_order_id,
+          razorpay_signature
         );
         res.json({ status: "success", invoice: updatedInvoice });
       } else {
@@ -1490,7 +1531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Amount must be in paise
       if (orderType === 'street_food' || orderType === 'restaurant') {
-        amount = Math.round(parseFloat(dbOrder.totalAmount) * 100);
+        amount = Math.round(parseFloat((dbOrder as any).totalAmount) * 100);
       } else {
         amount = Math.round(parseFloat((dbOrder as any).total) * 100);
       }

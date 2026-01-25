@@ -3,7 +3,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { pool } from "./db";
+import { pool, checkDatabaseConnection } from "./db";
 import { registerRoutes } from "./routes"; // registerRoutes from server/routes.ts
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -12,13 +12,7 @@ app.set("trust proxy", 1);
 
 const PgStore = connectPgSimple(session);
 
-// Validate DB connection on startup
-pool.connect().then(client => {
-  console.log("Database connected successfully");
-  client.release();
-}).catch(err => {
-  console.error("Database connection failed on startup:", err);
-});
+// Validate DB connection on startup moved to main execution block
 
 // Extend Express Session to include userId and userRole
 declare module 'express-session' {
@@ -92,6 +86,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Ensure DB is connected before starting server
+  await checkDatabaseConnection();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -147,7 +147,7 @@ export interface IStorage {
 
   // Bookings (UPDATED INTERFACE)
   createBooking(
-    booking: InsertBooking & { userId: string; providerId?: string },
+    booking: InsertBooking & { userId: string; providerId?: string | null },
   ): Promise<Booking>;
   getBooking(
     id: string,
@@ -507,7 +507,7 @@ export class DatabaseStorage implements IStorage {
   // --- BOOKING FUNCTIONS (UPDATED) ---
 
   async createBooking(
-    booking: InsertBooking & { userId: string; providerId?: string },
+    booking: InsertBooking & { userId: string; providerId?: string | null },
   ): Promise<Booking> {
     const bookingToInsert = {
       serviceType: booking.serviceType,
