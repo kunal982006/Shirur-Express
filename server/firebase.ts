@@ -1,61 +1,90 @@
+// server/firebase.ts
+// Firebase Admin SDK initialization - SAFE: Never crashes the server
 
 import admin from 'firebase-admin';
 
-// Initialize Firebase Admin
-// Expecting FIREBASE_SERVICE_ACCOUNT environment variable containing the JSON
-// OR a file named service-account.json in the root (for local dev)
-
 let isInitialized = false;
 
-try {
-    let serviceAccount: any;
+// Initialize Firebase Admin in a completely safe way
+function initializeFirebase(): boolean {
+    // Already initialized
+    if (admin.apps.length > 0) {
+        isInitialized = true;
+        return true;
+    }
 
-    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const firebaseEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+    if (!firebaseEnv) {
+        console.warn("⚠️ Firebase Admin NOT initialized. FIREBASE_SERVICE_ACCOUNT env var is missing.");
+        return false;
+    }
+
+    try {
+        let serviceAccount: any;
+
+        // Try to parse the JSON - handle various formats
         try {
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-            // Fix for 'Invalid PEM' error: replace literal \n with actual newlines
-            if (serviceAccount && serviceAccount.private_key) {
-                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            // First, try direct JSON parse
+            serviceAccount = JSON.parse(firebaseEnv);
+        } catch (parseError) {
+            // Maybe it's double-escaped or has issues
+            console.warn("[Firebase] First parse attempt failed, trying cleanup...");
+            try {
+                // Try removing outer quotes if present
+                let cleaned = firebaseEnv.trim();
+                if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                    cleaned = cleaned.slice(1, -1);
+                }
+                // Try unescaping
+                cleaned = cleaned.replace(/\\"/g, '"');
+                serviceAccount = JSON.parse(cleaned);
+            } catch (secondError) {
+                console.error("❌ Firebase: Failed to parse FIREBASE_SERVICE_ACCOUNT. Check the JSON format.");
+                console.error("   Error:", secondError);
+                return false;
             }
-        } catch (e) {
-            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var:", e);
         }
-    }
 
-    // If not in env, check if we are in a dev environment and try to load from file
-    // (In production/Replit, using ENV is safer, but for local user might use file)
-    if (!serviceAccount) {
-        try {
-            // Intentionally using require to avoid static analysis issues if file doesn't exist
-            // @ts-ignore
-            // serviceAccount = require('../service-account.json'); 
-            // Commented out to avoid crash if file missing. User must provide ENV or file.
-        } catch (e) {
-            // Ignore
+        // Validate required fields
+        if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+            console.error("❌ Firebase: Service account JSON is missing required fields (project_id, private_key, or client_email)");
+            return false;
         }
-    }
 
-    if (serviceAccount) {
+        // Fix private_key newlines - handle both escaped and double-escaped
+        if (serviceAccount.private_key) {
+            serviceAccount.private_key = serviceAccount.private_key
+                .replace(/\\\\n/g, '\n')  // Double-escaped
+                .replace(/\\n/g, '\n');    // Single-escaped
+        }
+
+        // Initialize Firebase Admin
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });
-        isInitialized = true;
+
         console.log("✅ Firebase Admin Initialized successfully.");
-    } else {
-        console.warn("⚠️ Firebase Admin NOT initialized. Missing FIREBASE_SERVICE_ACCOUNT env var.");
+        return true;
+
+    } catch (error: any) {
+        console.error("❌ Firebase Admin initialization failed:", error.message);
+        return false;
     }
-} catch (error) {
-    console.error("❌ Firebase Admin initialization failed:", error);
 }
+
+// Initialize on module load (but safely)
+isInitialized = initializeFirebase();
 
 export async function sendPushNotification(fcmToken: string, payload: {
     type: 'ORDER_REQUEST' | 'ORDER_UPDATE';
     title?: string;
     body?: string;
     data?: Record<string, string>;
-}) {
+}): Promise<{ success: boolean; messageId?: string; error?: any }> {
+
     if (!isInitialized) {
-        console.warn(`[Mock] Push Notification to ${fcmToken}:`, payload);
+        console.warn(`[FCM Mock] Push to ${fcmToken?.substring(0, 20)}...:`, payload.type);
         return { success: false, error: "Firebase not initialized" };
     }
 
@@ -64,7 +93,7 @@ export async function sendPushNotification(fcmToken: string, payload: {
             token: fcmToken,
             data: {
                 type: payload.type,
-                ...payload.data
+                ...(payload.data || {})
             },
             android: {
                 priority: 'high',
@@ -82,14 +111,15 @@ export async function sendPushNotification(fcmToken: string, payload: {
             message.notification = {
                 title: payload.title,
                 body: payload.body,
-            }
+            };
         }
 
         const response = await admin.messaging().send(message);
-        console.log('✅ Successfully sent FCM message:', response);
+        console.log('✅ FCM sent:', response);
         return { success: true, messageId: response };
-    } catch (error) {
-        console.error('❌ Error sending FCM message:', error);
-        return { success: false, error };
+
+    } catch (error: any) {
+        console.error('❌ FCM send error:', error.message);
+        return { success: false, error: error.message };
     }
 }
