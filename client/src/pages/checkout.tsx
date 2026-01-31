@@ -63,6 +63,7 @@ export default function Checkout() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [distanceInMeters, setDistanceInMeters] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [useManualAddress, setUseManualAddress] = useState(false); // Manual address entry mode
 
   // Fetch Provider Details to get coordinates
   const { data: provider } = useQuery({
@@ -97,24 +98,17 @@ export default function Checkout() {
   const isGrocery = items.some(item => item.itemType === 'grocery');
   const isCake = items.some(item => item.itemType === 'cake');
 
-  let deliveryFee = 50; // Default fixed delivery fee as per request
-  if (isGrocery) {
-    deliveryFee = 20;
-  }
+  // FREE DELIVERY PROMOTION - Set to 0 for all services during initial months
+  let deliveryFee = 0; // Free delivery for launch period
 
-  // Deliverability Check (based on distance if available)
-  let isDeliverable = true;
+  // Deliverability Check - DISABLED FOR LAUNCH (no distance limit)
+  // TODO: Re-enable distance limit after launch period
+  let isDeliverable = true; // Always deliverable during launch period
   let distanceInKm = 0;
 
   if (distanceInMeters !== null) {
     distanceInKm = distanceInMeters / 1000;
-    if (distanceInKm > 10) {
-      isDeliverable = false;
-    }
-  } else {
-    // Default or fallback if location not yet fetched? 
-    // For now, let's keep it 0 or show "Calculate"
-    // We will block order if location is missing.
+    // DISTANCE LIMIT DISABLED FOR LAUNCH - Previously: if (distanceInKm > 10) isDeliverable = false;
   }
 
   const total = subtotal + platformFee + deliveryFee;
@@ -192,13 +186,22 @@ export default function Checkout() {
 
   // --- YEH FUNCTION POORA NAYA HAI ---
   const onSubmit = async (values: CheckoutFormValues) => {
-    if (!userLocation) {
-      toast({ title: "Location Required", description: "Please enable location to calculate delivery fee.", variant: "destructive" });
-      getUserLocation();
-      return;
+    // If using manual address, just validate the address field is filled
+    if (useManualAddress) {
+      if (!values.deliveryAddress || values.deliveryAddress.length < 10) {
+        toast({ title: "Address Required", description: "Please enter a complete delivery address (at least 10 characters).", variant: "destructive" });
+        return;
+      }
+    } else {
+      // If using GPS, require location
+      if (!userLocation) {
+        toast({ title: "Location Required", description: "Please enable location or switch to manual address entry.", variant: "destructive" });
+        return;
+      }
     }
 
-    if (!isDeliverable) {
+    // Distance check only applies when GPS is used (already disabled for launch)
+    if (!useManualAddress && !isDeliverable) {
       toast({ title: "Not Deliverable", description: "Sorry, we do not deliver to this location (too far).", variant: "destructive" });
       return;
     }
@@ -395,48 +398,92 @@ export default function Checkout() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <MapPin className="h-5 w-5" />
-                      <span>Location & Delivery</span>
+                      <span>Delivery Location</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {!userLocation ? (
-                      <div className="flex flex-col items-start gap-2">
-                        <p className="text-sm text-muted-foreground">
-                          We need your location to calculate the delivery fee.
+                    {/* Toggle between GPS and Manual */}
+                    <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                      <Button
+                        type="button"
+                        variant={!useManualAddress ? "default" : "ghost"}
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          setUseManualAddress(false);
+                          if (!userLocation) getUserLocation();
+                        }}
+                      >
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Use GPS
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={useManualAddress ? "default" : "ghost"}
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setUseManualAddress(true)}
+                      >
+                        ✏️ Enter Manually
+                      </Button>
+                    </div>
+
+                    {/* GPS Mode */}
+                    {!useManualAddress && (
+                      <>
+                        {!userLocation ? (
+                          <div className="flex flex-col items-start gap-2">
+                            <p className="text-sm text-muted-foreground">
+                              Detect your current location automatically.
+                            </p>
+                            <Button
+                              type="button"
+                              onClick={getUserLocation}
+                              disabled={isLocating}
+                              variant="secondary"
+                            >
+                              {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
+                              Detect My Location
+                            </Button>
+                            {locationError && (
+                              <p className="text-sm text-destructive">{locationError}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex items-center text-green-600 gap-2">
+                              <MapPin className="h-4 w-4" />
+                              <span className="text-sm font-medium">Location Detected ✓</span>
+                            </div>
+                            {distanceInMeters !== null && (
+                              <p className="text-sm text-muted-foreground">
+                                Distance to Vendor: <span className="font-medium text-foreground">{distanceInKm.toFixed(1)} km</span>
+                              </p>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={getUserLocation}
+                              disabled={isLocating}
+                            >
+                              {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              Refresh Location
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Manual Mode */}
+                    {useManualAddress && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                          ✏️ <strong>Manual Entry Mode</strong>
                         </p>
-                        <Button
-                          type="button"
-                          onClick={getUserLocation}
-                          disabled={isLocating}
-                          variant="secondary"
-                        >
-                          {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
-                          Detect My Location
-                        </Button>
-                        {locationError && (
-                          <p className="text-sm text-destructive">{locationError}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex items-center text-green-600 gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm font-medium">Location Detected</span>
-                        </div>
-                        {distanceInMeters !== null && (
-                          <p className="text-sm text-muted-foreground">
-                            Distance to Vendor: <span className="font-medium text-foreground">{distanceInKm.toFixed(1)} km</span>
-                          </p>
-                        )}
-                        {!isDeliverable && (
-                          <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Not Deliverable</AlertTitle>
-                            <AlertDescription>
-                              Your location is too far from the vendor ({distanceInKm.toFixed(1)} km). We only deliver within 10 km.
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Please type your complete delivery address in the field below. Include house number, street name, and landmark.
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -551,8 +598,8 @@ export default function Checkout() {
                           <span className="ml-1 text-xs">({distanceInKm.toFixed(1)} km)</span>
                         )}
                       </span>
-                      <span>
-                        ₹{deliveryFee.toFixed(2)}
+                      <span className={deliveryFee === 0 ? "text-green-600 font-semibold" : ""}>
+                        {deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee.toFixed(2)}`}
                       </span>
                     </div>
                     <Separator />
@@ -563,16 +610,16 @@ export default function Checkout() {
                   </CardContent>
                   <CardFooter>
                     <Button
-                      type="submit" // <-- YEH CHANGE HUA
+                      type="submit"
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder || !isDeliverable || !userLocation}
+                      disabled={items.length === 0 || isPlacingOrder || (!useManualAddress && (!isDeliverable || !userLocation))}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : !isDeliverable ? (
+                      ) : !useManualAddress && !isDeliverable ? (
                         "Not Deliverable"
-                      ) : !userLocation ? (
+                      ) : !useManualAddress && !userLocation ? (
                         "Detect Location to Pay"
                       ) : (
                         `Pay Securely (₹${total.toFixed(2)})`

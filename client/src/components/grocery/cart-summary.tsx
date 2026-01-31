@@ -20,8 +20,8 @@ export default function CartSummary({
 
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
   const platformFee = subtotal * 0.05; // 5% platform fee
-  const distance = 3.5; // Mock distance - in real app this would be calculated
-  const deliveryFee = distance * 9; // ₹9 per km
+  // FREE DELIVERY PROMOTION - Set to 0 for all services during initial months
+  const deliveryFee = 0; // Free delivery for launch period
   const total = subtotal + platformFee + deliveryFee;
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);

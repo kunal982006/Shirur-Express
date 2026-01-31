@@ -1959,9 +1959,10 @@ const RestaurantOrdersManager: React.FC<{
   }
 
   // Filter orders by status
-  const pendingOrders = orders.filter((o) => o.status === "pending");
+  // Note: "paid" status means payment completed and waiting for provider to accept
+  const pendingOrders = orders.filter((o) => ["pending", "paid"].includes(o.status || ""));
   const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
-  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled", "out_for_delivery"].includes(o.status || ""));
 
   return (
     <Tabs defaultValue="pending" className="w-full">
@@ -2580,13 +2581,16 @@ const ProviderDashboard: React.FC = () => {
       </h1>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        {/* Scrollable tabs container for mobile */}
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="inline-flex w-max md:w-full md:grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm flex-shrink-0">
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent value="bookings" className="mt-6">
           <BookingsManager providerProfile={providerProfile} />

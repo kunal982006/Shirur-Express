@@ -1597,6 +1597,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const order = await storage.createRestaurantOrder({ ...orderData, userId });
       console.log("Created Restaurant Order:", order);
+
+      // --- PUSH NOTIFICATION (RINGING) ---
+      if (order.providerId) {
+        try {
+          const provider = await storage.getServiceProvider(order.providerId);
+          if (provider && provider.user && provider.user.fcmToken) {
+            console.log(`[FCM] Sending Ring to Restaurant ${provider.businessName}`);
+            await sendPushNotification(provider.user.fcmToken, {
+              type: 'ORDER_REQUEST',
+              title: '🍽️ New Restaurant Order!',
+              body: `Order #${order.id.slice(0, 8)} - ₹${order.totalAmount} needs your attention.`,
+              data: {
+                orderId: order.id,
+                orderType: 'restaurant',
+                customerName: "Customer",
+                amount: order.totalAmount.toString(),
+                pickupAddress: provider.address || "Restaurant Location",
+                dropAddress: order.deliveryAddress || "Customer Location"
+              }
+            });
+          } else {
+            console.warn(`[FCM] Provider ${order.providerId} has no FCM token registered.`);
+          }
+        } catch (fcmError) {
+          console.error("[FCM Error] Restaurant Order Notification Failed:", fcmError);
+        }
+      }
+      // -----------------------------------
+
       res.status(201).json(order);
     } catch (error: any) {
       console.error("Create restaurant order error:", error);

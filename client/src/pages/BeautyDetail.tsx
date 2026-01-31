@@ -104,6 +104,7 @@ export default function BeautyDetail() {
     const [selectedMainCat, setSelectedMainCat] = useState<string | null>(null);
     const [selectedSubCat, setSelectedSubCat] = useState<string | null>(null);
     const [cart, setCart] = useState<Record<string, any>>({});
+    const [isDescExpanded, setIsDescExpanded] = useState(false); // For Read More/Less
 
     // 1. Fetch Parlor Details (REAL API CALL)
     const { data: parlorDetail, isLoading: parlorLoading } = useQuery({
@@ -278,12 +279,37 @@ export default function BeautyDetail() {
                     <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover" />
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
-                            <div>
-                                <h2 className="text-3xl font-bold mb-1">{parlorDetail.name}</h2>
-                                <p className="text-sm text-muted-foreground">{parlorDetail.description}</p>
+                            <div className="flex-1 mr-4">
+                                <h2 className="text-2xl md:text-3xl font-bold mb-2">{parlorDetail.name}</h2>
+
+                                {/* Collapsible Description */}
+                                {parlorDetail.description && (
+                                    <div className="mt-2">
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {isDescExpanded
+                                                ? parlorDetail.description
+                                                : parlorDetail.description.length > 100
+                                                    ? `${parlorDetail.description.slice(0, 100)}...`
+                                                    : parlorDetail.description
+                                            }
+                                        </p>
+                                        {parlorDetail.description.length > 100 && (
+                                            <button
+                                                onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                                className="text-sm text-primary font-medium mt-1 flex items-center gap-1 hover:underline focus:outline-none"
+                                            >
+                                                {isDescExpanded ? (
+                                                    <>Read Less <ChevronDown className="h-4 w-4 rotate-180 transition-transform" /></>
+                                                ) : (
+                                                    <>Read More <ChevronDown className="h-4 w-4 transition-transform" /></>
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                            <Badge variant="default" className="text-base flex items-center px-3 py-1">
-                                <Star className="h-4 w-4 fill-current mr-1" /> {parlorDetail.rating}
+                            <Badge variant="default" className="text-base flex items-center px-3 py-1 shrink-0">
+                                <Star className="h-4 w-4 fill-current mr-1" /> {parlorDetail.rating?.toFixed(2) || "0.00"}
                             </Badge>
                         </div>
                         <div className="flex items-center space-x-4 mt-3 text-sm text-muted-foreground">
