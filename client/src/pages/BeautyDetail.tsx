@@ -107,70 +107,65 @@ export default function BeautyDetail() {
     const [isDescExpanded, setIsDescExpanded] = useState(false); // For Read More/Less
 
     // 1. Fetch Parlor Details (REAL API CALL)
-    const { data: parlorDetail, isLoading: parlorLoading } = useQuery({
+    const { data: parlorDetail, isLoading: parlorLoading, isError } = useQuery({
         queryKey: ["parlor-detail", parlorId],
         queryFn: async () => {
-            try {
-                const res = await api.get(`/service-providers/${parlorId}`);
-                const data = res.data;
+            const res = await api.get(`/service-providers/${parlorId}`);
+            const data = res.data;
 
-                if (!data) return null;
+            if (!data) throw new Error("Parlor not found");
 
-                // Transform beautyServices into NESTED_SERVICES format
-                const menuData: any = {};
+            // Transform beautyServices into NESTED_SERVICES format
+            const menuData: any = {};
 
-                if (data.beautyServices) {
-                    data.beautyServices.forEach((service: any) => {
-                        if (!service.isActive) return;
+            if (data.beautyServices) {
+                data.beautyServices.forEach((service: any) => {
+                    if (!service.isActive) return;
 
-                        // Prioritize service-level fields, fall back to template
-                        const template = service.template || {};
+                    // Prioritize service-level fields, fall back to template
+                    const template = service.template || {};
 
-                        // New Hierarchy: Section -> SubCategory -> Service
-                        // Default to 'Other' if section is missing (e.g. old data)
-                        const mainCat = service.section || "Other Services";
-                        const subCat = service.subCategory || "General Services";
-                        const name = service.name || template.name || "Unnamed Service";
-                        const duration = service.duration || template.duration || 30;
-                        const description = service.description || template.description;
-                        const gender = 'Unisex'; // Could be added to schema later
+                    // New Hierarchy: Section -> SubCategory -> Service
+                    // Default to 'Other' if section is missing (e.g. old data)
+                    const mainCat = service.section || "Other Services";
+                    const subCat = service.subCategory || "General Services";
+                    const name = service.name || template.name || "Unnamed Service";
+                    const duration = service.duration || template.duration || 30;
+                    const description = service.description || template.description;
+                    const gender = 'Unisex'; // Could be added to schema later
 
-                        if (!menuData[mainCat]) {
-                            menuData[mainCat] = [];
-                        }
+                    if (!menuData[mainCat]) {
+                        menuData[mainCat] = [];
+                    }
 
-                        // Check if SubCategory exists within MainCategory
-                        let subCatObj = menuData[mainCat].find((s: any) => s.name === subCat);
-                        if (!subCatObj) {
-                            subCatObj = { name: subCat, services: [] };
-                            menuData[mainCat].push(subCatObj);
-                        }
+                    // Check if SubCategory exists within MainCategory
+                    let subCatObj = menuData[mainCat].find((s: any) => s.name === subCat);
+                    if (!subCatObj) {
+                        subCatObj = { name: subCat, services: [] };
+                        menuData[mainCat].push(subCatObj);
+                    }
 
-                        subCatObj.services.push({
-                            id: service.id,
-                            name: name,
-                            price: Number(service.price),
-                            duration: duration,
-                            gender: gender,
-                            description: description
-                        });
+                    subCatObj.services.push({
+                        id: service.id,
+                        name: name,
+                        price: Number(service.price),
+                        duration: duration,
+                        gender: gender,
+                        description: description
                     });
-                }
-
-                return {
-                    ...data,
-                    name: data.businessName, // Map fields for UI compatibility
-                    image: data.profileImageUrl,
-                    address: data.address,
-                    rating: data.rating,
-                    reviews: data.reviewCount,
-                    distance: "2.5 km", // Mock distance for now
-                    menuData
-                };
-            } catch (err) {
-                console.error("Error fetching parlor details:", err);
-                return null;
+                });
             }
+
+            return {
+                ...data,
+                name: data.businessName, // Map fields for UI compatibility
+                image: data.profileImageUrl,
+                address: data.address,
+                rating: data.rating,
+                reviews: data.reviewCount,
+                distance: "2.5 km", // Mock distance for now
+                menuData
+            };
         },
         enabled: !!parlorId,
     });
@@ -207,7 +202,7 @@ export default function BeautyDetail() {
     }
 
     // FIX: Error check to display "not found" state
-    if (!parlorDetail && !parlorLoading) {
+    if ((!parlorDetail && !parlorLoading) || isError) {
         return (
             <div className="text-center py-20">
                 <p className="text-red-500 font-semibold text-xl">

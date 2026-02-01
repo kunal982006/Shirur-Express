@@ -14,15 +14,15 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem } from "@shared/schema";
 
 const IMAGE_MAPPING: Record<string, string> = {
-  "Leakage": "/images/plumber/leakage.png",
-  "Water Pipes": "/images/plumber/pipes.png",
-  "Taps & Faucets": "/images/plumber/tap.png",
-  "Toilet & Commode": "/images/plumber/toilet.png",
-  "Drainage": "/images/plumber/drainage.png",
-  "Water Tank": "/images/plumber/tank.png",
-  "Geyser/Water Heater": "/images/plumber/geyser.png",
-  "Motors & Pumps": "/images/plumber/motor.png",
-  "Others": "/images/plumber/others.png"
+  "Leakage": "/images/plumber/leakage.jpeg",
+  "Water Pipes": "/images/plumber/basin & sync.jpeg",
+  "Taps & Faucets": "/images/plumber/tap.jpeg",
+  "Toilet & Commode": "/images/plumber/toilet.png.jpeg",
+  "Drainage": "/images/plumber/basin & sync.jpeg",
+  "Water Tank": "/images/plumber/water tank.jpeg",
+  "Geyser/Water Heater": "/images/plumber/geyser.jpeg",
+  "Motors & Pumps": "/images/plumber/motor.jpeg",
+  "Others": "/images/plumber/tap.jpeg"
 };
 
 export default function Plumber() {

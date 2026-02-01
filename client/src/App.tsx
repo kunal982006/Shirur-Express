@@ -53,10 +53,10 @@ function RouterComponent() {
       <Route path="/plumber/:id" component={PlumberDetail} />
       <Route path="/plumber" component={Plumber} />
 
-      {/* Beauty Services Routes */}
-      <Route path="/beauty" component={Beauty} />
+      {/* Beauty Services Routes - More specific routes first */}
       <Route path="/beauty/:parlorId" component={BeautyDetail} />
       <Route path="/book/beauty" component={BookBeauty} />
+      <Route path="/beauty" component={Beauty} />
 
       <Route path="/cake-shop" component={CakeShop} />
       <Route path="/grocery" component={Grocery} />
