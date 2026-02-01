@@ -107,18 +107,24 @@ export default function BeautyDetail() {
     const [isDescExpanded, setIsDescExpanded] = useState(false); // For Read More/Less
 
     // 1. Fetch Parlor Details (REAL API CALL)
-    const { data: parlorDetail, isLoading: parlorLoading, isError } = useQuery({
+    const { data: parlorDetail, isLoading: parlorLoading, isError, error } = useQuery({
         queryKey: ["parlor-detail", parlorId],
         queryFn: async () => {
+            console.log("[BeautyDetail] Fetching parlor:", parlorId);
             const res = await api.get(`/service-providers/${parlorId}`);
             const data = res.data;
+            console.log("[BeautyDetail] API Response:", data);
 
-            if (!data) throw new Error("Parlor not found");
+            if (!data) {
+                console.error("[BeautyDetail] No data received from API");
+                throw new Error("Parlor not found");
+            }
 
             // Transform beautyServices into NESTED_SERVICES format
             const menuData: any = {};
 
-            if (data.beautyServices) {
+            if (data.beautyServices && Array.isArray(data.beautyServices)) {
+                console.log("[BeautyDetail] Processing", data.beautyServices.length, "beauty services");
                 data.beautyServices.forEach((service: any) => {
                     if (!service.isActive) return;
 
@@ -156,19 +162,26 @@ export default function BeautyDetail() {
                 });
             }
 
-            return {
+            const result = {
                 ...data,
-                name: data.businessName, // Map fields for UI compatibility
-                image: data.profileImageUrl,
-                address: data.address,
-                rating: data.rating,
-                reviews: data.reviewCount,
+                name: data.businessName || "Unnamed Parlor", // Map fields for UI compatibility
+                image: data.profileImageUrl || "",
+                address: data.address || "Address not available",
+                rating: data.rating || 0,
+                reviews: data.reviewCount || 0,
                 distance: "2.5 km", // Mock distance for now
-                menuData
+                menuData,
+                description: data.description || ""
             };
+            console.log("[BeautyDetail] Transformed result:", result);
+            return result;
         },
         enabled: !!parlorId,
+        retry: 1, // Only retry once
     });
+
+    // Debug logging
+    console.log("[BeautyDetail] State - parlorId:", parlorId, "isLoading:", parlorLoading, "isError:", isError, "error:", error);
 
     const parlorMenu = parlorDetail?.menuData || {};
 
@@ -203,13 +216,18 @@ export default function BeautyDetail() {
 
     // FIX: Error check to display "not found" state
     if ((!parlorDetail && !parlorLoading) || isError) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        console.error("[BeautyDetail] Rendering error state:", errorMessage);
         return (
-            <div className="text-center py-20">
+            <div className="text-center py-20 px-4">
                 <p className="text-red-500 font-semibold text-xl">
-                    Parlor not found or invalid ID. 😞
+                    Parlor not found or an error occurred. 😞
                 </p>
                 <p className="text-muted-foreground mt-2">
-                    Check the URL or return to the listing page.
+                    {errorMessage !== "Unknown error" ? `Error: ${errorMessage}` : "Check the URL or return to the listing page."}
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                    Parlor ID: {parlorId || "Not provided"}
                 </p>
                 <Button onClick={() => setLocation("/beauty")} className="mt-4">
                     Go Back to Listing
@@ -254,6 +272,19 @@ export default function BeautyDetail() {
         setLocation(`/book/beauty?parlorId=${parlorId}&services=${serviceIds}`);
     };
 
+    // Final safety check - this should never happen but just in case
+    if (!parlorDetail) {
+        console.error("[BeautyDetail] parlorDetail is null after all checks");
+        return (
+            <div className="text-center py-20">
+                <p className="text-muted-foreground">Something went wrong. Please try again.</p>
+                <Button onClick={() => setLocation("/beauty")} className="mt-4">
+                    Go Back to Listing
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <div className="py-8 md:py-12 bg-gray-50 min-h-screen pb-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,7 +302,13 @@ export default function BeautyDetail() {
 
                 {/* Parlor Banner/Detail Header */}
                 <Card className="mb-8 p-0 overflow-hidden">
-                    <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover" />
+                    {parlorDetail.image ? (
+                        <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover" />
+                    ) : (
+                        <div className="w-full h-48 bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
+                            <span className="text-white text-4xl font-bold">{parlorDetail.name?.charAt(0) || "B"}</span>
+                        </div>
+                    )}
                     <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                             <div className="flex-1 mr-4">
