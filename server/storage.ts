@@ -98,6 +98,7 @@ export interface IStorage {
       InsertServiceProvider & {
         profileImageUrl?: string;
         galleryImages?: string[];
+        isAvailable?: boolean;
       }
     >,
   ): Promise<ServiceProvider | undefined>;
@@ -460,6 +461,7 @@ export class DatabaseStorage implements IStorage {
       InsertServiceProvider & {
         profileImageUrl?: string;
         galleryImages?: string[];
+        isAvailable?: boolean;
       }
     >,
   ): Promise<ServiceProvider | undefined> {

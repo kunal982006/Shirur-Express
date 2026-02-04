@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -126,7 +126,9 @@ export default function BeautyDetail() {
             if (data.beautyServices && Array.isArray(data.beautyServices)) {
                 console.log("[BeautyDetail] Processing", data.beautyServices.length, "beauty services");
                 data.beautyServices.forEach((service: any) => {
-                    if (!service.isActive) return;
+                    // Show all services - isActive defaults to true in schema
+                    // Only skip if explicitly set to false
+                    if (service.isActive === false) return;
 
                     // Prioritize service-level fields, fall back to template
                     const template = service.template || {};
@@ -184,6 +186,19 @@ export default function BeautyDetail() {
     console.log("[BeautyDetail] State - parlorId:", parlorId, "isLoading:", parlorLoading, "isError:", isError, "error:", error);
 
     const parlorMenu = parlorDetail?.menuData || {};
+    const mainCategories = Object.keys(parlorMenu);
+
+    // Auto-select first category when data loads
+    useEffect(() => {
+        if (mainCategories.length > 0 && !selectedMainCat) {
+            const firstCat = mainCategories[0];
+            setSelectedMainCat(firstCat);
+            const subCats = parlorMenu[firstCat];
+            if (subCats && subCats.length > 0) {
+                setSelectedSubCat(subCats[0].name);
+            }
+        }
+    }, [mainCategories.length]);
 
     // 2. Derive Sub-Categories based on selected Main Category
     const subCategories = useMemo(() => {
@@ -356,58 +371,72 @@ export default function BeautyDetail() {
                 </Card>
 
                 {/* FILTERING SECTION (Electrician Style Dropdowns) */}
-                <Card className="mb-8">
-                    <CardContent className="p-6">
-                        <h3 className="text-xl font-semibold mb-4">Book a Service</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                            {/* 1. Main Category Dropdown (Hair, Nail, Skin) */}
-                            <div>
-                                <label className="text-sm font-medium mb-1 block">Main Category</label>
-                                <Select onValueChange={handleMainCatChange} value={selectedMainCat || ""}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Category (e.g., Hair Services)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.keys(parlorMenu).map((catName) => (
-                                            <SelectItem key={catName} value={catName}>
-                                                {catName}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                {mainCategories.length === 0 ? (
+                    <Card className="mb-8 bg-amber-50 border-amber-200">
+                        <CardContent className="p-8 text-center">
+                            <div className="text-amber-600 mb-3">
+                                <Clock className="h-12 w-12 mx-auto mb-3 opacity-70" />
                             </div>
+                            <h3 className="text-lg font-semibold text-amber-800 mb-2">No Services Available Yet</h3>
+                            <p className="text-amber-700 text-sm">
+                                This parlor hasn't added their service menu yet. Please check back later or contact them directly for available services.
+                            </p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <Card className="mb-8">
+                        <CardContent className="p-6">
+                            <h3 className="text-xl font-semibold mb-4">Book a Service</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                            {/* 2. Sub-Category Dropdown (Haircut & Styling, Treatments) */}
-                            <div>
-                                <label className="text-sm font-medium mb-1 block">Sub Category</label>
-                                <Select
-                                    onValueChange={handleSubCatChange}
-                                    value={selectedSubCat || ""}
-                                    disabled={!selectedMainCat}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={selectedMainCat ? "Select Sub Category" : "Select Main Category First"} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {subCategories.map((subCat: any) => (
-                                            <SelectItem key={subCat.name} value={subCat.name}>
-                                                {subCat.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                {/* 1. Main Category Dropdown (Hair, Nail, Skin) */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1 block">Main Category</label>
+                                    <Select onValueChange={handleMainCatChange} value={selectedMainCat || ""}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Category (e.g., Hair Services)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.keys(parlorMenu).map((catName) => (
+                                                <SelectItem key={catName} value={catName}>
+                                                    {catName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            {/* 3. Empty Slot (Optional: Can be used for Gender/Price Filter) */}
-                            <div className="flex items-end">
-                                <Button variant="secondary" className="w-full">
-                                    <ChevronDown className="h-4 w-4 mr-2" /> More Filters
-                                </Button>
+                                {/* 2. Sub-Category Dropdown (Haircut & Styling, Treatments) */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1 block">Sub Category</label>
+                                    <Select
+                                        onValueChange={handleSubCatChange}
+                                        value={selectedSubCat || ""}
+                                        disabled={!selectedMainCat}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={selectedMainCat ? "Select Sub Category" : "Select Main Category First"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {subCategories.map((subCat: any) => (
+                                                <SelectItem key={subCat.name} value={subCat.name}>
+                                                    {subCat.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* 3. Empty Slot (Optional: Can be used for Gender/Price Filter) */}
+                                <div className="flex items-end">
+                                    <Button variant="secondary" className="w-full">
+                                        <ChevronDown className="h-4 w-4 mr-2" /> More Filters
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* SERVICE LISTING (Filtered Results) */}
                 <div>

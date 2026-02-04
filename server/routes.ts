@@ -575,6 +575,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  // --- PROVIDER AVAILABILITY TOGGLE (Shop Open/Close) ---
+  app.patch("/api/provider/availability", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { isAvailable } = req.body;
+
+      if (typeof isAvailable !== 'boolean') {
+        return res.status(400).json({ message: "isAvailable must be a boolean value" });
+      }
+
+      const updatedProfile = await storage.updateServiceProvider(providerId, { isAvailable });
+
+      if (!updatedProfile) {
+        return res.status(404).json({ message: "Provider profile not found" });
+      }
+
+      console.log(`[AVAILABILITY] Provider ${providerId} set to ${isAvailable ? 'OPEN' : 'CLOSED'}`);
+
+      res.json({
+        message: isAvailable ? "Your shop is now OPEN for orders!" : "Your shop is now CLOSED. Customers cannot place orders.",
+        isAvailable: updatedProfile.isAvailable
+      });
+    } catch (error: any) {
+      console.error("Toggle availability error:", error);
+      res.status(500).json({ message: error.message || "Error updating availability" });
+    }
+  });
+
   app.get("/api/provider/my-bookings", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;

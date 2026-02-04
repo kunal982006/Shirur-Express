@@ -77,6 +77,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   InputOTP,
   InputOTPGroup,
@@ -2409,6 +2410,8 @@ const restaurantCategory = "restaurants";
 // --- MAIN DASHBOARD COMPONENT (Ab yeh smart hai) ---
 const ProviderDashboard: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const {
     data: providerProfile,
@@ -2571,10 +2574,81 @@ const ProviderDashboard: React.FC = () => {
   const tabs = getTabs();
   const defaultTab = type === "restaurant" ? "live-orders" : (type === "rental" ? "rental-listings" : "bookings"); // Sabse important tab
 
+  // --- SHOP AVAILABILITY TOGGLE MUTATION ---
+  const availabilityMutation = useMutation({
+    mutationFn: (isAvailable: boolean) =>
+      api.patch("/provider/availability", { isAvailable }),
+    onSuccess: (data) => {
+      toast({
+        title: data.data.isAvailable ? "🟢 Shop is OPEN" : "🔴 Shop is CLOSED",
+        description: data.data.message,
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ["providerProfile", user?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update availability",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleToggleAvailability = () => {
+    const newStatus = !providerProfile.isAvailable;
+    availabilityMutation.mutate(newStatus);
+  };
+
   return (
     <div className="container mx-auto py-8">
       {/* Permission Banner for Android App */}
       <PermissionBanner />
+
+      {/* Shop Availability Toggle Banner */}
+      <div
+        className={`mb-6 p-4 rounded-xl border-2 transition-all duration-300 ${providerProfile.isAvailable
+          ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-700'
+          : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300 dark:from-red-900/20 dark:to-orange-900/20 dark:border-red-700'
+          }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-4 h-4 rounded-full animate-pulse ${providerProfile.isAvailable ? 'bg-green-500' : 'bg-red-500'
+                }`}
+            />
+            <div>
+              <h2 className={`text-lg font-bold ${providerProfile.isAvailable ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                }`}>
+                {providerProfile.isAvailable ? '🟢 Your Shop is OPEN' : '🔴 Your Shop is CLOSED'}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {providerProfile.isAvailable
+                  ? 'Customers can place orders now'
+                  : 'Customers cannot place orders. Toggle to open when ready.'
+                }
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {providerProfile.isAvailable ? 'Accepting Orders' : 'Not Accepting'}
+            </span>
+            <Switch
+              id="shop-availability"
+              checked={providerProfile.isAvailable ?? true}
+              onCheckedChange={handleToggleAvailability}
+              disabled={availabilityMutation.isPending}
+              className={`${providerProfile.isAvailable ? 'data-[state=checked]:bg-green-600' : 'data-[state=unchecked]:bg-red-500'}`}
+            />
+            {availabilityMutation.isPending && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+        </div>
+      </div>
 
       <h1 className="text-3xl font-bold mb-6">
         Welcome, {providerProfile.businessName}!

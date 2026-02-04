@@ -8,14 +8,15 @@ interface FoodItemCardProps {
     quantity: number;
     onAdd: () => void;
     onRemove: () => void;
+    disabled?: boolean;
 }
 
-export function FoodItemCard({ item, quantity, onAdd, onRemove }: FoodItemCardProps) {
+export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false }: FoodItemCardProps) {
     const isVeg = item.isVeg;
     const image = item.imageUrl || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=60";
 
     return (
-        <div className="flex gap-4 p-4 border-b last:border-0 hover:bg-accent/5 transition-colors">
+        <div className={`flex gap-4 p-4 border-b last:border-0 transition-colors ${disabled ? 'opacity-60 pointer-events-none' : 'hover:bg-accent/5'}`}>
             <div className="flex-1 space-y-2">
                 <div className="flex items-start gap-2">
                     <div className={`mt-1.5 border-2 p-0.5 w-4 h-4 flex items-center justify-center ${isVeg ? 'border-green-600' : 'border-red-600'}`}>
@@ -44,7 +45,11 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove }: FoodItemCardPr
                     <img src={image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-lg bg-background rounded-lg border border-muted-foreground/20">
-                    {quantity === 0 ? (
+                    {disabled ? (
+                        <div className="h-9 w-24 flex items-center justify-center text-xs font-medium text-red-500 bg-red-50 rounded-lg">
+                            Closed
+                        </div>
+                    ) : quantity === 0 ? (
                         <Button
                             variant="ghost"
                             size="sm"

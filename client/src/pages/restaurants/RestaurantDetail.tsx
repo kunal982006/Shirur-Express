@@ -81,6 +81,10 @@ export default function RestaurantDetail() {
     const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
 
     const handleAdd = (item: RestaurantMenuItem) => {
+        // Prevent adding items if restaurant is closed
+        if (restaurant.isAvailable === false) {
+            return;
+        }
         addItem({
             id: item.id,
             name: item.name,
@@ -104,8 +108,21 @@ export default function RestaurantDetail() {
         return acc;
     }, {} as Record<string, RestaurantMenuItem[]>);
 
+    const isRestaurantClosed = restaurant.isAvailable === false;
+
     return (
         <div className="min-h-screen bg-background pb-20">
+            {/* Closed Restaurant Banner */}
+            {isRestaurantClosed && (
+                <div className="sticky top-0 z-50 bg-red-600 text-white py-3 px-4 text-center shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-white animate-pulse" />
+                        <span className="font-bold">🔴 This restaurant is currently CLOSED</span>
+                    </div>
+                    <p className="text-sm opacity-90 mt-1">Orders cannot be placed at this time. Please check back later.</p>
+                </div>
+            )}
+
             {/* Sticky Header */}
             <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-4">
@@ -132,10 +149,17 @@ export default function RestaurantDetail() {
                             <p className="text-muted-foreground text-sm">{restaurant.specializations?.join(", ")}</p>
                             <p className="text-muted-foreground text-sm">{restaurant.address}</p>
                             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">
-                                    <Clock className="h-3 w-3" />
-                                    34 mins
-                                </span>
+                                {isRestaurantClosed ? (
+                                    <span className="flex items-center gap-1 text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded">
+                                        <Clock className="h-3 w-3" />
+                                        Currently Closed
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">
+                                        <Clock className="h-3 w-3" />
+                                        34 mins
+                                    </span>
+                                )}
                                 <span>•</span>
                                 <span>5 km</span>
                                 <span>•</span>
@@ -212,6 +236,7 @@ export default function RestaurantDetail() {
                                                         if (getQuantity(item.id) === 1) removeItem(item.id);
                                                         else updateQuantity(item.id, getQuantity(item.id) - 1);
                                                     }}
+                                                    disabled={isRestaurantClosed}
                                                 />
                                             ))}
                                             <div className="h-3 bg-muted/10" />
