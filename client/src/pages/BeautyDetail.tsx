@@ -360,7 +360,7 @@ export default function BeautyDetail() {
                                 )}
                             </div>
                             <Badge variant="default" className="text-base flex items-center px-3 py-1 shrink-0">
-                                <Star className="h-4 w-4 fill-current mr-1" /> {parlorDetail.rating?.toFixed(2) || "0.00"}
+                                <Star className="h-4 w-4 fill-current mr-1" /> {Number(parlorDetail.rating || 0).toFixed(2)}
                             </Badge>
                         </div>
                         <div className="flex items-center space-x-4 mt-3 text-sm text-muted-foreground">
