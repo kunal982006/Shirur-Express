@@ -2464,6 +2464,28 @@ const ProviderDashboard: React.FC = () => {
   }, [user?.id, providerProfile?.id]);
   // --- FCM TOKEN SYNC END ---
 
+  // --- SHOP AVAILABILITY TOGGLE MUTATION (Moved here to fix React hooks order) ---
+  const availabilityMutation = useMutation({
+    mutationFn: (isAvailable: boolean) =>
+      api.patch("/provider/availability", { isAvailable }),
+    onSuccess: (data) => {
+      toast({
+        title: data.data.isAvailable ? "🟢 Shop is OPEN" : "🔴 Shop is CLOSED",
+        description: data.data.message,
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ["providerProfile", user?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update availability",
+        variant: "destructive",
+      });
+    },
+  });
+  // --- SHOP AVAILABILITY TOGGLE END ---
+
   // --- LOADING/ERROR STATES ---
   if (isAuthLoading || (!!user && isLoadingProfile)) {
     return (
@@ -2574,27 +2596,7 @@ const ProviderDashboard: React.FC = () => {
   const tabs = getTabs();
   const defaultTab = type === "restaurant" ? "live-orders" : (type === "rental" ? "rental-listings" : "bookings"); // Sabse important tab
 
-  // --- SHOP AVAILABILITY TOGGLE MUTATION ---
-  const availabilityMutation = useMutation({
-    mutationFn: (isAvailable: boolean) =>
-      api.patch("/provider/availability", { isAvailable }),
-    onSuccess: (data) => {
-      toast({
-        title: data.data.isAvailable ? "🟢 Shop is OPEN" : "🔴 Shop is CLOSED",
-        description: data.data.message,
-        duration: 4000,
-      });
-      queryClient.invalidateQueries({ queryKey: ["providerProfile", user?.id] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update availability",
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Handler for availability toggle (uses mutation defined above)
   const handleToggleAvailability = () => {
     const newStatus = !providerProfile.isAvailable;
     availabilityMutation.mutate(newStatus);

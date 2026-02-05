@@ -190,15 +190,19 @@ export default function BeautyDetail() {
 
     // Auto-select first category when data loads
     useEffect(() => {
-        if (mainCategories.length > 0 && !selectedMainCat) {
-            const firstCat = mainCategories[0];
+        // Derive menu data fresh inside the effect to avoid stale closures
+        const menu = parlorDetail?.menuData || {};
+        const categories = Object.keys(menu);
+
+        if (categories.length > 0 && !selectedMainCat) {
+            const firstCat = categories[0];
             setSelectedMainCat(firstCat);
-            const subCats = parlorMenu[firstCat];
+            const subCats = menu[firstCat];
             if (subCats && subCats.length > 0) {
                 setSelectedSubCat(subCats[0].name);
             }
         }
-    }, [mainCategories.length]);
+    }, [parlorDetail, selectedMainCat]);
 
     // 2. Derive Sub-Categories based on selected Main Category
     const subCategories = useMemo(() => {
