@@ -3551,6 +3551,10 @@ id snapMargins
 id south
 id spacer
 id special_effects_controller_view_tag
+id splashAppName
+id splashLoadingText
+id splashLogo
+id splashProgress
 id spline
 id split_action_bar
 id spread
@@ -3761,6 +3765,7 @@ layout abc_select_dialog_material
 layout abc_tooltip
 layout activity_incoming_order
 layout activity_main
+layout activity_splash
 layout custom_dialog
 layout design_bottom_navigation_item
 layout design_bottom_sheet_dialog
@@ -5312,5 +5317,6 @@ styleable ViewPager2 android_orientation
 styleable ViewStubCompat android_id android_layout android_inflatedId
 styleable ViewTransition android_id SharedValue SharedValueId clearsTag duration ifTagNotSet ifTagSet motionInterpolator motionTarget onStateTransition pathMotionArc setsTag transitionDisable upDuration viewTransitionMode
 styleable include constraintSet
+xml file_paths
 xml ga_ad_services_config
 xml network_security_config

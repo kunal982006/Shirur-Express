@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, inArray, ilike, gt } from "drizzle-orm";
+import { eq, and, inArray, ilike, gt, desc, count, gte, sql } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -33,6 +33,10 @@ import {
   providerOffers, // OFFERS CAROUSEL
   insertProviderOfferSchema, // OFFERS CAROUSEL
   users, // FOR FCM DEBUG ENDPOINT
+  bookings, // FOR NOTIFICATIONS
+  groceryOrders, // FOR NOTIFICATIONS
+  streetFoodOrders, // FOR NOTIFICATIONS
+  serviceCategories, // FOR ADMIN DASHBOARD
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -40,15 +44,8 @@ import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
 // NAYA IMPORT: z for validation
 import { z } from "zod";
 
-import twilio from "twilio";
-import { sendBookingNotification } from "./twilio-client";
 import { sendPushNotification } from "./firebase";
 import { importGmartProducts } from "./import-gmart-products";
-
-let twilioClient: any = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-}
 
 // Custom request types
 interface CustomRequest extends Request {
@@ -109,6 +106,21 @@ const isDeliveryPartner = async (req: DeliveryPartnerRequest, res: Response, nex
   next();
 };
 
+// Middleware: Check if user is an admin
+const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "Not logged in." });
+  }
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, req.session.userId)
+  });
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ message: "Admin access required." });
+  }
+  req.userId = req.session.userId;
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
@@ -138,32 +150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId!;
       const orderData = insertGroceryOrderSchema.parse(req.body);
       const order = await storage.createGroceryOrder({ ...orderData, userId });
-      console.log("Created Grocery Order:", order); // DEBUG LOG
-
-      // --- PUSH NOTIFICATION (RINGING) ---
-      if (order.providerId) {
-        try {
-          const provider = await storage.getServiceProvider(order.providerId);
-          if (provider && provider.user && provider.user.fcmToken) {
-            console.log(`[FCM] Sending Ring to Provider ${provider.businessName}`);
-            await sendPushNotification(provider.user.fcmToken, {
-              type: 'ORDER_REQUEST',
-              title: 'New Grocery Order!',
-              body: `Order #${order.id.slice(0, 8)} needs your attention.`,
-              data: {
-                orderId: order.id,
-                customerName: "Customer", // You might want to fetch user name
-                amount: order.total.toString(),
-                pickupAddress: "Store Location",
-                dropAddress: order.deliveryAddress
-              }
-            });
-          }
-        } catch (fcmError) {
-          console.error("[FCM Error]", fcmError);
-        }
-      }
-      // -----------------------------------
+      // NOTE: Push notification moved to /api/payment/verify-signature
+      // Provider is notified ONLY after payment is verified successfully
 
       res.status(201).json(order);
     } catch (error: any) {
@@ -185,28 +173,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
       console.log("Created Street Food Order:", order); // DEBUG LOG
 
-      // --- PUSH NOTIFICATION ---
-      // For Street Food, we verify if providerId exists and notify them
-      if (order.providerId) {
-        try {
-          const provider = await storage.getServiceProvider(order.providerId);
-          if (provider && provider.user && provider.user.fcmToken) {
-            await sendPushNotification(provider.user.fcmToken, {
-              type: 'ORDER_REQUEST',
-              title: 'New Street Food Order!',
-              body: `Order #${order.id.slice(0, 8)} received.`,
-              data: {
-                orderId: order.id,
-                customerName: "Customer",
-                amount: order.totalAmount.toString(),
-                pickupAddress: provider.address,
-                dropAddress: order.deliveryAddress
-              }
-            });
-          }
-        } catch (e) { console.error("[FCM Error]", e); }
-      }
-      // -------------------------
+      // NOTE: Push notification moved to /api/payment/verify-signature
+      // Provider is notified ONLY after payment is verified successfully
 
       res.status(201).json(order);
     } catch (error: any) {
@@ -624,6 +592,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Error fetching customer bookings" });
     }
   });
+
+  // --- CUSTOMER NOTIFICATIONS (Aggregated Timeline) ---
+  app.get("/api/customer/notifications", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+
+      // Fetch all sources in parallel
+      const [userBookings, groceryOrdersList, streetFoodOrdersList, restaurantOrdersList] = await Promise.all([
+        db.select().from(bookings).where(eq(bookings.userId, userId)).orderBy(desc(bookings.createdAt)).limit(20),
+        db.select().from(groceryOrders).where(eq(groceryOrders.userId, userId)).orderBy(desc(groceryOrders.createdAt)).limit(20),
+        db.select().from(streetFoodOrders).where(eq(streetFoodOrders.userId, userId)).orderBy(desc(streetFoodOrders.createdAt)).limit(20),
+        db.select().from(restaurantOrders).where(eq(restaurantOrders.userId, userId)).orderBy(desc(restaurantOrders.createdAt)).limit(20),
+      ]);
+
+      // Map each to a unified notification shape
+      const notifications = [
+        ...userBookings.map(b => ({
+          id: b.id,
+          type: 'booking' as const,
+          category: b.serviceType,
+          title: `${b.serviceType?.charAt(0).toUpperCase()}${b.serviceType?.slice(1)} Booking`,
+          status: b.status || 'pending',
+          amount: b.estimatedCost,
+          address: b.userAddress,
+          createdAt: b.createdAt,
+        })),
+        ...groceryOrdersList.map(o => ({
+          id: o.id,
+          type: 'grocery_order' as const,
+          category: 'grocery',
+          title: 'Grocery Order',
+          status: o.status || 'pending',
+          amount: o.total,
+          address: o.deliveryAddress,
+          createdAt: o.createdAt,
+        })),
+        ...streetFoodOrdersList.map(o => ({
+          id: o.id,
+          type: 'street_food_order' as const,
+          category: 'street_food',
+          title: 'Street Food Order',
+          status: o.status || 'pending',
+          amount: o.totalAmount,
+          address: o.deliveryAddress,
+          createdAt: o.createdAt,
+        })),
+        ...restaurantOrdersList.map(o => ({
+          id: o.id,
+          type: 'restaurant_order' as const,
+          category: 'restaurant',
+          title: 'Restaurant Order',
+          status: o.status || 'pending',
+          amount: o.totalAmount,
+          address: o.deliveryAddress,
+          createdAt: o.createdAt,
+        })),
+      ];
+
+      // Sort by date descending and limit to 50
+      notifications.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      res.json(notifications.slice(0, 50));
+    } catch (error: any) {
+      console.error("Get customer notifications error:", error);
+      res.status(500).json({ message: error.message || "Error fetching notifications" });
+    }
+  });
+
 
   // --- PROVIDER OFFERS ROUTES (Dynamic Offers Carousel) ---
 
@@ -1261,26 +1301,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { estimatedCost } = req.body;
       const acceptedBooking = await storage.updateBookingStatus(bookingId, "accepted", providerId, estimatedCost);
 
-      // --- SMS NOTIFICATION LOGIC ---
+      // --- PUSH NOTIFICATION (Firebase) ---
       try {
-        // Explicitly check for user phone and provider name
-        const userPhone = acceptedBooking.user?.phone;
-        const providerName = acceptedBooking.provider?.businessName;
+        const customerUser = await storage.getUser(booking.userId);
+        const providerName = acceptedBooking.provider?.businessName || 'Your provider';
         const scheduledAt = acceptedBooking.scheduledAt;
 
-        if (userPhone && providerName) {
-          console.log(`[SMS] Sending SMS to ${userPhone} for status: accepted`);
-          await sendBookingNotification(
-            userPhone,
-            "accepted",
-            providerName,
-            scheduledAt ? new Date(scheduledAt).toLocaleString("en-IN") : undefined
-          );
+        if (customerUser?.fcmToken) {
+          await sendPushNotification(customerUser.fcmToken, {
+            type: 'ORDER_UPDATE',
+            title: '✅ Booking Accepted!',
+            body: `${providerName} has accepted your booking${scheduledAt ? ` for ${new Date(scheduledAt).toLocaleString('en-IN')}` : ''}. They will contact you soon.`,
+            data: { bookingId, action: 'BOOKING_ACCEPTED' },
+          });
+          console.log(`[FCM] Booking accepted notification sent to customer ${booking.userId}`);
         } else {
-          console.warn(`[SMS Fail] SMS nahi bhej paaye: User phone (${userPhone}) ya provider name (${providerName}) missing.`);
+          console.warn(`[FCM] Customer has no FCM token for booking ${bookingId}`);
         }
-      } catch (smsError) {
-        console.error("[SMS Error] SMS notification bhejte waqt error aaya:", smsError);
+      } catch (notifError) {
+        console.error('[FCM] Booking accepted notification failed (non-critical):', notifError);
       }
       // -----------------------------
 
@@ -1307,23 +1346,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const declinedBooking = await storage.updateBookingStatus(bookingId, "declined");
 
-      // --- SMS NOTIFICATION LOGIC ---
+      // --- PUSH NOTIFICATION (Firebase) ---
       try {
-        const userPhone = declinedBooking.user?.phone;
-        const providerName = declinedBooking.provider?.businessName;
+        const customerUser = await storage.getUser(booking.userId);
+        const providerName = declinedBooking.provider?.businessName || 'The provider';
 
-        if (userPhone && providerName) {
-          console.log(`[SMS] Sending SMS to ${userPhone} for status: declined`);
-          await sendBookingNotification(
-            userPhone,
-            "declined",
-            providerName
-          );
+        if (customerUser?.fcmToken) {
+          await sendPushNotification(customerUser.fcmToken, {
+            type: 'ORDER_UPDATE',
+            title: '❌ Booking Declined',
+            body: `${providerName} has declined your booking request. Please try booking with another provider.`,
+            data: { bookingId, action: 'BOOKING_DECLINED' },
+          });
+          console.log(`[FCM] Booking declined notification sent to customer ${booking.userId}`);
         } else {
-          console.warn(`[SMS Fail] SMS nahi bhej paaye: User phone (${userPhone}) ya provider name (${providerName}) missing.`);
+          console.warn(`[FCM] Customer has no FCM token for booking ${bookingId}`);
         }
-      } catch (smsError) {
-        console.error("[SMS Error] SMS notification bhejte waqt error aaya:", smsError);
+      } catch (notifError) {
+        console.error('[FCM] Booking declined notification failed (non-critical):', notifError);
       }
       // -----------------------------
 
@@ -1542,6 +1582,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         res.json({ status: "success", order: updatedOrder });
+
+        // --- PUSH NOTIFICATION (RINGING) — Only after payment is verified! ---
+        try {
+          const providerId = updatedOrder?.providerId;
+          if (providerId) {
+            const provider = await storage.getServiceProvider(providerId);
+            if (provider && provider.user && provider.user.fcmToken) {
+              const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
+                : orderType === 'street_food' ? '🌮 Street Food'
+                  : '🛒 Grocery';
+              console.log(`[FCM] Payment verified! Sending Ring to ${provider.businessName}`);
+              await sendPushNotification(provider.user.fcmToken, {
+                type: 'ORDER_REQUEST',
+                title: `${orderLabel} Order Paid!`,
+                body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
+                data: {
+                  orderId: database_order_id,
+                  orderType: orderType || 'grocery',
+                  customerName: 'Customer',
+                  amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
+                  dropAddress: updatedOrder?.deliveryAddress || 'Check App'
+                }
+              });
+            }
+          }
+        } catch (fcmError) {
+          console.error('[FCM Error] Post-payment notification failed (non-critical):', fcmError);
+        }
+        // --- END PUSH NOTIFICATION ---
       } else {
         res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
@@ -1626,32 +1695,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createRestaurantOrder({ ...orderData, userId });
       console.log("Created Restaurant Order:", order);
 
-      // --- PUSH NOTIFICATION (RINGING) ---
-      if (order.providerId) {
-        try {
-          const provider = await storage.getServiceProvider(order.providerId);
-          if (provider && provider.user && provider.user.fcmToken) {
-            console.log(`[FCM] Sending Ring to Restaurant ${provider.businessName}`);
-            await sendPushNotification(provider.user.fcmToken, {
-              type: 'ORDER_REQUEST',
-              title: '🍽️ New Restaurant Order!',
-              body: `Order #${order.id.slice(0, 8)} - ₹${order.totalAmount} needs your attention.`,
-              data: {
-                orderId: order.id,
-                orderType: 'restaurant',
-                customerName: "Customer",
-                amount: order.totalAmount.toString(),
-                pickupAddress: provider.address || "Restaurant Location",
-                dropAddress: order.deliveryAddress || "Customer Location"
-              }
-            });
-          } else {
-            console.warn(`[FCM] Provider ${order.providerId} has no FCM token registered.`);
-          }
-        } catch (fcmError) {
-          console.error("[FCM Error] Restaurant Order Notification Failed:", fcmError);
-        }
-      }
+      // NOTE: Push notification moved to /api/payment/verify-signature
+      // Provider is notified ONLY after payment is verified successfully
       // -----------------------------------
 
       res.status(201).json(order);
@@ -1700,11 +1745,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/provider/menu-items/:categorySlug", async (req: Request, res: Response) => {
     try {
       const { categorySlug } = req.params;
-      // Provider ID is not in params, so we might need to fetch it based on logged in user
-      // But wait, the frontend calls this without provider ID?
-      // Ah, the frontend uses `useQuery` with `providerCategorySlug`.
-      // But to fetch *my* items, I need to know *my* provider ID.
-      // Let's check if the user is logged in.
       if (!req.session.userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -1713,11 +1753,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Provider profile not found" });
       }
 
-      const items = await storage.getProviderMenuItems(provider.id, categorySlug);
+      // For grocery, support category + search filtering via query params
+      const { category, search, limit } = req.query;
+      const options = (categorySlug === 'grocery' && (category || search))
+        ? {
+          category: category as string | undefined,
+          search: search as string | undefined,
+          limit: limit ? parseInt(limit as string) : 200
+        }
+        : undefined;
+
+      const items = await storage.getProviderMenuItems(provider.id, categorySlug, options);
       res.json(items);
     } catch (error: any) {
       console.error("Get menu items error:", error);
       res.status(500).json({ message: error.message || "Error fetching menu items" });
+    }
+  });
+
+  // Lightweight: Get just grocery category names + counts for provider dashboard
+  app.get("/api/provider/grocery-categories", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const provider = await storage.getProviderByUserId(req.session.userId);
+      if (!provider) {
+        return res.status(404).json({ message: "Provider profile not found" });
+      }
+      const categories = await storage.getProviderGroceryCategories(provider.id);
+      res.json(categories);
+    } catch (error: any) {
+      console.error("Get grocery categories error:", error);
+      res.status(500).json({ message: error.message || "Error fetching categories" });
     }
   });
 
@@ -2276,6 +2344,245 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  // =========================================
+  // ADMIN DASHBOARD ROUTES
+  // =========================================
+
+  // GET /api/admin/stats — Dashboard KPIs
+  app.get("/api/admin/stats", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [
+        totalUsersResult,
+        totalProvidersResult,
+        groceryOrdersToday,
+        streetFoodOrdersToday,
+        restaurantOrdersToday,
+        bookingsToday,
+        totalGroceryOrders,
+        totalStreetFoodOrders,
+        totalRestaurantOrders,
+        totalBookings,
+      ] = await Promise.all([
+        db.select({ value: count() }).from(users),
+        db.select({ value: count() }).from(serviceProviders),
+        db.select({ value: count() }).from(groceryOrders).where(gte(groceryOrders.createdAt, today)),
+        db.select({ value: count() }).from(streetFoodOrders).where(gte(streetFoodOrders.createdAt, today)),
+        db.select({ value: count() }).from(restaurantOrders).where(gte(restaurantOrders.createdAt, today)),
+        db.select({ value: count() }).from(bookings).where(gte(bookings.createdAt, today)),
+        db.select({ value: count() }).from(groceryOrders),
+        db.select({ value: count() }).from(streetFoodOrders),
+        db.select({ value: count() }).from(restaurantOrders),
+        db.select({ value: count() }).from(bookings),
+      ]);
+
+      // Revenue today (sum of paid orders)
+      const [groceryRevenue] = await db.select({ total: sql<string>`COALESCE(SUM(CAST(${groceryOrders.total} AS NUMERIC)), 0)` }).from(groceryOrders).where(and(gte(groceryOrders.createdAt, today), eq(groceryOrders.status, 'paid')));
+      const [streetFoodRevenue] = await db.select({ total: sql<string>`COALESCE(SUM(CAST(${streetFoodOrders.totalAmount} AS NUMERIC)), 0)` }).from(streetFoodOrders).where(and(gte(streetFoodOrders.createdAt, today), eq(streetFoodOrders.status, 'paid')));
+      const [restaurantRevenue] = await db.select({ total: sql<string>`COALESCE(SUM(CAST(${restaurantOrders.totalAmount} AS NUMERIC)), 0)` }).from(restaurantOrders).where(and(gte(restaurantOrders.createdAt, today), eq(restaurantOrders.status, 'paid')));
+
+      const revenueToday = parseFloat(groceryRevenue?.total || '0') + parseFloat(streetFoodRevenue?.total || '0') + parseFloat(restaurantRevenue?.total || '0');
+
+      res.json({
+        totalUsers: totalUsersResult[0]?.value || 0,
+        totalProviders: totalProvidersResult[0]?.value || 0,
+        ordersToday: (groceryOrdersToday[0]?.value || 0) + (streetFoodOrdersToday[0]?.value || 0) + (restaurantOrdersToday[0]?.value || 0),
+        bookingsToday: bookingsToday[0]?.value || 0,
+        totalOrders: (totalGroceryOrders[0]?.value || 0) + (totalStreetFoodOrders[0]?.value || 0) + (totalRestaurantOrders[0]?.value || 0),
+        totalBookings: totalBookings[0]?.value || 0,
+        revenueToday: revenueToday.toFixed(2),
+      });
+    } catch (error: any) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/admin/orders — All orders (merged)
+  app.get("/api/admin/orders", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const [gOrders, sfOrders, rOrders] = await Promise.all([
+        db.select().from(groceryOrders).orderBy(desc(groceryOrders.createdAt)).limit(100),
+        db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt)).limit(100),
+        db.select().from(restaurantOrders).orderBy(desc(restaurantOrders.createdAt)).limit(100),
+      ]);
+
+      const merged = [
+        ...gOrders.map(o => ({ ...o, orderType: 'grocery' as const, amount: o.total })),
+        ...sfOrders.map(o => ({ ...o, orderType: 'street_food' as const, amount: o.totalAmount })),
+        ...rOrders.map(o => ({ ...o, orderType: 'restaurant' as const, amount: o.totalAmount })),
+      ].sort((a, b) => {
+        const dA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dB - dA;
+      });
+
+      res.json(merged);
+    } catch (error: any) {
+      console.error("Admin orders error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/admin/bookings — All bookings
+  app.get("/api/admin/bookings", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt)).limit(200);
+      res.json(allBookings);
+    } catch (error: any) {
+      console.error("Admin bookings error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/admin/providers — All providers with category
+  app.get("/api/admin/providers", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const allProviders = await db.select({
+        id: serviceProviders.id,
+        userId: serviceProviders.userId,
+        businessName: serviceProviders.businessName,
+        categoryId: serviceProviders.categoryId,
+        address: serviceProviders.address,
+        rating: serviceProviders.rating,
+        reviewCount: serviceProviders.reviewCount,
+        isVerified: serviceProviders.isVerified,
+        isAvailable: serviceProviders.isAvailable,
+        createdAt: serviceProviders.createdAt,
+        profileImageUrl: serviceProviders.profileImageUrl,
+      }).from(serviceProviders).orderBy(desc(serviceProviders.createdAt));
+
+      // Get all categories for lookup
+      const categories = await db.select().from(serviceCategories);
+      const catMap = Object.fromEntries(categories.map(c => [c.id, c.name]));
+
+      const enriched = allProviders.map(p => ({
+        ...p,
+        categoryName: catMap[p.categoryId] || p.categoryId,
+      }));
+
+      res.json(enriched);
+    } catch (error: any) {
+      console.error("Admin providers error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/admin/users — All users
+  app.get("/api/admin/users", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const allUsers = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        phone: users.phone,
+        role: users.role,
+        createdAt: users.createdAt,
+      }).from(users).orderBy(desc(users.createdAt));
+      res.json(allUsers);
+    } catch (error: any) {
+      console.error("Admin users error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/admin/broadcast — Send push notification to audience
+  app.post("/api/admin/broadcast", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { audience, title, message } = req.body;
+
+      if (!audience || !title || !message) {
+        return res.status(400).json({ message: "audience, title, and message are required." });
+      }
+
+      let fcmTokens: string[] = [];
+
+      if (audience === 'all_users' || audience === 'everyone') {
+        // All users who have an FCM token
+        const userRows = await db.select({ fcmToken: users.fcmToken }).from(users).where(sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`);
+        fcmTokens.push(...userRows.map(u => u.fcmToken!));
+      }
+
+      if (audience === 'customers') {
+        const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(eq(users.role, 'customer'), sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`));
+        fcmTokens.push(...rows.map(r => r.fcmToken!));
+      }
+
+      if (audience === 'providers' || audience === 'everyone') {
+        // All providers' user accounts
+        const providerUserIds = await db.select({ userId: serviceProviders.userId }).from(serviceProviders);
+        if (providerUserIds.length > 0) {
+          const providerUsers = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+            inArray(users.id, providerUserIds.map(p => p.userId)),
+            sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
+          ));
+          fcmTokens.push(...providerUsers.map(u => u.fcmToken!));
+        }
+      }
+
+      if (audience === 'restaurants') {
+        const restaurantCat = await db.query.serviceCategories.findFirst({ where: eq(serviceCategories.slug, 'restaurant') });
+        if (restaurantCat) {
+          const restProviders = await db.select({ userId: serviceProviders.userId }).from(serviceProviders).where(eq(serviceProviders.categoryId, restaurantCat.id));
+          if (restProviders.length > 0) {
+            const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+              inArray(users.id, restProviders.map(p => p.userId)),
+              sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
+            ));
+            fcmTokens.push(...rows.map(r => r.fcmToken!));
+          }
+        }
+      }
+
+      if (audience === 'street_food') {
+        const sfCat = await db.query.serviceCategories.findFirst({ where: eq(serviceCategories.slug, 'street_food') });
+        if (sfCat) {
+          const sfProviders = await db.select({ userId: serviceProviders.userId }).from(serviceProviders).where(eq(serviceProviders.categoryId, sfCat.id));
+          if (sfProviders.length > 0) {
+            const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+              inArray(users.id, sfProviders.map(p => p.userId)),
+              sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
+            ));
+            fcmTokens.push(...rows.map(r => r.fcmToken!));
+          }
+        }
+      }
+
+      // Remove duplicates
+      fcmTokens = [...new Set(fcmTokens)];
+
+      if (fcmTokens.length === 0) {
+        return res.json({ sent: 0, total: 0, message: "No users with FCM tokens found for this audience." });
+      }
+
+      // Send notifications (batch, non-blocking)
+      let sentCount = 0;
+      let failedCount = 0;
+      const results = await Promise.allSettled(
+        fcmTokens.map(token =>
+          sendPushNotification(token, {
+            type: 'ORDER_UPDATE',
+            title,
+            body: message,
+            data: { type: 'ADMIN_BROADCAST' }
+          })
+        )
+      );
+
+      results.forEach(r => {
+        if (r.status === 'fulfilled' && r.value.success) sentCount++;
+        else failedCount++;
+      });
+
+      console.log(`[Admin Broadcast] Sent to ${sentCount}/${fcmTokens.length} tokens (${failedCount} failed)`);
+      res.json({ sent: sentCount, failed: failedCount, total: fcmTokens.length });
+    } catch (error: any) {
+      console.error("Admin broadcast error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
 
   // =========================================
   // ADMIN: GMart Products CSV Import
@@ -2312,6 +2619,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // =========================================
+  // AUTO-SEED: Admin Account
+  // =========================================
+  (async () => {
+    try {
+      const adminUsername = "main_branch";
+      let adminUser = await db.query.users.findFirst({
+        where: eq(users.username, adminUsername)
+      });
+      if (!adminUser) {
+        const hashedPassword = await bcrypt.hash("shirur2seva", 10);
+        [adminUser] = await db.insert(users).values({
+          username: adminUsername,
+          email: "admin@shirurexpress.com",
+          password: hashedPassword,
+          role: "admin",
+        }).returning();
+        console.log("✅ Admin account created: main_branch");
+      } else if (adminUser.role !== "admin") {
+        await db.update(users).set({ role: "admin" }).where(eq(users.id, adminUser.id));
+        console.log("✅ Admin role granted to: main_branch");
+      } else {
+        console.log("✅ Admin account ready: main_branch");
+      }
+    } catch (e: any) {
+      console.error("⚠️ Admin seed error:", e.message);
+    }
+  })();
 
   return httpServer;
 }

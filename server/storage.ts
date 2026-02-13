@@ -57,7 +57,7 @@ import {
 import { db } from "./db";
 import { eq, and, sql, desc, asc, gt, lt, gte, lte } from "drizzle-orm";
 // NAYE IMPORTS
-import { sendOtpNotification } from "./twilio-client";
+import { sendPushNotification } from "./firebase";
 import { razorpayInstance } from "./razorpay-client";
 
 export interface IStorage {
@@ -600,7 +600,8 @@ export class DatabaseStorage implements IStorage {
       where: eq(bookings.providerId, providerId),
       with: {
         user: true,
-        invoice: true, // NAYA
+        invoice: true,
+        problem: true,
       },
       orderBy: [desc(bookings.createdAt)],
     }) as any;
@@ -641,8 +642,21 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(bookings.id, bookingId));
 
-    // Customer ko OTP Bhejo
-    await sendOtpNotification(booking.userPhone, otp);
+    // Customer ko in-app OTP dikhao + Firebase push notification bhejo
+    // (No Twilio SMS — OTP is shown in customer's My Bookings page)
+    try {
+      const customerUser = await this.getUser(booking.userId);
+      if (customerUser?.fcmToken) {
+        await sendPushNotification(customerUser.fcmToken, {
+          type: 'ORDER_UPDATE',
+          title: '🔐 Service OTP Generated',
+          body: `Your service verification OTP is: ${otp}. Share it with the technician to confirm service completion.`,
+          data: { bookingId, otp, action: 'SERVICE_OTP' },
+        });
+      }
+    } catch (pushError) {
+      console.warn('[OTP] Firebase push notification failed (non-critical):', pushError);
+    }
 
     return { otp, userPhone: booking.userPhone };
   }
@@ -1343,9 +1357,40 @@ export class DatabaseStorage implements IStorage {
   async getProviderMenuItems(
     providerId: string,
     categorySlug: string,
+    options?: { category?: string; search?: string; limit?: number }
   ): Promise<any[]> {
     const { table, providerIdField } = this.getMenuTableInfo(categorySlug);
+
+    // For grocery, support category filtering + limit for performance
+    if (categorySlug === 'grocery' && options) {
+      const conditions = [eq(providerIdField, providerId)];
+      if (options.category) {
+        conditions.push(eq(groceryProducts.category, options.category));
+      }
+      if (options.search) {
+        conditions.push(sql`${groceryProducts.name} ILIKE ${`%${options.search}%`}`);
+      }
+      return db.select().from(table)
+        .where(and(...conditions))
+        .orderBy(asc(groceryProducts.name))
+        .limit(options.limit || 200);
+    }
+
     return db.select().from(table).where(eq(providerIdField, providerId));
+  }
+
+  // Lightweight: only get category names and counts for grocery provider dashboard
+  async getProviderGroceryCategories(providerId: string): Promise<{ name: string; count: number }[]> {
+    const result = await db
+      .select({
+        name: groceryProducts.category,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(groceryProducts)
+      .where(eq(groceryProducts.providerId, providerId))
+      .groupBy(groceryProducts.category)
+      .orderBy(asc(groceryProducts.category));
+    return result;
   }
 
   // --- STREET FOOD ORDER METHODS ---

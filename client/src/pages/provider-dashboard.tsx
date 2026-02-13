@@ -110,6 +110,7 @@ type ProviderProfileWithCategory = ServiceProvider & {
 type FullBooking = Booking & {
   user: Pick<User, "id" | "username" | "phone">;
   invoice: Invoice | null;
+  problem: { id: string; name: string; categoryId: string } | null;
 };
 
 // Bill/Invoice create karne ka Zod schema
@@ -150,7 +151,9 @@ const MenuItemsManager: React.FC<{
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const providerCategorySlug = providerProfile.category?.slug;
+  const isGrocery = providerCategorySlug === "grocery";
 
+  // --- For NON-GROCERY: load all items at once (small data) ---
   const {
     data: menuItems,
     isLoading: isLoadingMenuItems,
@@ -164,22 +167,77 @@ const MenuItemsManager: React.FC<{
       );
       return res.data;
     },
-    enabled: !!providerCategorySlug,
+    enabled: !!providerCategorySlug && !isGrocery,
+  });
+
+  // --- For GROCERY: lightweight categories endpoint (fast!) ---
+  const {
+    data: groceryCategories,
+    isLoading: isLoadingGroceryCategories,
+  } = useQuery<{ name: string; count: number }[]>({
+    queryKey: ["providerGroceryCategories"],
+    queryFn: async () => {
+      const res = await api.get("/provider/grocery-categories");
+      return res.data;
+    },
+    enabled: isGrocery,
   });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce search for server-side grocery search
+  useEffect(() => {
+    if (!isGrocery) return;
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery, isGrocery]);
+
+  // --- For GROCERY: lazy-load items for selected category ---
+  const {
+    data: groceryCategoryItems,
+    isLoading: isLoadingCategoryItems,
+  } = useQuery<any[]>({
+    queryKey: ["groceryCategoryItems", selectedCategory],
+    queryFn: async () => {
+      const res = await api.get(
+        `/provider/menu-items/grocery?category=${encodeURIComponent(selectedCategory!)}`
+      );
+      return res.data;
+    },
+    enabled: isGrocery && !!selectedCategory,
+  });
+
+  // --- For GROCERY: server-side search ---
+  const {
+    data: grocerySearchResults,
+    isLoading: isSearching,
+  } = useQuery<any[]>({
+    queryKey: ["grocerySearch", debouncedSearch],
+    queryFn: async () => {
+      const res = await api.get(
+        `/provider/menu-items/grocery?search=${encodeURIComponent(debouncedSearch)}&limit=20`
+      );
+      return res.data;
+    },
+    enabled: isGrocery && debouncedSearch.length >= 2,
+  });
 
   const deleteMenuItemMutation = useMutation({
     mutationFn: (itemId: string) =>
       api.delete(`/provider/menu-items/${providerCategorySlug}/${itemId}`),
     onSuccess: () => {
       toast({ title: "Success", description: "Menu item deleted." });
-      queryClient.invalidateQueries({
-        queryKey: ["providerMenuItems", providerCategorySlug],
-      });
+      // Invalidate relevant queries
+      if (isGrocery) {
+        queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+        queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["providerMenuItems", providerCategorySlug] });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -205,40 +263,53 @@ const MenuItemsManager: React.FC<{
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     setEditingItem(null);
-    refetchMenuItems();
+    if (isGrocery) {
+      queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+      queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+    } else {
+      refetchMenuItems();
+    }
   };
 
-  // --- Optimized Search Logic ---
+  // --- For NON-GROCERY: client-side search ---
   const searchResults = React.useMemo(() => {
+    if (isGrocery) return []; // Grocery uses server-side search
     if (!searchQuery || searchQuery.length < 1 || !Array.isArray(menuItems)) return [];
-
     const query = searchQuery.toLowerCase();
     const matches = menuItems.filter(item =>
       item.name.toLowerCase().includes(query) ||
       (item.category || "").toLowerCase().includes(query)
     );
-
-    // Limit to top 20 results to prevent lag
     return matches.slice(0, 20);
-  }, [menuItems, searchQuery]);
+  }, [menuItems, searchQuery, isGrocery]);
 
-  // --- Derived State for Categories ---
+  // --- For NON-GROCERY: derive categories from loaded items ---
   const categories = React.useMemo(() => {
+    if (isGrocery) return []; // Grocery uses groceryCategories from API
     if (!Array.isArray(menuItems)) return [];
-
     const catMap = new Map<string, number>();
     menuItems.forEach(item => {
       const cat = item.category || "Uncategorized";
       catMap.set(cat, (catMap.get(cat) || 0) + 1);
     });
-
     return Array.from(catMap.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [menuItems]);
+  }, [menuItems, isGrocery]);
 
+  // Items to display in the selected category view
   const filteredItems = React.useMemo(() => {
-    if (!selectedCategory || !Array.isArray(menuItems)) return [];
+    if (!selectedCategory) return [];
+    if (isGrocery) return groceryCategoryItems || [];
+    if (!Array.isArray(menuItems)) return [];
     return menuItems.filter(item => (item.category || "Uncategorized") === selectedCategory);
-  }, [menuItems, selectedCategory]);
+  }, [menuItems, selectedCategory, isGrocery, groceryCategoryItems]);
+
+  // Choose which categories list to show
+  const displayCategories = isGrocery ? (groceryCategories || []) : categories;
+  const isLoadingCategories = isGrocery ? isLoadingGroceryCategories : isLoadingMenuItems;
+  const hasItems = isGrocery ? (groceryCategories && groceryCategories.length > 0) : (Array.isArray(menuItems) && menuItems.length > 0);
+
+  // Search results to display
+  const displaySearchResults = isGrocery ? (grocerySearchResults || []) : searchResults;
 
   // Main UI Render
   return (
@@ -295,11 +366,15 @@ const MenuItemsManager: React.FC<{
             {/* Show list only when items exist and not empty */}
             {searchQuery.length > 0 && (
               <CommandList className="max-h-[300px] overflow-y-auto">
-                {searchResults.length === 0 ? (
+                {isGrocery && isSearching ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : displaySearchResults.length === 0 ? (
                   <CommandEmpty>No results found.</CommandEmpty>
                 ) : (
                   <CommandGroup heading="Suggestions">
-                    {searchResults.map(item => (
+                    {displaySearchResults.map(item => (
                       <CommandItem key={item.id} onSelect={() => {
                         setSelectedCategory(item.category || "Uncategorized");
                         setSearchQuery(""); // Clear search after selection
@@ -325,18 +400,18 @@ const MenuItemsManager: React.FC<{
       </CardHeader>
 
       <CardContent>
-        {isLoadingMenuItems ? (
+        {isLoadingCategories ? (
           <div className="flex justify-center py-10">
             <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading menu...
           </div>
-        ) : !Array.isArray(menuItems) || menuItems.length === 0 ? (
+        ) : !hasItems ? (
           <div className="text-center py-12 border-2 border-dashed rounded-lg">
             <h3 className="text-xl font-semibold">Your Menu is Empty</h3>
           </div>
         ) : !selectedCategory ? (
           // --- CATEGORIES GRID VIEW ---
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categories.map((cat) => (
+            {displayCategories.map((cat) => (
               <Card
                 key={cat.name}
                 className="cursor-pointer hover:shadow-lg transition-all border-l-4 border-l-primary"
@@ -360,64 +435,70 @@ const MenuItemsManager: React.FC<{
               <Badge variant="secondary" className="ml-2">{filteredItems.length} Items</Badge>
             </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Price (₹)</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-md"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-muted rounded-md" />
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <div>{item.name}</div>
-                      <div className="text-xs text-muted-foreground">{item.description}</div>
-                    </TableCell>
-                    <TableCell className="font-bold">₹{item.price}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(item)}
-                        className="mr-2"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                        disabled={
-                          deleteMenuItemMutation.isPending &&
-                          deleteMenuItemMutation.variables === item.id
-                        }
-                      >
-                        {deleteMenuItemMutation.isPending &&
-                          deleteMenuItemMutation.variables === item.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TableCell>
+            {isGrocery && isLoadingCategoryItems ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading items...
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">Image</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Price (₹)</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-muted rounded-md" />
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div>{item.name}</div>
+                        <div className="text-xs text-muted-foreground">{item.description}</div>
+                      </TableCell>
+                      <TableCell className="font-bold">₹{item.price}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(item)}
+                          className="mr-2"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(item.id)}
+                          disabled={
+                            deleteMenuItemMutation.isPending &&
+                            deleteMenuItemMutation.variables === item.id
+                          }
+                        >
+                          {deleteMenuItemMutation.isPending &&
+                            deleteMenuItemMutation.variables === item.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         )}
       </CardContent>
@@ -687,7 +768,7 @@ const BookingList: React.FC<{
         <Card key={booking.id} className="shadow-md">
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
-              <span>Booking ID: ...{booking.id.slice(-6)}</span>
+              <span>{booking.problem?.name || booking.notes || booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) + " Service" || "Service Request"}</span>
               <Badge
                 variant={booking.status === 'completed' ? 'default' : getBadgeColor(booking.status || 'pending')}
                 className={booking.status === 'completed' ? 'bg-green-600' : ''}
@@ -696,11 +777,16 @@ const BookingList: React.FC<{
               </Badge>
             </CardTitle>
             <CardDescription>
-              Customer: {booking.user.username} | Phone:{" "}
-              {booking.user.phone}
+              Customer: {booking.user.username} | Phone: {booking.user.phone}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-1">
+            <p className="text-xs text-muted-foreground">
+              Booking ID: {booking.id.slice(-8)}
+            </p>
+            <p>
+              <strong>Service Type:</strong> {booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}
+            </p>
             <p>
               <strong>Address:</strong> {booking.userAddress}
             </p>
@@ -2603,7 +2689,7 @@ const ProviderDashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto pt-20 pb-8 px-4 sm:px-6 lg:px-8">
       {/* Permission Banner for Android App */}
       <PermissionBanner />
 

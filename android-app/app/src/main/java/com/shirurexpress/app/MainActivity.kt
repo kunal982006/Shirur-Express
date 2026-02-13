@@ -7,6 +7,8 @@ import android.content.IntentSender
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
@@ -26,9 +28,11 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     
     // File upload callback for WebView file chooser
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    // URI for camera-captured photo
+    private var cameraPhotoUri: Uri? = null
 
     // Unified permission request launcher
     private val permissionLauncher = registerForActivityResult(
@@ -80,9 +86,13 @@ class MainActivity : AppCompatActivity() {
                     val clipData = data.clipData!!
                     Array(clipData.itemCount) { i -> clipData.getItemAt(i).uri }
                 }
-                // Handle single file selection
+                // Handle single file selection from gallery
                 data?.data != null -> {
                     arrayOf(data.data!!)
+                }
+                // No data from intent = camera was used, use the saved camera URI
+                cameraPhotoUri != null -> {
+                    arrayOf(cameraPhotoUri!!)
                 }
                 else -> null
             }
@@ -91,8 +101,9 @@ class MainActivity : AppCompatActivity() {
             // User cancelled the file picker - MUST call with null to prevent WebView from getting stuck
             filePathCallback?.onReceiveValue(null)
         }
-        // Clear the callback after use
+        // Clear the callbacks after use
         filePathCallback = null
+        cameraPhotoUri = null
     }
 
     companion object {
@@ -156,17 +167,10 @@ class MainActivity : AppCompatActivity() {
             permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
 
-        // 4. Media/Storage Access (for file uploads)
-        // Android 13+ uses READ_MEDIA_IMAGES, older versions use READ_EXTERNAL_STORAGE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-        }
+        // 4. Media/Storage Access — NOT NEEDED
+        // The Android image picker (ACTION_GET_CONTENT) and camera capture
+        // via FileProvider do NOT require READ_MEDIA_IMAGES or READ_EXTERNAL_STORAGE.
+        // Removed to comply with Play Store guidelines.
 
         if (permissionsToRequest.isNotEmpty()) {
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
@@ -238,11 +242,7 @@ class MainActivity : AppCompatActivity() {
         if (deniedPermissions.contains(Manifest.permission.ACCESS_FINE_LOCATION)) {
             message.append("- Location: To show delivery routes and track orders\n")
         }
-        // Handle both old and new storage permissions for file uploads
-        if (deniedPermissions.contains(Manifest.permission.READ_MEDIA_IMAGES) ||
-            deniedPermissions.contains(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            message.append("- Gallery Access: To upload images from your device\n")
-        }
+
 
         message.append("\nPlease grant them in App Settings.")
 
@@ -467,24 +467,56 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.filePathCallback = filePathCallback
                 
                 try {
-                    // Create an intent to pick images
-                    val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "image/*" // Accept all image types
+                    // --- Option 1: Camera Capture Intent ---
+                    val cameraIntents = mutableListOf<Intent>()
+                    
+                    // Only add camera option if camera permission is granted
+                    if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        val photoFile = File(
+                            File(cacheDir, "camera_photos").apply { mkdirs() },
+                            "photo_${System.currentTimeMillis()}.jpg"
+                        )
+                        cameraPhotoUri = FileProvider.getUriForFile(
+                            this@MainActivity,
+                            "${packageName}.fileprovider",
+                            photoFile
+                        )
                         
-                        // Allow multiple file selection if the web page supports it
+                        val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                            putExtra(MediaStore.EXTRA_OUTPUT, cameraPhotoUri)
+                        }
+                        // Add all activities that can handle camera capture
+                        val resolvedActivities = packageManager.queryIntentActivities(captureIntent, 0)
+                        for (resolvedActivity in resolvedActivities) {
+                            val targetIntent = Intent(captureIntent).apply {
+                                setPackage(resolvedActivity.activityInfo.packageName)
+                            }
+                            cameraIntents.add(targetIntent)
+                        }
+                    }
+                    
+                    // --- Option 2: Gallery / File Picker Intent ---
+                    val galleryIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*"
                         if (fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE) {
                             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                         }
                     }
                     
-                    // Launch the file chooser
-                    fileChooserLauncher.launch(Intent.createChooser(intent, "Select Image"))
+                    // --- Create a chooser that includes both camera and gallery ---
+                    val chooserIntent = Intent.createChooser(galleryIntent, "Select Image")
+                    if (cameraIntents.isNotEmpty()) {
+                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toTypedArray())
+                    }
+                    
+                    fileChooserLauncher.launch(chooserIntent)
                     return true
                 } catch (e: Exception) {
                     Log.e("MainActivity", "Error launching file chooser", e)
                     this@MainActivity.filePathCallback?.onReceiveValue(null)
                     this@MainActivity.filePathCallback = null
+                    cameraPhotoUri = null
                     Toast.makeText(this@MainActivity, "Cannot open file chooser", Toast.LENGTH_SHORT).show()
                     return false
                 }

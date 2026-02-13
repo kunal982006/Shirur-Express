@@ -12,6 +12,7 @@ import {
   Clock,
   MapPin,
   AlertCircle,
+  Key,
   Loader2,
   DollarSign,
   Wrench,
@@ -26,6 +27,7 @@ import { GroceryOrder, RestaurantOrder } from "@shared/schema";
 type BookingWithDetails = {
   id: string;
   status: string;
+  serviceOtp?: string | null;
   scheduledAt?: string;
   userAddress: string;
   userPhone: string;
@@ -103,11 +105,11 @@ export default function MyBookings() {
         color: "border-blue-500"
       },
       awaiting_otp: {
-        label: "Awaiting OTP",
+        label: "OTP Verification",
         variant: "outline",
-        icon: Clock,
-        description: "Provider is completing the service.",
-        color: "border-blue-400"
+        icon: Key,
+        description: "Share the OTP with the technician to confirm service.",
+        color: "border-yellow-500"
       },
       awaiting_billing: {
         label: "Preparing Bill",
@@ -257,6 +259,24 @@ export default function MyBookings() {
                               <div className="mt-3 p-3 bg-muted rounded-md">
                                 <p className="text-sm font-medium mb-1">Your notes:</p>
                                 <p className="text-sm text-muted-foreground">{booking.notes}</p>
+                              </div>
+                            )}
+
+                            {/* OTP Display for awaiting_otp status */}
+                            {booking.status === "awaiting_otp" && booking.serviceOtp && (
+                              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg text-center">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                  <Key className="h-5 w-5 text-yellow-700 dark:text-yellow-300" />
+                                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                                    Share this OTP with the technician
+                                  </p>
+                                </div>
+                                <p className="text-3xl font-bold tracking-[0.3em] text-yellow-800 dark:text-yellow-100">
+                                  {booking.serviceOtp}
+                                </p>
+                                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+                                  The technician will enter this to confirm service completion
+                                </p>
                               </div>
                             )}
 

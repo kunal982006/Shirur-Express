@@ -62,7 +62,9 @@ const Login: React.FC = () => {
         await queryClient.refetchQueries({ queryKey: ['/api/auth/me'] });
 
         // Aur phir redirect karo
-        if (loggedInUser.isDeliveryPartner) {
+        if (loggedInUser.role === 'admin') {
+          setLocation("/admin");
+        } else if (loggedInUser.isDeliveryPartner) {
           setLocation("/delivery-partner/dashboard");
         } else if (loggedInUser.role === 'provider') {
           setLocation("/provider/dashboard");

@@ -45,10 +45,10 @@ const restaurantSchema = baseSchema.extend({ isVeg: z.boolean().default(true).op
 // --- YEH NAYA SCHEMA HAI 'GROCERY' KE LIYE ---
 const grocerySchema = baseSchema.extend({
   category: z.string().min(2, { message: "Category name is required" }), // Changed from enum to string
-  weight: z.string().optional(),
-  unit: z.string().optional(),
+  weight: z.string().nullable().optional(),
+  unit: z.string().nullable().optional(),
   inStock: z.boolean().default(true).optional(),
-  stockQuantity: z.string().regex(/^\d+$/, { message: "Stock must be a number." }).optional().or(z.literal("")),
+  stockQuantity: z.string().regex(/^\d+$/, { message: "Stock must be a number." }).nullable().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof baseSchema> & z.infer<typeof beautySchema> & z.infer<typeof foodSchema> & z.infer<typeof cakeSchema> & z.infer<typeof restaurantSchema> & z.infer<typeof grocerySchema>;
@@ -497,7 +497,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                     <FormItem>
                       <FormLabel>Weight (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 500g" {...field} />
+                        <Input placeholder="e.g., 500g" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -510,7 +510,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                     <FormItem>
                       <FormLabel>Unit (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., kg, pack" {...field} />
+                        <Input placeholder="e.g., kg, pack" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -3,8 +3,8 @@
 # min_api: 24
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.2"}
-# pg_map_id: 5ddd76155c816f6baef381b3771514f2e816541a95c4e720cd9e4024420b35bc
-# pg_map_hash: SHA-256 5ddd76155c816f6baef381b3771514f2e816541a95c4e720cd9e4024420b35bc
+# pg_map_id: 0d43e18661a2215a543daa2ee53e8cb4b4f57244d6eb09e8448527a36d5846bc
+# pg_map_hash: SHA-256 0d43e18661a2215a543daa2ee53e8cb4b4f57244d6eb09e8448527a36d5846bc
 android.app.AppComponentFactory -> android.app.AppComponentFactory:
 # {"id":"com.android.tools.r8.synthesized"}
     void <clinit>() -> <clinit>
@@ -41983,7 +41983,7 @@ androidx.core.app.TaskStackBuilder -> w.j0:
 androidx.core.app.TaskStackBuilder$SupportParentable -> w.i0:
 # {"id":"sourceFile","fileName":"TaskStackBuilder.java"}
     android.content.Intent getSupportParentActivityIntent() -> getSupportParentActivityIntent
-androidx.core.content.ContextCompat -> x.g:
+androidx.core.content.ContextCompat -> x.h:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     java.lang.Object sLock -> a
     java.lang.Object sSync -> b
@@ -42146,22 +42146,27 @@ androidx.core.content.ContextCompat$Api16Impl -> x.a:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     1:4:void startActivities(android.content.Context,android.content.Intent[],android.os.Bundle):1059:1059 -> a
     1:4:void startActivity(android.content.Context,android.content.Intent,android.os.Bundle):1064:1064 -> b
-androidx.core.content.ContextCompat$Api21Impl -> x.b:
+androidx.core.content.ContextCompat$Api19Impl -> x.b:
+# {"id":"sourceFile","fileName":"ContextCompat.java"}
+    1:5:java.io.File[] getExternalCacheDirs(android.content.Context):1088:1088 -> a
+    1:5:java.io.File[] getExternalFilesDirs(android.content.Context,java.lang.String):1093:1093 -> b
+    1:5:java.io.File[] getObbDirs(android.content.Context):1098:1098 -> c
+androidx.core.content.ContextCompat$Api21Impl -> x.c:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     1:5:java.io.File getCodeCacheDir(android.content.Context):1120:1120 -> a
     1:5:android.graphics.drawable.Drawable getDrawable(android.content.Context,int):1110:1110 -> b
     1:5:java.io.File getNoBackupFilesDir(android.content.Context):1115:1115 -> c
-androidx.core.content.ContextCompat$Api23Impl -> x.c:
+androidx.core.content.ContextCompat$Api23Impl -> x.d:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     1:5:int getColor(android.content.Context,int):1132:1132 -> a
     1:5:java.lang.Object getSystemService(android.content.Context,java.lang.Class):1137:1137 -> b
     1:5:java.lang.String getSystemServiceName(android.content.Context,java.lang.Class):1142:1142 -> c
-androidx.core.content.ContextCompat$Api24Impl -> x.d:
+androidx.core.content.ContextCompat$Api24Impl -> x.e:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     1:5:android.content.Context createDeviceProtectedStorageContext(android.content.Context):1159:1159 -> a
     1:5:java.io.File getDataDir(android.content.Context):1154:1154 -> b
     1:5:boolean isDeviceProtectedStorage(android.content.Context):1164:1164 -> c
-androidx.core.content.ContextCompat$Api26Impl -> x.e:
+androidx.core.content.ContextCompat$Api26Impl -> x.f:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     7:11:java.lang.String androidx.core.content.ContextCompat.obtainAndCheckReceiverPermission(android.content.Context):970:970 -> a
     7:11:android.content.Intent registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,java.lang.String,android.os.Handler,int):1178 -> a
@@ -42197,9 +42202,264 @@ androidx.core.content.ContextCompat$Api26Impl -> x.e:
     79:79:java.lang.String androidx.core.content.ContextCompat.obtainAndCheckReceiverPermission(android.content.Context):974:974 -> a
     79:79:android.content.Intent registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,java.lang.String,android.os.Handler,int):1178 -> a
     1:5:android.content.ComponentName startForegroundService(android.content.Context,android.content.Intent):1189:1189 -> b
-androidx.core.content.ContextCompat$Api33Impl -> x.f:
+androidx.core.content.ContextCompat$Api33Impl -> x.g:
 # {"id":"sourceFile","fileName":"ContextCompat.java"}
     1:5:android.content.Intent registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,java.lang.String,android.os.Handler,int):1239:1239 -> a
+androidx.core.content.FileProvider -> androidx.core.content.FileProvider:
+# {"id":"sourceFile","fileName":"FileProvider.java"}
+    androidx.core.content.FileProvider$PathStrategy mLocalPathStrategy -> i
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lx/j;"}
+    java.lang.String mAuthority -> j
+    java.lang.String[] COLUMNS -> k
+    java.io.File DEVICE_ROOT -> l
+    java.util.HashMap sCache -> m
+    1:10:void <clinit>():355:355 -> <clinit>
+    11:19:void <clinit>():374:374 -> <clinit>
+    20:27:void <clinit>():377:377 -> <clinit>
+    1:4:void <init>():386:386 -> <init>
+    1:2:androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy():650:651 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"()Lx/j;"}
+    3:5:androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy():651:651 -> a
+    6:20:androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy():652:652 -> a
+    21:24:androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy():655:655 -> a
+    25:26:androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy():656:656 -> a
+    1:3:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):413:413 -> attachInfo
+    4:7:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):416:416 -> attachInfo
+    8:11:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):419:419 -> attachInfo
+    12:24:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):423:423 -> attachInfo
+    25:27:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):424:424 -> attachInfo
+    28:32:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):425:425 -> attachInfo
+    33:37:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):426:426 -> attachInfo
+    38:45:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):420:420 -> attachInfo
+    46:53:void attachInfo(android.content.Context,android.content.pm.ProviderInfo):417:417 -> attachInfo
+    1:3:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):665:665 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroid/content/Context;Ljava/lang/String;)Lx/j;"}
+    4:11:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):666:666 -> b
+    12:15:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):669:669 -> b
+    16:22:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):677:677 -> b
+    23:31:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):674:674 -> b
+    32:39:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):671:671 -> b
+    40:43:androidx.core.content.FileProvider$PathStrategy getPathStrategy(android.content.Context,java.lang.String,int):679:679 -> b
+    1:4:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):451:451 -> c
+    5:8:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):833:833 -> c
+    5:8:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    9:31:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):840:840 -> c
+    9:31:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    32:41:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):841:841 -> c
+    32:41:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    42:49:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):842:842 -> c
+    42:49:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    50:73:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):843:843 -> c
+    50:73:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    74:83:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):854:854 -> c
+    74:83:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    84:91:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):855:855 -> c
+    84:91:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    92:100:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):856:856 -> c
+    92:100:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    101:110:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):858:858 -> c
+    101:110:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    111:144:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):862:862 -> c
+    111:144:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    145:157:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):863:863 -> c
+    145:157:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    158:170:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):864:864 -> c
+    158:170:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    171:174:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    171:174:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    175:178:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):0:0 -> c
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":203,"3":205,"6":208,"9":212},"outline":"Lx0/a;q(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"}
+    179:182:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    179:182:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    183:202:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):835:835 -> c
+    183:202:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    203:203:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    203:203:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    205:205:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    205:205:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    208:208:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    208:208:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    212:212:android.net.Uri androidx.core.content.FileProvider$SimplePathStrategy.getUriForFile(java.io.File):849:849 -> c
+    212:212:android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File):452 -> c
+    1:5:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):715:715 -> d
+    1:5:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+      # {"id":"com.android.tools.r8.synthesized"}
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroid/content/Context;Ljava/lang/String;)Lx/j;"}
+    6:11:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):717:717 -> d
+    6:11:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    12:17:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):718:718 -> d
+    12:17:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    18:21:android.content.res.XmlResourceParser getFileProviderPathsMetaData(android.content.Context,java.lang.String,android.content.pm.ProviderInfo,int):698:698 -> d
+    18:21:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):719 -> d
+    18:21:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    22:29:android.content.res.XmlResourceParser getFileProviderPathsMetaData(android.content.Context,java.lang.String,android.content.pm.ProviderInfo,int):697:697 -> d
+    22:29:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):719 -> d
+    22:29:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    30:39:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):723:723 -> d
+    30:39:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    40:43:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):725:725 -> d
+    40:43:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    44:50:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):727:727 -> d
+    44:50:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    51:56:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):728:728 -> d
+    51:56:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    57:65:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):731:731 -> d
+    57:65:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    66:68:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):732:732 -> d
+    66:68:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    69:76:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):733:733 -> d
+    69:76:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    77:81:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):734:734 -> d
+    77:81:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    82:89:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):735:735 -> d
+    82:89:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    90:94:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):736:736 -> d
+    90:94:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    95:102:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):737:737 -> d
+    95:102:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    103:107:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):738:738 -> d
+    103:107:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    108:115:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):739:739 -> d
+    108:115:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    116:119:java.io.File[] androidx.core.content.ContextCompat.getExternalFilesDirs(android.content.Context,java.lang.String):452:452 -> d
+    116:119:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):740 -> d
+    116:119:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    120:122:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):741:741 -> d
+    120:122:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    123:125:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):742:742 -> d
+    123:125:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    126:133:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):744:744 -> d
+    126:133:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    134:137:java.io.File[] androidx.core.content.ContextCompat.getExternalCacheDirs(android.content.Context):505:505 -> d
+    134:137:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):745 -> d
+    134:137:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    138:140:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):746:746 -> d
+    138:140:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    141:143:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):747:747 -> d
+    141:143:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    144:145:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):749:749 -> d
+    144:145:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    146:151:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):750:750 -> d
+    146:151:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    152:155:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):751:751 -> d
+    152:155:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    156:158:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):752:752 -> d
+    156:158:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    159:162:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):753:753 -> d
+    159:162:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    163:166:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758:758 -> d
+    163:166:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    167:170:java.io.File buildPath(java.io.File,java.lang.String[]):925:925 -> d
+    167:170:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    167:170:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    171:176:java.io.File buildPath(java.io.File,java.lang.String[]):927:927 -> d
+    171:176:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    171:176:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    177:182:void androidx.core.content.FileProvider$SimplePathStrategy.addRoot(java.lang.String,java.io.File):814:814 -> d
+    177:182:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    177:182:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    183:186:void androidx.core.content.FileProvider$SimplePathStrategy.addRoot(java.lang.String,java.io.File):820:820 -> d
+    183:186:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    183:186:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    187:194:void androidx.core.content.FileProvider$SimplePathStrategy.addRoot(java.lang.String,java.io.File):826:826 -> d
+    187:194:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    187:194:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    195:214:void androidx.core.content.FileProvider$SimplePathStrategy.addRoot(java.lang.String,java.io.File):822:822 -> d
+    195:214:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    195:214:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    215:223:void androidx.core.content.FileProvider$SimplePathStrategy.addRoot(java.lang.String,java.io.File):815:815 -> d
+    215:223:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):758 -> d
+    215:223:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    224:231:android.content.res.XmlResourceParser getFileProviderPathsMetaData(android.content.Context,java.lang.String,android.content.pm.ProviderInfo,int):700:700 -> d
+    224:231:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):719 -> d
+    224:231:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    232:235:android.content.res.XmlResourceParser getFileProviderPathsMetaData(android.content.Context,java.lang.String,android.content.pm.ProviderInfo,int):688:688 -> d
+    232:235:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):719 -> d
+    232:235:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    236:239:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0:0 -> d
+    240:243:android.content.res.XmlResourceParser getFileProviderPathsMetaData(android.content.Context,java.lang.String,android.content.pm.ProviderInfo,int):688:688 -> d
+    240:243:androidx.core.content.FileProvider$PathStrategy parsePathStrategy(android.content.Context,java.lang.String,int):719 -> d
+    240:243:x.FileProvider$SimplePathStrategy parsePathStrategy(android.content.Context,java.lang.String):0 -> d
+    1:8:int delete(android.net.Uri,java.lang.String,java.lang.String[]):619:619 -> delete
+    9:13:int delete(android.net.Uri,java.lang.String,java.lang.String[]):620:620 -> delete
+    1:8:java.lang.String getType(android.net.Uri):560:560 -> getType
+    9:20:java.lang.String getType(android.net.Uri):562:562 -> getType
+    21:30:java.lang.String getType(android.net.Uri):564:564 -> getType
+    31:41:java.lang.String getType(android.net.Uri):565:565 -> getType
+    42:44:java.lang.String getType(android.net.Uri):571:571 -> getType
+    1:3:java.lang.String getTypeAnonymous(android.net.Uri):582:582 -> getTypeAnonymous
+    1:8:android.net.Uri insert(android.net.Uri,android.content.ContentValues):591:591 -> insert
+    1:2:boolean onCreate():0:0 -> onCreate
+    1:8:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):643:643 -> openFile
+    9:19:int modeToMode(java.lang.String):900:900 -> openFile
+    9:19:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    20:36:int modeToMode(java.lang.String):902:902 -> openFile
+    20:36:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    37:47:int modeToMode(java.lang.String):906:906 -> openFile
+    37:47:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    48:58:int modeToMode(java.lang.String):910:910 -> openFile
+    48:58:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    59:69:int modeToMode(java.lang.String):913:913 -> openFile
+    59:69:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    70:73:int modeToMode(java.lang.String):918:918 -> openFile
+    70:73:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    74:77:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):0:0 -> openFile
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":89,"3":91,"6":94,"9":98},"outline":"Lx0/a;q(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"}
+    78:83:int modeToMode(java.lang.String):918:918 -> openFile
+    78:83:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    84:88:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):645:645 -> openFile
+    89:89:int modeToMode(java.lang.String):918:918 -> openFile
+    89:89:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    91:91:int modeToMode(java.lang.String):918:918 -> openFile
+    91:91:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    94:94:int modeToMode(java.lang.String):918:918 -> openFile
+    94:94:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    98:98:int modeToMode(java.lang.String):918:918 -> openFile
+    98:98:android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String):644 -> openFile
+    1:8:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):519:519 -> query
+    9:16:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):520:520 -> query
+    17:18:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):523:523 -> query
+    19:21:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):526:526 -> query
+    22:24:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):527:527 -> query
+    25:32:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):529:529 -> query
+    33:40:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):530:530 -> query
+    41:46:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):531:531 -> query
+    47:56:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):532:532 -> query
+    57:64:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):533:533 -> query
+    65:68:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):534:534 -> query
+    69:82:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):535:535 -> query
+    83:84:java.lang.String[] copyOf(java.lang.String[],int):934:934 -> query
+    83:84:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):539 -> query
+    85:87:java.lang.String[] copyOf(java.lang.String[],int):935:935 -> query
+    85:87:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):539 -> query
+    88:89:java.lang.Object[] copyOf(java.lang.Object[],int):940:940 -> query
+    88:89:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):540 -> query
+    90:92:java.lang.Object[] copyOf(java.lang.Object[],int):941:941 -> query
+    90:92:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):540 -> query
+    93:98:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):542:542 -> query
+    99:102:android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String):543:543 -> query
+    1:8:int update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[]):601:601 -> update
+androidx.core.content.FileProvider$Api21Impl -> x.i:
+# {"id":"sourceFile","fileName":"FileProvider.java"}
+    1:5:java.io.File[] getExternalMediaDirs(android.content.Context):954:954 -> a
+androidx.core.content.FileProvider$SimplePathStrategy -> x.j:
+# {"id":"sourceFile","fileName":"FileProvider.java"}
+    java.lang.String mAuthority -> a
+    java.util.HashMap mRoots -> b
+    1:3:void <init>(java.lang.String):805:805 -> <init>
+    4:10:void <init>(java.lang.String):803:803 -> <init>
+    11:13:void <init>(java.lang.String):806:806 -> <init>
+    1:7:java.io.File getFileForUri(android.net.Uri):869:869 -> a
+    8:11:java.io.File getFileForUri(android.net.Uri):871:871 -> a
+    12:20:java.io.File getFileForUri(android.net.Uri):872:872 -> a
+    21:28:java.io.File getFileForUri(android.net.Uri):873:873 -> a
+    29:38:java.io.File getFileForUri(android.net.Uri):875:875 -> a
+    39:43:java.io.File getFileForUri(android.net.Uri):880:880 -> a
+    44:47:java.io.File getFileForUri(android.net.Uri):882:882 -> a
+    48:62:java.io.File getFileForUri(android.net.Uri):887:887 -> a
+    63:70:java.io.File getFileForUri(android.net.Uri):888:888 -> a
+    71:90:java.io.File getFileForUri(android.net.Uri):884:884 -> a
+    91:110:java.io.File getFileForUri(android.net.Uri):877:877 -> a
 androidx.core.content.res.CamColor -> y.a:
 # {"id":"sourceFile","fileName":"CamColor.java"}
     float mHue -> a
@@ -180150,64 +180410,63 @@ com.shirurexpress.app.MainActivity -> com.shirurexpress.app.MainActivity:
     androidx.activity.result.ActivityResultLauncher permissionLauncher -> permissionLauncher
       # {"id":"com.android.tools.r8.residualsignature","signature":"Landroidx/activity/result/d;"}
     1:9:void <clinit>():0:0 -> <clinit>
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> <init>
-    1:3:void <init>():33 -> <init>
-    4:6:void <init>():45:45 -> <init>
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> <init>
+    1:3:void <init>():37 -> <init>
+    4:6:void <init>():51:51 -> <init>
     7:9:void androidx.activity.result.contract.ActivityResultContract.<init>():29:29 -> <init>
     7:9:void androidx.activity.result.contract.ActivityResultContracts$RequestMultiplePermissions.<init>():137 -> <init>
-    7:9:void <init>():45 -> <init>
-    10:26:void <init>():44:44 -> <init>
-    27:29:void <init>():60:60 -> <init>
+    7:9:void <init>():51 -> <init>
+    10:26:void <init>():50:50 -> <init>
+    27:29:void <init>():66:66 -> <init>
     30:32:void androidx.activity.result.contract.ActivityResultContract.<init>():29:29 -> <init>
     30:32:void androidx.activity.result.contract.ActivityResultContracts$StartIntentSenderForResult.<init>():96 -> <init>
-    30:32:void <init>():60 -> <init>
-    33:47:void <init>():59:59 -> <init>
-    48:50:void <init>():72:72 -> <init>
+    30:32:void <init>():66 -> <init>
+    33:47:void <init>():65:65 -> <init>
+    48:50:void <init>():78:78 -> <init>
     51:53:void androidx.activity.result.contract.ActivityResultContract.<init>():29:29 -> <init>
     51:53:void androidx.activity.result.contract.ActivityResultContracts$StartActivityForResult.<init>():58 -> <init>
-    51:53:void <init>():72 -> <init>
-    54:69:void <init>():71:71 -> <init>
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getErrorView$p
-    1:3:android.view.View access$getErrorView$p(com.shirurexpress.app.MainActivity):33 -> access$getErrorView$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getFileChooserLauncher$p
-    1:3:androidx.activity.result.ActivityResultLauncher access$getFileChooserLauncher$p(com.shirurexpress.app.MainActivity):33 -> access$getFileChooserLauncher$p
+    51:53:void <init>():78 -> <init>
+    54:69:void <init>():77:77 -> <init>
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getCameraPhotoUri$p
+    1:3:android.net.Uri access$getCameraPhotoUri$p(com.shirurexpress.app.MainActivity):37 -> access$getCameraPhotoUri$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getErrorView$p
+    1:3:android.view.View access$getErrorView$p(com.shirurexpress.app.MainActivity):37 -> access$getErrorView$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getFileChooserLauncher$p
+    1:3:androidx.activity.result.ActivityResultLauncher access$getFileChooserLauncher$p(com.shirurexpress.app.MainActivity):37 -> access$getFileChooserLauncher$p
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;)Landroidx/activity/result/d;"}
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getFilePathCallback$p
-    1:3:android.webkit.ValueCallback access$getFilePathCallback$p(com.shirurexpress.app.MainActivity):33 -> access$getFilePathCallback$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getProgressBar$p
-    1:3:android.widget.ProgressBar access$getProgressBar$p(com.shirurexpress.app.MainActivity):33 -> access$getProgressBar$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getSwipeRefresh$p
-    1:3:androidx.swiperefreshlayout.widget.SwipeRefreshLayout access$getSwipeRefresh$p(com.shirurexpress.app.MainActivity):33 -> access$getSwipeRefresh$p
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$getWebView$p
-    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$injectCustomCSS
-    1:4:void access$injectCustomCSS(com.shirurexpress.app.MainActivity):33 -> access$injectCustomCSS
-    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$setFilePathCallback$p
-    1:3:void access$setFilePathCallback$p(com.shirurexpress.app.MainActivity,android.webkit.ValueCallback):33 -> access$setFilePathCallback$p
-    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):33:33 -> access$showErrorPage
-    1:4:void access$showErrorPage(com.shirurexpress.app.MainActivity):33 -> access$showErrorPage
-    1:5:void checkAllPermissions():139:139 -> checkAllPermissions
-    6:11:void checkAllPermissions():142:142 -> checkAllPermissions
-    12:19:void checkAllPermissions():143:143 -> checkAllPermissions
-    20:22:void checkAllPermissions():144:144 -> checkAllPermissions
-    23:30:void checkAllPermissions():149:149 -> checkAllPermissions
-    31:33:void checkAllPermissions():150:150 -> checkAllPermissions
-    34:41:void checkAllPermissions():154:154 -> checkAllPermissions
-    42:44:void checkAllPermissions():155:155 -> checkAllPermissions
-    45:51:void checkAllPermissions():156:156 -> checkAllPermissions
-    52:59:void checkAllPermissions():162:162 -> checkAllPermissions
-    60:63:void checkAllPermissions():163:163 -> checkAllPermissions
-    64:71:void checkAllPermissions():166:166 -> checkAllPermissions
-    72:74:void checkAllPermissions():167:167 -> checkAllPermissions
-    75:80:void checkAllPermissions():171:171 -> checkAllPermissions
-    81:83:void checkAllPermissions():172:172 -> checkAllPermissions
-    84:89:java.lang.Object[] kotlin.collections.ArraysKt__ArraysJVMKt.toTypedArray(java.util.Collection):38:38 -> checkAllPermissions
-    84:89:void checkAllPermissions():172 -> checkAllPermissions
-    90:93:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> checkAllPermissions
-    90:93:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47 -> checkAllPermissions
-    90:93:void checkAllPermissions():172 -> checkAllPermissions
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
-    94:96:void checkAllPermissions():175:175 -> checkAllPermissions
-    97:100:void checkAllPermissions():176:176 -> checkAllPermissions
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getFilePathCallback$p
+    1:3:android.webkit.ValueCallback access$getFilePathCallback$p(com.shirurexpress.app.MainActivity):37 -> access$getFilePathCallback$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getProgressBar$p
+    1:3:android.widget.ProgressBar access$getProgressBar$p(com.shirurexpress.app.MainActivity):37 -> access$getProgressBar$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getSwipeRefresh$p
+    1:3:androidx.swiperefreshlayout.widget.SwipeRefreshLayout access$getSwipeRefresh$p(com.shirurexpress.app.MainActivity):37 -> access$getSwipeRefresh$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$getWebView$p
+    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$injectCustomCSS
+    1:4:void access$injectCustomCSS(com.shirurexpress.app.MainActivity):37 -> access$injectCustomCSS
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$setCameraPhotoUri$p
+    1:3:void access$setCameraPhotoUri$p(com.shirurexpress.app.MainActivity,android.net.Uri):37 -> access$setCameraPhotoUri$p
+    1:3:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$setFilePathCallback$p
+    1:3:void access$setFilePathCallback$p(com.shirurexpress.app.MainActivity,android.webkit.ValueCallback):37 -> access$setFilePathCallback$p
+    1:4:android.webkit.WebView access$getWebView$p(com.shirurexpress.app.MainActivity):37:37 -> access$showErrorPage
+    1:4:void access$showErrorPage(com.shirurexpress.app.MainActivity):37 -> access$showErrorPage
+    1:5:void checkAllPermissions():150:150 -> checkAllPermissions
+    6:11:void checkAllPermissions():153:153 -> checkAllPermissions
+    12:19:void checkAllPermissions():154:154 -> checkAllPermissions
+    20:22:void checkAllPermissions():155:155 -> checkAllPermissions
+    23:30:void checkAllPermissions():160:160 -> checkAllPermissions
+    31:33:void checkAllPermissions():161:161 -> checkAllPermissions
+    34:41:void checkAllPermissions():165:165 -> checkAllPermissions
+    42:44:void checkAllPermissions():166:166 -> checkAllPermissions
+    45:49:void checkAllPermissions():167:167 -> checkAllPermissions
+    50:55:void checkAllPermissions():175:175 -> checkAllPermissions
+    56:58:void checkAllPermissions():176:176 -> checkAllPermissions
+    59:64:java.lang.Object[] kotlin.collections.ArraysKt__ArraysJVMKt.toTypedArray(java.util.Collection):38:38 -> checkAllPermissions
+    59:64:void checkAllPermissions():176 -> checkAllPermissions
+    65:68:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> checkAllPermissions
+    65:68:void checkAllPermissions():176 -> checkAllPermissions
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
+    69:71:void checkAllPermissions():179:179 -> checkAllPermissions
+    72:75:void checkAllPermissions():180:180 -> checkAllPermissions
     1:6:com.google.android.gms.location.LocationRequest com.google.android.gms.location.LocationRequest$Builder.build():1:1 -> checkGpsEnabled
     1:6:void checkGpsEnabled():262 -> checkGpsEnabled
     7:10:com.google.android.gms.location.LocationRequest com.google.android.gms.location.LocationRequest$Builder.build():3:3 -> checkGpsEnabled
@@ -180269,159 +180528,160 @@ com.shirurexpress.app.MainActivity -> com.shirurexpress.app.MainActivity:
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
     19:20:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):274 -> checkGpsEnabled$lambda$10
     21:25:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):274:274 -> checkGpsEnabled$lambda$10
-    26:34:void androidx.activity.result.IntentSenderRequest$Builder.<init>(android.app.PendingIntent):86:86 -> checkGpsEnabled$lambda$10
+    26:34:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):86:86 -> checkGpsEnabled$lambda$10
+    26:34:void androidx.activity.result.IntentSenderRequest$Builder.<init>(android.app.PendingIntent):86 -> checkGpsEnabled$lambda$10
     26:34:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):274 -> checkGpsEnabled$lambda$10
     35:41:androidx.activity.result.IntentSenderRequest androidx.activity.result.IntentSenderRequest$Builder.build():158:158 -> checkGpsEnabled$lambda$10
     35:41:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):274 -> checkGpsEnabled$lambda$10
     42:43:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):275:275 -> checkGpsEnabled$lambda$10
-    44:47:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> checkGpsEnabled$lambda$10
-    44:47:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47 -> checkGpsEnabled$lambda$10
+    44:47:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> checkGpsEnabled$lambda$10
     44:47:void checkGpsEnabled$lambda$10(com.shirurexpress.app.MainActivity,java.lang.Exception):275 -> checkGpsEnabled$lambda$10
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
     6:9:void checkGpsEnabled$lambda$9(kotlin.jvm.functions.Function1,java.lang.Object):267:267 -> checkGpsEnabled$lambda$9
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls5/l;Ljava/lang/Object;)V"}
-    1:9:void checkSpecialPermissions():182:182 -> checkSpecialPermissions
-    10:19:void checkSpecialPermissions():183:183 -> checkSpecialPermissions
-    20:25:void checkSpecialPermissions():184:184 -> checkSpecialPermissions
-    26:30:void checkSpecialPermissions():185:185 -> checkSpecialPermissions
+    1:9:void checkSpecialPermissions():186:186 -> checkSpecialPermissions
+    10:19:void checkSpecialPermissions():187:187 -> checkSpecialPermissions
+    20:25:void checkSpecialPermissions():188:188 -> checkSpecialPermissions
+    26:30:void checkSpecialPermissions():189:189 -> checkSpecialPermissions
     31:38:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
-    31:38:void checkSpecialPermissions():186 -> checkSpecialPermissions
-    39:40:void checkSpecialPermissions():187:187 -> checkSpecialPermissions
+    31:38:void checkSpecialPermissions():190 -> checkSpecialPermissions
+    39:40:void checkSpecialPermissions():191:191 -> checkSpecialPermissions
     41:42:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> checkSpecialPermissions
-    41:42:void checkSpecialPermissions():187 -> checkSpecialPermissions
-    43:53:void checkSpecialPermissions():188:188 -> checkSpecialPermissions
-    54:56:void checkSpecialPermissions():206:206 -> checkSpecialPermissions
-    57:63:void checkSpecialPermissions():207:207 -> checkSpecialPermissions
-    64:73:void checkSpecialPermissions():213:213 -> checkSpecialPermissions
-    74:79:void checkSpecialPermissions():214:214 -> checkSpecialPermissions
-    80:84:void checkSpecialPermissions():215:215 -> checkSpecialPermissions
+    41:42:void checkSpecialPermissions():191 -> checkSpecialPermissions
+    43:53:void checkSpecialPermissions():192:192 -> checkSpecialPermissions
+    54:56:void checkSpecialPermissions():210:210 -> checkSpecialPermissions
+    57:63:void checkSpecialPermissions():211:211 -> checkSpecialPermissions
+    64:73:void checkSpecialPermissions():217:217 -> checkSpecialPermissions
+    74:79:void checkSpecialPermissions():218:218 -> checkSpecialPermissions
+    80:84:void checkSpecialPermissions():219:219 -> checkSpecialPermissions
     85:92:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> checkSpecialPermissions
-    85:92:void checkSpecialPermissions():216 -> checkSpecialPermissions
-    93:94:void checkSpecialPermissions():217:217 -> checkSpecialPermissions
+    85:92:void checkSpecialPermissions():220 -> checkSpecialPermissions
+    93:94:void checkSpecialPermissions():221:221 -> checkSpecialPermissions
     95:96:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> checkSpecialPermissions
-    95:96:void checkSpecialPermissions():217 -> checkSpecialPermissions
-    97:107:void checkSpecialPermissions():218:218 -> checkSpecialPermissions
-    108:110:void checkSpecialPermissions():223:223 -> checkSpecialPermissions
-    111:114:void checkSpecialPermissions():224:224 -> checkSpecialPermissions
-    6:12:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):191:191 -> checkSpecialPermissions$lambda$6
-    13:26:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):192:192 -> checkSpecialPermissions$lambda$6
-    27:30:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):193:193 -> checkSpecialPermissions$lambda$6
-    31:37:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):197:197 -> checkSpecialPermissions$lambda$6
-    38:46:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):198:198 -> checkSpecialPermissions$lambda$6
-    47:50:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):199:199 -> checkSpecialPermissions$lambda$6
-    51:57:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):201:201 -> checkSpecialPermissions$lambda$6
-    58:61:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):202:202 -> checkSpecialPermissions$lambda$6
-    6:12:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):219:219 -> checkSpecialPermissions$lambda$7
-    13:26:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):220:220 -> checkSpecialPermissions$lambda$7
-    27:30:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):221:221 -> checkSpecialPermissions$lambda$7
+    95:96:void checkSpecialPermissions():221 -> checkSpecialPermissions
+    97:107:void checkSpecialPermissions():222:222 -> checkSpecialPermissions
+    108:110:void checkSpecialPermissions():227:227 -> checkSpecialPermissions
+    111:114:void checkSpecialPermissions():228:228 -> checkSpecialPermissions
+    6:12:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):195:195 -> checkSpecialPermissions$lambda$6
+    13:26:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):196:196 -> checkSpecialPermissions$lambda$6
+    27:30:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):197:197 -> checkSpecialPermissions$lambda$6
+    31:37:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):201:201 -> checkSpecialPermissions$lambda$6
+    38:46:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):202:202 -> checkSpecialPermissions$lambda$6
+    47:50:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):203:203 -> checkSpecialPermissions$lambda$6
+    51:57:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):205:205 -> checkSpecialPermissions$lambda$6
+    58:61:void checkSpecialPermissions$lambda$6(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):206:206 -> checkSpecialPermissions$lambda$6
+    6:12:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):223:223 -> checkSpecialPermissions$lambda$7
+    13:26:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):224:224 -> checkSpecialPermissions$lambda$7
+    27:30:void checkSpecialPermissions$lambda$7(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):225:225 -> checkSpecialPermissions$lambda$7
     1:4:void $r8$lambda$5y8Kv3ZMus5m8Vj73lFYJkLVgsE(com.shirurexpress.app.MainActivity):0:0 -> e
       # {"id":"com.android.tools.r8.synthesized"}
-    6:11:void <init>():59:59 -> enableGpsLauncher$lambda$3
-    6:11:int androidx.activity.result.ActivityResult.getResultCode():59 -> enableGpsLauncher$lambda$3
-    6:11:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):62 -> enableGpsLauncher$lambda$3
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    6:11:int androidx.activity.result.ActivityResult.getResultCode():59:59 -> enableGpsLauncher$lambda$3
+    6:11:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):68 -> enableGpsLauncher$lambda$3
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
-    12:20:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):63:63 -> enableGpsLauncher$lambda$3
-    21:35:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):64:64 -> enableGpsLauncher$lambda$3
-    36:45:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):66:66 -> enableGpsLauncher$lambda$3
+    12:20:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):69:69 -> enableGpsLauncher$lambda$3
+    21:35:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):70:70 -> enableGpsLauncher$lambda$3
+    36:45:void enableGpsLauncher$lambda$3(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):72:72 -> enableGpsLauncher$lambda$3
     1:4:void $r8$lambda$9tX5e-i9dTo4Q2UkFkX4U_Wpz6Y(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> f
       # {"id":"com.android.tools.r8.synthesized"}
-    6:11:void <init>():59:59 -> fileChooserLauncher$lambda$4
-    6:11:int androidx.activity.result.ActivityResult.getResultCode():59 -> fileChooserLauncher$lambda$4
-    6:11:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):75 -> fileChooserLauncher$lambda$4
-      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(2)"]}
+    6:11:int androidx.activity.result.ActivityResult.getResultCode():59:59 -> fileChooserLauncher$lambda$4
+    6:11:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):81 -> fileChooserLauncher$lambda$4
+      # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
     12:15:android.content.Intent androidx.activity.result.ActivityResult.getData():67:67 -> fileChooserLauncher$lambda$4
-    12:15:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):76 -> fileChooserLauncher$lambda$4
-    16:24:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):79:79 -> fileChooserLauncher$lambda$4
-    25:31:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):80:80 -> fileChooserLauncher$lambda$4
-    32:60:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):81:81 -> fileChooserLauncher$lambda$4
-    61:69:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):84:84 -> fileChooserLauncher$lambda$4
-    70:82:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):85:85 -> fileChooserLauncher$lambda$4
-    83:94:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):89:89 -> fileChooserLauncher$lambda$4
-    95:101:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):92:92 -> fileChooserLauncher$lambda$4
-    102:104:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):95:95 -> fileChooserLauncher$lambda$4
+    12:15:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):82 -> fileChooserLauncher$lambda$4
+    16:24:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):85:85 -> fileChooserLauncher$lambda$4
+    25:31:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):86:86 -> fileChooserLauncher$lambda$4
+    32:60:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):87:87 -> fileChooserLauncher$lambda$4
+    61:69:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):90:90 -> fileChooserLauncher$lambda$4
+    70:81:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):91:91 -> fileChooserLauncher$lambda$4
+    82:85:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):94:94 -> fileChooserLauncher$lambda$4
+    86:94:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):95:95 -> fileChooserLauncher$lambda$4
+    95:106:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):99:99 -> fileChooserLauncher$lambda$4
+    107:113:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):102:102 -> fileChooserLauncher$lambda$4
+    114:115:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):105:105 -> fileChooserLauncher$lambda$4
+    116:118:void fileChooserLauncher$lambda$4(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):106:106 -> fileChooserLauncher$lambda$4
     1:4:void $r8$lambda$JZafMf4x2IRZvdEoK20LRJfI4AE(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):0:0 -> g
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
     1:4:void $r8$lambda$RQV54oGgcHz5LHv9nHuxJuDtywc(com.shirurexpress.app.MainActivity,androidx.activity.result.ActivityResult):0:0 -> h
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/shirurexpress/app/MainActivity;Landroidx/activity/result/b;)V"}
-    1:6:void handleIntent(android.content.Intent):557:557 -> handleIntent
-    7:18:void handleIntent(android.content.Intent):558:558 -> handleIntent
-    19:31:void handleIntent(android.content.Intent):559:559 -> handleIntent
+    1:6:void handleIntent(android.content.Intent):589:589 -> handleIntent
+    7:18:void handleIntent(android.content.Intent):590:590 -> handleIntent
+    19:31:void handleIntent(android.content.Intent):591:591 -> handleIntent
     1:4:void $r8$lambda$RWjw6OKjATEumQjV-CuubqAf0VE(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> i
       # {"id":"com.android.tools.r8.synthesized"}
-    1:7:void injectCustomCSS():541:541 -> injectCustomCSS
-    8:17:void injectCustomCSS():544:544 -> injectCustomCSS
-    18:20:void injectCustomCSS():541:541 -> injectCustomCSS
-    21:22:void injectCustomCSS():544:544 -> injectCustomCSS
-    23:29:void injectCustomCSS():541:541 -> injectCustomCSS
-    30:44:void injectCustomCSS():548:548 -> injectCustomCSS
+    1:7:void injectCustomCSS():573:573 -> injectCustomCSS
+    8:17:void injectCustomCSS():576:576 -> injectCustomCSS
+    18:20:void injectCustomCSS():573:573 -> injectCustomCSS
+    21:22:void injectCustomCSS():576:576 -> injectCustomCSS
+    23:29:void injectCustomCSS():573:573 -> injectCustomCSS
+    30:44:void injectCustomCSS():580:580 -> injectCustomCSS
     1:4:void $r8$lambda$pYTFZEIYKfdqwOlpt3jvIxfRmx4(com.shirurexpress.app.MainActivity,java.lang.Exception):0:0 -> j
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$pmL1jxSIPqDRtmnTXm_bKUUumkE(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> k
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$uoBG_3gxyXM3GzNfPRxhr0FbbnU(com.shirurexpress.app.MainActivity,java.util.Map):0:0 -> l
       # {"id":"com.android.tools.r8.synthesized"}
-    1:10:void loadUrl(java.lang.String):517:517 -> loadUrl
-    11:20:void loadUrl(java.lang.String):518:518 -> loadUrl
-    21:32:void loadUrl(java.lang.String):519:519 -> loadUrl
-    33:36:void loadUrl(java.lang.String):518:518 -> loadUrl
-    37:42:void loadUrl(java.lang.String):517:517 -> loadUrl
+    1:10:void loadUrl(java.lang.String):549:549 -> loadUrl
+    11:20:void loadUrl(java.lang.String):550:550 -> loadUrl
+    21:32:void loadUrl(java.lang.String):551:551 -> loadUrl
+    33:36:void loadUrl(java.lang.String):550:550 -> loadUrl
+    37:42:void loadUrl(java.lang.String):549:549 -> loadUrl
     1:4:void $r8$lambda$yVAa0NGS8J1NOOt4y8EbLa9ZnQM(s5.Function1,java.lang.Object):0:0 -> m
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls5/l;Ljava/lang/Object;)V"}
-    1:3:void onCreate(android.os.Bundle):105:105 -> onCreate
-    4:8:void onCreate(android.os.Bundle):106:106 -> onCreate
-    9:23:void onCreate(android.os.Bundle):109:109 -> onCreate
-    24:36:void onCreate(android.os.Bundle):110:110 -> onCreate
-    37:49:void onCreate(android.os.Bundle):111:111 -> onCreate
-    50:60:void onCreate(android.os.Bundle):112:112 -> onCreate
-    61:63:void onCreate(android.os.Bundle):115:115 -> onCreate
-    64:79:void onCreate(android.os.Bundle):118:118 -> onCreate
-    80:92:void onCreate(android.os.Bundle):119:119 -> onCreate
-    93:97:void onCreate(android.os.Bundle):124:124 -> onCreate
-    98:102:void onCreate(android.os.Bundle):128:128 -> onCreate
-    103:114:void onCreate(android.os.Bundle):132:132 -> onCreate
-    115:118:void onCreate(android.os.Bundle):135:135 -> onCreate
-    119:122:void onCreate(android.os.Bundle):119:119 -> onCreate
-    123:126:void onCreate(android.os.Bundle):118:118 -> onCreate
-    6:20:void onCreate$lambda$5(com.shirurexpress.app.MainActivity):120:120 -> onCreate$lambda$5
-    1:7:void onDestroy():584:584 -> onDestroy
-    8:11:void onDestroy():585:585 -> onDestroy
-    12:18:void onDestroy():584:584 -> onDestroy
-    1:5:void onNewIntent(android.content.Intent):552:552 -> onNewIntent
-    6:9:void onNewIntent(android.content.Intent):553:553 -> onNewIntent
-    1:3:void onPause():579:579 -> onPause
-    4:18:void onPause():580:580 -> onPause
-    6:8:void onRestoreInstanceState(android.os.Bundle):569:569 -> onRestoreInstanceState
-    9:23:void onRestoreInstanceState(android.os.Bundle):570:570 -> onRestoreInstanceState
-    1:3:void onResume():574:574 -> onResume
-    4:18:void onResume():575:575 -> onResume
-    6:11:void onRetryClick(android.view.View):590:590 -> onRetryClick
-    6:8:void onSaveInstanceState(android.os.Bundle):564:564 -> onSaveInstanceState
-    9:23:void onSaveInstanceState(android.os.Bundle):565:565 -> onSaveInstanceState
-    6:8:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> permissionLauncher$lambda$2
+    1:3:void onCreate(android.os.Bundle):116:116 -> onCreate
+    4:8:void onCreate(android.os.Bundle):117:117 -> onCreate
+    9:23:void onCreate(android.os.Bundle):120:120 -> onCreate
+    24:36:void onCreate(android.os.Bundle):121:121 -> onCreate
+    37:49:void onCreate(android.os.Bundle):122:122 -> onCreate
+    50:60:void onCreate(android.os.Bundle):123:123 -> onCreate
+    61:63:void onCreate(android.os.Bundle):126:126 -> onCreate
+    64:79:void onCreate(android.os.Bundle):129:129 -> onCreate
+    80:92:void onCreate(android.os.Bundle):130:130 -> onCreate
+    93:97:void onCreate(android.os.Bundle):135:135 -> onCreate
+    98:102:void onCreate(android.os.Bundle):139:139 -> onCreate
+    103:114:void onCreate(android.os.Bundle):143:143 -> onCreate
+    115:118:void onCreate(android.os.Bundle):146:146 -> onCreate
+    119:122:void onCreate(android.os.Bundle):130:130 -> onCreate
+    123:126:void onCreate(android.os.Bundle):129:129 -> onCreate
+    6:20:void onCreate$lambda$5(com.shirurexpress.app.MainActivity):131:131 -> onCreate$lambda$5
+    1:7:void onDestroy():616:616 -> onDestroy
+    8:11:void onDestroy():617:617 -> onDestroy
+    12:18:void onDestroy():616:616 -> onDestroy
+    1:5:void onNewIntent(android.content.Intent):584:584 -> onNewIntent
+    6:9:void onNewIntent(android.content.Intent):585:585 -> onNewIntent
+    1:3:void onPause():611:611 -> onPause
+    4:18:void onPause():612:612 -> onPause
+    6:8:void onRestoreInstanceState(android.os.Bundle):601:601 -> onRestoreInstanceState
+    9:23:void onRestoreInstanceState(android.os.Bundle):602:602 -> onRestoreInstanceState
+    1:3:void onResume():606:606 -> onResume
+    4:18:void onResume():607:607 -> onResume
+    6:11:void onRetryClick(android.view.View):622:622 -> onRetryClick
+    6:8:void onSaveInstanceState(android.os.Bundle):596:596 -> onSaveInstanceState
+    9:23:void onSaveInstanceState(android.os.Bundle):597:597 -> onSaveInstanceState
+    6:8:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53:53 -> permissionLauncher$lambda$2
     9:13:java.util.Map kotlin.collections.MapsKt__MapsKt.filter(java.util.Map,kotlin.jvm.functions.Function1):526:526 -> permissionLauncher$lambda$2
-    9:13:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
+    9:13:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
     14:33:java.util.Map kotlin.collections.MapsKt__MapsKt.filterTo(java.util.Map,java.util.Map,kotlin.jvm.functions.Function1):511:511 -> permissionLauncher$lambda$2
-    14:33:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
-    34:45:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> permissionLauncher$lambda$2
+    14:33:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
+    34:45:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53:53 -> permissionLauncher$lambda$2
     46:57:java.util.Map kotlin.collections.MapsKt__MapsKt.filterTo(java.util.Map,java.util.Map,kotlin.jvm.functions.Function1):513:513 -> permissionLauncher$lambda$2
-    46:57:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
+    46:57:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
     58:66:java.util.List kotlin.collections.MapsKt___MapsKt.map(java.util.Map,kotlin.jvm.functions.Function1):125:125 -> permissionLauncher$lambda$2
-    58:66:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
+    58:66:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
     67:86:java.util.Collection kotlin.collections.MapsKt___MapsKt.mapTo(java.util.Map,java.util.Collection,kotlin.jvm.functions.Function1):152:152 -> permissionLauncher$lambda$2
-    67:86:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
-    87:92:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47:47 -> permissionLauncher$lambda$2
+    67:86:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
+    87:92:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53:53 -> permissionLauncher$lambda$2
     93:96:java.util.Collection kotlin.collections.MapsKt___MapsKt.mapTo(java.util.Map,java.util.Collection,kotlin.jvm.functions.Function1):153:153 -> permissionLauncher$lambda$2
-    93:96:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):47 -> permissionLauncher$lambda$2
-    97:102:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):49:49 -> permissionLauncher$lambda$2
-    103:105:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):51:51 -> permissionLauncher$lambda$2
-    106:109:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):52:52 -> permissionLauncher$lambda$2
-    110:113:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):55:55 -> permissionLauncher$lambda$2
-    1:13:void setupBackPressHandler():499:499 -> setupBackPressHandler
+    93:96:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):53 -> permissionLauncher$lambda$2
+    97:102:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):55:55 -> permissionLauncher$lambda$2
+    103:105:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):57:57 -> permissionLauncher$lambda$2
+    106:109:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):58:58 -> permissionLauncher$lambda$2
+    110:113:void permissionLauncher$lambda$2(com.shirurexpress.app.MainActivity,java.util.Map):61:61 -> permissionLauncher$lambda$2
+    1:13:void setupBackPressHandler():531:531 -> setupBackPressHandler
     1:12:void setupWebView():285:285 -> setupWebView
     13:15:void setupWebView():287:287 -> setupWebView
     16:18:void setupWebView():290:290 -> setupWebView
@@ -180442,39 +180702,36 @@ com.shirurexpress.app.MainActivity -> com.shirurexpress.app.MainActivity:
     85:98:void setupWebView():328:328 -> setupWebView
     99:110:void setupWebView():331:331 -> setupWebView
     111:122:void setupWebView():407:407 -> setupWebView
-    123:126:void setupWebView():495:495 -> setupWebView
+    123:126:void setupWebView():527:527 -> setupWebView
     127:130:void setupWebView():407:407 -> setupWebView
     131:134:void setupWebView():331:331 -> setupWebView
     135:138:void setupWebView():328:328 -> setupWebView
     139:142:void setupWebView():285:285 -> setupWebView
-    1:10:void showErrorPage():523:523 -> showErrorPage
-    11:18:void showErrorPage():524:524 -> showErrorPage
-    19:25:void showErrorPage():525:525 -> showErrorPage
-    26:39:void showErrorPage():526:526 -> showErrorPage
-    40:45:void showErrorPage():525:525 -> showErrorPage
-    46:51:void showErrorPage():524:524 -> showErrorPage
-    52:57:void showErrorPage():523:523 -> showErrorPage
-    1:7:void showPermissionRationale(java.util.List):230:230 -> showPermissionRationale
-    8:15:void showPermissionRationale(java.util.List):232:232 -> showPermissionRationale
-    16:20:void showPermissionRationale(java.util.List):233:233 -> showPermissionRationale
-    21:28:void showPermissionRationale(java.util.List):235:235 -> showPermissionRationale
-    29:33:void showPermissionRationale(java.util.List):236:236 -> showPermissionRationale
-    34:41:void showPermissionRationale(java.util.List):238:238 -> showPermissionRationale
-    42:46:void showPermissionRationale(java.util.List):239:239 -> showPermissionRationale
-    47:54:void showPermissionRationale(java.util.List):242:242 -> showPermissionRationale
-    55:62:void showPermissionRationale(java.util.List):243:243 -> showPermissionRationale
-    63:67:void showPermissionRationale(java.util.List):244:244 -> showPermissionRationale
-    68:72:void showPermissionRationale(java.util.List):247:247 -> showPermissionRationale
-    73:81:void showPermissionRationale(java.util.List):249:249 -> showPermissionRationale
-    82:83:void showPermissionRationale(java.util.List):250:250 -> showPermissionRationale
-    84:85:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> showPermissionRationale
-    84:85:void showPermissionRationale(java.util.List):250 -> showPermissionRationale
-    86:89:void showPermissionRationale(java.util.List):251:251 -> showPermissionRationale
-    90:91:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> showPermissionRationale
-    90:91:void showPermissionRationale(java.util.List):251 -> showPermissionRationale
-    92:102:void showPermissionRationale(java.util.List):252:252 -> showPermissionRationale
-    103:108:void showPermissionRationale(java.util.List):257:257 -> showPermissionRationale
-    109:112:void showPermissionRationale(java.util.List):258:258 -> showPermissionRationale
+    1:10:void showErrorPage():555:555 -> showErrorPage
+    11:18:void showErrorPage():556:556 -> showErrorPage
+    19:25:void showErrorPage():557:557 -> showErrorPage
+    26:39:void showErrorPage():558:558 -> showErrorPage
+    40:45:void showErrorPage():557:557 -> showErrorPage
+    46:51:void showErrorPage():556:556 -> showErrorPage
+    52:57:void showErrorPage():555:555 -> showErrorPage
+    1:7:void showPermissionRationale(java.util.List):234:234 -> showPermissionRationale
+    8:15:void showPermissionRationale(java.util.List):236:236 -> showPermissionRationale
+    16:20:void showPermissionRationale(java.util.List):237:237 -> showPermissionRationale
+    21:28:void showPermissionRationale(java.util.List):239:239 -> showPermissionRationale
+    29:33:void showPermissionRationale(java.util.List):240:240 -> showPermissionRationale
+    34:41:void showPermissionRationale(java.util.List):242:242 -> showPermissionRationale
+    42:46:void showPermissionRationale(java.util.List):243:243 -> showPermissionRationale
+    47:51:void showPermissionRationale(java.util.List):247:247 -> showPermissionRationale
+    52:60:void showPermissionRationale(java.util.List):249:249 -> showPermissionRationale
+    61:62:void showPermissionRationale(java.util.List):250:250 -> showPermissionRationale
+    63:64:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> showPermissionRationale
+    63:64:void showPermissionRationale(java.util.List):250 -> showPermissionRationale
+    65:68:void showPermissionRationale(java.util.List):251:251 -> showPermissionRationale
+    69:70:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> showPermissionRationale
+    69:70:void showPermissionRationale(java.util.List):251 -> showPermissionRationale
+    71:81:void showPermissionRationale(java.util.List):252:252 -> showPermissionRationale
+    82:87:void showPermissionRationale(java.util.List):257:257 -> showPermissionRationale
+    88:91:void showPermissionRationale(java.util.List):258:258 -> showPermissionRationale
     6:12:void showPermissionRationale$lambda$8(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):253:253 -> showPermissionRationale$lambda$8
     13:26:void showPermissionRationale$lambda$8(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):254:254 -> showPermissionRationale$lambda$8
     27:30:void showPermissionRationale$lambda$8(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):255:255 -> showPermissionRationale$lambda$8
@@ -180563,12 +180820,12 @@ com.shirurexpress.app.MainActivity$$ExternalSyntheticLambda2 -> com.shirurexpres
       # {"id":"com.android.tools.r8.synthesized"}
 com.shirurexpress.app.MainActivity$AndroidBridge -> com.shirurexpress.app.MainActivity$AndroidBridge:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
-    1:6:void <init>(com.shirurexpress.app.MainActivity):597:597 -> <init>
+    1:6:void <init>(com.shirurexpress.app.MainActivity):629:629 -> <init>
     1:4:void $r8$lambda$1-OqC-MWpew7w2VueV53U_d3apY(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):0:0 -> a
       # {"id":"com.android.tools.r8.synthesized"}
-    1:6:boolean areAllPermissionsGranted():801:801 -> areAllPermissionsGranted
-    7:12:boolean areAllPermissionsGranted():802:802 -> areAllPermissionsGranted
-    13:22:boolean areAllPermissionsGranted():803:803 -> areAllPermissionsGranted
+    1:6:boolean areAllPermissionsGranted():833:833 -> areAllPermissionsGranted
+    7:12:boolean areAllPermissionsGranted():834:834 -> areAllPermissionsGranted
+    13:22:boolean areAllPermissionsGranted():835:835 -> areAllPermissionsGranted
     1:4:void $r8$lambda$DOL7Gm6HvUdmfi6xRiwpvN4z28I(com.shirurexpress.app.MainActivity,java.lang.String):0:0 -> b
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$JY43M0vUtusNXbunEBh4Cs6UfGE(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> c
@@ -180577,94 +180834,94 @@ com.shirurexpress.app.MainActivity$AndroidBridge -> com.shirurexpress.app.MainAc
       # {"id":"com.android.tools.r8.synthesized"}
     1:4:void $r8$lambda$is5ZeSaStarK0h8EodYPdZzhztA(com.shirurexpress.app.MainActivity):0:0 -> e
       # {"id":"com.android.tools.r8.synthesized"}
-    1:9:java.lang.String getFcmToken():605:605 -> getFcmToken
-    10:21:java.lang.String getFcmToken():606:606 -> getFcmToken
-    22:73:java.lang.String getFcmToken():607:607 -> getFcmToken
-    1:8:java.lang.String getPermissionStatus():697:697 -> getPermissionStatus
+    1:9:java.lang.String getFcmToken():637:637 -> getFcmToken
+    10:21:java.lang.String getFcmToken():638:638 -> getFcmToken
+    22:73:java.lang.String getFcmToken():639:639 -> getFcmToken
+    1:8:java.lang.String getPermissionStatus():729:729 -> getPermissionStatus
     9:15:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
-    9:15:java.lang.String getPermissionStatus():697 -> getPermissionStatus
-    16:23:java.lang.String getPermissionStatus():698:698 -> getPermissionStatus
+    9:15:java.lang.String getPermissionStatus():729 -> getPermissionStatus
+    16:23:java.lang.String getPermissionStatus():730:730 -> getPermissionStatus
     24:30:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
-    24:30:java.lang.String getPermissionStatus():698 -> getPermissionStatus
-    31:38:java.lang.String getPermissionStatus():699:699 -> getPermissionStatus
+    24:30:java.lang.String getPermissionStatus():730 -> getPermissionStatus
+    31:38:java.lang.String getPermissionStatus():731:731 -> getPermissionStatus
     39:45:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
-    39:45:java.lang.String getPermissionStatus():699 -> getPermissionStatus
-    46:53:java.lang.String getPermissionStatus():700:700 -> getPermissionStatus
+    39:45:java.lang.String getPermissionStatus():731 -> getPermissionStatus
+    46:53:java.lang.String getPermissionStatus():732:732 -> getPermissionStatus
     54:60:kotlin.Pair kotlin.TuplesKt.to(java.lang.Object,java.lang.Object):43:43 -> getPermissionStatus
-    54:60:java.lang.String getPermissionStatus():700 -> getPermissionStatus
-    61:64:java.lang.String getPermissionStatus():700:700 -> getPermissionStatus
+    54:60:java.lang.String getPermissionStatus():732 -> getPermissionStatus
+    61:64:java.lang.String getPermissionStatus():732:732 -> getPermissionStatus
     65:77:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55:55 -> getPermissionStatus
-    65:77:java.lang.String getPermissionStatus():696 -> getPermissionStatus
+    65:77:java.lang.String getPermissionStatus():728 -> getPermissionStatus
     78:79:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421:421 -> getPermissionStatus
     78:79:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
     78:79:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
-    78:79:java.lang.String getPermissionStatus():696 -> getPermissionStatus
+    78:79:java.lang.String getPermissionStatus():728 -> getPermissionStatus
     80:81:java.lang.Object kotlin.Pair.component1():0:0 -> getPermissionStatus
     80:81:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421 -> getPermissionStatus
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
     80:81:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
     80:81:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
-    80:81:java.lang.String getPermissionStatus():696 -> getPermissionStatus
+    80:81:java.lang.String getPermissionStatus():728 -> getPermissionStatus
     82:83:java.lang.Object kotlin.Pair.component2():0:0 -> getPermissionStatus
     82:83:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):421 -> getPermissionStatus
     82:83:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
     82:83:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
-    82:83:java.lang.String getPermissionStatus():696 -> getPermissionStatus
+    82:83:java.lang.String getPermissionStatus():728 -> getPermissionStatus
     84:89:void kotlin.collections.MapsKt__MapsKt.putAll(java.util.Map,kotlin.Pair[]):422:422 -> getPermissionStatus
     84:89:java.util.Map kotlin.collections.MapsKt__MapsKt.toMap(kotlin.Pair[],java.util.Map):593 -> getPermissionStatus
     84:89:java.util.Map kotlin.collections.MapsKt__MapsKt.mapOf(kotlin.Pair[]):55 -> getPermissionStatus
-    84:89:java.lang.String getPermissionStatus():696 -> getPermissionStatus
-    90:104:java.lang.String getPermissionStatus():702:702 -> getPermissionStatus
-    1:15:boolean isBatteryOptimizationDisabled():653:653 -> isBatteryOptimizationDisabled
-    16:26:boolean isBatteryOptimizationDisabled():654:654 -> isBatteryOptimizationDisabled
-    1:7:boolean isDisplayOverAppsGranted():640:640 -> isDisplayOverAppsGranted
-    1:6:boolean isFullScreenIntentGranted():682:682 -> isFullScreenIntentGranted
-    7:18:boolean isFullScreenIntentGranted():683:683 -> isFullScreenIntentGranted
-    19:27:boolean isFullScreenIntentGranted():684:684 -> isFullScreenIntentGranted
+    84:89:java.lang.String getPermissionStatus():728 -> getPermissionStatus
+    90:104:java.lang.String getPermissionStatus():734:734 -> getPermissionStatus
+    1:15:boolean isBatteryOptimizationDisabled():685:685 -> isBatteryOptimizationDisabled
+    16:26:boolean isBatteryOptimizationDisabled():686:686 -> isBatteryOptimizationDisabled
+    1:7:boolean isDisplayOverAppsGranted():672:672 -> isDisplayOverAppsGranted
+    1:6:boolean isFullScreenIntentGranted():714:714 -> isFullScreenIntentGranted
+    7:18:boolean isFullScreenIntentGranted():715:715 -> isFullScreenIntentGranted
+    19:27:boolean isFullScreenIntentGranted():716:716 -> isFullScreenIntentGranted
     1:2:boolean isNativeApp():0:0 -> isNativeApp
-    1:7:boolean isNotificationPermissionGranted():666:666 -> isNotificationPermissionGranted
-    8:9:boolean isNotificationPermissionGranted():668:668 -> isNotificationPermissionGranted
-    10:11:boolean isNotificationPermissionGranted():669:669 -> isNotificationPermissionGranted
-    12:21:boolean isNotificationPermissionGranted():667:667 -> isNotificationPermissionGranted
-    1:12:void requestBatteryOptimization():733:733 -> requestBatteryOptimization
-    6:12:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):736:736 -> requestBatteryOptimization$lambda$2
-    13:26:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):737:737 -> requestBatteryOptimization$lambda$2
-    27:31:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):738:738 -> requestBatteryOptimization$lambda$2
-    32:38:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):740:740 -> requestBatteryOptimization$lambda$2
-    39:45:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):743:743 -> requestBatteryOptimization$lambda$2
-    46:49:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):744:744 -> requestBatteryOptimization$lambda$2
-    50:60:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):746:746 -> requestBatteryOptimization$lambda$2
-    1:12:void requestDisplayOverApps():713:713 -> requestDisplayOverApps
-    6:12:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):716:716 -> requestDisplayOverApps$lambda$1
-    13:26:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):717:717 -> requestDisplayOverApps$lambda$1
-    27:31:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):718:718 -> requestDisplayOverApps$lambda$1
-    32:38:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):720:720 -> requestDisplayOverApps$lambda$1
-    39:49:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):721:721 -> requestDisplayOverApps$lambda$1
-    1:12:void requestSystemPermissions():759:759 -> requestSystemPermissions
-    11:15:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):761:761 -> requestSystemPermissions$lambda$4
+    1:7:boolean isNotificationPermissionGranted():698:698 -> isNotificationPermissionGranted
+    8:9:boolean isNotificationPermissionGranted():700:700 -> isNotificationPermissionGranted
+    10:11:boolean isNotificationPermissionGranted():701:701 -> isNotificationPermissionGranted
+    12:21:boolean isNotificationPermissionGranted():699:699 -> isNotificationPermissionGranted
+    1:12:void requestBatteryOptimization():765:765 -> requestBatteryOptimization
+    6:12:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):768:768 -> requestBatteryOptimization$lambda$2
+    13:26:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):769:769 -> requestBatteryOptimization$lambda$2
+    27:31:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):770:770 -> requestBatteryOptimization$lambda$2
+    32:38:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):772:772 -> requestBatteryOptimization$lambda$2
+    39:45:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):775:775 -> requestBatteryOptimization$lambda$2
+    46:49:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):776:776 -> requestBatteryOptimization$lambda$2
+    50:60:void requestBatteryOptimization$lambda$2(com.shirurexpress.app.MainActivity):778:778 -> requestBatteryOptimization$lambda$2
+    1:12:void requestDisplayOverApps():745:745 -> requestDisplayOverApps
+    6:12:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):748:748 -> requestDisplayOverApps$lambda$1
+    13:26:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):749:749 -> requestDisplayOverApps$lambda$1
+    27:31:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):750:750 -> requestDisplayOverApps$lambda$1
+    32:38:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):752:752 -> requestDisplayOverApps$lambda$1
+    39:49:void requestDisplayOverApps$lambda$1(com.shirurexpress.app.MainActivity):753:753 -> requestDisplayOverApps$lambda$1
+    1:12:void requestSystemPermissions():791:791 -> requestSystemPermissions
+    11:15:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):793:793 -> requestSystemPermissions$lambda$4
     16:23:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> requestSystemPermissions$lambda$4
-    16:23:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):762 -> requestSystemPermissions$lambda$4
-    24:25:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):763:763 -> requestSystemPermissions$lambda$4
+    16:23:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):794 -> requestSystemPermissions$lambda$4
+    24:25:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):795:795 -> requestSystemPermissions$lambda$4
     26:27:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> requestSystemPermissions$lambda$4
-    26:27:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):763 -> requestSystemPermissions$lambda$4
-    28:37:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):767:767 -> requestSystemPermissions$lambda$4
-    38:43:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):790:790 -> requestSystemPermissions$lambda$4
-    44:47:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):791:791 -> requestSystemPermissions$lambda$4
-    11:16:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):769:769 -> requestSystemPermissions$lambda$4$lambda$3
-    17:20:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):770:770 -> requestSystemPermissions$lambda$4$lambda$3
-    21:26:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):771:771 -> requestSystemPermissions$lambda$4$lambda$3
-    27:30:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):772:772 -> requestSystemPermissions$lambda$4$lambda$3
-    31:36:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):773:773 -> requestSystemPermissions$lambda$4$lambda$3
-    37:42:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):776:776 -> requestSystemPermissions$lambda$4$lambda$3
-    43:49:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):777:777 -> requestSystemPermissions$lambda$4$lambda$3
-    50:63:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):778:778 -> requestSystemPermissions$lambda$4$lambda$3
-    64:67:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):779:779 -> requestSystemPermissions$lambda$4$lambda$3
-    68:74:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):782:782 -> requestSystemPermissions$lambda$4$lambda$3
-    75:83:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):783:783 -> requestSystemPermissions$lambda$4$lambda$3
-    84:87:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):784:784 -> requestSystemPermissions$lambda$4$lambda$3
-    88:98:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):787:787 -> requestSystemPermissions$lambda$4$lambda$3
-    6:17:void showToast(java.lang.String):626:626 -> showToast
-    12:19:void showToast$lambda$0(com.shirurexpress.app.MainActivity,java.lang.String):627:627 -> showToast$lambda$0
+    26:27:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):795 -> requestSystemPermissions$lambda$4
+    28:37:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):799:799 -> requestSystemPermissions$lambda$4
+    38:43:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):822:822 -> requestSystemPermissions$lambda$4
+    44:47:void requestSystemPermissions$lambda$4(com.shirurexpress.app.MainActivity,com.shirurexpress.app.MainActivity$AndroidBridge):823:823 -> requestSystemPermissions$lambda$4
+    11:16:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):801:801 -> requestSystemPermissions$lambda$4$lambda$3
+    17:20:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):802:802 -> requestSystemPermissions$lambda$4$lambda$3
+    21:26:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):803:803 -> requestSystemPermissions$lambda$4$lambda$3
+    27:30:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):804:804 -> requestSystemPermissions$lambda$4$lambda$3
+    31:36:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):805:805 -> requestSystemPermissions$lambda$4$lambda$3
+    37:42:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):808:808 -> requestSystemPermissions$lambda$4$lambda$3
+    43:49:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):809:809 -> requestSystemPermissions$lambda$4$lambda$3
+    50:63:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):810:810 -> requestSystemPermissions$lambda$4$lambda$3
+    64:67:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):811:811 -> requestSystemPermissions$lambda$4$lambda$3
+    68:74:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):814:814 -> requestSystemPermissions$lambda$4$lambda$3
+    75:83:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):815:815 -> requestSystemPermissions$lambda$4$lambda$3
+    84:87:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):816:816 -> requestSystemPermissions$lambda$4$lambda$3
+    88:98:void requestSystemPermissions$lambda$4$lambda$3(com.shirurexpress.app.MainActivity$AndroidBridge,com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):819:819 -> requestSystemPermissions$lambda$4$lambda$3
+    6:17:void showToast(java.lang.String):658:658 -> showToast
+    12:19:void showToast$lambda$0(com.shirurexpress.app.MainActivity,java.lang.String):659:659 -> showToast$lambda$0
 com.shirurexpress.app.MainActivity$AndroidBridge$$ExternalSyntheticLambda0 -> com.shirurexpress.app.g:
 # {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
 # {"id":"com.android.tools.r8.synthesized"}
@@ -180691,7 +180948,7 @@ com.shirurexpress.app.MainActivity$Companion -> com.shirurexpress.app.MainActivi
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
     1:1:void <init>(kotlin.jvm.internal.DefaultConstructorMarker):0:0 -> <init>
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lt5/e;)V"}
-    2:2:void <init>():98:98 -> <init>
+    2:2:void <init>():109:109 -> <init>
 com.shirurexpress.app.MainActivity$checkGpsEnabled$1 -> com.shirurexpress.app.MainActivity$checkGpsEnabled$1:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
     1:8:void <clinit>():0:0 -> <clinit>
@@ -180701,22 +180958,22 @@ com.shirurexpress.app.MainActivity$checkGpsEnabled$1 -> com.shirurexpress.app.Ma
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lx2/c;)V"}
 com.shirurexpress.app.MainActivity$setupBackPressHandler$1 -> com.shirurexpress.app.MainActivity$setupBackPressHandler$1:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
-    4:7:void <init>(com.shirurexpress.app.MainActivity):499:499 -> <init>
+    4:7:void <init>(com.shirurexpress.app.MainActivity):531:531 -> <init>
     1:4:void $r8$lambda$0FR9ktEEGQKy12G9BkyTVF7G7bY(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):0:0 -> a
       # {"id":"com.android.tools.r8.synthesized"}
-    1:17:void handleOnBackPressed():501:501 -> handleOnBackPressed
-    18:33:void handleOnBackPressed():502:502 -> handleOnBackPressed
-    34:40:void handleOnBackPressed():505:505 -> handleOnBackPressed
+    1:17:void handleOnBackPressed():533:533 -> handleOnBackPressed
+    18:33:void handleOnBackPressed():534:534 -> handleOnBackPressed
+    34:40:void handleOnBackPressed():537:537 -> handleOnBackPressed
     41:48:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setTitle(java.lang.CharSequence):377:377 -> handleOnBackPressed
-    41:48:void handleOnBackPressed():506 -> handleOnBackPressed
-    49:50:void handleOnBackPressed():507:507 -> handleOnBackPressed
+    41:48:void handleOnBackPressed():538 -> handleOnBackPressed
+    49:50:void handleOnBackPressed():539:539 -> handleOnBackPressed
     51:52:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> handleOnBackPressed
-    51:52:void handleOnBackPressed():507 -> handleOnBackPressed
-    53:65:void handleOnBackPressed():508:508 -> handleOnBackPressed
-    66:70:void handleOnBackPressed():509:509 -> handleOnBackPressed
-    71:74:void handleOnBackPressed():510:510 -> handleOnBackPressed
-    75:78:void handleOnBackPressed():501:501 -> handleOnBackPressed
-    6:9:void handleOnBackPressed$lambda$0(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):508:508 -> handleOnBackPressed$lambda$0
+    51:52:void handleOnBackPressed():539 -> handleOnBackPressed
+    53:65:void handleOnBackPressed():540:540 -> handleOnBackPressed
+    66:70:void handleOnBackPressed():541:541 -> handleOnBackPressed
+    71:74:void handleOnBackPressed():542:542 -> handleOnBackPressed
+    75:78:void handleOnBackPressed():533:533 -> handleOnBackPressed
+    6:9:void handleOnBackPressed$lambda$0(com.shirurexpress.app.MainActivity,android.content.DialogInterface,int):540:540 -> handleOnBackPressed$lambda$0
 com.shirurexpress.app.MainActivity$setupWebView$2 -> com.shirurexpress.app.MainActivity$setupWebView$2:
 # {"id":"sourceFile","fileName":"MainActivity.kt"}
     3:6:void <init>(com.shirurexpress.app.MainActivity):331:331 -> <init>
@@ -180779,7 +181036,8 @@ com.shirurexpress.app.MainActivity$setupWebView$3 -> com.shirurexpress.app.MainA
     8:15:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):423 -> onJsAlert
     16:17:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> onJsAlert
     16:17:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):424 -> onJsAlert
-    18:29:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):425:425 -> onJsAlert
+    18:29:void onJsAlert$lambda$0(android.webkit.JsResult,android.content.DialogInterface,int):425:425 -> onJsAlert
+    18:29:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):425 -> onJsAlert
     30:31:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setCancelable(boolean):579:579 -> onJsAlert
     30:31:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):426 -> onJsAlert
     32:36:boolean onJsAlert(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):427:427 -> onJsAlert
@@ -180789,8 +181047,10 @@ com.shirurexpress.app.MainActivity$setupWebView$3 -> com.shirurexpress.app.MainA
     8:15:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):438 -> onJsConfirm
     16:17:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setMessage(java.lang.CharSequence):418:418 -> onJsConfirm
     16:17:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):439 -> onJsConfirm
-    18:28:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):440:440 -> onJsConfirm
-    29:40:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):441:441 -> onJsConfirm
+    18:28:void onJsConfirm$lambda$1(android.webkit.JsResult,android.content.DialogInterface,int):440:440 -> onJsConfirm
+    18:28:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):440 -> onJsConfirm
+    29:40:void onJsConfirm$lambda$2(android.webkit.JsResult,android.content.DialogInterface,int):441:441 -> onJsConfirm
+    29:40:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):441 -> onJsConfirm
     41:42:androidx.appcompat.app.AlertDialog$Builder androidx.appcompat.app.AlertDialog$Builder.setCancelable(boolean):579:579 -> onJsConfirm
     41:42:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):442 -> onJsConfirm
     43:47:boolean onJsConfirm(android.webkit.WebView,java.lang.String,java.lang.String,android.webkit.JsResult):443:443 -> onJsConfirm
@@ -180799,21 +181059,43 @@ com.shirurexpress.app.MainActivity$setupWebView$3 -> com.shirurexpress.app.MainA
     1:18:void onProgressChanged(android.webkit.WebView,int):410:410 -> onProgressChanged
     19:37:void onProgressChanged(android.webkit.WebView,int):412:412 -> onProgressChanged
     38:41:void onProgressChanged(android.webkit.WebView,int):410:410 -> onProgressChanged
-    1:12:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):464:464 -> onShowFileChooser
-    13:17:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):467:467 -> onShowFileChooser
-    18:24:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):471:471 -> onShowFileChooser
-    25:29:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):472:472 -> onShowFileChooser
-    30:37:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):473:473 -> onShowFileChooser
-    38:43:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):476:476 -> onShowFileChooser
-    44:51:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):477:477 -> onShowFileChooser
-    52:63:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):482:482 -> onShowFileChooser
-    64:67:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> onShowFileChooser
-    64:67:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):482 -> onShowFileChooser
+    1:14:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):464:464 -> onShowFileChooser
+    15:20:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):467:467 -> onShowFileChooser
+    21:25:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):471:471 -> onShowFileChooser
+    26:35:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):474:474 -> onShowFileChooser
+    36:51:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):476:476 -> onShowFileChooser
+    52:72:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):477:477 -> onShowFileChooser
+    73:77:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):475:475 -> onShowFileChooser
+    78:79:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):479:479 -> onShowFileChooser
+    80:102:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):481:481 -> onShowFileChooser
+    103:109:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):479:479 -> onShowFileChooser
+    110:118:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):485:485 -> onShowFileChooser
+    119:127:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):486:486 -> onShowFileChooser
+    128:142:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):489:489 -> onShowFileChooser
+    143:158:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):490:490 -> onShowFileChooser
+    159:163:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):491:491 -> onShowFileChooser
+    164:170:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):492:492 -> onShowFileChooser
+    171:176:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):494:494 -> onShowFileChooser
+    177:183:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):499:499 -> onShowFileChooser
+    184:188:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):500:500 -> onShowFileChooser
+    189:196:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):501:501 -> onShowFileChooser
+    197:202:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):502:502 -> onShowFileChooser
+    203:207:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):503:503 -> onShowFileChooser
+    208:213:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):508:508 -> onShowFileChooser
+    214:219:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):509:509 -> onShowFileChooser
+    220:221:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):510:510 -> onShowFileChooser
+    222:229:java.lang.Object[] kotlin.collections.ArraysKt__ArraysJVMKt.toTypedArray(java.util.Collection):38:38 -> onShowFileChooser
+    222:229:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):510 -> onShowFileChooser
+    230:232:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):510:510 -> onShowFileChooser
+    233:238:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):513:513 -> onShowFileChooser
+    239:242:void androidx.activity.result.ActivityResultLauncher.launch(java.lang.Object):47:47 -> onShowFileChooser
+    239:242:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):513 -> onShowFileChooser
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    68:74:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):485:485 -> onShowFileChooser
-    75:85:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):486:486 -> onShowFileChooser
-    86:90:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):487:487 -> onShowFileChooser
-    91:103:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):488:488 -> onShowFileChooser
+    243:249:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):516:516 -> onShowFileChooser
+    250:260:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):517:517 -> onShowFileChooser
+    261:265:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):518:518 -> onShowFileChooser
+    266:270:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):519:519 -> onShowFileChooser
+    271:282:boolean onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient$FileChooserParams):520:520 -> onShowFileChooser
 com.shirurexpress.app.MainActivity$setupWebView$3$$ExternalSyntheticLambda0 -> com.shirurexpress.app.i:
 # {"id":"sourceFile","fileName":"R8$$SyntheticClass"}
 # {"id":"com.android.tools.r8.synthesized"}
@@ -180952,18 +181234,60 @@ com.shirurexpress.app.R$xml -> com.shirurexpress.app.R$xml:
 com.shirurexpress.app.SplashActivity -> com.shirurexpress.app.SplashActivity:
 # {"id":"sourceFile","fileName":"SplashActivity.kt"}
     1:9:void <clinit>():0:0 -> <clinit>
-    1:4:void <init>():9:9 -> <init>
+    1:4:void <init>():17:17 -> <init>
     1:4:void $r8$lambda$U5AVTkmFyYTQzsNu555sdL8Y41k(com.shirurexpress.app.SplashActivity):0:0 -> e
       # {"id":"com.android.tools.r8.synthesized"}
-    1:3:void onCreate(android.os.Bundle):16:16 -> onCreate
-    4:25:void onCreate(android.os.Bundle):19:19 -> onCreate
-    6:15:void onCreate$lambda$0(com.shirurexpress.app.SplashActivity):20:20 -> onCreate$lambda$0
-    16:19:void onCreate$lambda$0(com.shirurexpress.app.SplashActivity):21:21 -> onCreate$lambda$0
+    1:10:void navigateToMainActivity():75:75 -> navigateToMainActivity
+    11:14:void navigateToMainActivity():76:76 -> navigateToMainActivity
+    15:17:void navigateToMainActivity():77:77 -> navigateToMainActivity
+    18:25:void navigateToMainActivity():80:80 -> navigateToMainActivity
+    26:33:void navigateToMainActivity():92:92 -> navigateToMainActivity
+    34:40:void navigateToMainActivity():93:93 -> navigateToMainActivity
+    41:47:void navigateToMainActivity():94:94 -> navigateToMainActivity
+    48:61:void navigateToMainActivity():95:95 -> navigateToMainActivity
+    62:67:void navigateToMainActivity():94:94 -> navigateToMainActivity
+    68:73:void navigateToMainActivity():93:93 -> navigateToMainActivity
+    74:79:void navigateToMainActivity():92:92 -> navigateToMainActivity
+    1:3:void onCreate(android.os.Bundle):29:29 -> onCreate
+    4:8:void onCreate(android.os.Bundle):30:30 -> onCreate
+    9:23:void onCreate(android.os.Bundle):33:33 -> onCreate
+    24:36:void onCreate(android.os.Bundle):34:34 -> onCreate
+    37:49:void onCreate(android.os.Bundle):35:35 -> onCreate
+    50:62:void onCreate(android.os.Bundle):36:36 -> onCreate
+    63:65:void onCreate(android.os.Bundle):39:39 -> onCreate
+    66:87:void onCreate(android.os.Bundle):42:42 -> onCreate
+    6:9:void onCreate$lambda$0(com.shirurexpress.app.SplashActivity):43:43 -> onCreate$lambda$0
+    1:10:void startLogoAnimation():49:49 -> startLogoAnimation
+    11:14:void startLogoAnimation():50:50 -> startLogoAnimation
+    15:17:void startLogoAnimation():51:51 -> startLogoAnimation
+    18:25:void startLogoAnimation():53:53 -> startLogoAnimation
+    26:32:void startLogoAnimation():56:56 -> startLogoAnimation
+    33:37:void startLogoAnimation():57:57 -> startLogoAnimation
+    38:40:void startLogoAnimation():58:58 -> startLogoAnimation
+    41:43:void startLogoAnimation():59:59 -> startLogoAnimation
+    44:50:void startLogoAnimation():61:61 -> startLogoAnimation
+    51:55:void startLogoAnimation():64:64 -> startLogoAnimation
+    56:58:void startLogoAnimation():65:65 -> startLogoAnimation
+    59:61:void startLogoAnimation():66:66 -> startLogoAnimation
+    62:64:void startLogoAnimation():67:67 -> startLogoAnimation
+    65:71:void startLogoAnimation():69:69 -> startLogoAnimation
+    72:85:void startLogoAnimation():70:70 -> startLogoAnimation
+    86:91:void startLogoAnimation():69:69 -> startLogoAnimation
+    92:97:void startLogoAnimation():61:61 -> startLogoAnimation
+    98:103:void startLogoAnimation():53:53 -> startLogoAnimation
 com.shirurexpress.app.SplashActivity$Companion -> com.shirurexpress.app.SplashActivity$Companion:
 # {"id":"sourceFile","fileName":"SplashActivity.kt"}
     1:1:void <init>(kotlin.jvm.internal.DefaultConstructorMarker):0:0 -> <init>
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lt5/e;)V"}
-    2:2:void <init>():11:11 -> <init>
+    2:2:void <init>():19:19 -> <init>
+com.shirurexpress.app.SplashActivity$navigateToMainActivity$1 -> com.shirurexpress.app.SplashActivity$navigateToMainActivity$1:
+# {"id":"sourceFile","fileName":"SplashActivity.kt"}
+    3:6:void <init>(com.shirurexpress.app.SplashActivity):80:80 -> <init>
+    1:14:void onAnimationEnd(android.view.animation.Animation):84:84 -> onAnimationEnd
+    15:24:void onAnimationEnd(android.view.animation.Animation):86:86 -> onAnimationEnd
+    25:30:void onAnimationEnd(android.view.animation.Animation):87:87 -> onAnimationEnd
+    1:1:void onAnimationRepeat(android.view.animation.Animation):0:0 -> onAnimationRepeat
+    1:1:void onAnimationStart(android.view.animation.Animation):0:0 -> onAnimationStart
 com.shirurexpress.app.databinding.ActivityIncomingOrderBinding -> com.shirurexpress.app.databinding.ActivityIncomingOrderBinding:
 # {"id":"sourceFile","fileName":"ActivityIncomingOrderBinding.java"}
     1:3:void <init>(android.widget.LinearLayout,android.widget.TextView,android.widget.Button,android.widget.Button,android.widget.TextView,android.widget.TextView,android.widget.TextView):43:43 -> <init>
@@ -181023,6 +181347,31 @@ com.shirurexpress.app.databinding.ActivityMainBinding -> com.shirurexpress.app.d
     2:2:com.shirurexpress.app.databinding.ActivityMainBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):66:66 -> inflate
     3:3:com.shirurexpress.app.databinding.ActivityMainBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):68:68 -> inflate
     4:4:com.shirurexpress.app.databinding.ActivityMainBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):70:70 -> inflate
+com.shirurexpress.app.databinding.ActivitySplashBinding -> com.shirurexpress.app.databinding.ActivitySplashBinding:
+# {"id":"sourceFile","fileName":"ActivitySplashBinding.java"}
+    1:3:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):38:38 -> <init>
+    4:5:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):39:39 -> <init>
+    6:7:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):40:40 -> <init>
+    8:9:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):41:41 -> <init>
+    10:11:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):42:42 -> <init>
+    12:14:void <init>(androidx.constraintlayout.widget.ConstraintLayout,android.widget.TextView,android.widget.TextView,android.widget.ImageView,android.widget.ProgressBar):43:43 -> <init>
+    1:2:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):73:73 -> bind
+    3:11:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):74:74 -> bind
+    12:13:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):79:79 -> bind
+    14:22:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):80:80 -> bind
+    23:24:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):85:85 -> bind
+    25:33:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):86:86 -> bind
+    34:35:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):91:91 -> bind
+    36:44:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):92:92 -> bind
+    45:53:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):97:97 -> bind
+    54:61:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):100:100 -> bind
+    62:73:com.shirurexpress.app.databinding.ActivitySplashBinding bind(android.view.View):101:101 -> bind
+    1:1:android.view.View getRoot():20:20 -> getRoot
+    2:2:androidx.constraintlayout.widget.ConstraintLayout getRoot():49:49 -> getRoot
+    1:1:com.shirurexpress.app.databinding.ActivitySplashBinding inflate(android.view.LayoutInflater):54:54 -> inflate
+    2:2:com.shirurexpress.app.databinding.ActivitySplashBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):60:60 -> inflate
+    3:3:com.shirurexpress.app.databinding.ActivitySplashBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):62:62 -> inflate
+    4:4:com.shirurexpress.app.databinding.ActivitySplashBinding inflate(android.view.LayoutInflater,android.view.ViewGroup,boolean):64:64 -> inflate
 javax.inject.Provider -> i5.a:
 # {"id":"sourceFile","fileName":"Provider.java"}
     java.lang.Object get() -> get

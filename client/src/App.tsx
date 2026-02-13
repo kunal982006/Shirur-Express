@@ -43,6 +43,8 @@ import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
 import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
 import OrderTracking from "@/pages/order-tracking";
 import OfferDetailsPage from "@/pages/offer-details";
+import NotificationsPage from "@/pages/notifications";
+import AdminDashboard from "@/pages/admin-dashboard";
 
 function RouterComponent() {
   return (
@@ -72,6 +74,8 @@ function RouterComponent() {
       <Route path="/delete-account" component={DeleteAccount} />
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/order-success" component={OrderSuccess} />
+      <Route path="/notifications" component={NotificationsPage} />
+      <Route path="/admin" component={AdminDashboard} />
 
       <Route path="/provider/dashboard" component={ProviderDashboard} />
 

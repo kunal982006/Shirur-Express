@@ -9,8 +9,7 @@
     <!-- Declare camera feature as optional -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- File and Camera -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
     
     <!-- Geolocation -->
@@ -86,6 +85,17 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        
+        <!-- FileProvider for camera capture -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         
     </application>
 

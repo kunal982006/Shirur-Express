@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Trie } from "@/lib/trie";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -75,6 +75,13 @@ export default function Home() {
 
   const { user, logout } = useAuth();
   const { toast } = useToast();
+
+  // Auto-redirect admin users to admin dashboard
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate("/admin");
+    }
+  }, [user, navigate]);
 
   const handleLogout = async () => {
     try {
@@ -190,7 +197,9 @@ export default function Home() {
 
           {/* Profile & Notifications */}
           <div className="flex items-center gap-3">
-            <Bell className="h-6 w-6 text-gray-700 cursor-pointer hover:text-primary transition-colors" />
+            <Link href="/notifications">
+              <Bell className="h-6 w-6 text-gray-700 cursor-pointer hover:text-primary transition-colors" />
+            </Link>
 
             {user ? (
               <DropdownMenu>
@@ -294,8 +303,10 @@ export default function Home() {
 
       {/* Offers Carousel (Amazon/Zepto Style) */}
       <section className="px-4 py-3 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <OffersCarousel />
+        <div className="max-w-7xl mx-auto flex justify-center">
+          <div className="w-full max-w-2xl">
+            <OffersCarousel />
+          </div>
         </div>
       </section>
 
@@ -310,15 +321,15 @@ export default function Home() {
           </div>
 
           {/* Service Card Grid (Minimal) */}
-          <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-8 gap-4 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-4 md:gap-6 overflow-x-auto pb-2 scrollbar-hide">
             {/* Ab yahan hum services array ko map karenge, jaisa Food UI mein gol buttons the */}
             {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
               <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
                 {/* ServiceCard ki jagah, chota icon button banao */}
-                <Link to={`/${service.slug}`} className="p-3 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg transition-all">
-                  <service.icon className={`h-6 w-6 text-primary`} />
+                <Link to={`/${service.slug}`} className="p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all">
+                  <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
                 </Link>
-                <span className="text-xs text-center mt-1 font-medium text-gray-600 truncate max-w-full">{service.name}</span>
+                <span className="text-xs md:text-sm text-center mt-1.5 font-medium text-gray-600 truncate max-w-full">{service.name}</span>
               </div>
             ))}
           </div>

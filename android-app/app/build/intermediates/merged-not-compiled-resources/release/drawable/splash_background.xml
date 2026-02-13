@@ -3,16 +3,10 @@
     <!-- Background color -->
     <item android:drawable="@color/background_dark" />
     
-    <!-- Centered logo -->
+    <!-- Centered app logo -->
     <item
         android:gravity="center"
-        android:width="150dp"
-        android:height="150dp">
-        <shape android:shape="oval">
-            <gradient
-                android:startColor="#7C3AED"
-                android:endColor="#A855F7"
-                android:angle="135" />
-        </shape>
-    </item>
+        android:width="200dp"
+        android:height="200dp"
+        android:drawable="@mipmap/ic_launcher_foreground" />
 </layer-list>

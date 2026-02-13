@@ -6241,7 +6241,8 @@ androidx.core.content.ContentValuesKt
 androidx.core.content.ContextCompat$Api16Impl:
     private void <init>()
 androidx.core.content.ContextCompat$Api17Impl
-androidx.core.content.ContextCompat$Api19Impl
+androidx.core.content.ContextCompat$Api19Impl:
+    private void <init>()
 androidx.core.content.ContextCompat$Api21Impl:
     private void <init>()
 androidx.core.content.ContextCompat$Api23Impl:
@@ -6269,8 +6270,6 @@ androidx.core.content.ContextCompat:
     public static android.content.Context getContextForLanguage(android.content.Context)
     public static java.io.File getDataDir(android.content.Context)
     public static android.view.Display getDisplayOrDefault(android.content.Context)
-    public static java.io.File[] getExternalCacheDirs(android.content.Context)
-    public static java.io.File[] getExternalFilesDirs(android.content.Context,java.lang.String)
     public static java.util.concurrent.Executor getMainExecutor(android.content.Context)
     public static java.io.File[] getObbDirs(android.content.Context)
     public static java.lang.String getString(android.content.Context,int)
@@ -6278,10 +6277,22 @@ androidx.core.content.ContextCompat:
     public static boolean startActivities(android.content.Context,android.content.Intent[])
     public static void startForegroundService(android.content.Context,android.content.Intent)
 androidx.core.content.ContextKt
-androidx.core.content.FileProvider$Api21Impl
-androidx.core.content.FileProvider$PathStrategy
-androidx.core.content.FileProvider$SimplePathStrategy
-androidx.core.content.FileProvider
+androidx.core.content.FileProvider$Api21Impl:
+    private void <init>()
+androidx.core.content.FileProvider:
+    private static final java.lang.String ATTR_NAME
+    private static final java.lang.String ATTR_PATH
+    private static final java.lang.String DISPLAYNAME_FIELD
+    private static final java.lang.String META_DATA_FILE_PROVIDER_PATHS
+    private static final java.lang.String TAG_CACHE_PATH
+    private static final java.lang.String TAG_EXTERNAL
+    private static final java.lang.String TAG_EXTERNAL_CACHE
+    private static final java.lang.String TAG_EXTERNAL_FILES
+    private static final java.lang.String TAG_EXTERNAL_MEDIA
+    private static final java.lang.String TAG_FILES_PATH
+    private static final java.lang.String TAG_ROOT_PATH
+    protected void <init>(int)
+    public static android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File,java.lang.String)
 androidx.core.content.IntentCompat$Api15Impl
 androidx.core.content.IntentCompat$Api33Impl
 androidx.core.content.IntentCompat
@@ -35487,6 +35498,12 @@ androidx.core.app.TaskStackBuilder:
 androidx.core.content.ContextCompat$LegacyServiceMapHolder
 androidx.core.content.ContextCompat:
     public static android.util.TypedValue sTempValue
+androidx.core.content.FileProvider$PathStrategy
+androidx.core.content.FileProvider$SimplePathStrategy:
+    public static void addRoot()
+    public static android.net.Uri getUriForFile()
+androidx.core.content.FileProvider:
+    public int mResourceId
 androidx.core.content.LocusIdCompat
 androidx.core.content.res.CamColor:
     public final float mM

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shirurexpress.app"
-    android:versionCode="9"
-    android:versionName="1.0.8" >
+    android:versionCode="10"
+    android:versionName="1.0.9" >
 
     <uses-sdk
         android:minSdkVersion="24"
@@ -17,10 +17,7 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <!-- File and Camera -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+    <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Geolocation -->
@@ -61,6 +58,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ShirurExpress"
         android:usesCleartextTraffic="false" >
+
+        <!-- Splash Screen - App Entry Point -->
+        <activity
+            android:name="com.shirurexpress.app.SplashActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ShirurExpress.Splash" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.shirurexpress.app.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -68,11 +79,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
             <!-- Deep link handling -->
             <intent-filter android:autoVerify="true" >
@@ -101,14 +107,16 @@
             </intent-filter>
         </service>
 
-        <!-- Splash screen activity (optional) -->
-        <activity
-            android:name="com.shirurexpress.app.SplashActivity"
-            android:exported="true"
-            android:noHistory="true"
-            android:theme="@style/Theme.ShirurExpress.Splash" >
-        </activity>
-
+        <!-- FileProvider for camera capture -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.shirurexpress.app.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="com.shirurexpress.app.androidx-startup"
