@@ -1,0 +1,27 @@
+
+/**
+ * RECAP OF FIXES FOR CHICKEN AFFAIR
+ * 
+ * 1. Fixed Login Issue:
+ *    - The username in the database had a trailing space: "chicken affair ".
+ *    - The login system lowercases inputs, so "Chicken affair" became "chicken affair" (no space).
+ *    - This caused a mismatch.
+ *    - FIX: Renamed database user to "chicken affair" (no space).
+ * 
+ * 2. Fixed "Invalid Username/Password":
+ *    - Reset password to 'cafechicken@affair567' to ensure it's correct.
+ *    - Clarified that "ChickenAffair" (no space) matches a different CUSTOMER account.
+ *    - FIX: User now knows to use "Chicken affair" (with space).
+ * 
+ * 3. Fixed "Menu Not Visible to Customer":
+ *    - Discovered a DUPLICATE provider profile: "Cafe Chicken Affair".
+ *    - This duplicate profile was EMPTY (0 menu items).
+ *    - The user (as customer) was likely clicking on this empty profile.
+ *    - The correct profile is "Chicken Affair" (94 items).
+ *    - FIX: Deleted the empty "Cafe Chicken Affair" provider.
+ * 
+ * CURRENT STATUS:
+ * - Only ONE "Chicken Affair" provider exists.
+ * - It has 94 menu items.
+ * - Login works with 'Chicken affair' / 'cafechicken@affair567'.
+ */

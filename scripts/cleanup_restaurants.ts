@@ -70,7 +70,7 @@ async function cleanupRestaurants() {
             // Assuming cascade is NOT guaranteed, we should delete menu items first.
 
             const { inArray } = await import("drizzle-orm");
-            const { restaurantMenuItems, restaurantOrders } = await import("./shared/schema");
+            const { restaurantMenuItems, restaurantOrders } = await import("../shared/schema");
 
             // Delete menu items
             await db.delete(restaurantMenuItems).where(inArray(restaurantMenuItems.providerId, toDeleteIds));

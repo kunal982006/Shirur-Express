@@ -535,14 +535,14 @@ const BookingsManager: React.FC<{
     },
   });
 
-  // Action mutations (Accept / Decline)
+  // Action mutations (Accept / Start Job)
   const updateBookingStatusMutation = useMutation({
     mutationFn: ({
       bookingId,
       action,
     }: {
       bookingId: string;
-      action: "accept" | "decline" | "start-job";
+      action: "accept" | "start-job";
     }) => api.patch(`/bookings/${bookingId}/${action}`),
     onSuccess: (data) => {
       toast({
@@ -570,7 +570,6 @@ const BookingsManager: React.FC<{
       case "awaiting_billing": return "secondary"; // Gray
       case "pending_payment": return "secondary"; // Gray
       case "completed": return "default"; // Green (custom style se)
-      case "declined":
       case "cancelled": return "destructive"; // Red
       default: return "outline";
     }
@@ -583,7 +582,7 @@ const BookingsManager: React.FC<{
 
   const newBookings = filterBookings(['pending']);
   const activeBookings = filterBookings(['accepted', 'in_progress', 'awaiting_otp', 'awaiting_billing', 'pending_payment']);
-  const completedBookings = filterBookings(['completed', 'declined', 'cancelled']);
+  const completedBookings = filterBookings(['completed', 'cancelled']);
 
   // Determine default tab based on category
   const defaultTab = (providerProfile.category?.slug === 'cake-shop' || providerProfile.category?.slug === 'grocery')
@@ -666,7 +665,7 @@ const BookingsManager: React.FC<{
       <TabsContent value="completed" className="mt-6">
         <BookingList
           bookings={completedBookings}
-          emptyMessage="You have no completed or declined jobs."
+          emptyMessage="You have no completed jobs."
           mutations={{ updateBookingStatusMutation }}
         />
       </TabsContent>
@@ -889,12 +888,6 @@ const ProviderBookingActions: React.FC<{
   // --- Mutations khatam ---
 
   // --- Action Handlers ---
-  const handleAccept = () => {
-    updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "accept" });
-  };
-  const handleDecline = () => {
-    updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "decline" });
-  };
   const handleStartJob = () => {
     updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "start-job" });
   };
@@ -913,28 +906,7 @@ const ProviderBookingActions: React.FC<{
 
 
   // --- Logic ke hisaab se button dikhao ---
-  if (booking.status === "pending") {
-    return (
-      <>
-        <Button
-          variant="destructive"
-          onClick={handleDecline}
-          disabled={updateBookingStatusMutation.isPending}
-        >
-          <X className="mr-2 h-4 w-4" /> Decline
-        </Button>
-        <Button
-          onClick={handleAccept}
-          className="bg-green-600 hover:bg-green-700"
-          disabled={updateBookingStatusMutation.isPending}
-        >
-          <Check className="mr-2 h-4 w-4" /> Accept
-        </Button>
-      </>
-    );
-  }
-
-  if (booking.status === "accepted") {
+  if (booking.status === "pending" || booking.status === "accepted") {
     return (
       <Button
         onClick={handleStartJob}
@@ -1053,7 +1025,7 @@ const ProviderBookingActions: React.FC<{
     return null;
   }
 
-  if (booking.status === "declined" || booking.status === "cancelled") {
+  if (booking.status === "cancelled") {
     return null; // Koi action nahi
   }
 
@@ -1847,9 +1819,9 @@ const GroceryOrdersManager: React.FC<{
   }
 
   // Filter orders by status
-  const pendingOrders = orders.filter((o) => o.status === "pending");
+  const pendingOrders = orders.filter((o) => ["pending", "paid"].includes(o.status || ""));
   const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
-  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled", "out_for_delivery"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "cancelled", "out_for_delivery"].includes(o.status || ""));
 
   return (
     <Tabs defaultValue="pending" className="w-full">
@@ -1954,17 +1926,12 @@ const GroceryOrderCard: React.FC<{
       {!isHistory && (
         <CardFooter className="flex justify-end gap-2 pt-2">
           {isPending ? (
-            <>
-              <Button variant="destructive" size="sm" onClick={() => onStatusChange(order.id, "declined")}>
-                Decline
-              </Button>
-              <Button className="bg-green-600 hover:bg-green-700" size="sm" onClick={() => onStatusChange(order.id, "accepted")}>
-                Accept Order
-              </Button>
-            </>
+            <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+              Start Preparing
+            </Button>
           ) : (
             <>
-              {order.status === "accepted" && (
+              {(order.status === "accepted") && (
                 <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
                   Start Preparing
                 </Button>
@@ -2046,10 +2013,10 @@ const RestaurantOrdersManager: React.FC<{
   }
 
   // Filter orders by status
-  // Note: "paid" status means payment completed and waiting for provider to accept
+  // Note: "paid" status means payment completed — provider sees "Start Preparing" directly
   const pendingOrders = orders.filter((o) => ["pending", "paid"].includes(o.status || ""));
   const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
-  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "declined", "cancelled", "out_for_delivery"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "cancelled", "out_for_delivery"].includes(o.status || ""));
 
   return (
     <Tabs defaultValue="pending" className="w-full">
@@ -2157,17 +2124,12 @@ const RestaurantOrderCard: React.FC<{
       {!isHistory && (
         <CardFooter className="flex justify-end gap-2 pt-2">
           {isPending ? (
-            <>
-              <Button variant="destructive" size="sm" onClick={() => onStatusChange(order.id, "declined")}>
-                Decline
-              </Button>
-              <Button className="bg-green-600 hover:bg-green-700" size="sm" onClick={() => onStatusChange(order.id, "accepted")}>
-                Accept Order
-              </Button>
-            </>
+            <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+              Start Preparing
+            </Button>
           ) : (
             <>
-              {order.status === "accepted" && (
+              {(order.status === "accepted") && (
                 <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
                   Start Preparing
                 </Button>

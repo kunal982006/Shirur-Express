@@ -19,8 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 class IncomingOrderActivity : AppCompatActivity() {
 
     private var ringtone: Ringtone? = null
-    private val timeoutHandler = Handler(Looper.getMainLooper())
-    private val timeoutRunnable = Runnable { declineOrder() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,20 +53,13 @@ class IncomingOrderActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.pickupText).text = "Pickup: $pickup"
         findViewById<TextView>(R.id.dropText).text = "Drop: $drop"
 
-        // Setup Buttons
-        findViewById<Button>(R.id.btnAccept).setOnClickListener {
-            acceptOrder(orderId)
-        }
-
-        findViewById<Button>(R.id.btnDecline).setOnClickListener {
-            declineOrder()
+        // Setup "Order Confirmed" button — opens dashboard directly
+        findViewById<Button>(R.id.btnConfirm).setOnClickListener {
+            confirmOrder(orderId)
         }
 
         // Start Ringing
         playRingtone()
-
-        // Auto-decline after 30 seconds
-        timeoutHandler.postDelayed(timeoutRunnable, 30000)
     }
 
     private fun playRingtone() {
@@ -92,29 +83,20 @@ class IncomingOrderActivity : AppCompatActivity() {
         }
     }
 
-    private fun acceptOrder(orderId: String?) {
+    private fun confirmOrder(orderId: String?) {
         stopRingtone()
-        timeoutHandler.removeCallbacks(timeoutRunnable)
 
         // Open Main Activity (WebView) deep linked to the order
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            // Assuming your web app handles /provider/orders/:id
             data = Uri.parse("https://shirur-express.onrender.com/provider/orders/$orderId")
         }
         startActivity(intent)
         finish()
     }
 
-    private fun declineOrder() {
-        stopRingtone()
-        timeoutHandler.removeCallbacks(timeoutRunnable)
-        finish()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         stopRingtone()
-        timeoutHandler.removeCallbacks(timeoutRunnable)
     }
 }

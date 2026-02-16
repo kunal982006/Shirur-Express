@@ -1299,7 +1299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { estimatedCost } = req.body;
-      const acceptedBooking = await storage.updateBookingStatus(bookingId, "accepted", providerId, estimatedCost);
+      const acceptedBooking = await storage.updateBookingStatus(bookingId, "in_progress", providerId, estimatedCost);
 
       // --- PUSH NOTIFICATION (Firebase) ---
       try {
@@ -1310,11 +1310,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (customerUser?.fcmToken) {
           await sendPushNotification(customerUser.fcmToken, {
             type: 'ORDER_UPDATE',
-            title: '✅ Booking Accepted!',
-            body: `${providerName} has accepted your booking${scheduledAt ? ` for ${new Date(scheduledAt).toLocaleString('en-IN')}` : ''}. They will contact you soon.`,
+            title: '✅ Booking Confirmed!',
+            body: `${providerName} has confirmed your booking${scheduledAt ? ` for ${new Date(scheduledAt).toLocaleString('en-IN')}` : ''}. Work will begin shortly.`,
             data: { bookingId, action: 'BOOKING_ACCEPTED' },
           });
-          console.log(`[FCM] Booking accepted notification sent to customer ${booking.userId}`);
+          console.log(`[FCM] Booking confirmed notification sent to customer ${booking.userId}`);
         } else {
           console.warn(`[FCM] Customer has no FCM token for booking ${bookingId}`);
         }
@@ -1387,8 +1387,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!booking || booking.providerId !== providerId) {
         return res.status(404).json({ message: "Booking not found or access denied" });
       }
-      if (booking.status !== 'accepted') {
-        return res.status(400).json({ message: "Job accept karne ke baad hi start kar sakte hain." });
+      if (booking.status !== 'accepted' && booking.status !== 'pending') {
+        return res.status(400).json({ message: "Cannot start job for this booking status." });
       }
 
       const updatedBooking = await storage.updateBookingStatus(bookingId, 'in_progress');
@@ -1970,7 +1970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = req.body;
 
       // Validate status transition
-      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup', 'declined'];
+      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup'];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
@@ -2002,7 +2002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { orderId } = req.params;
       const { status } = req.body;
 
-      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup', 'declined'];
+      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup'];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }

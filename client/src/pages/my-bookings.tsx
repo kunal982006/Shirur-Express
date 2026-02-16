@@ -84,17 +84,17 @@ export default function MyBookings() {
   const getStatusInfo = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: any; icon: any; description: string; color: string }> = {
       pending: {
-        label: "Pending",
+        label: "Confirmed",
         variant: "secondary",
         icon: Clock,
-        description: "Waiting for provider to accept...",
+        description: "Order confirmed! Provider is preparing...",
         color: "border-yellow-500"
       },
       accepted: {
-        label: "Accepted",
+        label: "Confirmed",
         variant: "default",
         icon: CheckCircle,
-        description: "Provider has accepted! They are on their way.",
+        description: "Provider has confirmed! Work will begin shortly.",
         color: "border-green-500"
       },
       in_progress: {
