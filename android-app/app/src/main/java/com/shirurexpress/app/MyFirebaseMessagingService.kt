@@ -76,7 +76,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val channelId = getString(R.string.default_notification_channel_id)
+        val channelId = getString(R.string.incoming_order_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
@@ -88,7 +88,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setFullScreenIntent(fullScreenIntent, true) // This triggers the "Ringing" screen
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
-            .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000))
+            .setVibrate(longArrayOf(0, 1000, 1000, 1000, 1000)) // Start immediately
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -96,15 +97,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Incoming Orders",
-                NotificationManager.IMPORTANCE_HIGH
+                "Incoming Orders (Ringing)",
+                NotificationManager.IMPORTANCE_HIGH // MAX is deprecated for channels, HIGH is capable of sound/heads-up
             ).apply {
-                description = "Notifications for new incoming orders"
+                description = "Notifications for new incoming orders with ringing sound"
                 setSound(defaultSoundUri, AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build())
                 enableVibration(true)
+                vibrationPattern = longArrayOf(0, 1000, 1000, 1000, 1000)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                setBypassDnd(true) // Try to bypass DND if possible/permitted
             }
             notificationManager.createNotificationChannel(channel)
         }

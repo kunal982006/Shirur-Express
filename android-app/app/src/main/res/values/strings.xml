@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Shirur Express</string>
     <string name="default_notification_channel_id">fcm_default_channel</string>
+    <string name="incoming_order_channel_id">incoming_orders_channel_v2</string>
 </resources>

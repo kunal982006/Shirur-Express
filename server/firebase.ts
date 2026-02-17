@@ -97,20 +97,25 @@ export async function sendPushNotification(fcmToken: string, payload: {
             },
             android: {
                 priority: 'high',
-                notification: {
-                    channelId: 'fcm_default_channel',
-                    priority: 'max',
-                    defaultSound: true,
-                    defaultVibrateTimings: true,
-                    visibility: 'public'
-                }
+                // notification: {}  <-- REMOVED intentinally for ORDER_REQUEST to trigger background execution
             }
         };
 
-        if (payload.title || payload.body) {
+        // Only add notification payload for non-ringing notifications (e.g. updates)
+        // This ensures ORDER_REQUEST is treated as a "Data Message" by Android System
+        // which wakes up the app's Service instead of showing a system tray notification directly.
+        if (payload.type !== 'ORDER_REQUEST' && (payload.title || payload.body)) {
             message.notification = {
                 title: payload.title,
                 body: payload.body,
+            };
+            // Add channel only for standard notifications
+            message.android!.notification = {
+                channelId: 'fcm_default_channel',
+                priority: 'max',
+                defaultSound: true,
+                defaultVibrateTimings: true,
+                visibility: 'public'
             };
         }
 
