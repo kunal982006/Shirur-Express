@@ -552,6 +552,8 @@ export class DatabaseStorage implements IStorage {
       with: {
         user: true,
         provider: { with: { user: true, category: true } },
+        problem: true,
+        serviceOffering: { with: { template: true } },
         invoice: true, // NAYA: Invoice bhi fetch karo
       },
     }) as any;
@@ -589,6 +591,8 @@ export class DatabaseStorage implements IStorage {
       where: eq(bookings.userId, userId),
       with: {
         provider: { with: { user: true, category: true } },
+        problem: true,
+        serviceOffering: { with: { template: true } },
         invoice: true, // NAYA
       },
       orderBy: [desc(bookings.createdAt)],
@@ -602,6 +606,7 @@ export class DatabaseStorage implements IStorage {
         user: true,
         invoice: true,
         problem: true,
+        serviceOffering: { with: { template: true } },
       },
       orderBy: [desc(bookings.createdAt)],
     }) as any;

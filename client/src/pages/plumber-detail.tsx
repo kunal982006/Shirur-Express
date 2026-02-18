@@ -200,6 +200,7 @@ export default function PlumberDetail() {
                                         providerId={providerId!}
                                         problemId={selectedProblem.id}
                                         problemName={selectedProblem.name}
+                                        serviceType="plumber"
                                         onSuccess={() => {
                                             // Maybe redirect or show success
                                         }}

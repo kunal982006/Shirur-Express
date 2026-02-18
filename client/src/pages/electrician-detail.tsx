@@ -202,6 +202,7 @@ export default function ElectricianDetail() {
                     providerId={providerId!}
                     problemId={selectedProblem.id}
                     problemName={selectedProblem.name}
+                    serviceType="electrician"
                     onSuccess={() => {
                       // Maybe redirect or show success
                     }}

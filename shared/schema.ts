@@ -427,6 +427,7 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   user: one(users, { fields: [bookings.userId], references: [users.id] }),
   provider: one(serviceProviders, { fields: [bookings.providerId], references: [serviceProviders.id] }),
   problem: one(serviceProblems, { fields: [bookings.problemId], references: [serviceProblems.id] }),
+  serviceOffering: one(serviceOfferings, { fields: [bookings.problemId], references: [serviceOfferings.id] }),
   invoice: one(invoices, { fields: [bookings.invoiceId], references: [invoices.id] }),
 }));
 

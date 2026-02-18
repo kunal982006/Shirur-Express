@@ -62,6 +62,7 @@ interface BookingSlotFormProps {
   providerId: string;
   problemId: string;
   problemName: string;
+  serviceType: string;
   onSuccess?: () => void;
 }
 
@@ -69,6 +70,7 @@ export default function BookingSlotForm({
   providerId,
   problemId,
   problemName,
+  serviceType,
   onSuccess,
 }: BookingSlotFormProps) {
   const { toast } = useToast();
@@ -184,7 +186,7 @@ export default function BookingSlotForm({
       const bookingData = {
         userId: user?.id || "",
         providerId, // <-- Yeh jaa raha hai, bilkul sahi
-        serviceType: "electrician",
+        serviceType: serviceType,
         problemId,
         scheduledAt: scheduledAtISO,
         preferredTimeSlots: [data.preferredTimeSlot],

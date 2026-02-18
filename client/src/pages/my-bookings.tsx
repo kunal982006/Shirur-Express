@@ -42,6 +42,12 @@ type BookingWithDetails = {
   problem?: {
     name: string;
   };
+  serviceOffering?: {
+    name?: string;
+    template?: {
+      name: string;
+    };
+  };
   provider?: {
     businessName: string;
     user?: {
@@ -228,7 +234,7 @@ export default function MyBookings() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <CardTitle className="text-lg mb-2">
-                              {booking.problem?.name || "Service Request"}
+                              {booking.problem?.name || booking.serviceOffering?.name || booking.serviceOffering?.template?.name || "Service Request"}
                             </CardTitle>
                             <p className="text-sm text-muted-foreground mb-3">
                               Provider: {booking.provider?.businessName || "N/A"}

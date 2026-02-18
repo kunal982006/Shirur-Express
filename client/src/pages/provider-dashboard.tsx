@@ -111,6 +111,7 @@ type FullBooking = Booking & {
   user: Pick<User, "id" | "username" | "phone">;
   invoice: Invoice | null;
   problem: { id: string; name: string; categoryId: string } | null;
+  serviceOffering: { id: string; name: string; template: { name: string } | null } | null;
 };
 
 // Bill/Invoice create karne ka Zod schema
@@ -767,7 +768,7 @@ const BookingList: React.FC<{
         <Card key={booking.id} className="shadow-md">
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
-              <span>{booking.problem?.name || booking.notes || booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) + " Service" || "Service Request"}</span>
+              <span>{booking.problem?.name || booking.serviceOffering?.name || booking.serviceOffering?.template?.name || booking.notes || booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) + " Service" || "Service Request"}</span>
               <Badge
                 variant={booking.status === 'completed' ? 'default' : getBadgeColor(booking.status || 'pending')}
                 className={booking.status === 'completed' ? 'bg-green-600' : ''}
