@@ -55,7 +55,7 @@ import {
   type InsertDeliveryPartner,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, asc, gt, lt, gte, lte } from "drizzle-orm";
+import { eq, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzle-orm";
 // NAYE IMPORTS
 import { sendPushNotification } from "./firebase";
 import { razorpayInstance } from "./razorpay-client";
@@ -2150,7 +2150,11 @@ export class DatabaseStorage implements IStorage {
         description: restaurantMenuItems.description,
         isVeg: restaurantMenuItems.isVeg,
         category: restaurantMenuItems.category
-      }).from(restaurantMenuItems).where(ilike(restaurantMenuItems.name, lowerQuery)).limit(10),
+      }).from(restaurantMenuItems).where(or(
+        ilike(restaurantMenuItems.name, lowerQuery),
+        ilike(restaurantMenuItems.category, lowerQuery),
+        ilike(restaurantMenuItems.cuisine, lowerQuery)
+      )).limit(50),
       db.select().from(cakeProducts).where(ilike(cakeProducts.name, lowerQuery)).limit(5),
       db.select().from(groceryProducts).where(ilike(groceryProducts.name, lowerQuery)).limit(5),
       db.select().from(rentalProperties).where(or(

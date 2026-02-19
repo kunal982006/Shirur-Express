@@ -88,8 +88,8 @@ function CategoryPill({ label, icon, active, onClick }: { label: string; icon: R
     <button
       onClick={onClick}
       className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200 ${active
-          ? "text-white shadow-lg"
-          : "bg-white dark:bg-zinc-800 text-muted-foreground hover:bg-orange-50 border border-border"
+        ? "text-white shadow-lg"
+        : "bg-white dark:bg-zinc-800 text-muted-foreground hover:bg-orange-50 border border-border"
         }`}
       style={active ? {
         background: "linear-gradient(to right, #f97316, #f59e0b)",
@@ -163,7 +163,7 @@ export default function StreetFood() {
                 <ChefHat className="h-5 w-5 text-white" />
                 <h1 className="font-bold text-lg text-white leading-none">Street Food</h1>
               </div>
-              <p className="text-white/80 text-xs mt-0.5">Tasty local delights near you</p>
+              <p className="text-white/80 text-xs mt-0.5">The taste of the streets, served at your seat. 🌭🌶️</p>
             </div>
             <div
               className="h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-sm"

@@ -86,7 +86,7 @@ export default function Electrician() {
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold mb-2">Electrician & Technician Services</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Select an appliance to see available services. We provide expert repairs for all major home appliances.
+            Don't stay in the dark. Let our experts power up your home. 💡⚡
           </p>
         </div>
 

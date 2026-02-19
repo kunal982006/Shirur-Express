@@ -85,7 +85,7 @@ export default function Plumber() {
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold mb-2">Plumbing Services</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Select a category to see available services. We provide expert plumbing repairs and installations.
+            Stop the drip before it’s a flood—pro help, instantly. 🚿🔧
           </p>
         </div>
 

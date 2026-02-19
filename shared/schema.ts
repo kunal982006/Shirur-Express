@@ -393,7 +393,7 @@ export const insertProviderOfferSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   imageUrl: z.string().min(1, "Poster image is required"),
-  productType: z.enum(["grocery", "restaurant", "cake", "street_food"]),
+  productType: z.enum(["grocery", "restaurant", "cake", "street_food", "beauty_parlor"]),
   productIds: z.array(z.string()).optional(),
   discountedPrices: z.record(z.string(), z.number()).optional(),
   comboDetails: z.array(z.object({

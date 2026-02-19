@@ -134,7 +134,7 @@ export default function CakeShop() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Cake Shops</h2>
           <p className="text-muted-foreground">
-            Order delicious custom cakes for every occasion
+            Happiness is just a slice away—freshly baked and ready to party. 🎂🎉
           </p>
         </div>
 

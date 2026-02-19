@@ -250,7 +250,7 @@ export default function Grocery() {
               {gmartProvider ? gmartProvider.businessName : "GMart Grocery"}
             </h2>
             <p className="text-muted-foreground">
-              {gmartProvider ? gmartProvider.description : "Fresh groceries..."}
+              {gmartProvider ? gmartProvider.description : "Order fresh groceries with fast home delivery 🥦🍎"}
             </p>
           </div>
 

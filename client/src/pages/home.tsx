@@ -46,6 +46,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LocationPicker } from "@/components/location-picker";
 import { useToast } from "@/hooks/use-toast";
 import { OffersCarousel } from "@/components/offers-carousel";
+import { useCartStore } from "@/hooks/use-cart-store"; // ADDED
 
 // NOTE: Yeh static data tumhari original file se hai.
 const services = [
@@ -76,6 +77,7 @@ export default function Home() {
 
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const { addItem } = useCartStore(); // ADDED
 
   // Auto-redirect admin users to admin dashboard
   useEffect(() => {
@@ -393,12 +395,13 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/restaurants")}
         renderItem={(item: any) => (
-          <div onClick={() => navigate(`/restaurant/${item.providerId}`)} className="cursor-pointer group">
+          <div onClick={() => navigate(`/restaurants/${item.providerId}`)} className="cursor-pointer group">
             <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
               <img
                 src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                 alt={item.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
               />
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                 <p className="text-[10px] text-white truncate font-medium">{item.provider?.businessName}</p>
@@ -413,7 +416,26 @@ export default function Home() {
             <p className="text-xs text-gray-500 truncate">{item.description || item.category || "Restaurant Special"}</p>
             <div className="flex items-center justify-between mt-1.5">
               <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
-              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 rounded-full border-orange-200 text-orange-600 hover:bg-orange-50">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] px-2 rounded-full border-orange-200 text-orange-600 hover:bg-orange-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addItem({
+                    id: item.id,
+                    name: item.name,
+                    price: Number(item.price),
+                    imageUrl: item.imageUrl,
+                    providerId: item.providerId,
+                    itemType: 'restaurant'
+                  });
+                  toast({
+                    title: "Added to Cart",
+                    description: `${item.name} added to your cart.`
+                  });
+                }}
+              >
                 Order
               </Button>
             </div>
@@ -428,7 +450,7 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/restaurants")}
         renderItem={(provider: any) => (
-          <div onClick={() => navigate(`/restaurant/${provider.id}`)} className="cursor-pointer group">
+          <div onClick={() => navigate(`/restaurants/${provider.id}`)} className="cursor-pointer group">
             <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
               <img
                 src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}

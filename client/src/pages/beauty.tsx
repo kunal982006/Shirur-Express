@@ -83,7 +83,7 @@ export default function Beauty() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Book Your Beauty Services</h2>
           <p className="text-muted-foreground">
-            Top-rated salons and spas near you. Click on a parlor to view the full menu.
+            Skip the salon. Glow at home on your own schedule. 💅✨
           </p>
         </div>
 

@@ -129,6 +129,7 @@ export default function PropertySearch() {
                         <h1 className="text-2xl font-bold">Properties for Rent</h1>
                         <span className="text-muted-foreground">{properties?.length || 0} results found</span>
                     </div>
+                    <p className="text-muted-foreground mb-4 font-medium">Find your dream home. Keep your commission. 🏠🔑</p>
 
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -44,7 +44,7 @@ export default function RestaurantsIndex() {
                         </Link>
                         <div className="flex-1">
                             <h2 className="font-bold text-lg leading-none">Shirur, Pune</h2>
-                            <p className="text-xs text-muted-foreground truncate">Vidyanagar, Shirur - 412210</p>
+                            <p className="text-xs text-muted-foreground truncate">Craving the best? The city's top menus are now on yours. 🍽️😋</p>
                         </div>
                         <div className="h-9 w-9 bg-secondary rounded-full flex items-center justify-center">
                             <span className="font-bold text-primary">S</span>
@@ -71,7 +71,7 @@ export default function RestaurantsIndex() {
 
             <div className="max-w-4xl mx-auto px-4">
                 {/* Inspiration Carousel */}
-                <CategoryCarousel onSelect={() => { }} />
+                <CategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
 
                 <h2 className="font-bold text-xl mb-4 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
 
