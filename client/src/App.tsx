@@ -45,11 +45,13 @@ import OrderTracking from "@/pages/order-tracking";
 import OfferDetailsPage from "@/pages/offer-details";
 import NotificationsPage from "@/pages/notifications";
 import AdminDashboard from "@/pages/admin-dashboard";
+import SearchResults from "@/pages/search-results"; // NAYA IMPORT
 
 function RouterComponent() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/search" component={SearchResults} /> {/* NAYA ROUTE */}
       <Route path="/electrician/:id" component={ElectricianDetail} />
       <Route path="/electrician" component={Electrician} />
       <Route path="/plumber/:id" component={PlumberDetail} />

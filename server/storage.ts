@@ -310,6 +310,24 @@ export interface IStorage {
   verifyGroceryDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<GroceryOrder>;
   getOrderTrackingInfo(orderId: string, userId: string): Promise<any>;
   markOrderReadyForPickup(orderId: string, providerId: string): Promise<RestaurantOrder>;
+
+  // POPULAR ITEMS MANAGEMENT
+  togglePopularStatus(type: 'street_food' | 'restaurant' | 'cake', id: string, isPopular: boolean): Promise<any>;
+  getPopularStreetFood(): Promise<StreetFoodItem[]>;
+  getPopularRestaurants(): Promise<ServiceProvider[]>;
+  getPopularCakes(): Promise<CakeProduct[]>;
+  searchItemsForAdmin(query: string, type: 'street_food' | 'restaurant' | 'cake'): Promise<any[]>;
+  searchGlobal(query: string): Promise<{
+    services: ServiceCategory[];
+    restaurants: ServiceProvider[];
+    streetFood: StreetFoodItem[];
+    menuItems: RestaurantMenuItem[];
+    cakes: CakeProduct[];
+    grocery: GroceryProduct[];
+    rentals: RentalProperty[];
+  }>;
+  searchSuggestions(query: string): Promise<string[]>;
+  getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2023,8 +2041,166 @@ export class DatabaseStorage implements IStorage {
 
     return updated;
   }
+
+  // --- POPULAR ITEMS MANAGEMENT ---
+
+  async togglePopularStatus(type: 'street_food' | 'restaurant' | 'cake', id: string, isPopular: boolean): Promise<any> {
+    if (type === 'street_food') {
+      const [item] = await db.update(streetFoodItems)
+        .set({ isPopular })
+        .where(eq(streetFoodItems.id, id))
+        .returning();
+      return item;
+    } else if (type === 'restaurant') {
+      // For restaurants, we are toggling the ServiceProvider itself
+      const [provider] = await db.update(serviceProviders)
+        .set({ isPopular })
+        .where(eq(serviceProviders.id, id))
+        .returning();
+      return provider;
+    } else if (type === 'cake') {
+      const [cake] = await db.update(cakeProducts)
+        .set({ isPopular })
+        .where(eq(cakeProducts.id, id))
+        .returning();
+      return cake;
+    }
+    throw new Error("Invalid type");
+  }
+
+  async getPopularStreetFood(): Promise<StreetFoodItem[]> {
+    return db.select()
+      .from(streetFoodItems)
+      .where(and(eq(streetFoodItems.isPopular, true), eq(streetFoodItems.isAvailable, true)));
+  }
+
+  async getPopularRestaurants(): Promise<ServiceProvider[]> {
+    return db.query.serviceProviders.findMany({
+      where: and(
+        eq(serviceProviders.isPopular, true),
+        eq(serviceProviders.isAvailable, true)
+        // Ensure category is restaurant if needed, but isPopular flag should be enough control
+      ),
+      with: {
+        category: true
+      }
+    });
+  }
+
+  async getPopularCakes(): Promise<CakeProduct[]> {
+    return db.select()
+      .from(cakeProducts)
+      .where(eq(cakeProducts.isPopular, true));
+  }
+
+  async searchItemsForAdmin(query: string, type: 'street_food' | 'restaurant' | 'cake'): Promise<any[]> {
+    const lowerQuery = `%${query.toLowerCase()}%`;
+
+    if (type === 'street_food') {
+      return db.select().from(streetFoodItems).where(ilike(streetFoodItems.name, lowerQuery));
+    } else if (type === 'restaurant') {
+      return db.query.serviceProviders.findMany({
+        where: and(ilike(serviceProviders.businessName, lowerQuery), eq(serviceProviders.categoryId, 'restaurants')),
+      });
+    } else if (type === 'cake') {
+      return db.select()
+        .from(cakeProducts)
+        .where(sql`lower(${cakeProducts.name}) LIKE ${lowerQuery}`)
+        .limit(20);
+    }
+    return [];
+  }
+
+  async searchGlobal(query: string) {
+    const lowerQuery = `%${query.toLowerCase()}%`;
+    const sanitizedQuery = query.trim();
+
+    if (!sanitizedQuery) {
+      return {
+        services: [], restaurants: [], streetFood: [], menuItems: [], cakes: [], grocery: [], rentals: []
+      };
+    }
+
+    const [services, restaurants, streetFood, menuItems, cakes, grocery, rentals] = await Promise.all([
+      db.select().from(serviceCategories).where(ilike(serviceCategories.name, lowerQuery)).limit(5),
+      db.query.serviceProviders.findMany({
+        where: and(
+          ilike(serviceProviders.businessName, lowerQuery),
+          eq(serviceProviders.categoryId, 'restaurants'),
+          eq(serviceProviders.isAvailable, true)
+        ),
+        limit: 5
+      }),
+      db.select({
+        id: streetFoodItems.id,
+        name: streetFoodItems.name,
+        providerId: streetFoodItems.providerId,
+        price: streetFoodItems.price,
+        imageUrl: streetFoodItems.imageUrl,
+        description: streetFoodItems.description,
+        isPopular: streetFoodItems.isPopular,
+        isVeg: streetFoodItems.isVeg
+      }).from(streetFoodItems).where(ilike(streetFoodItems.name, lowerQuery)).limit(5),
+      db.select({
+        id: restaurantMenuItems.id,
+        name: restaurantMenuItems.name,
+        providerId: restaurantMenuItems.providerId,
+        price: restaurantMenuItems.price,
+        imageUrl: restaurantMenuItems.imageUrl,
+        description: restaurantMenuItems.description,
+        isVeg: restaurantMenuItems.isVeg,
+        category: restaurantMenuItems.category
+      }).from(restaurantMenuItems).where(ilike(restaurantMenuItems.name, lowerQuery)).limit(10),
+      db.select().from(cakeProducts).where(ilike(cakeProducts.name, lowerQuery)).limit(5),
+      db.select().from(groceryProducts).where(ilike(groceryProducts.name, lowerQuery)).limit(5),
+      db.select().from(rentalProperties).where(or(
+        ilike(rentalProperties.title, lowerQuery),
+        ilike(rentalProperties.locality, lowerQuery)
+      )).limit(5)
+    ]);
+
+    return {
+      services, restaurants, streetFood, menuItems, cakes, grocery, rentals
+    };
+  }
+
+  async searchSuggestions(query: string): Promise<string[]> {
+    const lowerQuery = `%${query.toLowerCase()}%`;
+    if (!query.trim()) return [];
+
+    const [services, restaurants, streetFood, cakes, grocery] = await Promise.all([
+      db.select({ name: serviceCategories.name }).from(serviceCategories).where(ilike(serviceCategories.name, lowerQuery)).limit(3),
+      db.query.serviceProviders.findMany({
+        where: and(ilike(serviceProviders.businessName, lowerQuery), eq(serviceProviders.categoryId, 'restaurants')),
+        limit: 3,
+        columns: { businessName: true }
+      }),
+      db.select({ name: streetFoodItems.name }).from(streetFoodItems).where(ilike(streetFoodItems.name, lowerQuery)).limit(3),
+      db.select({ name: cakeProducts.name }).from(cakeProducts).where(ilike(cakeProducts.name, lowerQuery)).limit(3),
+      db.select({ name: groceryProducts.name }).from(groceryProducts).where(ilike(groceryProducts.name, lowerQuery)).limit(3),
+    ]);
+
+    const suggestions = [
+      ...services.map(s => s.name),
+      ...restaurants.map(r => r.businessName),
+      ...streetFood.map(s => s.name),
+      ...cakes.map(c => c.name),
+      ...grocery.map(g => g.name),
+    ];
+
+    return Array.from(new Set(suggestions)).slice(0, 10);
+  }
+  async getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]> {
+    return db.query.restaurantMenuItems.findMany({
+      where: and(
+        eq(restaurantMenuItems.isPopular, true),
+        eq(restaurantMenuItems.isAvailable, true)
+      ),
+      with: {
+        provider: true
+      }
+    }) as any;
+  }
 }
 
 export const storage = new DatabaseStorage();
-
-

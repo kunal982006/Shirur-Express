@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -42,6 +42,7 @@ import {
     ChevronRight,
     Signal,
     Crown,
+    Star, // ADDED
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -203,8 +204,13 @@ export default function AdminDashboard() {
     const { user, logout } = useAuth();
     const [, setLocation] = useLocation();
     const { toast } = useToast();
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast">("overview");
+    const queryClient = useQueryClient(); // ADDED
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured">("overview");
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Featured Tab State
+    const [featuredType, setFeaturedType] = useState<"street_food" | "restaurant" | "cake">("street_food");
+    const [featuredSearch, setFeaturedSearch] = useState("");
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");
     const [broadcastMessage, setBroadcastMessage] = useState("");
@@ -270,6 +276,27 @@ export default function AdminDashboard() {
         },
     });
 
+    const { data: searchResults, isLoading: isSearchLoading } = useQuery({
+        queryKey: ["/api/admin/search-items", featuredSearch, featuredType],
+        queryFn: () => {
+            if (!featuredSearch) return [];
+            return api.get(`/admin/search-items?query=${featuredSearch}&type=${featuredType}`).then(r => r.data);
+        },
+        enabled: activeTab === 'featured' && featuredSearch.length > 0,
+    });
+
+    const togglePopularMutation = useMutation({
+        mutationFn: (data: { type: string; id: string; isPopular: boolean }) =>
+            api.post("/admin/toggle-popular", data).then(r => r.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/search-items"] });
+            toast({ title: "Updated", description: "Updated popular status successfully" });
+        },
+        onError: (error: any) => {
+            toast({ title: "Error", description: error.response?.data?.message || "Failed to update", variant: "destructive" });
+        }
+    });
+
     const handleLogout = async () => {
         try {
             await logout();
@@ -314,6 +341,7 @@ export default function AdminDashboard() {
         { id: "providers", label: "Providers", icon: Store },
         { id: "users", label: "Users", icon: Users },
         { id: "broadcast", label: "Broadcast", icon: Send },
+        { id: "featured", label: "Featured", icon: Star }, // ADDED
     ] as const;
 
     return (
@@ -352,8 +380,8 @@ export default function AdminDashboard() {
                             key={t.id}
                             onClick={() => { setActiveTab(t.id); setSearchQuery(""); }}
                             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-all ${activeTab === t.id
-                                    ? 'border-blue-500 text-white'
-                                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                                ? 'border-blue-500 text-white'
+                                : 'border-transparent text-gray-500 hover:text-gray-300'
                                 }`}
                         >
                             <t.icon className="h-4 w-4" />
@@ -497,7 +525,7 @@ export default function AdminDashboard() {
                                     {recentActivity.map((o) => (
                                         <div key={o.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${o.orderType === 'grocery' ? 'bg-green-500/15' :
-                                                    o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
+                                                o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
                                                 }`}>
                                                 {o.orderType === 'grocery' ? <ShoppingBasket className="h-4 w-4 text-green-400" /> :
                                                     o.orderType === 'street_food' ? <Sandwich className="h-4 w-4 text-orange-400" /> :
@@ -543,8 +571,8 @@ export default function AdminDashboard() {
                     </>
                 )}
 
-                {/* ═══ NON-OVERVIEW TABS: Search Bar ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && (
+                {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && (
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <input
@@ -571,7 +599,7 @@ export default function AdminDashboard() {
                             ) : filteredOrders.map(o => (
                                 <div key={o.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
                                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${o.orderType === 'grocery' ? 'bg-green-500/15' :
-                                            o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
+                                        o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
                                         }`}>
                                         {o.orderType === 'grocery' ? <ShoppingBasket className="h-4 w-4 text-green-400" /> :
                                             o.orderType === 'street_food' ? <Sandwich className="h-4 w-4 text-orange-400" /> :
@@ -612,7 +640,7 @@ export default function AdminDashboard() {
                             ) : filteredBookings.map(b => (
                                 <div key={b.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
                                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
-                                            b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
+                                        b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
                                         }`}>
                                         {b.serviceType === 'electrician' ? <Zap className="h-4 w-4 text-yellow-400" /> :
                                             b.serviceType === 'plumber' ? <Wrench className="h-4 w-4 text-blue-400" /> :
@@ -699,8 +727,8 @@ export default function AdminDashboard() {
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <span className="text-sm font-semibold">{u.username}</span>
                                             <span className={`text-[10px] px-2 py-0.5 rounded-full border ${u.role === 'admin' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
-                                                    u.role === 'provider' ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' :
-                                                        'bg-white/5 text-gray-400 border-white/10'
+                                                u.role === 'provider' ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' :
+                                                    'bg-white/5 text-gray-400 border-white/10'
                                                 }`}>
                                                 {u.role || 'customer'}
                                             </span>
@@ -746,8 +774,8 @@ export default function AdminDashboard() {
                                                 key={a.id}
                                                 onClick={() => setBroadcastAudience(a.id)}
                                                 className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm transition-all ${broadcastAudience === a.id
-                                                        ? 'bg-blue-500/15 border-blue-500/50 text-blue-400'
-                                                        : 'bg-white/[0.02] border-white/5 text-gray-400 hover:border-white/20'
+                                                    ? 'bg-blue-500/15 border-blue-500/50 text-blue-400'
+                                                    : 'bg-white/[0.02] border-white/5 text-gray-400 hover:border-white/20'
                                                     }`}
                                             >
                                                 <span>{a.icon}</span> {a.label}
@@ -805,8 +833,8 @@ export default function AdminDashboard() {
                                     })}
                                     disabled={!broadcastTitle || !broadcastMessage || broadcastMutation.isPending}
                                     className={`w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!broadcastTitle || !broadcastMessage
-                                            ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                                            : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/25'
+                                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/25'
                                         }`}
                                 >
                                     {broadcastMutation.isPending ? (
@@ -815,6 +843,99 @@ export default function AdminDashboard() {
                                         <><Send className="h-4 w-4" /> Send to {broadcastAudience.replace("_", " ")}</>
                                     )}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ═══ FEATURED TAB ═══ */}
+                {activeTab === "featured" && (
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        {/* Type Selection */}
+                        <div className="flex gap-2">
+                            {(['street_food', 'restaurant', 'cake'] as const).map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => { setFeaturedType(type); setFeaturedSearch(""); }}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${featuredType === type
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {type === 'street_food' ? 'Street Food' : type === 'restaurant' ? 'Restaurants' : 'Cakes'}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                            <input
+                                placeholder={`Search for ${featuredType.replace("_", " ")} to feature...`}
+                                value={featuredSearch}
+                                onChange={(e) => setFeaturedSearch(e.target.value)}
+                                className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#111827] border border-white/5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                            />
+                        </div>
+
+                        {/* Results */}
+                        <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden min-h-[200px]">
+                            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                                <h3 className="font-semibold flex items-center gap-2">
+                                    <Star className="h-4 w-4 text-yellow-500" /> Results
+                                </h3>
+                                <span className="text-xs text-gray-600">{searchResults?.length || 0} results</span>
+                            </div>
+
+                            <div className="divide-y divide-white/5">
+                                {isSearchLoading ? (
+                                    <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-blue-500" /></div>
+                                ) : !searchResults || searchResults.length === 0 ? (
+                                    <div className="py-12 text-center text-gray-600">
+                                        {featuredSearch ? "No items found" : "Type to search..."}
+                                    </div>
+                                ) : (
+                                    searchResults.map((item: any) => (
+                                        <div key={item.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02]">
+                                            <div className="flex items-center gap-4">
+                                                {/* Image */}
+                                                <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden shrink-0">
+                                                    {(item.image || item.profileImageUrl || item.images?.[0]) ? (
+                                                        <img src={item.image || item.profileImageUrl || item.images?.[0]} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                                                            No Img
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-medium text-sm">{item.name || item.businessName}</h4>
+                                                    <p className="text-xs text-gray-500 truncate max-w-[200px]">{item.description || item.address}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-4">
+                                                {item.isPopular && (
+                                                    <span className="text-xs text-yellow-500 font-medium flex items-center gap-1">
+                                                        <Star className="h-3 w-3 fill-current" /> Featured
+                                                    </span>
+                                                )}
+                                                <Button
+                                                    size="sm"
+                                                    variant={item.isPopular ? "destructive" : "secondary"}
+                                                    disabled={togglePopularMutation.isPending}
+                                                    onClick={() => togglePopularMutation.mutate({
+                                                        type: featuredType,
+                                                        id: item.id,
+                                                        isPopular: !item.isPopular
+                                                    })}
+                                                >
+                                                    {item.isPopular ? "Remove" : "Feature"}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>

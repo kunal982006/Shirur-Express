@@ -593,6 +593,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- GLOBAL SEARCH ---
+  app.get("/api/search", async (req: Request, res: Response) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: "Search query 'q' is required" });
+      }
+
+      const results = await storage.searchGlobal(q);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Global search error:", error);
+      res.status(500).json({ message: error.message || "Search failed" });
+    }
+  });
+
+  app.get("/api/search/suggestions", async (req: Request, res: Response) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.json([]); // Return empty for no query
+      }
+      const suggestions = await storage.searchSuggestions(q);
+      res.json(suggestions);
+    } catch (error: any) {
+      console.error("Search suggestions error:", error);
+      res.status(500).json({ message: "Error fetching suggestions" });
+    }
+  });
+
   // --- CUSTOMER NOTIFICATIONS (Aggregated Timeline) ---
   app.get("/api/customer/notifications", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
@@ -2617,6 +2647,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: error.message || "Error importing products"
       });
+    }
+  });
+
+  // --- POPULAR ITEMS ROUTES ---
+
+  // Get all popular items (Public)
+  app.get("/api/homepage/popular", async (_req: Request, res: Response) => {
+    try {
+      const streetFood = await storage.getPopularStreetFood();
+      const restaurants = await storage.getPopularRestaurants();
+      const cakes = await storage.getPopularCakes();
+      const menuItems = await storage.getPopularRestaurantMenuItems();
+      res.json({ streetFood, restaurants, cakes, menuItems });
+    } catch (error: any) {
+      console.error("Get popular items error:", error);
+      res.status(500).json({ message: error.message || "Error fetching popular items" });
+    }
+  });
+
+  // Search items for Admin (Admin only)
+  app.get("/api/admin/search-items", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { query, type } = req.query;
+      if (!query || !type) {
+        return res.status(400).json({ message: "Query and type are required" });
+      }
+      const results = await storage.searchItemsForAdmin(query as string, type as any);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Admin search items error:", error);
+      res.status(500).json({ message: error.message || "Error searching items" });
+    }
+  });
+
+  // Toggle popular status (Admin only)
+  app.post("/api/admin/toggle-popular", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, id, isPopular } = req.body;
+      if (!type || !id || isPopular === undefined) {
+        return res.status(400).json({ message: "Type, id, and isPopular are required" });
+      }
+      const updatedItem = await storage.togglePopularStatus(type, id, isPopular);
+      res.json(updatedItem);
+    } catch (error: any) {
+      console.error("Toggle popular status error:", error);
+      res.status(500).json({ message: error.message || "Error updating status" });
     }
   });
 

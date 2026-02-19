@@ -61,6 +61,7 @@ export const serviceProviders = pgTable("service_providers", {
   serviceArea: integer("service_area_km").default(10),
   isVerified: boolean("is_verified").default(false),
   isAvailable: boolean("is_available").default(true),
+  isPopular: boolean("is_popular").default(false), // New field for Popular Restaurants
   specializations: jsonb("specializations").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -178,6 +179,7 @@ export const streetFoodItems = pgTable("street_food_items", {
   isVeg: boolean("is_veg").default(true),
   isAvailable: boolean("is_available").default(true),
   spicyLevel: text("spicy_level"),
+  isPopular: boolean("is_popular").default(false), // New field
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -192,6 +194,7 @@ export const restaurantMenuItems = pgTable("restaurant_menu_items", {
   isVeg: boolean("is_veg").default(true),
   isAvailable: boolean("is_available").default(true),
   cuisine: text("cuisine"),
+  isPopular: boolean("is_popular").default(false), // New field
 });
 
 

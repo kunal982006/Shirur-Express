@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { Trie } from "@/lib/trie";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api"; // ADDED
+import { HorizontalScrollList } from "@/components/horizontal-scroll-list"; // ADDED
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -97,36 +98,50 @@ export default function Home() {
     setIsLocationOpen(false);
   };
 
-  const trie = useMemo(() => {
-    const t = new Trie();
-    services.forEach(service => t.insert(service.name));
-    // Add common keywords or aliases if needed
-    t.insert("Food");
-    t.insert("Repair");
-    return t;
-  }, []);
+  // REMOVED LOCAL TRIE - Using Backend Search API for suggestions
+  // Debounce logic for API calls
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (selectedService.length > 2) {
+        try {
+          const res = await api.get(`/api/search/suggestions?q=${encodeURIComponent(selectedService)}`);
+          setSuggestions(res.data);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Failed to fetch suggestions", error);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [selectedService]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSelectedService(value);
-    if (value) {
-      const results = trie.search(value);
-      setSuggestions(results);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+    // Debounce effect will handle fetching
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setSelectedService(suggestion);
     setShowSuggestions(false);
+    // Optional: Auto search on click?
+    // navigate(`/search?term=${encodeURIComponent(suggestion)}&location=${encodeURIComponent(location)}`);
   };
 
   // useQuery call abhi bhi rakha hai, for best practice
   const { data: serviceCategories, isLoading } = useQuery({
     queryKey: ["/api/service-categories"],
+  });
+
+  // Fetch Popular Items
+  const { data: popularData, isLoading: isPopularLoading } = useQuery({
+    queryKey: ["/api/homepage/popular"],
+    queryFn: () => api.get("/homepage/popular").then(r => r.data),
   });
 
   const handleLocationClick = () => {
@@ -336,9 +351,141 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 5. Popular Street Food Section */}
+      <HorizontalScrollList
+        title="Popular Street Food"
+        items={popularData?.streetFood || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/street-food")}
+        renderItem={(item: any) => (
+          <div onClick={() => navigate(`/street-food?item=${item.id}`)} className="cursor-pointer group">
+            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
+              <img
+                src={item.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                alt={item.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-gray-800 flex items-center gap-1 shadow-sm">
+                <span className="text-yellow-600">★</span> 4.5
+              </div>
+              {item.isVeg && (
+                <div className="absolute bottom-2 left-2 bg-green-600/90 backdrop-blur-md p-1 rounded-full shadow-sm">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                </div>
+              )}
+            </div>
+            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+            <p className="text-xs text-gray-500 truncate">{item.description || " Delicious street food"}</p>
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 rounded-full border-blue-200 text-blue-600 hover:bg-blue-50">
+                Add +
+              </Button>
+            </div>
+          </div>
+        )}
+      />
 
+      {/* 5.5. Popular Restaurant Food Section (New Request) */}
+      <HorizontalScrollList
+        title="Popular Restaurant Food"
+        items={popularData?.menuItems || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/restaurants")}
+        renderItem={(item: any) => (
+          <div onClick={() => navigate(`/restaurant/${item.providerId}`)} className="cursor-pointer group">
+            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
+              <img
+                src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                alt={item.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                <p className="text-[10px] text-white truncate font-medium">{item.provider?.businessName}</p>
+              </div>
+              {item.isVeg && (
+                <div className="absolute top-2 left-2 bg-green-600/90 backdrop-blur-md p-1 rounded-full shadow-sm">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                </div>
+              )}
+            </div>
+            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+            <p className="text-xs text-gray-500 truncate">{item.description || item.category || "Restaurant Special"}</p>
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 rounded-full border-orange-200 text-orange-600 hover:bg-orange-50">
+                Order
+              </Button>
+            </div>
+          </div>
+        )}
+      />
 
-      {/* NOTE: Bottom Navbar ko abhi delete kiya hai, kyunki wo tumhare app structure par depend karega */}
+      {/* 6. Popular Restaurants Section */}
+      <HorizontalScrollList
+        title="Popular Restaurants"
+        items={popularData?.restaurants || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/restaurants")}
+        renderItem={(provider: any) => (
+          <div onClick={() => navigate(`/restaurant/${provider.id}`)} className="cursor-pointer group">
+            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
+              <img
+                src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                alt={provider.businessName}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              {!provider.isAvailable && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs uppercase tracking-wider border border-white/50 px-3 py-1 rounded-full">Closed</span>
+                </div>
+              )}
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-10">
+                <h3 className="font-bold text-white text-sm truncate">{provider.businessName}</h3>
+                <p className="text-[10px] text-gray-300 truncate">{provider.address || "Shirur"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0.5 rounded-md font-medium">
+                <span className="text-green-600">★</span> 4.2
+              </span>
+              <span>• 25 mins</span>
+              <span>• ₹200 for two</span>
+            </div>
+          </div>
+        )}
+      />
+
+      {/* 7. Trending Cakes Section */}
+      <HorizontalScrollList
+        title="Trending Cakes"
+        items={popularData?.cakes || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/cake-shop")}
+        renderItem={(cake: any) => (
+          <div onClick={() => navigate(`/cake-shop?item=${cake.id}`)} className="cursor-pointer group">
+            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-pink-50">
+              <img
+                src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                alt={cake.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute top-2 left-2 bg-pink-500/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm">
+                Trending
+              </div>
+            </div>
+            <h3 className="font-bold text-gray-800 text-sm truncate">{cake.name}</h3>
+            <p className="text-xs text-gray-500 truncate">{cake.weight || "1 kg"} • {cake.flavor || "Chocolate"}</p>
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-sm font-bold text-gray-900">₹{cake.price}</span>
+              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200">
+                +
+              </Button>
+            </div>
+          </div>
+        )}
+      />
+
     </div>
   );
 }
