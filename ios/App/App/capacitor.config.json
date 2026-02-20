@@ -1,0 +1,6 @@
+{
+	"appId": "com.shirurexpress.app",
+	"appName": "Shirur Express",
+	"webDir": "dist/public",
+	"packageClassList": []
+}
