@@ -79,6 +79,13 @@ const plumberProblems = [
             "Foot valve replacement",
         ],
     },
+    {
+        device: "Others",
+        issues: [
+            "General Plumbing Work",
+            "Other Issue",
+        ],
+    },
 ];
 
 async function seedPlumberProblems() {

@@ -103,141 +103,65 @@ export default function PlumberDetail() {
                     <span>Back to Plumbers</span>
                 </Button>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Plumber Profile */}
-                    <div className="lg:col-span-1">
+                <div className="w-full max-w-3xl mx-auto">
+                    {/* Problems This Plumber Can Handle OR Booking Form */}
+
+                    {showBooking && selectedProblem ? (
+                        <Card className="mt-0 border-primary/20 shadow-md">
+                            <CardHeader>
+                                <div className="flex justify-between items-center mb-2">
+                                    <CardTitle>Book Service Slot</CardTitle>
+                                    <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
+                                        Change Problem
+                                    </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Selected Issue: <span className="text-primary font-bold text-lg">{selectedProblem.name}</span>
+                                </p>
+                            </CardHeader>
+                            <CardContent>
+                                <BookingSlotForm
+                                    providerId={providerId!}
+                                    problemId={selectedProblem.id}
+                                    problemName={selectedProblem.name}
+                                    serviceType="plumber"
+                                    onSuccess={() => {
+                                        // Maybe redirect or show success
+                                    }}
+                                />
+                            </CardContent>
+                        </Card>
+                    ) : (
                         <Card>
                             <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <CardTitle className="text-2xl mb-1">
-                                            {provider.businessName}
-                                        </CardTitle>
-                                        <p className="text-sm text-muted-foreground">
-                                            @{provider.user?.username}
-                                        </p>
-                                    </div>
-                                    {provider.isVerified && (
-                                        <Badge variant="secondary" className="flex items-center gap-1">
-                                            <CheckCircle2 className="h-3 w-3" />
-                                            Verified
-                                        </Badge>
-                                    )}
-                                </div>
+                                <CardTitle>Plumbing Problems I Can Fix</CardTitle>
+                                <p className="text-sm text-muted-foreground">
+                                    Select a problem to book a service slot
+                                </p>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                {/* Rating */}
-                                <div className="flex items-center space-x-2">
-                                    <div className="flex items-center">
-                                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                                        <span className="ml-1 font-semibold">
-                                            {provider.rating}
-                                        </span>
+                            <CardContent className="max-h-[400px] overflow-y-auto space-y-4">
+                                {appliancesLoading ? (
+                                    <div className="flex justify-center py-8">
+                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                                     </div>
-                                    <span className="text-sm text-muted-foreground">
-                                        ({provider.reviewCount} reviews)
-                                    </span>
-                                </div>
-
-                                <Separator />
-
-                                {/* Experience */}
-                                <div className="flex items-center space-x-2 text-muted-foreground">
-                                    <Briefcase className="h-4 w-4" />
-                                    <span>{provider.experience} years experience</span>
-                                </div>
-
-                                {/* Location */}
-                                <div className="flex items-start space-x-2 text-muted-foreground">
-                                    <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm">{provider.address}</span>
-                                </div>
-
-                                {/* Availability */}
-                                <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span className={provider.isAvailable ? "text-green-600" : "text-red-600"}>
-                                        {provider.isAvailable ? "Available Now" : "Not Available"}
-                                    </span>
-                                </div>
-
-                                <Separator />
-
-                                {/* Specializations */}
-                                {provider.specializations && provider.specializations.length > 0 && (
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Specializations</h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {provider.specializations.map((spec: string, index: number) => (
-                                                <Badge key={index} variant="outline">
-                                                    {spec}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
+                                ) : appliances && appliances.length > 0 ? (
+                                    appliances.map((appliance) => (
+                                        <ApplianceProblems
+                                            key={appliance.id}
+                                            appliance={appliance}
+                                            selectedProblemId={selectedProblem?.id || ""}
+                                            onProblemSelect={handleProblemSelect}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className="text-center text-muted-foreground py-8">
+                                        No problems listed
+                                    </p>
                                 )}
                             </CardContent>
                         </Card>
-                    </div>
+                    )}
 
-                    {/* Problems This Plumber Can Handle OR Booking Form */}
-                    <div className="lg:col-span-2">
-                        {showBooking && selectedProblem ? (
-                            <Card className="mt-0 border-primary/20 shadow-md">
-                                <CardHeader>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <CardTitle>Book Service Slot</CardTitle>
-                                        <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
-                                            Change Problem
-                                        </Button>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Selected Issue: <span className="text-primary font-bold text-lg">{selectedProblem.name}</span>
-                                    </p>
-                                </CardHeader>
-                                <CardContent>
-                                    <BookingSlotForm
-                                        providerId={providerId!}
-                                        problemId={selectedProblem.id}
-                                        problemName={selectedProblem.name}
-                                        serviceType="plumber"
-                                        onSuccess={() => {
-                                            // Maybe redirect or show success
-                                        }}
-                                    />
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Plumbing Problems I Can Fix</CardTitle>
-                                    <p className="text-sm text-muted-foreground">
-                                        Select a problem to book a service slot
-                                    </p>
-                                </CardHeader>
-                                <CardContent className="max-h-[400px] overflow-y-auto space-y-4">
-                                    {appliancesLoading ? (
-                                        <div className="flex justify-center py-8">
-                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                        </div>
-                                    ) : appliances && appliances.length > 0 ? (
-                                        appliances.map((appliance) => (
-                                            <ApplianceProblems
-                                                key={appliance.id}
-                                                appliance={appliance}
-                                                selectedProblemId={selectedProblem?.id || ""}
-                                                onProblemSelect={handleProblemSelect}
-                                            />
-                                        ))
-                                    ) : (
-                                        <p className="text-center text-muted-foreground py-8">
-                                            No problems listed
-                                        </p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
                 </div>
             </div>
         </div >

@@ -21,6 +21,7 @@ const IMAGE_MAPPING: Record<string, string> = {
   "Pipe & Leakage": "/images/plumber/leakage.jpeg",
   "Water Heater (Geyser)": "/images/plumber/geyser.jpeg",
   "Water Pump": "/images/plumber/motor.jpeg",
+  "Others": "/images/electrician/others.png",
 };
 
 export default function Plumber() {
