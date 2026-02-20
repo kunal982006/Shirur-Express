@@ -1,0 +1,262 @@
+{
+    "id": "/shirur-express-pwa",
+    "name": "Shirur Express",
+    "short_name": "Shirur Express",
+    "description": "Your one-stop solution for local services, food delivery, grocery, and more in Shirur",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": [
+        "standalone",
+        "fullscreen",
+        "minimal-ui"
+    ],
+    "orientation": "any",
+    "dir": "ltr",
+    "lang": "en-US",
+    "theme_color": "#1a1a2e",
+    "background_color": "#1a1a2e",
+    "categories": [
+        "food",
+        "shopping",
+        "lifestyle",
+        "utilities",
+        "notes"
+    ],
+    "iarc_rating_id": "123456",
+    "prefer_related_applications": false,
+    "related_applications": [
+        {
+            "platform": "play",
+            "url": "https://play.google.com/store/apps/details?id=com.shirurexpress.app",
+            "id": "com.shirurexpress.app"
+        },
+        {
+            "platform": "itunes",
+            "url": "https://apps.apple.com/app/shirur-express/id123456789"
+        },
+        {
+            "platform": "windows",
+            "url": "https://www.microsoft.com/store/apps/shirur-express"
+        }
+    ],
+    "icons": [
+        {
+            "src": "/icons/icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/maskable-icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/maskable-icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/screenshots/screenshot-wide.png",
+            "sizes": "1920x1080",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Shirur Express - Home Page Desktop View"
+        },
+        {
+            "src": "/screenshots/screenshot-mobile.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Shirur Express - Home Page Mobile View"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Browse Restaurants",
+            "short_name": "Restaurants",
+            "description": "Order food from local restaurants",
+            "url": "/restaurants",
+            "icons": [
+                {
+                    "src": "/icons/shortcut-food.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "My Orders",
+            "short_name": "Orders",
+            "description": "Track your orders",
+            "url": "/my-bookings",
+            "icons": [
+                {
+                    "src": "/icons/shortcut-orders.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Grocery Store",
+            "short_name": "Grocery",
+            "description": "Shop groceries online",
+            "url": "/grocery",
+            "icons": [
+                {
+                    "src": "/icons/shortcut-grocery.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        }
+    ],
+    "launch_handler": {
+        "client_mode": [
+            "focus-existing",
+            "auto"
+        ]
+    },
+    "share_target": {
+        "action": "/share",
+        "method": "GET",
+        "enctype": "application/x-www-form-urlencoded",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+    "handle_links": "preferred",
+    "scope_extensions": [
+        {
+            "origin": "https://shirur-express.onrender.com"
+        },
+        {
+            "origin": "https://*.shirur-express.onrender.com"
+        }
+    ],
+    "protocol_handlers": [
+        {
+            "protocol": "web+shirur",
+            "url": "/?action=%s"
+        },
+        {
+            "protocol": "web+order",
+            "url": "/order?id=%s"
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "/open-file",
+            "accept": {
+                "text/plain": [
+                    ".txt"
+                ],
+                "text/csv": [
+                    ".csv"
+                ],
+                "application/json": [
+                    ".json"
+                ]
+            },
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ],
+            "launch_type": "single-client"
+        }
+    ],
+    "note_taking": {
+        "new_note_url": "/notes/new"
+    },
+    "widgets": [
+        {
+            "name": "Shirur Express Orders",
+            "short_name": "Orders",
+            "description": "View your recent orders",
+            "tag": "orders",
+            "ms_ac_template": "/widgets/orders-template.json",
+            "data": "/api/widgets/orders",
+            "type": "application/json",
+            "screenshots": [
+                {
+                    "src": "/screenshots/widget-orders.png",
+                    "sizes": "600x400",
+                    "label": "Orders Widget Preview"
+                }
+            ],
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96"
+                }
+            ],
+            "backgrounds": [
+                {
+                    "src": "/images/widget-bg.png",
+                    "sizes": "600x400"
+                }
+            ]
+        }
+    ],
+    "serviceworker": {
+        "src": "/sw.js",
+        "scope": "/",
+        "use_cache": false
+    }
+}
