@@ -1,6 +1,7 @@
 // client/src/pages/Grocery.tsx (MODIFIED FOR providerId)
 import { useState } from "react";
 import { useQuery, useInfiniteQuery, type QueryFunctionContext } from "@tanstack/react-query";
+import { API_BASE_URL } from "@/lib/api";
 
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ type GMartProvider = ServiceProvider & { user: User; category: ServiceCategory }
 
 // API function GMart provider ko fetch karne ke liye
 const fetchGmartProvider = async (): Promise<GMartProvider | undefined> => {
-  const res = await fetch(`/api/service-providers?category=grocery`);
+  const res = await fetch(`${API_BASE_URL}/api/service-providers?category=grocery`);
   if (!res.ok) {
     throw new Error('Failed to fetch GMart provider');
   }
@@ -92,7 +93,7 @@ const fetchGroceryProducts = async ({
     params.append("categories", categories.join(","));
   }
 
-  const res = await fetch(`/api/grocery-products?${params.toString()}`);
+  const res = await fetch(`${API_BASE_URL}/api/grocery-products?${params.toString()}`);
   if (!res.ok) {
     throw new Error('Failed to fetch grocery products');
   }
@@ -166,7 +167,7 @@ export default function Grocery() {
     queryKey: ["groceryMetadata", gmartProviderId],
     queryFn: async () => {
       if (!gmartProviderId) return { categories: [], brands: [] };
-      const res = await fetch(`/api/grocery-metadata?providerId=${gmartProviderId}`);
+      const res = await fetch(`${API_BASE_URL}/api/grocery-metadata?providerId=${gmartProviderId}`);
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },

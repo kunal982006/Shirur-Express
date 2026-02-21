@@ -1,9 +1,12 @@
-// client/src/lib/api.ts (OVERWRITE THIS FILE)
+// client/src/lib/api.ts
 import axios from "axios";
+
+// Production mein yeh Render backend URL hoga, dev mein empty string (same origin)
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 // Ek standard axios instance create kar rahe hain
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },

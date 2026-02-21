@@ -1,6 +1,7 @@
 import { createContext, useContext, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { API_BASE_URL } from "@/lib/api";
 
 interface User {
   id: string;
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/auth/me"],
     queryFn: async () => {
       // Using fetch to get the current user
-      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" });
       if (!res.ok) {
         // If the status is 401 (not authenticated), we don't throw an error,
         // we just return null because it's an expected state.
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useMutation({
     mutationFn: async () => {
       // We use standard 'fetch' for maximum reliability.
-      const response = await fetch("/api/auth/logout", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         // 'credentials: "include"' is essential for sending the session cookie.
         credentials: "include",

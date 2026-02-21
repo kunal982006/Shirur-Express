@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertRentalPropertySchema, type InsertRentalProperty } from "@shared/schema";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -117,7 +118,7 @@ export default function PropertyListingForm() {
             // For now, let's just use a simple URL input or assume the backend route exists.
             // I will add a generic upload route to server/routes.ts quickly.
 
-            const res = await fetch("/api/upload", { // New generic route I will add
+            const res = await fetch(`${API_BASE_URL}/api/upload`, { // New generic route I will add
                 method: "POST",
                 body: formData,
             });

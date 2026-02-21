@@ -2,5 +2,12 @@
 	"appId": "com.shirurexpress.app",
 	"appName": "Shirur Express",
 	"webDir": "dist/public",
+	"bundledWebRuntime": false,
+	"server": {
+		"url": "https://shirur-express.onrender.com",
+		"allowNavigation": [
+			"shirur-express.onrender.com"
+		]
+	},
 	"packageClassList": []
 }

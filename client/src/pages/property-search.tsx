@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { API_BASE_URL } from "@/lib/api";
 import { Link } from "wouter";
 import { RentalProperty, User } from "@shared/schema";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,7 @@ export default function PropertySearch() {
             params.append("minRent", filters.minRent.toString());
             params.append("maxRent", filters.maxRent.toString());
 
-            const res = await fetch(`/api/rental-properties?${params.toString()}`);
+            const res = await fetch(`${API_BASE_URL}/api/rental-properties?${params.toString()}`);
             if (!res.ok) throw new Error("Failed to fetch properties");
             return res.json();
         },

@@ -2,6 +2,7 @@
 
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import cors from "cors";
 import connectPgSimple from "connect-pg-simple";
 import { pool, checkDatabaseConnection } from "./db";
 import { registerRoutes } from "./routes"; // registerRoutes from server/routes.ts
@@ -37,11 +38,22 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+// CORS configuration for Capacitor iOS/Android builds
+app.use(cors({
+  origin: [
+    "capacitor://localhost",
+    "ionic://localhost",
+    "http://localhost",
+    "http://localhost:5173",
+  ],
+  credentials: true,
+}));
+
 app.use(
   session({
     cookie: {
       secure: app.get("env") === "production", // Render par ye TRUE hona chahiye, dev mein FALSE
-      sameSite: "lax", // Ye zaroori hai
+      sameSite: app.get("env") === "production" ? "none" as const : "lax" as const, // "none" for cross-origin Capacitor requests
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     },
     store: new PgStore({

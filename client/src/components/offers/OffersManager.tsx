@@ -1,7 +1,7 @@
 // client/src/components/offers/OffersManager.tsx
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import api, { API_BASE_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -263,7 +263,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
         formData.append("images", file);
 
         try {
-            const res = await fetch("/api/upload", {
+            const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: "POST",
                 body: formData,
                 credentials: "include",

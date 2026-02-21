@@ -20,7 +20,7 @@ if (!databaseUrl) {
 }
 
 // Warn about pooler URL
-if (!databaseUrl.includes("-pooler") && !databaseUrl.includes("localhost")) {
+if (!databaseUrl.includes("-pooler") && !databaseUrl.includes("https://shirur-express.onrender.com")) {
   console.warn("⚠️ WARNING: DATABASE_URL doesn't appear to use Neon pooler. Consider using the pooled connection for production stability.");
 }
 

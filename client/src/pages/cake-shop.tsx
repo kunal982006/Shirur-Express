@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { API_BASE_URL } from "@/lib/api";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,7 +81,7 @@ export default function CakeShop() {
   const { data: cakeShops, isLoading } = useQuery({
     queryKey: ["/api/service-providers", { category: "cake-shop" }],
     queryFn: async () => {
-      const res = await fetch("/api/service-providers?category=cake-shop");
+      const res = await fetch(`${API_BASE_URL}/api/service-providers?category=cake-shop`);
       if (!res.ok) throw new Error("Failed to fetch cake shops");
       return res.json();
     }
