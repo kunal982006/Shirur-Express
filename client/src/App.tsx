@@ -12,46 +12,47 @@ import { Loader2 } from "lucide-react";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
-// Lazy Loaded Routes
-const Electrician = lazy(() => import("@/pages/electrician"));
-const ElectricianDetail = lazy(() => import("@/pages/electrician-detail"));
-const PlumberDetail = lazy(() => import("@/pages/plumber-detail"));
-const Plumber = lazy(() => import("@/pages/plumber"));
-const Beauty = lazy(() => import("@/pages/beauty"));
-const BeautyDetail = lazy(() => import("@/pages/BeautyDetail"));
-const BookBeauty = lazy(() => import("@/pages/book-beauty"));
-const CakeShop = lazy(() => import("@/pages/cake-shop"));
-const Grocery = lazy(() => import("@/pages/grocery"));
-const Rental = lazy(() => import("@/pages/rental"));
-const StreetFood = lazy(() => import("@/pages/street-food"));
-const StreetFoodDetail = lazy(() => import("@/pages/StreetFoodDetail"));
-const RestaurantsIndex = lazy(() => import("@/pages/restaurants/index"));
-const RestaurantDetail = lazy(() => import("@/pages/restaurants/RestaurantDetail"));
-const Checkout = lazy(() => import("@/pages/checkout"));
-const Settings = lazy(() => import("@/pages/settings"));
-const DeleteAccount = lazy(() => import("@/pages/delete-account"));
-const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
-const ProviderDashboard = lazy(() => import("@/pages/provider-dashboard"));
-const MyBookings = lazy(() => import("@/pages/my-bookings"));
-const InvoicePayment = lazy(() => import("@/pages/invoice-payment"));
-const Login = lazy(() => import("@/pages/login"));
-const Signup = lazy(() => import("@/pages/signup"));
-const ProviderOnboarding = lazy(() => import("@/pages/provider-onboarding"));
-const OrderSuccess = lazy(() => import("@/pages/OrderSuccess"));
-const RunnerDashboard = lazy(() => import("@/pages/runner-dashboard"));
-const RunnerManagement = lazy(() => import("@/pages/runner-management"));
-const RiderDashboard = lazy(() => import("@/pages/rider-dashboard"));
-const PropertySearch = lazy(() => import("@/pages/property-search"));
-const PropertyDetail = lazy(() => import("@/pages/property-detail"));
-const PropertyListingForm = lazy(() => import("@/pages/property-listing-form"));
-const DeliveryPartnerOnboarding = lazy(() => import("@/pages/delivery-partner-onboarding"));
-const DeliveryPartnerDashboard = lazy(() => import("@/pages/delivery-partner-dashboard"));
-const OrderTracking = lazy(() => import("@/pages/order-tracking"));
-const OfferDetailsPage = lazy(() => import("@/pages/offer-details"));
-const NotificationsPage = lazy(() => import("@/pages/notifications"));
-const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
-const SearchResults = lazy(() => import("@/pages/search-results"));
+// Eager Loaded Routes to prevent Vite hook unmount issues
+import Electrician from "@/pages/electrician";
+import ElectricianDetail from "@/pages/electrician-detail";
+import PlumberDetail from "@/pages/plumber-detail";
+import Plumber from "@/pages/plumber";
+import Beauty from "@/pages/beauty";
+import BeautyDetail from "@/pages/BeautyDetail";
+import BookBeauty from "@/pages/book-beauty";
+import CakeShop from "@/pages/cake-shop";
+import Grocery from "@/pages/grocery";
+import Rental from "@/pages/rental";
+import StreetFood from "@/pages/street-food";
+import StreetFoodDetail from "@/pages/StreetFoodDetail";
+import RestaurantsIndex from "@/pages/restaurants/index";
+import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
+import Checkout from "@/pages/checkout";
+import Settings from "@/pages/settings";
+import DeleteAccount from "@/pages/delete-account";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import ProviderDashboard from "@/pages/provider-dashboard";
+import MyBookings from "@/pages/my-bookings";
+import InvoicePayment from "@/pages/invoice-payment";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
+import ProviderOnboarding from "@/pages/provider-onboarding";
+import OrderSuccess from "@/pages/OrderSuccess";
+import RunnerDashboard from "@/pages/runner-dashboard";
+import RunnerManagement from "@/pages/runner-management";
+import RiderDashboard from "@/pages/rider-dashboard";
+import PropertySearch from "@/pages/property-search";
+import PropertyDetail from "@/pages/property-detail";
+import PropertyListingForm from "@/pages/property-listing-form";
+import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
+import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
+import OrderTracking from "@/pages/order-tracking";
+import OfferDetailsPage from "@/pages/offer-details";
+import NotificationsPage from "@/pages/notifications";
+import AdminDashboard from "@/pages/admin-dashboard";
+import SearchResults from "@/pages/search-results";
 
+// Fallback loader if ever needed again
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />

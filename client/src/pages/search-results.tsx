@@ -1,7 +1,6 @@
 
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
 import { Loader2, Search, ArrowLeft, MapPin, Star, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +25,9 @@ export default function SearchResults() {
         queryKey: ["/api/search", searchTerm],
         queryFn: async () => {
             if (!searchTerm) return null;
-            const res = await api.get(`/api/search?q=${encodeURIComponent(searchTerm)}`);
-            return res.data;
+            const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+            if (!res.ok) return null;
+            return res.json();
         },
         enabled: searchTerm.length > 0,
     });
@@ -44,14 +44,22 @@ export default function SearchResults() {
         }
     };
 
+    const services = results?.services || [];
+    const restaurants = results?.restaurants || [];
+    const streetFood = results?.streetFood || [];
+    const menuItems = results?.menuItems || [];
+    const cakes = results?.cakes || [];
+    const grocery = results?.grocery || [];
+    const rentals = results?.rentals || [];
+
     const hasResults = results && (
-        results.services.length > 0 ||
-        results.restaurants.length > 0 ||
-        results.streetFood.length > 0 ||
-        results.menuItems.length > 0 ||
-        results.cakes.length > 0 ||
-        results.grocery.length > 0 ||
-        results.rentals.length > 0
+        services.length > 0 ||
+        restaurants.length > 0 ||
+        streetFood.length > 0 ||
+        menuItems.length > 0 ||
+        cakes.length > 0 ||
+        grocery.length > 0 ||
+        rentals.length > 0
     );
 
     return (
@@ -92,11 +100,11 @@ export default function SearchResults() {
                 {!isLoading && hasResults && (
                     <>
                         {/* Services */}
-                        {results.services.length > 0 && (
+                        {services.length > 0 && (
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Services</h2>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {results.services.map((service: any) => (
+                                    {services.map((service: any) => (
                                         <Card key={service.id} onClick={() => setLocation(`/${service.slug}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
                                             <CardContent className="p-4 flex items-center gap-3">
                                                 <div className={`p-2 rounded-full bg-${service.color || 'primary'}/10 text-primary`}>
@@ -112,10 +120,10 @@ export default function SearchResults() {
                         )}
 
                         {/* Restaurants */}
-                        {results.restaurants.length > 0 && (
+                        {restaurants.length > 0 && (
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Restaurants</h2>
-                                {results.restaurants.map((repo: any) => (
+                                {restaurants.map((repo: any) => (
                                     <div key={repo.id} onClick={() => setLocation(`/restaurants/${repo.id}`)} className="bg-white p-3 rounded-xl shadow-sm mb-3 flex gap-3 cursor-pointer">
                                         <img src={repo.profileImageUrl || "/placeholder-restaurant.jpg"} className="w-20 h-20 rounded-lg object-cover bg-gray-200" alt={repo.businessName} />
                                         <div className="flex-1">
@@ -134,11 +142,11 @@ export default function SearchResults() {
                         )}
 
                         {/* Matching Menu Items (Food from Restaurants) */}
-                        {results.menuItems.length > 0 && (
+                        {menuItems.length > 0 && (
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Dishes from Restaurants</h2>
                                 <div className="space-y-3">
-                                    {results.menuItems.map((item: any) => (
+                                    {menuItems.map((item: any) => (
                                         <div key={item.id} onClick={() => setLocation(`/restaurants/${item.providerId}`)} className="bg-white p-3 rounded-xl shadow-sm flex justify-between gap-3 cursor-pointer">
                                             <div className="flex-1">
                                                 <div className="flex items-start gap-2">
@@ -167,10 +175,10 @@ export default function SearchResults() {
                         )}
 
                         {/* Street Food */}
-                        {results.streetFood.length > 0 && (
+                        {streetFood.length > 0 && (
                             <HorizontalScrollList
                                 title="Street Food"
-                                items={results.streetFood}
+                                items={streetFood}
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/street-food")}
                                 renderItem={(item: any) => (
@@ -186,10 +194,10 @@ export default function SearchResults() {
                         )}
 
                         {/* Cakes */}
-                        {results.cakes.length > 0 && (
+                        {cakes.length > 0 && (
                             <HorizontalScrollList
                                 title="Cakes"
-                                items={results.cakes}
+                                items={cakes}
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/cake-shop")}
                                 renderItem={(item: any) => (
@@ -205,11 +213,11 @@ export default function SearchResults() {
                         )}
 
                         {/* Grocery */}
-                        {results.grocery.length > 0 && (
+                        {grocery.length > 0 && (
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Grocery Items</h2>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {results.grocery.map((item: any) => (
+                                    {grocery.map((item: any) => (
                                         <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
                                             <img src={item.image || "/placeholder-grocery.jpg"} className="w-full h-24 object-contain mb-2" alt={item.name} />
                                             <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
@@ -221,11 +229,11 @@ export default function SearchResults() {
                         )}
 
                         {/* Rentals */}
-                        {results.rentals.length > 0 && (
+                        {rentals.length > 0 && (
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Rental Properties</h2>
                                 <div className="space-y-3">
-                                    {results.rentals.map((prop: any) => (
+                                    {rentals.map((prop: any) => (
                                         <div key={prop.id} onClick={() => setLocation(`/properties/${prop.id}`)} className="bg-white p-3 rounded-xl shadow-sm flex gap-3 cursor-pointer">
                                             <img src={prop.images?.[0] || "/placeholder-house.jpg"} className="w-24 h-24 rounded-lg object-cover bg-gray-200" alt={prop.title} />
                                             <div>

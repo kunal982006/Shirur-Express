@@ -343,9 +343,12 @@ export default function Home() {
             {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
               <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
                 {/* ServiceCard ki jagah, chota icon button banao */}
-                <Link to={`/${service.slug}`} className="p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all">
+                <div 
+                  onClick={() => navigate(`/${service.slug}`)} 
+                  className="cursor-pointer p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all"
+                >
                   <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
-                </Link>
+                </div>
                 <span className="text-xs md:text-sm text-center mt-1.5 font-medium text-gray-600 truncate max-w-full">{service.name}</span>
               </div>
             ))}
