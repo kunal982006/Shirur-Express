@@ -297,6 +297,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/auth/profile", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+
+      // Delete user and all associated data from the DB transactionally
+      await storage.deleteUser(userId);
+
+      // Log the user out since they no longer exist
+      req.logout((err) => {
+        if (err) {
+          console.error("Logout error during account deletion:", err);
+          // Even if passport fails to log out the memory session, the DB data is gone. 
+          // So still 200 OK.
+        }
+        res.json({ message: "Account deleted successfully" });
+      });
+    } catch (error: any) {
+      console.error("DELETE /api/auth/profile error:", error);
+      res.status(500).json({ message: "Error deleting account. " + (error.message || "") });
+    }
+  });
+
   app.patch("/api/auth/profile", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
@@ -2663,6 +2685,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get popular items error:", error);
       res.status(500).json({ message: error.message || "Error fetching popular items" });
+    }
+  });
+
+  // TEMPORARY: Endpoint to update street food images
+  app.get("/api/update-street-food-images", async (_req: Request, res: Response) => {
+    try {
+      const { updateStreetFoodImagesDirectly } = await import("./update_images");
+      const result = await updateStreetFoodImagesDirectly();
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error updating images:", error);
+      res.status(500).json({ message: error.message || "Error updating images" });
     }
   });
 

@@ -49,6 +49,9 @@ import {
   restaurantOrders,
   type RestaurantOrder,
   type InsertRestaurantOrder,
+  providerOffers,
+  type ProviderOffer,
+  type InsertProviderOffer,
   // DELIVERY PARTNER IMPORTS
   deliveryPartners,
   type DeliveryPartner,
@@ -67,6 +70,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<InsertUser>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
+  deleteUser(id: string): Promise<void>;
   updateStripeCustomerId(userId: string, customerId: string): Promise<User>;
   updateUserStripeInfo(
     userId: string,
@@ -372,6 +377,48 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`User with id ${id} not found`);
     }
     return updatedUser;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      // 1. Check if user is a service provider and delete associated records
+      const provider = await tx.query.serviceProviders.findFirst({
+        where: eq(serviceProviders.userId, id),
+      });
+
+      if (provider) {
+        // Delete provider's specific offerings
+        await tx.delete(serviceOfferings).where(eq(serviceOfferings.providerId, provider.id));
+        await tx.delete(cakeProducts).where(eq(cakeProducts.providerId, provider.id));
+        await tx.delete(groceryProducts).where(eq(groceryProducts.providerId, provider.id));
+        await tx.delete(streetFoodItems).where(eq(streetFoodItems.providerId, provider.id));
+        await tx.delete(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, provider.id));
+        await tx.delete(providerOffers).where(eq(providerOffers.providerId, provider.id));
+
+        // Delete orders meant for this provider
+        await tx.delete(restaurantOrders).where(eq(restaurantOrders.providerId, provider.id));
+        await tx.delete(streetFoodOrders).where(eq(streetFoodOrders.providerId, provider.id));
+        await tx.delete(groceryOrders).where(eq(groceryOrders.providerId, provider.id));
+
+        // Delete provider profile
+        await tx.delete(serviceProviders).where(eq(serviceProviders.id, provider.id));
+      }
+
+      // 2. Delete Delivery Partner Profile if exists
+      await tx.delete(deliveryPartners).where(eq(deliveryPartners.userId, id));
+
+      // 3. Delete user's own orders/bookings/invoices/reviews
+      await tx.delete(invoices).where(eq(invoices.userId, id));
+      await tx.delete(bookings).where(eq(bookings.userId, id));
+      await tx.delete(restaurantOrders).where(eq(restaurantOrders.userId, id));
+      await tx.delete(streetFoodOrders).where(eq(streetFoodOrders.userId, id));
+      await tx.delete(groceryOrders).where(eq(groceryOrders.userId, id));
+      await tx.delete(reviews).where(eq(reviews.userId, id));
+      await tx.delete(rentalProperties).where(eq(rentalProperties.ownerId, id));
+
+      // 4. Finally delete the User record
+      await tx.delete(users).where(eq(users.id, id));
+    });
   }
 
   async updateUserFcmToken(userId: string, token: string): Promise<User> {

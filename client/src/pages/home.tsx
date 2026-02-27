@@ -343,8 +343,8 @@ export default function Home() {
             {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
               <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
                 {/* ServiceCard ki jagah, chota icon button banao */}
-                <div 
-                  onClick={() => navigate(`/${service.slug}`)} 
+                <div
+                  onClick={() => navigate(`/${service.slug}`)}
                   className="cursor-pointer p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all"
                 >
                   <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
@@ -366,7 +366,7 @@ export default function Home() {
           <div onClick={() => navigate(`/street-food?item=${item.id}`)} className="cursor-pointer group">
             <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
               <img
-                src={item.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                src={item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                 alt={item.name}
                 loading="lazy"
                 decoding="async"

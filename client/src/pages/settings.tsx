@@ -19,9 +19,20 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LocationPicker } from "@/components/location-picker";
-import { Loader2, ArrowLeft, Save, User as UserIcon, Mail, Phone, MapPin } from "lucide-react";
+import { Loader2, ArrowLeft, Save, User as UserIcon, Mail, Phone, MapPin, Trash2 } from "lucide-react";
 
 // Schema for profile updates
 const profileSchema = z.object({
@@ -39,6 +50,7 @@ export default function Settings() {
     const queryClient = useQueryClient();
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Initialize form with default values from user
     const form = useForm<ProfileFormValues>({
@@ -95,6 +107,27 @@ export default function Settings() {
             });
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setIsDeleting(true);
+        try {
+            await api.delete("/auth/profile");
+            toast({
+                title: "Account Deleted",
+                description: "Your account has been successfully deleted.",
+            });
+            // Clear auth state and redirect to home layout where login handles itself
+            window.location.href = "/";
+        } catch (error: any) {
+            console.error("Delete account error:", error);
+            toast({
+                title: "Deletion Failed",
+                description: error.response?.data?.message || "Could not delete account. Please try again.",
+                variant: "destructive",
+            });
+            setIsDeleting(false);
         }
     };
 
@@ -246,6 +279,49 @@ export default function Settings() {
                                 </div>
                             </form>
                         </Form>
+                    </CardContent>
+                </Card>
+                <Card className="border-none shadow-lg bg-card/60 backdrop-blur-sm mt-8 border-t-4 border-t-destructive">
+                    <CardHeader>
+                        <CardTitle className="text-xl font-bold flex items-center gap-2 text-destructive">
+                            <Trash2 className="h-5 w-5" />
+                            Danger Zone
+                        </CardTitle>
+                        <CardDescription>
+                            Once you delete your account, there is no going back. Please be certain.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="w-full sm:w-auto">
+                                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                                    Delete Account
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete your
+                                        account and remove your data (including any service provider profiles) from our servers.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDeleteAccount();
+                                        }}
+                                        disabled={isDeleting}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                        {isDeleting ? "Deleting..." : "Yes, delete my account"}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </CardContent>
                 </Card>
             </div>
