@@ -1,0 +1,518 @@
+{
+  "streetFoodCount": 55,
+  "streetFoodItems": [
+    {
+      "id": "hzye3dr7yyvch5xurt0kc6le",
+      "name": "Chinese bhel",
+      "image": "/images/menu-items/chinese_bhel.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "j4q27zs08p2tduyc2exe266b",
+      "name": "Dark chocolate bowl",
+      "image": "/images/menu-items/dark_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "hv1jnbrux94xk50hndl7zbfq",
+      "name": "Chicken Fried Momos",
+      "image": "/images/menu-items/chicken_fried_momos.jpg",
+      "category": "Momos"
+    },
+    {
+      "id": "z1co84npsn5zcigy7qw0lu5q",
+      "name": "Dark chocolate bowl (Large)",
+      "image": "/images/menu-items/dark_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "ezesqwp2bz21h6835x1m1gjb",
+      "name": "Dryfruit chocolate bowl",
+      "image": "/images/menu-items/dryfruit_chocolate_bowl.jpg",
+      "category": "Special Chocolate Bowl"
+    },
+    {
+      "id": "opo1ccb5slannyi08d6fdis2",
+      "name": "Manchau soup ",
+      "image": "/images/menu-items/manchau_soup.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "vwaht75sijocftnwr2m706p6",
+      "name": "dosa",
+      "image": "/images/menu-items/dosa.jpg",
+      "category": "breakfast"
+    },
+    {
+      "id": "j27me04dso783jhw8qm1ttak",
+      "name": "Pav Bhaji",
+      "image": "/images/menu-items/pav_bhaji.jpg",
+      "category": "Main_Course"
+    },
+    {
+      "id": "yaibtraq023d4enulyus1ic3",
+      "name": "Chicken dabeli",
+      "image": "/images/menu-items/chicken_dabeli.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "g6ivmbxqh2e1be8u5qkp5mtd",
+      "name": "Kitkat chocolate bowl (Large)",
+      "image": "/images/menu-items/kitkat_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "ryozux7u7bbga2b0fm7je0ef",
+      "name": "Oreo chocolate bowl",
+      "image": "/images/menu-items/oreo_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "ns0mg0pk1bzlb980oca3ekhq",
+      "name": "Oreo chocolate bowl (Large)",
+      "image": "/images/menu-items/oreo_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "mz9jezb6ktl26cv8o10veetc",
+      "name": "Kitkat chocolate bowl",
+      "image": "/images/menu-items/kitkat_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "nwmrx2v2f8fwtep5hjjqfx3j",
+      "name": "Dark chocolate bowl",
+      "image": "/images/menu-items/dark_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "op1c7c3qhmz06tbl7ngvmd0p",
+      "name": "Dark chocolate bowl (Large)",
+      "image": "/images/menu-items/dark_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "ui99sj6bt8f7jpiylr7qq6g8",
+      "name": "Chicken Peri Peri steam momos",
+      "image": "/images/menu-items/chicken_peri_peri_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "l200cdp4t7m2unlccbdm8o1c",
+      "name": "2 Butter Pav",
+      "image": "/images/menu-items/butter_pav.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "y5wctc3s88zxaq6b1zvol830",
+      "name": "Chicken fried momos",
+      "image": "/images/menu-items/chicken_fried_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "o16vu6wpy7lkzbnnxlzjzhxx",
+      "name": "Chicken Acharya fried Momos",
+      "image": "/images/menu-items/chicken_achari_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "j7thme6qemdok3g8naytk0au",
+      "name": "Chicken pizza",
+      "image": "/images/menu-items/chicken_pizza.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "q6syyu41a9xn9pa5huos4lr9",
+      "name": "Triple chocolate bowl",
+      "image": null,
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "e15399ndr2aw9xh9j6ukt3yy",
+      "name": "Triple chocolate bowl",
+      "image": null,
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "jmgqpviaz0timr6tnxns0fou",
+      "name": "facial",
+      "image": null,
+      "category": null
+    },
+    {
+      "id": "e4fa8h486pi1wbvrts1lul7f",
+      "name": "Triple chocolate bowl (Large)",
+      "image": null,
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "kbux0jvm8jqke6ew7gm6cfow",
+      "name": "Triple chocolate bowl (Large)",
+      "image": null,
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "v8f6m0ecgrvnv1ebr97e01pj",
+      "name": "Kitkat chocolate bowl",
+      "image": "/images/menu-items/kitkat_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "t58mlp3ndrqf4rexhixg3zdv",
+      "name": "Chinese vada pav ",
+      "image": "/images/menu-items/vada_pav.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "g64a15t36ej6qx345a1756gm",
+      "name": "Butter Pav Bhaji",
+      "image": "/images/menu-items/pav_bhaji.jpg",
+      "category": "Main_Course"
+    },
+    {
+      "id": "duv4cmonyky0bu0lc6amjjx9",
+      "name": "Chicken Kurkure",
+      "image": "/images/menu-items/chicken_kurkure.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "mf5l5d33y8qn0vs84z0wwe0w",
+      "name": "Chicken cheese daabeli",
+      "image": "/images/menu-items/chicken_curry.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "tggctj746sf9gm0q1gi1y8w1",
+      "name": "Cheese Pav Bhaji",
+      "image": "/images/menu-items/pav_bhaji.jpg",
+      "category": "Main_Course"
+    },
+    {
+      "id": "s6zezub98pq7z8hvvibzk9w5",
+      "name": "Chicken burger",
+      "image": "/images/menu-items/burger.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "ojgzc850rqch4jbifryq313m",
+      "name": "Friends noodles ",
+      "image": "/images/menu-items/noodles.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "o6x0dldlu5y82cvcjdg0mhvo",
+      "name": "Strawberry chocolate bowl",
+      "image": "/images/menu-items/strawberry_chocolate_bowl.jpg",
+      "category": "Special Chocolate Bowl"
+    },
+    {
+      "id": "l6xklt4dgycdpm3e61favewz",
+      "name": "Veg Manchurian ",
+      "image": "/images/menu-items/manchurian.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "jpp705nexec3x3h2cv1xiflu",
+      "name": "Strawberry chocolate bowl",
+      "image": "/images/menu-items/strawberry_chocolate_bowl.jpg",
+      "category": "Special Chocolate Bowl"
+    },
+    {
+      "id": "rwlzw5hval3unflrff0repus",
+      "name": "Paper Dosa",
+      "image": "/images/menu-items/paper_dosa.jpg",
+      "category": "breakfast"
+    },
+    {
+      "id": "vgfh7tzn5hhwmhxvvyqusxz9",
+      "name": "Veg fried momos",
+      "image": "/images/menu-items/veg_fried_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "cl8ygvj58cx1kcs7wgp3mxlq",
+      "name": "Kachhi Dabeli",
+      "image": "/images/menu-items/dabeli.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "byk53biln5valxgkfg350zts",
+      "name": "Chicken cheese fried momos",
+      "image": "/images/menu-items/chicken_cheese_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "jia6cgalaj5k0lt9p2vdeqn8",
+      "name": "Special Cheese Dabeli",
+      "image": "/images/menu-items/cheese_dabeli.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "dsofgkidniz1jbei8c0a0ecf",
+      "name": "Paneer steam momos",
+      "image": "/images/menu-items/paneer_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "xbgqhd4fk6pl0gzdczfndle8",
+      "name": "Paneer fried momos",
+      "image": "/images/menu-items/paneer_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "o22j0stqxtj0yhnvpztv9p2o",
+      "name": "Veg Steamed Momos",
+      "image": "/images/menu-items/veg_steam_momos.jpg",
+      "category": "Momos"
+    },
+    {
+      "id": "jtlf91cjj63si1wxi6av7sq4",
+      "name": "Paneer Momos",
+      "image": "/images/menu-items/paneer_momos.jpg",
+      "category": "Momos"
+    },
+    {
+      "id": "bh8kpx3kiqmoqp8ongpj4qy7",
+      "name": "Chicken steam momos",
+      "image": "/images/menu-items/chicken_steam_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "ec8atmq29zoomozy2o2r12i1",
+      "name": "Chicken Tandur Momos",
+      "image": "/images/menu-items/chicken_tandur_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "vbryh9p199bw530fe5osrbst",
+      "name": "Chicken Peri Peri fried momos",
+      "image": "/images/menu-items/chicken_peri_peri_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "ght1hu4fnsqmqbktbiv885j0",
+      "name": "Chicken Achari Steam Momos",
+      "image": "/images/menu-items/chicken_achari_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "eu5m7z4vr1h64qeiw1woon5e",
+      "name": "Veg steam momos",
+      "image": "/images/menu-items/veg_steam_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "ubbeeipv9sv9zrm1n8ruxsbk",
+      "name": "Chicken cheese steam momos",
+      "image": "/images/menu-items/chicken_cheese_momos.jpg",
+      "category": "Snacks"
+    },
+    {
+      "id": "ly29cxhitiipkoizhetra47w",
+      "name": "Dryfruit chocolate bowl",
+      "image": "/images/menu-items/dryfruit_chocolate_bowl.jpg",
+      "category": "Special Chocolate Bowl"
+    },
+    {
+      "id": "jqy0ytfji7g6koojq0gklfjm",
+      "name": "Kitkat chocolate bowl (Large)",
+      "image": "/images/menu-items/kitkat_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "qfg0mli6pb9ifnhyy4olrgki",
+      "name": "Oreo chocolate bowl",
+      "image": "/images/menu-items/oreo_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    },
+    {
+      "id": "dbwvmtyiwwoa1chmw3jqd4gb",
+      "name": "Oreo chocolate bowl (Large)",
+      "image": "/images/menu-items/oreo_chocolate_bowl.jpg",
+      "category": "Chocolate Bowl"
+    }
+  ],
+  "restaurantMenuCount": 798,
+  "restaurantSample": [
+    {
+      "id": "m54mz3977outxrs43vww6fxl",
+      "name": "Cruncho Pop Sriracha (M)",
+      "image": "/images/menu-items/chicken_popcorn.jpg",
+      "category": "Fried Chicken"
+    },
+    {
+      "id": "msk673qu3j9ciljvtoeteolu",
+      "name": "Choco Cold Coffee",
+      "image": "/images/menu-items/cold_coffee.jpg",
+      "category": "Cold Beverages"
+    },
+    {
+      "id": "wmlncr8cshsegri75d1iwbhl",
+      "name": "Chettinad Kheema (with Paratha)",
+      "image": "/images/menu-items/kheema.jpg",
+      "category": "Kheema with Paratha"
+    },
+    {
+      "id": "es0c53nm9bk74mgeaqztrb8l",
+      "name": "Crispy Wings Classic (4 Pcs)",
+      "image": "/images/menu-items/chicken_wings.jpg",
+      "category": "Fried Chicken"
+    },
+    {
+      "id": "w84tfyc2hgzq9dkqy2mf0blt",
+      "name": "Chettinad Grilled Burger",
+      "image": "/images/menu-items/grilled_burger.jpg",
+      "category": "Grilled Non-Veg Burgers"
+    },
+    {
+      "id": "g9nsrw10yr0xa494j02niopy",
+      "name": "CA Muddy Sky Blue",
+      "image": "/images/menu-items/mocktail.jpg",
+      "category": "Mocktails"
+    },
+    {
+      "id": "du7o3nrypon7bp74lwt266gz",
+      "name": "CA Special Burger",
+      "image": "/images/menu-items/burger.jpg",
+      "category": "Fried Non-Veg Burgers"
+    },
+    {
+      "id": "eekhyflao6zwqb42fgx8n1mo",
+      "name": "Chicken Grilled Burger",
+      "image": "/images/menu-items/grilled_burger.jpg",
+      "category": "Grilled Non-Veg Burgers"
+    },
+    {
+      "id": "nidx2ux7lum7t8hwjd2o6bo2",
+      "name": "Drumstick Classic (4 Pcs)",
+      "image": "/images/menu-items/chicken_drumstick.jpg",
+      "category": "Fried Chicken"
+    },
+    {
+      "id": "gyhodq30i3i9jcl0rgz3nfzg",
+      "name": "CA Spcl Grilled Burger",
+      "image": "/images/menu-items/grilled_burger.jpg",
+      "category": "Grilled Non-Veg Burgers"
+    },
+    {
+      "id": "jnfygcil61wzuf8c2kyrjy8q",
+      "name": "Medium Bucket",
+      "image": "/images/menu-items/bucket_combo.jpg",
+      "category": "Bucket Combos"
+    },
+    {
+      "id": "nmfxf1pqeik2cdho1scprrwe",
+      "name": "Cold Coffee",
+      "image": "/images/menu-items/cold_coffee.jpg",
+      "category": "Cold Beverages"
+    },
+    {
+      "id": "qhz9shx67mb4fqxc9e976a4f",
+      "name": "Zinger Special Burger",
+      "image": "/images/menu-items/burger.jpg",
+      "category": "Fried Non-Veg Burgers"
+    },
+    {
+      "id": "x97s1i8oc7k1ea6gjka2erjx",
+      "name": "Tomato Soup",
+      "image": "/images/menu-items/soup.jpg",
+      "category": "Soup's"
+    },
+    {
+      "id": "e8m9sqkfevdt7nkl7uismfba",
+      "name": "Special Chicken Dum Biryani",
+      "image": "/images/menu-items/biryani.jpg",
+      "category": "Rice"
+    },
+    {
+      "id": "l7rrbhh1dkpqzp2o8askcim8",
+      "name": "Crispy Wings Sriracha (4 Pcs)",
+      "image": "/images/menu-items/chicken_wings.jpg",
+      "category": "Fried Chicken"
+    },
+    {
+      "id": "f7s9k8x54vdyurifgzwqr2cl",
+      "name": "Masala Cheese Grill Sandwich",
+      "image": "/images/menu-items/sandwich.jpg",
+      "category": "Sandwich"
+    },
+    {
+      "id": "evtovv463xv4rse1wqg21f7v",
+      "name": "Peri Peri Grilled Burger",
+      "image": "/images/menu-items/grilled_burger.jpg",
+      "category": "Grilled Non-Veg Burgers"
+    },
+    {
+      "id": "ioc8ku7xa2vurn6f86tw5gye",
+      "name": "Peri-Peri Fries",
+      "image": "/images/menu-items/peri_peri_fries.jpg",
+      "category": "French Fries"
+    },
+    {
+      "id": "onwdcjrasoijceeqb3lp6gkg",
+      "name": "Classic Fries (Large)",
+      "image": "/images/menu-items/fries.jpg",
+      "category": "Fries"
+    },
+    {
+      "id": "htfb4sbdffllg8s6cduukvb2",
+      "name": "Paneer Cheese Grill Sandwich",
+      "image": "/images/menu-items/paneer_sandwich.jpg",
+      "category": "Sandwich"
+    },
+    {
+      "id": "w5cck88ihpm5ooxgfpcwaeme",
+      "name": "Cruncho Pop CA Spcl (L)",
+      "image": "/images/menu-items/chicken_popcorn.jpg",
+      "category": "Fried Chicken"
+    },
+    {
+      "id": "x3sk9zrbsm5efc155jx32b66",
+      "name": "Veg Maratha",
+      "image": "/images/menu-items/veg_curry.jpg",
+      "category": "Special Veg"
+    },
+    {
+      "id": "ypbc51b7s2bwon8sref78edq",
+      "name": "Paneer Zesty Spice Wrap",
+      "image": "/images/menu-items/paneer_wrap.jpg",
+      "category": "Wraps (Veg)"
+    },
+    {
+      "id": "o1xecwjxc9ydvbbxparz5ofz",
+      "name": "Cheese Chilly Grill Sandwich",
+      "image": "/images/menu-items/sandwich.jpg",
+      "category": "Sandwich"
+    },
+    {
+      "id": "a708f0rszg05wi3otghimhan",
+      "name": "Thick Cold Coffee",
+      "image": "/images/menu-items/thick_cold_coffee.jpg",
+      "category": "Cold Coffee's"
+    },
+    {
+      "id": "nxjfkf4svqw8mzbjjvoex8fd",
+      "name": "Strong Cold Coffee",
+      "image": "/images/menu-items/cold_coffee.jpg",
+      "category": "Cold Coffee's"
+    },
+    {
+      "id": "odd87iiwq3cjr6sbdmirio0n",
+      "name": "Virgine Mojito",
+      "image": "/images/menu-items/mojito.jpg",
+      "category": "Mocktail's"
+    },
+    {
+      "id": "aly6y9ibgfck97n4wi82fjaq",
+      "name": "Blue Laggon",
+      "image": "/images/menu-items/mocktail.jpg",
+      "category": "Mocktail's"
+    },
+    {
+      "id": "w7nd4bibr4hgzjcwcfshsgy7",
+      "name": "CA Mojito",
+      "image": "/images/menu-items/mojito.jpg",
+      "category": "Mocktails"
+    }
+  ]
+}

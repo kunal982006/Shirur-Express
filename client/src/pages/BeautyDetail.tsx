@@ -70,16 +70,30 @@ const ServiceItemCard = ({ parlorId, service, subCategoryName, cart, onAdd, onRe
     const isWomenOnly = service.gender === 'Women' && subCategoryName.includes('Hair Removal');
 
     return (
-        <Card className="flex items-center justify-between p-4 hover:shadow-md transition-shadow">
-            <div>
-                <p className="font-semibold text-base text-primary">{service.name}</p>
+        <Card className="flex items-center p-3 gap-3 hover:shadow-md transition-shadow">
+            {/* Service Image */}
+            {service.imageUrl ? (
+                <img
+                    src={service.imageUrl}
+                    alt={service.name}
+                    className="w-16 h-16 rounded-lg object-cover shrink-0"
+                />
+            ) : (
+                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center shrink-0">
+                    <span className="text-xl">✨</span>
+                </div>
+            )}
+            {/* Service Details */}
+            <div className="flex-1 min-w-0">
+                <p className="font-semibold text-base text-primary truncate">{service.name}</p>
                 <p className="text-xs text-muted-foreground flex items-center mt-1">
                     <Clock className="h-3 w-3 mr-1" />
                     {service.duration || 'Varies'} {service.duration !== 'Multi-day' && service.duration !== 'Full Day' && 'mins'}
                     {isWomenOnly && <Badge variant="destructive" className="ml-2 h-4 px-1">Women Only</Badge>}
                 </p>
             </div>
-            <div className="flex items-center space-x-3">
+            {/* Price & Action */}
+            <div className="flex items-center space-x-3 shrink-0">
                 <p className="font-bold text-lg">₹{service.price}</p>
                 {isInCart ? (
                     <Button size="sm" variant="destructive" onClick={() => onRemove(service.id)}>
@@ -159,7 +173,8 @@ export default function BeautyDetail() {
                         price: Number(service.price),
                         duration: duration,
                         gender: gender,
-                        description: description
+                        description: description,
+                        imageUrl: service.imageUrl || template.imageUrl || null
                     });
                 });
             }

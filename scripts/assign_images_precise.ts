@@ -53,6 +53,10 @@ const rules = [
     { priority: 3, keywords: ['mutton'], image: 'mutton_curry.jpg' },
     { priority: 3, keywords: ['egg'], image: 'egg_curry.jpg' },
     { priority: 3, keywords: ['veg'], image: 'veg_curry.jpg' },
+    { priority: 3, keywords: ['lassi'], image: 'milkshake.jpg' },
+    { priority: 3, keywords: ['fries'], image: 'burger.jpg' },
+    { priority: 3, keywords: ['wrap'], image: 'sandwich.jpg' },
+    { priority: 3, keywords: ['roll'], image: 'sandwich.jpg' },
 
     // --- PRIORITY 4: Extremely Generic ---
     { priority: 4, keywords: ['rice'], image: 'rice_dish.jpg' },
@@ -82,8 +86,11 @@ function matchImage(itemName: string, category: string): string | null {
     const text = `${lowerName} ${lowerCat}`;
 
     for (const rule of rules) {
-        // Check if ALL keywords in the rule are present in the text
-        const match = rule.keywords.every(kw => text.includes(kw));
+        // Check if ALL keywords in the rule are present in the text as whole words
+        const match = rule.keywords.every(kw => {
+            const regex = new RegExp(`\\b${kw}\\b`, 'i');
+            return regex.test(text);
+        });
 
         if (match) {
             return rule.image;
@@ -112,6 +119,10 @@ async function main() {
                 sfCount++;
                 // console.log(`[SF] ${item.name} -> ${matchedImage}`);
             }
+        } else if (item.imageUrl?.includes("themealdb.com")) {
+            await db.update(streetFoodItems)
+                .set({ imageUrl: null })
+                .where(eq(streetFoodItems.id, item.id));
         }
     }
     console.log(`Updated ${sfCount} Street Food items.`);
@@ -143,6 +154,13 @@ async function main() {
                 rmCount++;
                 // console.log(`[RM] ${item.name} -> ${matchedImage}`);
             }
+        } else if (item.imageUrl?.includes("themealdb.com")) {
+            // Revert mealdb back to null since it's incorrect randomized data
+            updates.push(
+                db.update(restaurantMenuItems)
+                    .set({ imageUrl: null })
+                    .where(eq(restaurantMenuItems.id, item.id))
+            );
         }
     }
 

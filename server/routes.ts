@@ -2270,6 +2270,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =========================================
+  // Temporary Route for image updates
+  // =========================================
+  app.get("/api/update-street-food-images", async (req: Request, res: Response) => {
+    try {
+      const result = await updateStreetFoodImagesDirectly();
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/fix-grocery-stock", async (req: Request, res: Response) => {
+    try {
+      const products = await db.select().from(groceryProducts);
+      let updatedCount = 0;
+
+      for (const p of products) {
+        let isBroken = false;
+        const url = p.imageUrl?.trim();
+
+        if (!url || url === "" || url === "null" || url === "undefined") {
+          isBroken = true;
+        } else {
+          try {
+            // Check if URL is reachable
+            const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+            if (!response.ok) {
+              isBroken = true;
+            }
+          } catch (e) {
+            // Fetch failed (network error, timeout, bad url)
+            isBroken = true;
+          }
+        }
+
+        if (isBroken) {
+          await db
+            .update(groceryProducts)
+            .set({ inStock: false })
+            .where(eq(groceryProducts.id, p.id));
+          updatedCount++;
+        }
+      }
+
+      res.json({ success: true, updatedCount, message: `Marked ${updatedCount} items with broken or missing images as out of stock.` });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // =========================================
   // DEBUG ENDPOINT - FCM Test
   // =========================================
   app.post("/api/debug/fcm-test", async (req: Request, res: Response) => {

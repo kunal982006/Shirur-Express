@@ -62,6 +62,16 @@ export default function ProductCard({
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               target.parentElement?.classList.add('image-error');
+
+              // Find the button and force its disabled state visually if it fails
+              const container = target.closest('.rounded-md');
+              if (container) {
+                const btn = container.querySelector('button');
+                if (btn && btn.textContent === 'ADD') {
+                  btn.disabled = true;
+                  btn.textContent = 'SOLD';
+                }
+              }
             }}
           />
         ) : (
@@ -104,9 +114,9 @@ export default function ProductCard({
                 variant="outline"
                 className="w-full h-6 text-[10px] font-bold text-green-700 border-green-200 bg-green-50 hover:bg-green-100 hover:text-green-800 uppercase tracking-wider rounded-md shadow-none px-0"
                 onClick={() => onAddToCart(product)}
-                disabled={!product.inStock}
+                disabled={!product.inStock || !product.imageUrl}
               >
-                {product.inStock ? 'ADD' : 'SOLD'}
+                {product.inStock && product.imageUrl ? 'ADD' : 'SOLD'}
               </Button>
             ) : (
               <div className="flex items-center justify-between bg-green-50 rounded-md border border-green-200 h-6 px-0.5">

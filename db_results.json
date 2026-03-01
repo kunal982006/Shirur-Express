@@ -1,0 +1,114 @@
+{
+  "restaurantLassis": [
+    {
+      "name": "Crispy Wings Classic (4 Pcs)",
+      "category": "Fried Chicken",
+      "image": "/images/menu-items/chicken_curry.jpg"
+    },
+    {
+      "name": "Drumstick Classic (4 Pcs)",
+      "category": "Fried Chicken",
+      "image": "/images/menu-items/chicken_curry.jpg"
+    },
+    {
+      "name": "Classic Fries (Large)",
+      "category": "Fries",
+      "image": "/images/menu-items/burger.jpg"
+    },
+    {
+      "name": "Classic Cheese Pizza",
+      "category": "Pizza's",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Fries N Fly Classic",
+      "category": "Fries",
+      "image": "/images/menu-items/burger.jpg"
+    },
+    {
+      "name": "Tender Strip Classic",
+      "category": "Fried Chicken",
+      "image": "/images/menu-items/chicken_curry.jpg"
+    },
+    {
+      "name": "Classic Non-Veg Burger",
+      "category": "Fried Non-Veg Burgers",
+      "image": "/images/menu-items/burger.jpg"
+    },
+    {
+      "name": "Classic Fries (Reg)",
+      "category": "Fries",
+      "image": "/images/menu-items/burger.jpg"
+    },
+    {
+      "name": "Classic Salted Fries",
+      "category": "French Fries",
+      "image": "/images/menu-items/burger.jpg"
+    },
+    {
+      "name": "Paneer Classic Wrap",
+      "category": "Wraps (Veg)",
+      "image": "/images/menu-items/paneer_dish.jpg"
+    }
+  ],
+  "restaurantPizzas": [
+    {
+      "name": "Classic Cheese Pizza",
+      "category": "Pizza's",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Brocoby Onion Pizza",
+      "category": "Pizza's",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Paneer Cheese Pizza",
+      "category": "Pizza's",
+      "image": "/images/menu-items/paneer_pizza.jpg"
+    },
+    {
+      "name": "Spicy Mushrooms & Onion Pizza (12\")",
+      "category": "Pizza On Fire",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Spicy Mushrooms & Onion Pizza (8\")",
+      "category": "Pizza On Fire",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "American Corn Pizza (10\")",
+      "category": "Pizza On Fire",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Exotic Italian Pizza (8\")",
+      "category": "Pizza On Fire",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Margherita Pizza",
+      "category": "Pizza's",
+      "image": "/images/menu-items/pizza.jpg"
+    },
+    {
+      "name": "Paneer Tandoori Pizza",
+      "category": "Pizza",
+      "image": "/images/menu-items/paneer_pizza.jpg"
+    },
+    {
+      "name": "Corn & Paneer Pizza",
+      "category": "Pizza",
+      "image": "/images/menu-items/paneer_pizza.jpg"
+    }
+  ],
+  "streetFoodLassis": [],
+  "streetFoodPizzas": [
+    {
+      "name": "Chicken pizza",
+      "desc": null,
+      "image": "/images/menu-items/chicken_pizza.jpg"
+    }
+  ]
+}

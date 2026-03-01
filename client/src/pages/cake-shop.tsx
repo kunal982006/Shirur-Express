@@ -159,7 +159,7 @@ export default function CakeShop() {
                 className="h-14 px-8 rounded-full font-black text-lg shadow-xl hover:scale-105 transition-transform mt-2"
                 style={{ background: '#fff', color: '#7c3aed' }}
               >
-                <Wand2 className="mr-2 h-5 w-5" /> Start Building
+                <Wand2 className="mr-2 h-5 w-5" /> Start Building Your Cake
               </Button>
             </div>
 
