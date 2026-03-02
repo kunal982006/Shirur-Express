@@ -14,14 +14,14 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem } from "@shared/schema";
 
 const IMAGE_MAPPING: Record<string, string> = {
-  "Tap & Mixer": "/images/plumber/tap.jpeg",
-  "Toilet": "/images/plumber/toilet.jpeg",
-  "Water Tank": "/images/plumber/water-tank.jpeg",
-  "Basin & Sink": "/images/plumber/basin-sink.jpeg",
-  "Pipe & Leakage": "/images/plumber/leakage.jpeg",
-  "Water Heater (Geyser)": "/images/plumber/geyser.jpeg",
-  "Water Pump": "/images/plumber/motor.jpeg",
-  "Others": "/images/electrician/others.png",
+  "Tap & Mixer": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448864/shirur-express/plumber/tap.jpg",
+  "Toilet": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448866/shirur-express/plumber/toilet.jpg",
+  "Water Tank": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448869/shirur-express/plumber/water-tank.jpg",
+  "Basin & Sink": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448858/shirur-express/plumber/basin-sink.jpg",
+  "Pipe & Leakage": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448861/shirur-express/plumber/leakage.jpg",
+  "Water Heater (Geyser)": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448860/shirur-express/plumber/geyser.jpg",
+  "Water Pump": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448863/shirur-express/plumber/motor.jpg",
+  "Others": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448851/shirur-express/electrician/others.jpg",
 };
 
 export default function Plumber() {
