@@ -6,11 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Star, MapPin, Clock, Award, Cake, ShoppingBag, Plus, Minus, Sparkles, Wand2 } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock, Award, Cake, ShoppingBag, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { CakeWizard } from "@/components/cake/CakeWizard";
 
 const cakeCategories = [
   { name: "All Cakes", active: true },
@@ -75,7 +73,6 @@ export default function CakeShop() {
   const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
   const { toast } = useToast();
   const [expandedShops, setExpandedShops] = useState<Record<string, boolean>>({});
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   const { data: cakeShops, isLoading } = useQuery({
     queryKey: ["/api/service-providers", { category: "cake-shop" }],
@@ -131,49 +128,7 @@ export default function CakeShop() {
           <span>Back to Services</span>
         </Button>
 
-        {/* Dynamic Build Your Masterpiece Banner */}
-        <div
-          className="mb-10 text-center md:text-left relative overflow-hidden rounded-3xl p-8 shadow-2xl"
-          style={{ background: 'linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4338ca 100%)' }}
-        >
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-4 max-w-xl">
-              <span
-                className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}
-              >
-                <Sparkles className="h-3 w-3" /> Masterpiece Mode
-              </span>
-              <h2
-                className="text-4xl md:text-5xl font-black tracking-tight leading-tight"
-                style={{ color: '#fff', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
-              >
-                Build Your Masterpiece 🎂
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 6px rgba(0,0,0,0.3)' }} className="text-lg font-medium">
-                Full creative control. From the sponge texture to the frosting color. Design the cake of your dreams in 5 easy steps.
-              </p>
-              <Button
-                onClick={() => setIsWizardOpen(true)}
-                size="lg"
-                className="h-14 px-8 rounded-full font-black text-lg shadow-xl hover:scale-105 transition-transform mt-2"
-                style={{ background: '#fff', color: '#7c3aed' }}
-              >
-                <Wand2 className="mr-2 h-5 w-5" /> Start Building Your Cake
-              </Button>
-            </div>
 
-            {/* Rotating Cake Image */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-              className="w-48 h-48 md:w-56 md:h-56 relative z-10 shrink-0"
-              style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.3))' }}
-            >
-              <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=400&h=400" alt="Beautiful Cake" className="w-full h-full object-cover rounded-full" style={{ border: '4px solid rgba(255,255,255,0.3)' }} />
-            </motion.div>
-          </div>
-        </div>
 
         {/* Cake Categories */}
         <div className="mb-6 flex flex-wrap gap-2">
@@ -364,8 +319,7 @@ export default function CakeShop() {
           </div>
         )}
 
-        {/* Wizard Modal */}
-        <CakeWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
+
       </div>
     </div>
   );
