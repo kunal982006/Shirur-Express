@@ -84,7 +84,7 @@ async function seedEliteCafe() {
     console.log("Looking for 'Elite cafe' provider...");
 
     const provider = await db.query.serviceProviders.findFirst({
-        where: ilike(serviceProviders.businessName, "%Elite cafe%"),
+        where: ilike(serviceProviders.businessName, "%Elite Kuice%"),
     });
 
     if (!provider) {

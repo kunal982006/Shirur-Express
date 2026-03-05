@@ -1,0 +1,10 @@
+=== Elite providers ===
+Provider: "Elite cafe" | ID: phudp0lqah61uhri0qaxz28t | userId: hlo3rqj28ogkh456to7vlvo8
+  Menu items: 104
+Provider: "Elite Kuice & Snacks" | ID: oig6pewj42lgbrh65va882ht | userId: ghljt0kud4kh9y0z2kiagh3b
+  Menu items: 0
+
+=== Provider from URL ===
+URL ID: oig6pewj42lgbrh65va882ht
+Found: [{"id":"oig6pewj42lgbrh65va882ht","name":"Elite Kuice & Snacks"}]
+Menu items for URL provider: 0
