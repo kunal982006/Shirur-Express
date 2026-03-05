@@ -22,7 +22,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { ArrowLeft, CalendarIcon, Clock, Loader2, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Loader2, MapPin, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
@@ -30,11 +30,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
 
-const timeSlots = [
-    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
-    "05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM"
-];
+
 
 const bookingSchema = z.object({
     userPhone: z.string()
@@ -44,7 +40,6 @@ const bookingSchema = z.object({
     scheduledDate: z.date({
         required_error: "Please select a date",
     }),
-    preferredTimeSlot: z.string().min(1, "Please select a time slot"),
     notes: z.string().optional(),
 });
 
@@ -89,14 +84,7 @@ export default function BookBeauty() {
     const createBookingMutation = useMutation({
         mutationFn: async (data: BookingFormValues) => {
             const date = data.scheduledDate;
-            const timeSlot = data.preferredTimeSlot;
-            const [time, modifier] = timeSlot.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
-
-            if (modifier === 'PM' && hours !== 12) hours += 12;
-            if (modifier === 'AM' && hours === 12) hours = 0;
-
-            const combinedDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
+            const scheduledDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0);
 
             // Construct notes with service details
             const serviceNames = selectedServices.map((s: any) => s.template?.name || "Service").join(", ");
@@ -107,8 +95,7 @@ export default function BookBeauty() {
                 providerId: parlorId,
                 serviceType: "beauty",
                 problemId: selectedServices[0]?.id,
-                scheduledAt: combinedDateTime.toISOString(),
-                preferredTimeSlots: [data.preferredTimeSlot],
+                scheduledAt: scheduledDateTime.toISOString(),
                 userPhone: data.userPhone,
                 userAddress: data.userAddress,
                 notes: finalNotes,
@@ -201,30 +188,7 @@ export default function BookBeauty() {
                                         )}
                                     />
 
-                                    {/* Time */}
-                                    <FormField
-                                        control={form.control}
-                                        name="preferredTimeSlot"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Time Slot</FormLabel>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {timeSlots.map((slot) => (
-                                                        <Button
-                                                            key={slot}
-                                                            type="button"
-                                                            variant={field.value === slot ? "default" : "outline"}
-                                                            size="sm"
-                                                            onClick={() => field.onChange(slot)}
-                                                        >
-                                                            {slot}
-                                                        </Button>
-                                                    ))}
-                                                </div>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+
 
                                     {/* Phone */}
                                     <FormField
