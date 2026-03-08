@@ -422,9 +422,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserFcmToken(userId: string, token: string): Promise<User> {
+    // First, get the user's existing tokens
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    let tokenList: string[] = [];
+    if (existingUser?.fcmTokens && Array.isArray(existingUser.fcmTokens)) {
+      tokenList = existingUser.fcmTokens.filter(t => t !== token); // Remove duplicate if re-registering
+    }
+    tokenList.push(token); // Add the new token at the end
+
+    // Keep max 5 tokens per user (most recent devices)
+    if (tokenList.length > 5) {
+      tokenList = tokenList.slice(-5);
+    }
+
     const [updatedUser] = await db
       .update(users)
-      .set({ fcmToken: token })
+      .set({ fcmToken: token, fcmTokens: tokenList })
       .where(eq(users.id, userId))
       .returning();
     return updatedUser;
@@ -1572,7 +1588,7 @@ export class DatabaseStorage implements IStorage {
       imageUrl: cake.imageUrl,
       price: cake.price ? String(cake.price) : "0",
       isVeg: true,
-      isAvailable: true,
+      isAvailable: cake.isAvailable !== false,
       cuisine: "Bakery",
       isPopular: cake.isPopular || false,
     }));

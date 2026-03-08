@@ -1291,24 +1291,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[FCM Ringing] Provider: ${provider?.businessName || 'NOT FOUND'}`);
           console.log(`[FCM Ringing] FCM Token: ${provider?.user?.fcmToken ? 'EXISTS' : 'MISSING'}`);
 
-          if (provider && provider.user && provider.user.fcmToken) {
-            const fcmResult = await sendPushNotification(provider.user.fcmToken, {
-              type: 'ORDER_REQUEST',
-              title: '🔔 New Service Booking!',
-              body: `New ${booking.serviceType} booking request`,
-              data: {
-                orderId: booking.id,
-                customerName: booking.userPhone,
-                amount: "Check App",
-                pickupAddress: "N/A",
-                dropAddress: booking.userAddress
-              }
-            });
+          if (provider && provider.user) {
+            // Collect all FCM tokens for multi-device support
+            const allTokens: string[] = [];
+            if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+              allTokens.push(...provider.user.fcmTokens);
+            } else if (provider.user.fcmToken) {
+              allTokens.push(provider.user.fcmToken);
+            }
 
-            if (fcmResult.success) {
-              console.log(`🚀 Ringing signal sent via Firebase (Bypassing Twilio) - MessageId: ${fcmResult.messageId}`);
-            } else {
-              console.error(`❌ FCM Ringing failed:`, fcmResult.error);
+            const uniqueTokens = [...new Set(allTokens)];
+            console.log(`[FCM Ringing] Sending to ${uniqueTokens.length} device(s)`);
+
+            for (const deviceToken of uniqueTokens) {
+              const fcmResult = await sendPushNotification(deviceToken, {
+                type: 'ORDER_REQUEST',
+                title: '🔔 New Service Booking!',
+                body: `New ${booking.serviceType} booking request`,
+                data: {
+                  orderId: booking.id,
+                  customerName: booking.userPhone,
+                  amount: "Check App",
+                  pickupAddress: "N/A",
+                  dropAddress: booking.userAddress
+                }
+              });
+
+              if (fcmResult.success) {
+                console.log(`🚀 Ringing sent to device (token: ${deviceToken.substring(0, 15)}...) - MessageId: ${fcmResult.messageId}`);
+              } else {
+                console.error(`❌ FCM Ringing failed for device:`, fcmResult.error);
+              }
+            }
+
+            if (uniqueTokens.length === 0) {
+              console.warn(`[FCM Ringing] Cannot send - no FCM tokens registered for provider`);
             }
           } else {
             console.warn(`[FCM Ringing] Cannot send - FCM token not registered for provider`);
@@ -1661,23 +1678,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const providerId = updatedOrder?.providerId;
           if (providerId) {
             const provider = await storage.getServiceProvider(providerId);
-            if (provider && provider.user && provider.user.fcmToken) {
+            if (provider && provider.user) {
               const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
                 : orderType === 'street_food' ? '🌮 Street Food'
                   : '🛒 Grocery';
               console.log(`[FCM] Payment verified! Sending Ring to ${provider.businessName}`);
-              await sendPushNotification(provider.user.fcmToken, {
-                type: 'ORDER_REQUEST',
-                title: `${orderLabel} Order Paid!`,
-                body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
-                data: {
-                  orderId: database_order_id,
-                  orderType: orderType || 'grocery',
-                  customerName: 'Customer',
-                  amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
-                  dropAddress: updatedOrder?.deliveryAddress || 'Check App'
-                }
-              });
+
+              // Multi-device support: send to all tokens
+              const allTokens: string[] = [];
+              if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+                allTokens.push(...provider.user.fcmTokens);
+              } else if (provider.user.fcmToken) {
+                allTokens.push(provider.user.fcmToken);
+              }
+              const uniqueTokens = [...new Set(allTokens)];
+              console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
+
+              for (const deviceToken of uniqueTokens) {
+                await sendPushNotification(deviceToken, {
+                  type: 'ORDER_REQUEST',
+                  title: `${orderLabel} Order Paid!`,
+                  body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
+                  data: {
+                    orderId: database_order_id,
+                    orderType: orderType || 'grocery',
+                    customerName: 'Customer',
+                    amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
+                    dropAddress: updatedOrder?.deliveryAddress || 'Check App'
+                  }
+                });
+              }
             }
           }
         } catch (fcmError) {
@@ -1960,19 +1990,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- BAKERIES / CAKE SHOPS ROUTE ---
   app.get("/api/bakeries", async (req: Request, res: Response) => {
     try {
-      // Find all providers who have cakes
+      // Find provider IDs from cakeProducts
       const cakes = await db.select({ providerId: cakeProducts.providerId }).from(cakeProducts);
-      const providerIds = [...new Set(cakes.map(c => c.providerId))];
+      const cakeProviderIds = [...new Set(cakes.map(c => c.providerId))];
 
-      if (providerIds.length === 0) {
+      // Also find cake-shop category providers (even without products)
+      const cakeCategory = await db.query.serviceCategories.findFirst({
+        where: eq(serviceCategories.slug, "cake-shop"),
+      });
+
+      let categoryProviderIds: string[] = [];
+      if (cakeCategory) {
+        const catProviders = await db.select({ id: serviceProviders.id })
+          .from(serviceProviders)
+          .where(eq(serviceProviders.categoryId, cakeCategory.id));
+        categoryProviderIds = catProviders.map(p => p.id);
+      }
+
+      // Merge both sets
+      const allProviderIds = [...new Set([...cakeProviderIds, ...categoryProviderIds])];
+
+      if (allProviderIds.length === 0) {
         return res.json([]);
       }
 
-      // Fetch those providers
+      // Fetch those providers (available ones)
       const bakeries = await db.select()
         .from(serviceProviders)
         .where(and(
-          inArray(serviceProviders.id, providerIds),
+          inArray(serviceProviders.id, allProviderIds),
           eq(serviceProviders.isAvailable, true)
         ));
 

@@ -19,7 +19,8 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   isVerified: boolean("is_verified").default(false),
   address: text("address"),
-  fcmToken: text("fcm_token"), // For Push Notifications
+  fcmToken: text("fcm_token"), // For Push Notifications (legacy single token)
+  fcmTokens: jsonb("fcm_tokens").$type<string[]>(), // Multi-device push tokens
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -148,6 +149,7 @@ export const cakeProducts = pgTable("cake_products", {
   weightOptions: jsonb("weight_options").$type<Array<{ weight: string; price: number }>>(),
   isCustomizable: boolean("is_customizable").default(false),
   isPopular: boolean("is_popular").default(false),
+  isAvailable: boolean("is_available").default(true),
 });
 
 export const groceryProducts = pgTable("grocery_products", {

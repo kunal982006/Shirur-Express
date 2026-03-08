@@ -250,6 +250,27 @@ const MenuItemsManager: React.FC<{
     },
   });
 
+  const toggleAvailabilityMutation = useMutation({
+    mutationFn: ({ itemId, isAvailable }: { itemId: string; isAvailable: boolean }) =>
+      api.patch(`/provider/menu-items/${providerCategorySlug}/${itemId}`, { isAvailable }),
+    onSuccess: () => {
+      toast({ title: "Updated", description: "Item availability updated." });
+      if (isGrocery) {
+        queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+        queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["providerMenuItems", providerCategorySlug] });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (item: any) => {
     setEditingItem(item);
     setIsFormOpen(true);
@@ -470,30 +491,40 @@ const MenuItemsManager: React.FC<{
                       </TableCell>
                       <TableCell className="font-bold">₹{item.price}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(item)}
-                          className="mr-2"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(item.id)}
-                          disabled={
-                            deleteMenuItemMutation.isPending &&
-                            deleteMenuItemMutation.variables === item.id
-                          }
-                        >
-                          {deleteMenuItemMutation.isPending &&
-                            deleteMenuItemMutation.variables === item.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center gap-1" title={item.isAvailable === false ? 'Sold Out' : 'Available'}>
+                            <span className={`text-xs font-medium ${item.isAvailable === false ? 'text-red-500' : 'text-green-600'}`}>
+                              {item.isAvailable === false ? 'Off' : 'On'}
+                            </span>
+                            <Switch
+                              checked={item.isAvailable !== false}
+                              onCheckedChange={(checked) => toggleAvailabilityMutation.mutate({ itemId: item.id, isAvailable: checked })}
+                            />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(item)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                            disabled={
+                              deleteMenuItemMutation.isPending &&
+                              deleteMenuItemMutation.variables === item.id
+                            }
+                          >
+                            {deleteMenuItemMutation.isPending &&
+                              deleteMenuItemMutation.variables === item.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -532,6 +563,15 @@ const BookingsManager: React.FC<{
     queryKey: ["providerGroceryOrders"],
     queryFn: async () => {
       const res = await api.get("/provider/grocery-orders");
+      return res.data;
+    },
+  });
+
+  // Restaurant / Cake Orders Fetch
+  const { data: restaurantOrders, isLoading: isLoadingRestaurantOrders } = useQuery<RestaurantOrder[]>({
+    queryKey: ["providerRestaurantOrders"],
+    queryFn: async () => {
+      const res = await api.get("/provider/restaurant-orders");
       return res.data;
     },
   });
@@ -586,7 +626,7 @@ const BookingsManager: React.FC<{
   const completedBookings = filterBookings(['completed', 'cancelled']);
 
   // Determine default tab based on category
-  const defaultTab = (providerProfile.category?.slug === 'cake-shop' || providerProfile.category?.slug === 'grocery')
+  const defaultTab = (providerProfile.category?.slug === 'cake-shop' || providerProfile.category?.slug === 'grocery' || providerProfile.category?.slug === 'restaurants')
     ? "orders"
     : "new";
 
@@ -643,7 +683,7 @@ const BookingsManager: React.FC<{
           Completed ({completedBookings.length})
         </TabsTrigger>
         <TabsTrigger value="orders">
-          Orders ({groceryOrders?.length || 0})
+          Orders ({(groceryOrders?.length || 0) + (restaurantOrders?.length || 0)})
         </TabsTrigger>
       </TabsList>
 
@@ -672,16 +712,51 @@ const BookingsManager: React.FC<{
       </TabsContent>
 
       <TabsContent value="orders" className="mt-6">
-        {!Array.isArray(groceryOrders) || groceryOrders.length === 0 ? (
+        {(!Array.isArray(groceryOrders) || groceryOrders.length === 0) && (!Array.isArray(restaurantOrders) || restaurantOrders.length === 0) ? (
           <div className="text-center py-12 border-2 border-dashed rounded-lg">
             <h3 className="text-xl font-semibold">No Orders Yet</h3>
             <p className="text-muted-foreground mt-2">
-              You haven't received any grocery/cake orders.
+              You haven't received any orders.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {groceryOrders.map((order) => (
+            {/* Restaurant / Cake Orders */}
+            {Array.isArray(restaurantOrders) && restaurantOrders.map((order) => (
+              <Card key={order.id} className="shadow-md border-l-4 border-orange-500">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>🎂 Order #{order.id.slice(0, 8)}</span>
+                    <Badge className="bg-orange-600">
+                      {order.status?.toUpperCase() || "PENDING"}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="bg-muted p-3 rounded-md">
+                    <h4 className="font-medium mb-2 text-sm">Items:</h4>
+                    {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>{item.name} x {item.quantity}</span>
+                        <span>₹{item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                    <div className="border-t mt-2 pt-2 flex justify-between font-bold text-sm">
+                      <span>Total</span>
+                      <span>₹{order.totalAmount}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm">
+                    <strong>Delivery Address:</strong> {order.deliveryAddress}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+            {/* Grocery Orders */}
+            {Array.isArray(groceryOrders) && groceryOrders.map((order) => (
               <Card key={order.id} className="shadow-md border-l-4 border-green-500">
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
