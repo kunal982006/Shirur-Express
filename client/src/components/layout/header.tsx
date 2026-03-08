@@ -71,11 +71,12 @@ export default function Header() {
 
   // Check if we're on the homepage - only hide top header, keep bottom nav
   const isHomePage = location === "/" || location === "";
+  const hideTopHeader = isHomePage || location.startsWith("/admin");
 
   return (
     <>
-      {/* Only show top header on non-home pages */}
-      {!isHomePage && (
+      {/* Only show top header on non-home/admin pages */}
+      {!hideTopHeader && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b h-16 flex items-center px-4">
           <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
             <div className="flex items-center gap-4">

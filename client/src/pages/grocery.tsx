@@ -220,12 +220,23 @@ export default function Grocery() {
   // Filtered products (Now mostly handled by server, but we keep generic brand filter or fallback)
   // Since we don't have server-side brand filtering yet, we filter brands on the client on the FETCHED set.
   // Note: This has limitations with pagination (user might not find brand if not in top 100), but acceptable for MVP optimization.
+  // Detect basket placeholder image
+  const BASKET_PLACEHOLDER = "groceries.png";
+  const isRealImage = (url?: string | null) => !!url && !url.includes(BASKET_PLACEHOLDER);
+
   const filteredProducts = products
     ? products.filter(product => {
       // Search and Categories are already filtered by Server.
       // Only filter brands client-side if selected.
       const matchesBrand = selectedBrands.length === 0 || (product.brand && selectedBrands.includes(product.brand));
       return matchesBrand;
+    }).sort((a, b) => {
+      // Products with real images and in-stock first, basket/placeholder images and sold-out last
+      const aIsGood = a.inStock && isRealImage(a.imageUrl);
+      const bIsGood = b.inStock && isRealImage(b.imageUrl);
+      if (aIsGood && !bIsGood) return -1;
+      if (!aIsGood && bIsGood) return 1;
+      return 0;
     })
     : [];
 

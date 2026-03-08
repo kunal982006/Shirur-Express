@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, inArray, ilike, gt, desc, count, gte, sql } from "drizzle-orm";
+import { eq, and, inArray, ilike, gt, desc, asc, count, gte, sql } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -420,6 +420,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get provider rental properties error:", error);
       res.status(500).json({ message: error.message || "Error fetching rental properties" });
+    }
+  });
+
+  app.get("/api/rental-properties", async (req: Request, res: Response) => {
+    try {
+      const { propertyType, listingType, minRent, maxRent, bedrooms, locality } = req.query;
+
+      const filters = {
+        propertyType: propertyType as string | undefined,
+        listingType: listingType as string | undefined,
+        locality: locality as string | undefined,
+        minRent: minRent ? parseInt(minRent as string) : undefined,
+        maxRent: maxRent ? parseInt(maxRent as string) : undefined,
+        bedrooms: bedrooms && bedrooms !== 'all' ? parseInt(bedrooms as string) : undefined,
+      };
+
+      const properties = await storage.getRentalProperties(filters);
+      res.json(properties);
+    } catch (error: any) {
+      console.error("Search rental properties error:", error);
+      res.status(500).json({ message: error.message || "Error searching rental properties" });
     }
   });
 
@@ -1922,6 +1943,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- ALL CAKES FOR CAKE SHOP MAIN PAGE ---
+  app.get("/api/cakes", async (req: Request, res: Response) => {
+    try {
+      // Fetch all active cakes for the main cake shop display
+      const allCakes = await db.select()
+        .from(cakeProducts)
+        .orderBy(desc(cakeProducts.isPopular), desc(cakeProducts.id));
+      res.json(allCakes);
+    } catch (error: any) {
+      console.error("Get all cakes error:", error);
+      res.status(500).json({ message: error.message || "Error fetching cakes" });
+    }
+  });
+
   // --- GROCERY PRODUCTS ROUTE (OPTIMIZED) ---
   app.get("/api/grocery-products", async (req: Request, res: Response) => {
     try {
@@ -1946,10 +1981,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conditions.push(ilike(groceryProducts.name, `%${search}%`));
       }
 
-      // Execute optimized query
+      // Execute optimized query — in-stock items first, then alphabetical
       const products = await db.select()
         .from(groceryProducts)
         .where(and(...conditions))
+        .orderBy(desc(groceryProducts.inStock), asc(groceryProducts.name))
         .limit(parseInt(limit as string)) // pagination helps performance
         .offset(parseInt(offset as string));
 
@@ -2573,6 +2609,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Temporary Test Endpoint
+  app.get("/api/test-abhiruchi", async (_req, res) => {
+    try {
+      const providers = await db.select().from(serviceProviders).where(ilike(serviceProviders.businessName, '%abhiruchi%'));
+      res.json(providers);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // GET /api/admin/users — All users
   app.get("/api/admin/users", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {
@@ -2583,11 +2629,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: users.phone,
         role: users.role,
         createdAt: users.createdAt,
-      }).from(users).orderBy(desc(users.createdAt));
+        businessName: serviceProviders.businessName,
+      })
+        .from(users)
+        .leftJoin(serviceProviders, eq(users.id, serviceProviders.userId))
+        .orderBy(desc(users.createdAt));
       res.json(allUsers);
     } catch (error: any) {
       console.error("Admin users error:", error);
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // DELETE /api/admin/users/:id — Delete a user
+  app.delete("/api/admin/users/:id", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.params.id;
+      // Delete service provider profile if it exists
+      await db.delete(serviceProviders).where(eq(serviceProviders.userId, userId));
+      // Delete the user
+      await db.delete(users).where(eq(users.id, userId));
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error: any) {
+      console.error("Admin delete user error:", error);
+      res.status(500).json({ message: "Failed to delete user. They may have active orders or bookings." });
     }
   });
 
@@ -2766,6 +2831,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get menus for a specific provider (Admin only)
+  app.get("/api/admin/provider-menu/:type/:providerId", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, providerId } = req.params;
+
+      let items = [];
+      if (type === 'street_food') {
+        items = await db.select().from(streetFoodItems).where(eq(streetFoodItems.providerId, providerId));
+      } else if (type === 'restaurant') {
+        items = await db.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, providerId));
+      } else if (type === 'cake') {
+        items = await db.select().from(cakeProducts).where(eq(cakeProducts.providerId, providerId));
+      } else {
+        return res.status(400).json({ message: "Invalid type provided" });
+      }
+
+      res.json(items);
+    } catch (error: any) {
+      console.error("Fetch provider menu error:", error);
+      res.status(500).json({ message: error.message || "Error fetching provider menu" });
+    }
+  });
+
   // Toggle popular status (Admin only)
   app.post("/api/admin/toggle-popular", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
@@ -2778,6 +2866,193 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Toggle popular status error:", error);
       res.status(500).json({ message: error.message || "Error updating status" });
+    }
+  });
+  // =========================================
+  // ADMIN STREET FOOD MANAGEMENT
+  // =========================================
+
+  // Get all street food vendors
+  app.get("/api/admin/street-food/vendors", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const vendors = await db.query.serviceProviders.findMany({
+        where: eq(serviceProviders.categoryId, "street_food"),
+        orderBy: (providers, { desc }) => [desc(providers.createdAt)]
+      });
+      res.json(vendors);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch vendors" });
+    }
+  });
+
+  // Create a new street food vendor
+  app.post("/api/admin/street-food/vendors", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { name } = req.body;
+      if (!name) return res.status(400).json({ message: "Vendor Profile Name is required" });
+
+      // Assign to the admin's userId
+      const adminUserId = req.userId;
+      if (!adminUserId) return res.status(401).json({ message: "Admin user ID not found" });
+
+      const [newVendor] = await db.insert(serviceProviders).values({
+        userId: adminUserId.toString(),
+        categoryId: "street_food",
+        businessName: name,
+        address: "Added via Admin Panel", // Default required field
+        isVerified: true,
+        isAvailable: true,
+      }).returning();
+
+      res.status(201).json(newVendor);
+    } catch (error: any) {
+      console.error("Create street food vendor error:", error);
+      res.status(500).json({ message: error.message || "Failed to create vendor" });
+    }
+  });
+
+  // Get menu for a specific street food vendor
+  app.get("/api/admin/street-food/vendors/:id/menu", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const providerId = req.params.id;
+      const menu = await db.query.streetFoodItems.findMany({
+        where: eq(streetFoodItems.providerId, providerId),
+        orderBy: (items, { desc }) => [desc(items.createdAt)]
+      });
+      res.json(menu);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch menu" });
+    }
+  });
+
+  app.post("/api/admin/street-food/vendors/:id/menu", isAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
+    try {
+      const providerId = req.params.id;
+      const { name, category, price, description, isVeg, imageUrl: bodyImageUrl } = req.body;
+
+      if (!name || !price) {
+        return res.status(400).json({ message: "Name and Price are required" });
+      }
+
+      let finalImageUrl = bodyImageUrl;
+
+      // Handle file upload
+      if (req.file) {
+        try {
+          const result = await uploadToCloudinary(req.file.buffer);
+          finalImageUrl = result;
+        } catch (uploadError: any) {
+          console.error("Cloudinary upload failed:", uploadError);
+          return res.status(500).json({ message: "Image upload failed" });
+        }
+      }
+
+      const [newItem] = await db.insert(streetFoodItems).values({
+        providerId,
+        name,
+        category: category || "Recommended",
+        price: price.toString(),
+        description,
+        isVeg: isVeg === 'true' || isVeg === true,
+        imageUrl: finalImageUrl,
+        isAvailable: true,
+      }).returning();
+
+      res.status(201).json(newItem);
+    } catch (error: any) {
+      console.error("Add street food menu item error:", error);
+      res.status(500).json({ message: error.message || "Failed to add menu item" });
+    }
+  });
+
+  // Edit an existing menu item
+  app.put("/api/admin/street-food/vendors/:id/menu/:itemId", isAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const { name, category, price, description, isVeg, imageUrl: bodyImageUrl, isAvailable } = req.body;
+
+      // Find original item
+      const existingItem = await db.query.streetFoodItems.findFirst({
+        where: eq(streetFoodItems.id, itemId)
+      });
+
+      if (!existingItem) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      let finalImageUrl = bodyImageUrl !== undefined ? bodyImageUrl : existingItem.imageUrl;
+
+      // Handle file upload
+      if (req.file) {
+        try {
+          const result = await uploadToCloudinary(req.file.buffer);
+          finalImageUrl = result;
+        } catch (uploadError: any) {
+          console.error("Cloudinary upload failed:", uploadError);
+          return res.status(500).json({ message: "Image upload failed" });
+        }
+      }
+
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (category !== undefined) updateData.category = category;
+      if (price !== undefined) updateData.price = price.toString();
+      if (description !== undefined) updateData.description = description;
+      if (isVeg !== undefined) updateData.isVeg = isVeg === 'true' || isVeg === true;
+      if (isAvailable !== undefined) updateData.isAvailable = isAvailable === 'true' || isAvailable === true;
+
+      updateData.imageUrl = finalImageUrl;
+
+      const [updatedItem] = await db.update(streetFoodItems)
+        .set(updateData)
+        .where(eq(streetFoodItems.id, itemId))
+        .returning();
+
+      res.json(updatedItem);
+    } catch (error: any) {
+      console.error("Edit street food menu item error:", error);
+      res.status(500).json({ message: error.message || "Failed to edit menu item" });
+    }
+  });
+
+  // Delete a menu item
+  app.delete("/api/admin/street-food/vendors/:id/menu/:itemId", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      await db.delete(streetFoodItems).where(eq(streetFoodItems.id, itemId));
+      res.json({ success: true, message: "Item deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete street food menu item error:", error);
+      res.status(500).json({ message: error.message || "Failed to delete item" });
+    }
+  });
+
+  // Edit Vendor Profile details
+  app.put("/api/admin/street-food/vendors/:id", isAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { businessName, isAvailable } = req.body;
+
+      const updateData: any = {};
+      if (businessName) updateData.businessName = businessName;
+      if (isAvailable !== undefined) updateData.isAvailable = isAvailable === 'true' || isAvailable === true;
+
+      if (req.file) {
+        try {
+          updateData.profileImageUrl = await uploadToCloudinary(req.file.buffer);
+        } catch (uploadError: any) {
+          return res.status(500).json({ message: "Image upload failed" });
+        }
+      }
+
+      const [updatedVendor] = await db.update(serviceProviders)
+        .set(updateData)
+        .where(eq(serviceProviders.id, id))
+        .returning();
+
+      res.json(updatedVendor);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to update vendor" });
     }
   });
 

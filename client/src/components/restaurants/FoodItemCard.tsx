@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, Star } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import type { RestaurantMenuItem, RestaurantOrder } from "@shared/schema";
 
 interface FoodItemCardProps {
@@ -41,10 +42,22 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
             </div>
 
             <div className="relative w-32 min-w-[128px]">
-                <div className="w-32 h-24 rounded-xl overflow-hidden shadow-sm">
-                    <img src={image} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-lg bg-background rounded-lg border border-muted-foreground/20">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <div className="w-32 h-24 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:opacity-90 transition-opacity">
+                            <img src={image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl w-[90vw] p-0 border-none bg-transparent shadow-none [&>button]:right-[-20px] [&>button]:top-[-20px] [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full">
+                        <img
+                            src={image}
+                            alt={item.name}
+                            className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                        />
+                    </DialogContent>
+                </Dialog>
+
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-lg bg-background rounded-lg border border-muted-foreground/20 z-10">
                     {disabled ? (
                         <div className="h-9 w-24 flex items-center justify-center text-xs font-medium text-red-500 bg-red-50 rounded-lg">
                             Closed

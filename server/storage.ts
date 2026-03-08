@@ -1255,6 +1255,7 @@ export class DatabaseStorage implements IStorage {
 
   async getRentalProperties(filters: {
     propertyType?: string;
+    listingType?: string;
     minRent?: number;
     maxRent?: number;
     furnishing?: string;
@@ -1265,6 +1266,9 @@ export class DatabaseStorage implements IStorage {
 
     if (filters.propertyType) {
       conditions.push(eq(rentalProperties.propertyType, filters.propertyType));
+    }
+    if (filters.listingType) {
+      conditions.push(eq(rentalProperties.listingType, filters.listingType));
     }
     if (filters.minRent) {
       conditions.push(gte(rentalProperties.rent, filters.minRent.toString()));

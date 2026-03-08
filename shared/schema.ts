@@ -212,6 +212,7 @@ export const reviews = pgTable("reviews", {
 export const rentalProperties = pgTable("rental_properties", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   ownerId: varchar("owner_id").notNull(),
+  listingType: text("listing_type").default("rent").notNull(), // rent or sell
   title: text("title").notNull(),
   description: text("description"),
   propertyType: text("property_type").notNull(),
@@ -324,7 +325,7 @@ export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
   items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true,
 });
 export const insertRentalPropertySchema = createInsertSchema(rentalProperties).pick({
-  title: true, description: true, propertyType: true, rent: true, area: true,
+  listingType: true, title: true, description: true, propertyType: true, rent: true, area: true,
   bedrooms: true, bathrooms: true, furnishing: true, address: true, locality: true,
   latitude: true, longitude: true, amenities: true, images: true,
   deposit: true, noticePeriod: true, status: true, ownerNote: true,

@@ -27,12 +27,16 @@ export default function ProductCard({
   onIncreaseQuantity,
   onDecreaseQuantity,
 }: ProductCardProps) {
-  // Price ko number me convert karo
   const priceAsNumber = parseFloat(product.price as string);
   const mrpAsNumber = product.mrp ? parseFloat(product.mrp as string) : null;
   const discountPercentage = mrpAsNumber && mrpAsNumber > priceAsNumber
     ? Math.round(((mrpAsNumber - priceAsNumber) / mrpAsNumber) * 100)
     : 0;
+
+  // Detect basket placeholder image
+  const BASKET_PLACEHOLDER = "groceries.png";
+  const hasRealImage = !!product.imageUrl && !product.imageUrl.includes(BASKET_PLACEHOLDER);
+  const isAvailable = product.inStock !== false && hasRealImage;
 
   return (
     <Card className="overflow-hidden border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-md transition-all rounded-md flex flex-col h-full bg-white relative">
@@ -114,9 +118,9 @@ export default function ProductCard({
                 variant="outline"
                 className="w-full h-6 text-[10px] font-bold text-green-700 border-green-200 bg-green-50 hover:bg-green-100 hover:text-green-800 uppercase tracking-wider rounded-md shadow-none px-0"
                 onClick={() => onAddToCart(product)}
-                disabled={!product.inStock || !product.imageUrl}
+                disabled={!isAvailable}
               >
-                {product.inStock && product.imageUrl ? 'ADD' : 'SOLD'}
+                {isAvailable ? 'ADD' : 'SOLD'}
               </Button>
             ) : (
               <div className="flex items-center justify-between bg-green-50 rounded-md border border-green-200 h-6 px-0.5">

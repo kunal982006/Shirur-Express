@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
     Users,
@@ -43,7 +44,24 @@ import {
     Signal,
     Crown,
     Star, // ADDED
+    Utensils,
+    Trash2,
+    Image as ImageIcon,
 } from "lucide-react";
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import AdminStreetFood from "@/components/admin/admin-street-food";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -98,6 +116,7 @@ interface AppUser {
     phone: string | null;
     role: string | null;
     createdAt: string | null;
+    businessName?: string | null;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -209,7 +228,7 @@ export default function AdminDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
 
     // Featured Tab State
-    const [featuredType, setFeaturedType] = useState<"street_food" | "restaurant" | "cake">("street_food");
+    const [featuredType, setFeaturedType] = useState<"restaurant" | "cake">("restaurant");
     const [featuredSearch, setFeaturedSearch] = useState("");
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");
@@ -222,16 +241,15 @@ export default function AdminDashboard() {
         }
     }, [user, setLocation]);
 
-    if (!user || user.role !== 'admin') {
-        return (
-            <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto mb-4" />
-                    <p className="text-gray-400">Checking access...</p>
-                </div>
-            </div>
-        );
-    }
+    // Force Dark Mode for Admin Panel
+    useEffect(() => {
+        document.documentElement.classList.add('dark');
+        return () => {
+            document.documentElement.classList.remove('dark');
+        };
+    }, []);
+
+
 
     // Queries
     const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
@@ -258,6 +276,24 @@ export default function AdminDashboard() {
     const { data: allUsers } = useQuery<AppUser[]>({
         queryKey: ["/api/admin/users"],
         queryFn: () => api.get("/admin/users").then(r => r.data),
+    });
+
+    const deleteUserMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            const res = await api.delete(`/admin/users/${userId}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast({ title: "Success", description: "User deleted successfully." });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to delete user.",
+                variant: "destructive"
+            });
+        }
     });
 
     const broadcastMutation = useMutation({
@@ -341,8 +377,19 @@ export default function AdminDashboard() {
         { id: "providers", label: "Providers", icon: Store },
         { id: "users", label: "Users", icon: Users },
         { id: "broadcast", label: "Broadcast", icon: Send },
-        { id: "featured", label: "Featured", icon: Star }, // ADDED
+        { id: "featured", label: "Featured", icon: Star },
     ] as const;
+
+    if (!user || user.role !== 'admin') {
+        return (
+            <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto mb-4" />
+                    <p className="text-gray-400">Checking access...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0e1a] text-white">
@@ -572,52 +619,52 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && (
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && (
+                    <div className="relative max-w-5xl mx-auto mb-6">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                             placeholder={`Search ${activeTab}...`}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#111827] border border-white/5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                            className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#111827] border border-white/5 text-base text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-colors shadow-sm"
                         />
                     </div>
                 )}
 
                 {/* ═══ ORDERS TAB ═══ */}
                 {activeTab === "orders" && (
-                    <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                            <h3 className="font-semibold flex items-center gap-2">
-                                <ShoppingCart className="h-4 w-4 text-gray-500" /> All Orders
+                    <div className="max-w-5xl mx-auto rounded-3xl bg-[#111827] border border-white/5 overflow-hidden shadow-lg">
+                        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+                            <h3 className="font-semibold flex items-center gap-2 text-lg">
+                                <ShoppingCart className="h-5 w-5 text-gray-400" /> All Orders
                             </h3>
-                            <span className="text-xs text-gray-600">{filteredOrders?.length || 0} results</span>
+                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredOrders?.length || 0} results</span>
                         </div>
                         <div className="divide-y divide-white/5">
                             {!filteredOrders || filteredOrders.length === 0 ? (
                                 <p className="text-center text-gray-600 py-12">No orders found</p>
                             ) : filteredOrders.map(o => (
-                                <div key={o.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
-                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${o.orderType === 'grocery' ? 'bg-green-500/15' :
+                                <div key={o.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${o.orderType === 'grocery' ? 'bg-green-500/15' :
                                         o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
                                         }`}>
-                                        {o.orderType === 'grocery' ? <ShoppingBasket className="h-4 w-4 text-green-400" /> :
-                                            o.orderType === 'street_food' ? <Sandwich className="h-4 w-4 text-orange-400" /> :
-                                                <UtensilsCrossed className="h-4 w-4 text-red-400" />}
+                                        {o.orderType === 'grocery' ? <ShoppingBasket className="h-5 w-5 text-green-400" /> :
+                                            o.orderType === 'street_food' ? <Sandwich className="h-5 w-5 text-orange-400" /> :
+                                                <UtensilsCrossed className="h-5 w-5 text-red-400" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-mono text-xs text-gray-500">#{o.id.slice(0, 10)}</span>
-                                            <span className="text-xs text-gray-400 capitalize">{o.orderType.replace("_", " ")}</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusColor(o.status)}`}>
+                                            <span className="font-mono text-sm text-gray-400">#{o.id.slice(0, 10)}</span>
+                                            <span className="text-sm font-medium capitalize text-gray-100">{o.orderType.replace("_", " ")}</span>
+                                            <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(o.status)}`}>
                                                 {(o.status || 'pending').replace(/_/g, ' ')}
                                             </span>
                                         </div>
-                                        {o.deliveryAddress && <p className="text-xs text-gray-600 mt-0.5 truncate">{o.deliveryAddress}</p>}
+                                        {o.deliveryAddress && <p className="text-sm text-gray-500 mt-1 truncate">{o.deliveryAddress}</p>}
                                     </div>
                                     <div className="text-right shrink-0">
-                                        {o.amount && <p className="text-sm font-semibold">₹{parseFloat(o.amount).toFixed(0)}</p>}
-                                        <p className="text-[10px] text-gray-600">{timeAgo(o.createdAt)}</p>
+                                        {o.amount && <p className="text-lg font-bold text-gray-100">₹{parseFloat(o.amount).toFixed(0)}</p>}
+                                        <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(o.createdAt)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -627,38 +674,38 @@ export default function AdminDashboard() {
 
                 {/* ═══ BOOKINGS TAB ═══ */}
                 {activeTab === "bookings" && (
-                    <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                            <h3 className="font-semibold flex items-center gap-2">
-                                <CalendarCheck className="h-4 w-4 text-gray-500" /> All Bookings
+                    <div className="max-w-5xl mx-auto rounded-3xl bg-[#111827] border border-white/5 overflow-hidden shadow-lg">
+                        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+                            <h3 className="font-semibold flex items-center gap-2 text-lg">
+                                <CalendarCheck className="h-5 w-5 text-gray-400" /> All Bookings
                             </h3>
-                            <span className="text-xs text-gray-600">{filteredBookings?.length || 0} results</span>
+                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredBookings?.length || 0} results</span>
                         </div>
                         <div className="divide-y divide-white/5">
                             {!filteredBookings || filteredBookings.length === 0 ? (
                                 <p className="text-center text-gray-600 py-12">No bookings found</p>
                             ) : filteredBookings.map(b => (
-                                <div key={b.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
-                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
+                                <div key={b.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
                                         b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
                                         }`}>
-                                        {b.serviceType === 'electrician' ? <Zap className="h-4 w-4 text-yellow-400" /> :
-                                            b.serviceType === 'plumber' ? <Wrench className="h-4 w-4 text-blue-400" /> :
-                                                <Scissors className="h-4 w-4 text-pink-400" />}
+                                        {b.serviceType === 'electrician' ? <Zap className="h-5 w-5 text-yellow-400" /> :
+                                            b.serviceType === 'plumber' ? <Wrench className="h-5 w-5 text-blue-400" /> :
+                                                <Scissors className="h-5 w-5 text-pink-400" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-mono text-xs text-gray-500">#{b.id.slice(0, 10)}</span>
-                                            <span className="text-xs text-gray-400 capitalize">{b.serviceType.replace("_", " ")}</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusColor(b.status)}`}>
+                                            <span className="font-mono text-sm text-gray-400">#{b.id.slice(0, 10)}</span>
+                                            <span className="text-sm font-medium capitalize text-gray-100">{b.serviceType.replace("_", " ")}</span>
+                                            <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(b.status)}`}>
                                                 {(b.status || 'pending').replace(/_/g, ' ')}
                                             </span>
                                         </div>
-                                        {b.userAddress && <p className="text-xs text-gray-600 mt-0.5 truncate">{b.userAddress}</p>}
+                                        {b.userAddress && <p className="text-sm text-gray-500 mt-1 truncate">{b.userAddress}</p>}
                                     </div>
                                     <div className="text-right shrink-0">
-                                        {b.estimatedCost && <p className="text-sm font-semibold">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
-                                        <p className="text-[10px] text-gray-600">{timeAgo(b.createdAt)}</p>
+                                        {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
+                                        <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -668,37 +715,47 @@ export default function AdminDashboard() {
 
                 {/* ═══ PROVIDERS TAB ═══ */}
                 {activeTab === "providers" && (
-                    <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                            <h3 className="font-semibold flex items-center gap-2">
-                                <Store className="h-4 w-4 text-gray-500" /> All Providers
+                    <div className="max-w-5xl mx-auto space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="font-semibold flex items-center gap-2 text-lg">
+                                <Store className="h-5 w-5 text-gray-400" /> All Providers
                             </h3>
-                            <span className="text-xs text-gray-600">{filteredProviders?.length || 0} results</span>
+                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredProviders?.length || 0} results</span>
                         </div>
-                        <div className="divide-y divide-white/5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {!filteredProviders || filteredProviders.length === 0 ? (
-                                <p className="text-center text-gray-600 py-12">No providers found</p>
+                                <p className="col-span-full text-center text-gray-600 py-12">No providers found</p>
                             ) : filteredProviders.map(p => (
-                                <div key={p.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${p.isAvailable ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gray-700'
-                                        }`}>
-                                        {p.businessName.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold">{p.businessName}</span>
-                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{p.categoryName}</span>
-                                            {p.isVerified && (
-                                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-1">
-                                                    <ShieldCheck className="h-2.5 w-2.5" /> Verified
-                                                </span>
-                                            )}
+                                <div key={p.id} className="bg-[#111827] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.02] hover:border-white/10 transition-all group relative tracking-wide">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shrink-0 ${p.isAvailable ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-md shadow-emerald-500/20' : 'bg-gray-700'
+                                                }`}>
+                                                {p.businessName.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-base text-gray-100">{p.businessName}</h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{p.categoryName}</span>
+                                                    {p.isVerified && (
+                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+                                                            <ShieldCheck className="h-2.5 w-2.5" /> Verified
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-gray-600 mt-0.5 truncate">{p.address}</p>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-sm font-medium text-gray-200 flex items-center justify-end gap-1">
+                                                <Star className="h-3 w-3 text-yellow-500 fill-current" /> {p.rating ? parseFloat(p.rating).toFixed(1) : "New"}
+                                            </p>
+                                            <p className="text-[10px] text-gray-500 mt-0.5">{p.reviewCount || 0} reviews</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm font-medium">⭐ {p.rating ? parseFloat(p.rating).toFixed(1) : "—"}</p>
-                                        <p className="text-[10px] text-gray-600">{p.reviewCount || 0} reviews</p>
+                                    <div className="bg-black/20 p-3 rounded-xl flex items-center gap-2 min-w-0 border border-white/[0.02]">
+                                        <p className="text-sm text-gray-400 truncate">
+                                            <span className="font-medium text-gray-500">Address:</span> {p.address}
+                                        </p>
                                     </div>
                                 </div>
                             ))}
@@ -708,35 +765,71 @@ export default function AdminDashboard() {
 
                 {/* ═══ USERS TAB ═══ */}
                 {activeTab === "users" && (
-                    <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                            <h3 className="font-semibold flex items-center gap-2">
-                                <Users className="h-4 w-4 text-gray-500" /> All Users
+                    <div className="max-w-5xl mx-auto space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="font-semibold flex items-center gap-2 text-lg">
+                                <Users className="h-5 w-5 text-gray-400" /> All Users
                             </h3>
-                            <span className="text-xs text-gray-600">{filteredUsers?.length || 0} results</span>
+                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredUsers?.length || 0} results</span>
                         </div>
-                        <div className="divide-y divide-white/5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {!filteredUsers || filteredUsers.length === 0 ? (
-                                <p className="text-center text-gray-600 py-12">No users found</p>
+                                <p className="col-span-full text-center text-gray-600 py-12">No users found</p>
                             ) : filteredUsers.map(u => (
-                                <div key={u.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition-colors">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/5 flex items-center justify-center text-blue-300 font-bold text-sm shrink-0">
-                                        {u.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold">{u.username}</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${u.role === 'admin' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
-                                                u.role === 'provider' ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' :
-                                                    'bg-white/5 text-gray-400 border-white/10'
-                                                }`}>
-                                                {u.role || 'customer'}
-                                            </span>
+                                <div key={u.id} className="bg-[#111827] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.02] hover:border-white/10 transition-colors relative group">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/20 flex items-center justify-center text-blue-300 font-bold text-xl shrink-0 shadow-sm">
+                                                {(u.role === 'provider' && u.businessName ? u.businessName.charAt(0) : u.username.charAt(0)).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-base text-gray-100">
+                                                    {u.role === 'provider' && u.businessName ? u.businessName : u.username}
+                                                </h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${u.role === 'admin' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                                                        u.role === 'provider' ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' :
+                                                            'bg-white/5 text-gray-400 border-white/10'
+                                                        }`}>
+                                                        {u.role || 'customer'}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500">{timeAgo(u.createdAt)}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-gray-600 mt-0.5">{u.email} {u.phone ? `• ${u.phone}` : ""}</p>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 text-red-500/70 hover:text-red-400 hover:bg-red-500/20 rounded-xl opacity-0 flex-shrink-0 group-hover:opacity-100 transition-all focus:opacity-100 xl:translate-x-2 group-hover:translate-x-0">
+                                                    <Trash2 className="h-5 w-5" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription className="text-gray-400">
+                                                        This action cannot be undone. This will permanently delete the user account entirely, including their provider profile if applicable.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 mt-2 sm:mt-0">Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => deleteUserMutation.mutate(u.id)} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                                                        Delete User
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-[10px] text-gray-600">{timeAgo(u.createdAt)}</p>
+                                    <div className="bg-black/20 p-3 rounded-xl flex flex-col gap-1 min-w-0 border border-white/[0.02]">
+                                        <p className="text-sm text-gray-400 truncate">
+                                            <span className="font-medium text-gray-500">Email:</span> {u.email}
+                                        </p>
+                                        {(u.phone || (u.role === 'provider' && u.username)) && (
+                                            <p className="text-sm text-gray-400 truncate flex items-center gap-3">
+                                                {u.phone && <span><span className="font-medium text-gray-500">Phone:</span> {u.phone}</span>}
+                                                {u.role === 'provider' && u.username && <span><span className="font-medium text-gray-500">User:</span> @{u.username}</span>}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -853,95 +946,192 @@ export default function AdminDashboard() {
                     <div className="max-w-4xl mx-auto space-y-6">
                         {/* Type Selection */}
                         <div className="flex gap-2">
-                            {(['street_food', 'restaurant', 'cake'] as const).map(type => (
+                            {(['restaurant', 'cake'] as const).map(type => (
                                 <button
                                     key={type}
                                     onClick={() => { setFeaturedType(type); setFeaturedSearch(""); }}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${featuredType === type
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                         }`}
                                 >
-                                    {type === 'street_food' ? 'Street Food' : type === 'restaurant' ? 'Restaurants' : 'Cakes'}
+                                    {type === 'restaurant' ? 'Restaurants' : 'Cakes'}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Search */}
-                        <div className="relative">
+                        {/* Search to filter providers */}
+                        <div className="relative mb-6">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                             <input
-                                placeholder={`Search for ${featuredType.replace("_", " ")} to feature...`}
+                                placeholder={`Filter ${featuredType.replace("_", " ")} vendors...`}
                                 value={featuredSearch}
                                 onChange={(e) => setFeaturedSearch(e.target.value)}
                                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#111827] border border-white/5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors"
                             />
                         </div>
 
-                        {/* Results */}
-                        <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden min-h-[200px]">
-                            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                                <h3 className="font-semibold flex items-center gap-2">
-                                    <Star className="h-4 w-4 text-yellow-500" /> Results
-                                </h3>
-                                <span className="text-xs text-gray-600">{searchResults?.length || 0} results</span>
-                            </div>
+                        {/* Providers List Accordion */}
+                        <div className="space-y-3">
+                            {providers?.filter(p => {
+                                const catName = p.categoryName?.toLowerCase() || "";
+                                // Temporary debug:
+                                if (p.businessName?.toLowerCase().includes('abhiruchi')) {
+                                    console.log("Found Abhiruchi! Category is:", catName, "ID:", p.id);
+                                }
 
-                            <div className="divide-y divide-white/5">
-                                {isSearchLoading ? (
-                                    <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-blue-500" /></div>
-                                ) : !searchResults || searchResults.length === 0 ? (
-                                    <div className="py-12 text-center text-gray-600">
-                                        {featuredSearch ? "No items found" : "Type to search..."}
+                                // Filter providers based on the selected type
+                                if (featuredType === 'restaurant' && !catName.includes('restaurant')) return false;
+                                if (featuredType === 'cake' && !catName.includes('cake')) return false;
+
+                                // Filter by search term
+                                if (featuredSearch && !p.businessName?.toLowerCase().includes(featuredSearch.toLowerCase())) return false;
+
+                                return true;
+                            }).map(provider => (
+                                <ProviderFeaturedAccordion
+                                    key={provider.id.toString() + featuredType}
+                                    provider={provider}
+                                    type={featuredType as "restaurant" | "cake"}
+                                />
+                            ))}
+                            {providers?.filter(p => {
+                                const catName = p.categoryName?.toLowerCase() || "";
+                                return (featuredType === 'restaurant' && catName.includes('restaurant')) ||
+                                    (featuredType === 'cake' && catName.includes('cake'));
+                            }).length === 0 && (
+                                    <div className="py-12 text-center text-gray-600 bg-[#111827] rounded-xl border border-white/5">
+                                        No providers found for this category.
                                     </div>
-                                ) : (
-                                    searchResults.map((item: any) => (
-                                        <div key={item.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02]">
-                                            <div className="flex items-center gap-4">
-                                                {/* Image */}
-                                                <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden shrink-0">
-                                                    {(item.image || item.profileImageUrl || item.images?.[0]) ? (
-                                                        <img src={item.image || item.profileImageUrl || item.images?.[0]} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                                                            No Img
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-medium text-sm">{item.name || item.businessName}</h4>
-                                                    <p className="text-xs text-gray-500 truncate max-w-[200px]">{item.description || item.address}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-4">
-                                                {item.isPopular && (
-                                                    <span className="text-xs text-yellow-500 font-medium flex items-center gap-1">
-                                                        <Star className="h-3 w-3 fill-current" /> Featured
-                                                    </span>
-                                                )}
-                                                <Button
-                                                    size="sm"
-                                                    variant={item.isPopular ? "destructive" : "secondary"}
-                                                    disabled={togglePopularMutation.isPending}
-                                                    onClick={() => togglePopularMutation.mutate({
-                                                        type: featuredType,
-                                                        id: item.id,
-                                                        isPopular: !item.isPopular
-                                                    })}
-                                                >
-                                                    {item.isPopular ? "Remove" : "Feature"}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))
                                 )}
-                            </div>
                         </div>
                     </div>
                 )}
 
+                {/* ═══ STREET FOOD TAB REMOVED ═══ */}
+
             </main>
+        </div>
+    );
+}
+
+// ─── Sub-component for Featured Section Providers ──────────────────
+function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, type: "street_food" | "restaurant" | "cake" }) {
+    const { toast } = useToast();
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const { data: menuItems, isLoading } = useQuery({
+        queryKey: [`/api/admin/provider-menu/${type}/${provider.id}`],
+        queryFn: () => api.get(`/admin/provider-menu/${type}/${provider.id}`).then(r => r.data),
+        enabled: isExpanded,
+    });
+
+    const togglePopularMutation = useMutation({
+        mutationFn: (data: { type: string, id: string, isPopular: boolean }) =>
+            api.post("/admin/toggle-popular", data).then(r => r.data),
+        onSuccess: (updatedItem) => {
+            toast({
+                title: "Updated",
+                description: `${updatedItem.name} ${updatedItem.isPopular ? 'added to' : 'removed from'} popular items.`
+            });
+        },
+        onError: (error: any) => {
+            toast({ title: "Error", description: error.response?.data?.message || "Failed to update item", variant: "destructive" });
+        }
+    });
+
+    // We manually update the local cache so the checkbox toggles instantly visually
+    const queryClient = useQueryClient();
+    const handleToggle = (item: any) => {
+        const newIsPopular = !item.isPopular;
+
+        // Optimistic update
+        queryClient.setQueryData(
+            [`/api/admin/provider-menu/${type}/${provider.id}`],
+            (oldData: any[]) => oldData?.map(i => i.id === item.id ? { ...i, isPopular: newIsPopular } : i)
+        );
+
+        togglePopularMutation.mutate({
+            type,
+            id: item.id,
+            isPopular: newIsPopular
+        });
+    };
+
+    return (
+        <div className="bg-[#111827] border border-white/5 rounded-xl overflow-hidden transition-all">
+            {/* Header / Clickable row */}
+            <div
+                className="flex justify-between items-center p-4 cursor-pointer hover:bg-white/[0.02]"
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10">
+                        {provider.profileImageUrl ? (
+                            <img src={provider.profileImageUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            <Store className="h-5 w-5 text-gray-500" />
+                        )}
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-sm">{provider.businessName}</h4>
+                        <p className="text-xs text-gray-400">
+                            {type === 'street_food' && "Street Food Vendor"}
+                            {type === 'restaurant' && "Restaurant Provider"}
+                            {type === 'cake' && "Cake Baker"}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end">
+                    <span className="text-xs text-blue-400 font-medium bg-blue-500/10 px-2 py-1 rounded-md mb-1 border border-blue-500/20">
+                        {isExpanded ? "Hide Menu" : "View Menu"}
+                    </span>
+                    {/* Add a chevron here if wanted in the future */}
+                </div>
+            </div>
+
+            {/* Expandable Content (Menu Items) */}
+            {isExpanded && (
+                <div className="border-t border-white/5 bg-black/20 p-4">
+                    {isLoading ? (
+                        <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-blue-500" /></div>
+                    ) : !menuItems || !Array.isArray(menuItems) || menuItems.length === 0 ? (
+                        <div className="py-6 text-center text-sm text-gray-500">
+                            This provider has no items added yet.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {menuItems.map((item: any) => (
+                                <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/10 group">
+                                    <div className="flex items-center gap-3 w-full pr-4">
+                                        <div className="w-10 h-10 rounded-md bg-gray-800 overflow-hidden shrink-0">
+                                            {(item.imageUrl || item.images?.[0]) ? (
+                                                <img src={item.imageUrl || item.images?.[0]} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-4 w-4 text-gray-600" /></div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 truncate">
+                                            <h5 className="text-sm font-medium truncate pr-2">{item.name}</h5>
+                                            <p className="text-xs text-gray-500">₹{item.price}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Toggle Switch */}
+                                    <div className="flex items-center justify-end shrink-0">
+                                        <Switch
+                                            checked={item.isPopular}
+                                            onCheckedChange={() => handleToggle(item)}
+                                            disabled={togglePopularMutation.isPending}
+                                            className={`${item.isPopular ? 'bg-yellow-500' : 'bg-gray-700'}`}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

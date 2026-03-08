@@ -47,6 +47,7 @@ export default function PropertyListingForm() {
         resolver: zodResolver(insertRentalPropertySchema),
         defaultValues: {
             title: "",
+            listingType: "rent",
             description: "",
             propertyType: "Apartment",
             rent: "0",
@@ -137,6 +138,8 @@ export default function PropertyListingForm() {
         }
     };
 
+    const watchListingType = form.watch("listingType");
+
     const onSubmit = (data: InsertRentalProperty) => {
         // Ensure numbers are strings/numbers as expected by schema
         const formattedData = {
@@ -162,6 +165,30 @@ export default function PropertyListingForm() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                             {/* Basic Details */}
+                            <div className="grid grid-cols-1 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="listingType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>I want to...</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select objective" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="rent">Rent out my property</SelectItem>
+                                                    <SelectItem value="sell">Sell my property</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -208,7 +235,9 @@ export default function PropertyListingForm() {
                                     name="rent"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Monthly Rent (₹)</FormLabel>
+                                            <FormLabel>
+                                                {watchListingType === 'sell' ? 'Selling Price (₹)' : 'Monthly Rent (₹)'}
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input type="number" {...field} />
                                             </FormControl>
@@ -216,19 +245,22 @@ export default function PropertyListingForm() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="deposit"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Security Deposit (₹)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+
+                                {watchListingType === 'rent' && (
+                                    <FormField
+                                        control={form.control}
+                                        name="deposit"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Security Deposit (₹)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
                             </div>
 
                             {/* Specs */}
