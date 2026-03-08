@@ -1957,6 +1957,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- BAKERIES / CAKE SHOPS ROUTE ---
+  app.get("/api/bakeries", async (req: Request, res: Response) => {
+    try {
+      // Find all providers who have cakes
+      const cakes = await db.select({ providerId: cakeProducts.providerId }).from(cakeProducts);
+      const providerIds = [...new Set(cakes.map(c => c.providerId))];
+
+      if (providerIds.length === 0) {
+        return res.json([]);
+      }
+
+      // Fetch those providers
+      const bakeries = await db.select()
+        .from(serviceProviders)
+        .where(and(
+          inArray(serviceProviders.id, providerIds),
+          eq(serviceProviders.isAvailable, true)
+        ));
+
+      res.json(bakeries);
+    } catch (error: any) {
+      console.error("Get bakeries error:", error);
+      res.status(500).json({ message: error.message || "Error fetching bakeries" });
+    }
+  });
+
   // --- GROCERY PRODUCTS ROUTE (OPTIMIZED) ---
   app.get("/api/grocery-products", async (req: Request, res: Response) => {
     try {
