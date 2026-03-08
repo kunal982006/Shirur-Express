@@ -602,6 +602,55 @@ const BookingsManager: React.FC<{
     },
   });
 
+  // Restaurant/Cake Order status update mutation
+  const updateRestaurantOrderMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/provider/restaurant-orders/${orderId}/status`, { status }),
+    onSuccess: () => {
+      toast({ title: "Order Updated", description: "Order status has been updated." });
+      queryClient.invalidateQueries({ queryKey: ["providerRestaurantOrders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Grocery Order status update mutation
+  const updateGroceryOrderMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/provider/grocery-orders/${orderId}/status`, { status }),
+    onSuccess: () => {
+      toast({ title: "Order Updated", description: "Order status has been updated." });
+      queryClient.invalidateQueries({ queryKey: ["providerGroceryOrders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Helper: get next status action for order
+  const getOrderAction = (status: string | null) => {
+    switch (status) {
+      case 'paid':
+      case 'pending':
+        return { label: '✅ Accept Order', nextStatus: 'accepted', color: 'bg-blue-600 hover:bg-blue-700' };
+      case 'accepted':
+        return { label: '👨‍🍳 Start Preparing', nextStatus: 'preparing', color: 'bg-yellow-600 hover:bg-yellow-700' };
+      case 'preparing':
+        return { label: '📦 Ready for Pickup', nextStatus: 'ready_for_pickup', color: 'bg-green-600 hover:bg-green-700' };
+      default:
+        return null; // No action for delivered/completed/cancelled
+    }
+  };
+
   const getBadgeColor = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "pending": return "default"; // Blue
@@ -752,6 +801,25 @@ const BookingsManager: React.FC<{
                   <p className="text-sm">
                     <strong>Delivery Address:</strong> {order.deliveryAddress}
                   </p>
+                  {/* Order Action Buttons */}
+                  {(() => {
+                    const action = getOrderAction(order.status);
+                    if (!action) return (
+                      <Badge variant="outline" className="mt-2">
+                        {order.status === 'ready_for_pickup' ? '✅ Ready for Pickup' : order.status === 'delivered' ? '🎉 Delivered' : ''}
+                      </Badge>
+                    );
+                    return (
+                      <Button
+                        className={`w-full mt-3 text-white font-bold ${action.color}`}
+                        onClick={() => updateRestaurantOrderMutation.mutate({ orderId: order.id, status: action.nextStatus })}
+                        disabled={updateRestaurantOrderMutation.isPending}
+                      >
+                        {updateRestaurantOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        {action.label}
+                      </Button>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             ))}
@@ -786,6 +854,25 @@ const BookingsManager: React.FC<{
                   <p className="text-sm">
                     <strong>Delivery Address:</strong> {order.deliveryAddress}
                   </p>
+                  {/* Grocery Order Action Buttons */}
+                  {(() => {
+                    const action = getOrderAction(order.status);
+                    if (!action) return (
+                      <Badge variant="outline" className="mt-2">
+                        {order.status === 'ready_for_pickup' ? '✅ Ready for Pickup' : order.status === 'delivered' ? '🎉 Delivered' : ''}
+                      </Badge>
+                    );
+                    return (
+                      <Button
+                        className={`w-full mt-3 text-white font-bold ${action.color}`}
+                        onClick={() => updateGroceryOrderMutation.mutate({ orderId: order.id, status: action.nextStatus })}
+                        disabled={updateGroceryOrderMutation.isPending}
+                      >
+                        {updateGroceryOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        {action.label}
+                      </Button>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             ))}
