@@ -1554,6 +1554,32 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async getRestaurantMenuItems(providerId: string): Promise<RestaurantMenuItem[]> {
+    const restaurantItems = await db.query.restaurantMenuItems.findMany({
+      where: eq(restaurantMenuItems.providerId, providerId),
+    });
+
+    const cakes = await db.query.cakeProducts.findMany({
+      where: eq(cakeProducts.providerId, providerId),
+    });
+
+    const mappedCakes: RestaurantMenuItem[] = cakes.map((cake) => ({
+      id: cake.id,
+      providerId: cake.providerId,
+      name: cake.name,
+      description: cake.description || null,
+      category: cake.category || "Cakes",
+      imageUrl: cake.imageUrl,
+      price: cake.price ? String(cake.price) : "0",
+      isVeg: true,
+      isAvailable: true,
+      cuisine: "Bakery",
+      isPopular: cake.isPopular || false,
+    }));
+
+    return [...restaurantItems, ...mappedCakes];
+  }
+
   async getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]> {
     return db.query.restaurantOrders.findMany({
       where: eq(restaurantOrders.providerId, providerId),
