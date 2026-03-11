@@ -76,10 +76,26 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Hashed assets (JS/CSS/images) — cache for 1 year since Vite hashes filenames
+  app.use("/assets", express.static(path.resolve(distPath, "assets"), {
+    maxAge: "1y",
+    immutable: true,
+  }));
+
+  // Other static files — short cache with revalidation
+  app.use(express.static(distPath, {
+    maxAge: "1h",
+    setHeaders: (res, filePath) => {
+      // HTML files should always revalidate to pick up new deploys
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache");
+      }
+    },
+  }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

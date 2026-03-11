@@ -3,6 +3,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import cors from "cors";
+import compression from "compression";
 import connectPgSimple from "connect-pg-simple";
 import { pool, checkDatabaseConnection } from "./db";
 import { registerRoutes } from "./routes"; // registerRoutes from server/routes.ts
@@ -12,6 +13,9 @@ const app = express();
 app.set("trust proxy", 1);
 
 const PgStore = connectPgSimple(session);
+
+// Gzip/deflate compression for all HTTP responses (~70% size reduction)
+app.use(compression());
 
 // Validate DB connection on startup moved to main execution block
 

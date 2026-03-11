@@ -27,7 +27,7 @@ if (!databaseUrl.includes("-pooler") && !databaseUrl.includes("https://shirur-ex
 export const pool = new Pool({
   connectionString: databaseUrl,
   connectionTimeoutMillis: 10000, // 10 seconds timeout
-  max: 20,
+  max: 10, // Reduced from 20 — Neon has a 20 conn limit per branch, leaving headroom
   idleTimeoutMillis: 30000,
 });
 

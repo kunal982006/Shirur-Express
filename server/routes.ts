@@ -47,6 +47,21 @@ import { z } from "zod";
 import { sendPushNotification } from "./firebase";
 import { importGmartProducts } from "./import-gmart-products";
 
+// ===== PERFORMANCE: In-memory cache for read-heavy public endpoints =====
+const apiCache = new Map<string, { data: any; expiry: number }>();
+
+function getCachedOrFetch<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  const cached = apiCache.get(key);
+  if (cached && Date.now() < cached.expiry) {
+    return Promise.resolve(cached.data as T);
+  }
+  return fetcher().then(data => {
+    apiCache.set(key, { data, expiry: Date.now() + ttlMs });
+    return data;
+  });
+}
+// ========================================================================
+
 // Custom request types
 interface CustomRequest extends Request {
   provider?: {
@@ -829,25 +844,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all active offers (for homepage carousel) - PUBLIC
+  // Get all active offers (for homepage carousel) - PUBLIC (CACHED 2 min)
   app.get("/api/offers/active", async (_req: Request, res: Response) => {
     try {
-      const now = new Date();
-      const offers = await db.query.providerOffers.findMany({
-        where: and(
-          eq(providerOffers.isActive, true),
-          gt(providerOffers.expiryDate, now)
-        ),
-        with: {
-          provider: {
-            columns: {
-              id: true,
-              businessName: true,
-              profileImageUrl: true,
+      const offers = await getCachedOrFetch('offers_active', 2 * 60 * 1000, async () => {
+        const now = new Date();
+        return db.query.providerOffers.findMany({
+          where: and(
+            eq(providerOffers.isActive, true),
+            gt(providerOffers.expiryDate, now)
+          ),
+          with: {
+            provider: {
+              columns: {
+                id: true,
+                businessName: true,
+                profileImageUrl: true,
+              }
             }
-          }
-        },
-        orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+          },
+          orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+        });
       });
       res.json(offers);
     } catch (error: any) {
@@ -1091,7 +1108,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- GENERAL SERVICE ROUTES (No Change) ---
   app.get("/api/service-categories", async (_req: Request, res: Response) => {
     try {
-      const categories = await storage.getServiceCategories();
+      const categories = await getCachedOrFetch('service_categories', 5 * 60 * 1000, () =>
+        storage.getServiceCategories()
+      );
       res.json(categories);
     } catch (error: any) {
       console.error("Get service categories error:", error);
@@ -2865,11 +2884,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all popular items (Public)
   app.get("/api/homepage/popular", async (_req: Request, res: Response) => {
     try {
-      const streetFood = await storage.getPopularStreetFood();
-      const restaurants = await storage.getPopularRestaurants();
-      const cakes = await storage.getPopularCakes();
-      const menuItems = await storage.getPopularRestaurantMenuItems();
-      res.json({ streetFood, restaurants, cakes, menuItems });
+      const data = await getCachedOrFetch('homepage_popular', 2 * 60 * 1000, async () => {
+        // Run all 4 DB queries in parallel instead of sequentially
+        const [streetFood, restaurants, cakes, menuItems] = await Promise.all([
+          storage.getPopularStreetFood(),
+          storage.getPopularRestaurants(),
+          storage.getPopularCakes(),
+          storage.getPopularRestaurantMenuItems(),
+        ]);
+        return { streetFood, restaurants, cakes, menuItems };
+      });
+      res.json(data);
     } catch (error: any) {
       console.error("Get popular items error:", error);
       res.status(500).json({ message: error.message || "Error fetching popular items" });
