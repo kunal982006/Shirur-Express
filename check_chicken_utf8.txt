@@ -1,0 +1,29 @@
+[
+  {
+    "id": "v9yhvrln70w0cjcv2b4wh23b",
+    "userId": "iktzf8nfn5lybzxl27bkxypk",
+    "categoryId": "6810f39a-bceb-417a-b2ca-9555b99856da",
+    "businessName": "Chicken Affair",
+    "description": "Crispy Fried Chicken, Burgers, Wraps, Pizza & More in Shirur",
+    "profileImageUrl": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772849913/c5de68dvprbcagfhrfh5.png",
+    "galleryImages": null,
+    "experience": 3,
+    "rating": "0.00",
+    "reviewCount": 0,
+    "address": "Shirur Main Road, Shirur",
+    "latitude": null,
+    "longitude": null,
+    "serviceArea": 10,
+    "isVerified": false,
+    "isAvailable": true,
+    "isPopular": false,
+    "specializations": [
+      "Fried Chicken",
+      "Burgers",
+      "Wraps",
+      "Pizza",
+      "Fast Food"
+    ],
+    "createdAt": "2026-02-16T15:50:01.179Z"
+  }
+]

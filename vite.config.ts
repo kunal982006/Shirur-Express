@@ -35,6 +35,10 @@ export default defineConfig({
       },
     ],
     // --- FIX KHATAM ---
+    dedupe: ["react", "react-dom", "wouter", "lucide-react"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "wouter", "lucide-react"],
   },
   root: path.resolve(import.meta.dirname, "client"),
   build: {

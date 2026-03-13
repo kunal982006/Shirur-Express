@@ -113,7 +113,7 @@ export default function StreetFoodDetail() {
       {/* Header Image */}
       <div className="relative h-64 md:h-80 w-full">
         <img
-          src={vendor.galleryImages?.[0] || vendor.profileImageUrl || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=1000&auto=format&fit=crop&q=60"}
+          src={vendor.profileImageUrl || vendor.galleryImages?.[0] || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=1000&auto=format&fit=crop&q=60"}
           alt={vendor.businessName}
           className="w-full h-full object-cover"
         />

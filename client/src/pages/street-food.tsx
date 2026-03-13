@@ -12,7 +12,7 @@ import type { ServiceProvider } from "@shared/schema";
 function StreetVendorCard({ vendor, onClick }: { vendor: ServiceProvider; onClick: () => void }) {
   const rating = vendor.rating ? parseFloat(vendor.rating.toString()).toFixed(1) : "New";
   const specializations = vendor.specializations || [];
-  const image = vendor.galleryImages?.[0] || vendor.profileImageUrl || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60";
+  const image = vendor.profileImageUrl || vendor.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60";
 
   return (
     <div

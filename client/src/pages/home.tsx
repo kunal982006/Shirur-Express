@@ -27,6 +27,7 @@ import {
   LogOut,
   Package,
   Settings,
+  X, // ADDED: Close button for image modal
   Truck,
   LayoutDashboard,
   User,
@@ -74,6 +75,7 @@ export default function Home() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); // ADDED: For full-screen image modal
 
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -400,7 +402,7 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/restaurants")}
         renderItem={(item: any) => (
-          <div onClick={() => navigate(`/restaurants/${item.providerId}`)} className="cursor-pointer group">
+          <div onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")} className="cursor-pointer group">
             <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
               <img
                 src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
@@ -425,8 +427,7 @@ export default function Home() {
               <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
               <Button
                 size="sm"
-                variant="outline"
-                className="h-6 text-[10px] px-2 rounded-full border-orange-200 text-orange-600 hover:bg-orange-50"
+                className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   addItem({
@@ -443,7 +444,7 @@ export default function Home() {
                   });
                 }}
               >
-                Order
+                Add
               </Button>
             </div>
           </div>
@@ -518,6 +519,34 @@ export default function Home() {
           </div>
         )}
       />
+      
+      {/* Full-Screen Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl w-full h-full p-4 flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full h-12 w-12 z-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+            >
+              <X className="h-8 w-8" />
+            </Button>
+            <img 
+              src={selectedImage} 
+              alt="Food details" 
+              className="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()} 
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );

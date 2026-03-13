@@ -12,7 +12,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
     // Parsing generic fields for display
     const rating = restaurant.rating ? parseFloat(restaurant.rating.toString()).toFixed(1) : "New";
     const specializations = restaurant.specializations || [];
-    const image = restaurant.galleryImages?.[0] || restaurant.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60";
+    const image = restaurant.profileImageUrl || restaurant.galleryImages?.[0] || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60";
 
     return (
         <Card

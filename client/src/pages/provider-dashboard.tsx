@@ -2435,7 +2435,7 @@ const RentalManager: React.FC<{
   );
 };
 
-// --- COMPONENT 4: PROFILE SETTINGS (Waise ka waisa) ---
+// --- COMPONENT 4: PROFILE SETTINGS (PREMIUM REDESIGN) ---
 const ProfileSettingsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
   userId: string;
@@ -2455,7 +2455,7 @@ const ProfileSettingsManager: React.FC<{
       });
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Profile picture updated." });
+      toast({ title: "Success", description: "Profile banner/logo updated." });
       queryClient.invalidateQueries({ queryKey: ["providerProfile", userId] });
       setProfileFile(null);
     },
@@ -2480,7 +2480,7 @@ const ProfileSettingsManager: React.FC<{
       });
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Gallery images uploaded." });
+      toast({ title: "Success", description: "Gallery images have been added." });
       queryClient.invalidateQueries({ queryKey: ["providerProfile", userId] });
       setGalleryFiles(null);
     },
@@ -2494,115 +2494,185 @@ const ProfileSettingsManager: React.FC<{
   });
 
   const handleProfileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files[0]) {
       setProfileFile(e.target.files[0]);
     }
   };
 
   const handleGalleryFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files.length > 0) {
       setGalleryFiles(e.target.files);
     }
   };
 
   const handleProfileUpload = () => {
-    if (profileFile) {
-      profilePicMutation.mutate(profileFile);
-    }
+    if (profileFile) profilePicMutation.mutate(profileFile);
   };
 
   const handleGalleryUpload = () => {
-    if (galleryFiles) {
-      galleryUploadMutation.mutate(galleryFiles);
-    }
+    if (galleryFiles) galleryUploadMutation.mutate(galleryFiles);
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Picture</CardTitle>
+    <div className="flex flex-col gap-6">
+      {/* Profile Picture / Banner Upload */}
+      <Card className="border-none shadow-md overflow-hidden bg-card">
+        <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b pb-6">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-primary" />
+            Main Display Image (Banner/Logo)
+          </CardTitle>
           <CardDescription>
-            Upload a clear photo of yourself or your logo.
+            This image acts as the primary visual associated with your restaurant or service everywhere in the app.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="w-40 h-40 rounded-full overflow-hidden bg-muted mx-auto flex items-center justify-center">
-            {providerProfile.profileImageUrl ? (
-              <img
-                src={providerProfile.profileImageUrl}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <ImageIcon className="w-16 h-16 text-muted-foreground" />
-            )}
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            {/* Image Preview */}
+            <div className="w-full md:w-1/2">
+              <div className="relative group rounded-xl overflow-hidden aspect-[16/9] md:aspect-square md:max-w-xs shadow-inner bg-muted transition-all duration-300">
+                {profileFile ? (
+                  <img src={URL.createObjectURL(profileFile)} alt="Preview" className="w-full h-full object-cover" />
+                ) : providerProfile.profileImageUrl ? (
+                  <img src={providerProfile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
+                    <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
+                    <span className="text-sm font-medium">No Image Set</span>
+                  </div>
+                )}
+                
+                {/* Hover overlay instruction */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="text-white font-medium drop-shadow-md">Select a new image below</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Controls */}
+            <div className="w-full md:w-1/2 flex flex-col space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="profile-upload" className="text-sm font-semibold text-foreground">
+                  Select a High-Resolution Photo
+                </Label>
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <Input
+                      id="profile-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfileFileChange}
+                      disabled={profilePicMutation.isPending}
+                      className="cursor-pointer file:bg-primary/10 file:text-primary file:border-0 file:rounded-md file:px-4 file:py-1 file:mr-4 file:font-semibold hover:file:bg-primary/20 transition-all font-medium h-12 pt-3"
+                    />
+                  </div>
+                </div>
+                {profileFile && (
+                  <p className="text-xs text-green-600 font-medium">✨ Ready to upload: {profileFile.name}</p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleProfileUpload}
+                disabled={!profileFile || profilePicMutation.isPending}
+                className="w-full sm:w-auto self-start mt-2 shadow-sm"
+                size="lg"
+              >
+                {profilePicMutation.isPending ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-5 w-5" />
+                )}
+                {profilePicMutation.isPending ? "Uploading Banner..." : "Save Banner Image"}
+              </Button>
+            </div>
           </div>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleProfileFileChange}
-            disabled={profilePicMutation.isPending}
-          />
         </CardContent>
-        <CardFooter>
-          <Button
-            onClick={handleProfileUpload}
-            disabled={!profileFile || profilePicMutation.isPending}
-          >
-            {profilePicMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="mr-2 h-4 w-4" />
-            )}
-            Upload Picture
-          </Button>
-        </CardFooter>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Gallery Images</CardTitle>
+      {/* Gallery Upload */}
+      <Card className="border-none shadow-md overflow-hidden bg-card">
+        <CardHeader className="border-b pb-6">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-primary" />
+            Photo Gallery
+          </CardTitle>
           <CardDescription>
-            Showcase your work (e.g., past projects, food items).
+            Upload supplementary photos here (like shop interior, previous work, or specific generic items). 
+            <br/><span className="font-semibold text-amber-600 dark:text-amber-400 text-xs">Note: Your display banner above is always prioritized over these gallery photos.</span>
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 min-h-[80px]">
-            {providerProfile.galleryImages?.map((url, index) => (
-              <div
-                key={index}
-                className="relative aspect-square bg-muted rounded-md overflow-hidden"
-              >
-                <img
-                  src={url}
-                  alt={`Gallery item ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
+        <CardContent className="pt-6">
+          
+          {/* Upload Input */}
+          <div className="p-6 mb-6 border-2 border-dashed border-primary/20 rounded-xl bg-primary/5 transition-colors hover:bg-primary/10 duration-200">
+            <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
+               <div className="flex-1 space-y-2 w-full">
+                  <Label htmlFor="gallery-upload" className="text-sm font-semibold flex items-center gap-2">
+                    <PlusCircle className="w-4 h-4" /> Add Multiple Photos (Max 5)
+                  </Label>
+                  <Input
+                    id="gallery-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryFileChange}
+                    disabled={galleryUploadMutation.isPending}
+                    className="cursor-pointer file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-4 file:py-1 file:font-semibold hover:file:bg-primary/90 transition-all h-12 pt-3"
+                  />
+                  {galleryFiles && (
+                    <p className="text-xs text-green-600 font-medium">{galleryFiles.length} file(s) selected for upload</p>
+                  )}
+               </div>
+               <Button
+                  onClick={handleGalleryUpload}
+                  disabled={!galleryFiles || galleryUploadMutation.isPending}
+                  size="lg"
+                  className="w-full md:w-auto shadow-md"
+                >
+                  {galleryUploadMutation.isPending ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-5 w-5" />
+                  )}
+                  Upload to Gallery
+                </Button>
+            </div>
           </div>
-          <Input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleGalleryFileChange}
-            disabled={galleryUploadMutation.isPending}
-          />
-        </CardContent>
-        <CardFooter>
-          <Button
-            onClick={handleGalleryUpload}
-            disabled={!galleryFiles || galleryUploadMutation.isPending}
-          >
-            {galleryUploadMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+
+          {/* Gallery Grid */}
+          <div>
+            <h3 className="text-sm font-bold mb-4 text-foreground/80 flex items-center justify-between">
+              Current Gallery ({providerProfile.galleryImages?.length || 0})
+            </h3>
+            {providerProfile.galleryImages && providerProfile.galleryImages.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 auto-rows-fr">
+                {providerProfile.galleryImages.map((url, index) => (
+                  <div
+                    key={index}
+                    className="group relative aspect-square bg-muted rounded-xl shadow-sm border border-border overflow-hidden hover:shadow-md transition-all"
+                  >
+                    <img
+                      src={url}
+                      alt={`Gallery item ${index + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                      Photo {index + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <Upload className="mr-2 h-4 w-4" />
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border border-dashed rounded-xl bg-muted/30">
+                <ImageIcon className="w-10 h-10 mb-3 opacity-30" />
+                <p>Your gallery is currently empty.</p>
+                <p className="text-sm opacity-70">Upload photos above to showcase your business.</p>
+              </div>
             )}
-            Upload Gallery
-          </Button>
-        </CardFooter>
+          </div>
+
+        </CardContent>
       </Card>
     </div>
   );

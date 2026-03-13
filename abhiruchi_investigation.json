@@ -1,0 +1,30 @@
+{
+  "users": [
+    {
+      "id": "nyx3sg7eu8thrmky5zdurvyb",
+      "username": "hotel abhiruchi",
+      "role": "provider"
+    },
+    {
+      "id": "jm698p1bg6604vtjsoxe3q7r",
+      "username": "abhiruchi dosa",
+      "role": "provider"
+    }
+  ],
+  "providers": [
+    {
+      "id": "ppxu4lbqeheqycjepjcfm7uz",
+      "userId": "nyx3sg7eu8thrmky5zdurvyb",
+      "username": "hotel abhiruchi",
+      "businessName": "Hotel Abhiruchi",
+      "menuItemCount": 198
+    },
+    {
+      "id": "bqmtxfria70cy3eze4ls88qt",
+      "userId": "jm698p1bg6604vtjsoxe3q7r",
+      "username": "abhiruchi dosa",
+      "businessName": "Hotel Abhiruchi Dosa",
+      "menuItemCount": 1
+    }
+  ]
+}
