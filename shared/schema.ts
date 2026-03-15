@@ -564,6 +564,17 @@ export const streetFoodOrdersRelations = relations(streetFoodOrders, ({ one }) =
   }),
 }));
 
+export const groceryOrdersRelations = relations(groceryOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [groceryOrders.userId],
+    references: [users.id],
+  }),
+  provider: one(serviceProviders, {
+    fields: [groceryOrders.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
 export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) => ({
   user: one(users, {
     fields: [restaurantOrders.userId],

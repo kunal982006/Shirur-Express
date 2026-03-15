@@ -1093,11 +1093,34 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getGroceryOrdersByProvider(providerId: string): Promise<GroceryOrder[]> {
-    return db.query.groceryOrders.findMany({
+  async getGroceryOrdersByProvider(providerId: string): Promise<any[]> {
+    const orders = await db.query.groceryOrders.findMany({
       where: eq(groceryOrders.providerId, providerId),
+      with: { user: true },
       orderBy: (groceryOrders, { desc }) => [desc(groceryOrders.createdAt)],
     });
+
+    // Manually fetch and attach product details for each item
+    // Since items are stored in JSONB, we need to populate them
+    const enhancedOrders = await Promise.all(orders.map(async (order) => {
+      const itemsWithDetails = await Promise.all((order.items || []).map(async (item: any) => {
+        try {
+          const product = await db.query.groceryProducts.findFirst({
+            where: eq(groceryProducts.id, item.productId)
+          });
+          return {
+            ...item,
+            name: product?.name || item.name || "Unknown Product",
+            imageUrl: product?.imageUrl || null
+          };
+        } catch (err) {
+          return { ...item, name: item.name || "Unknown Product" };
+        }
+      }));
+      return { ...order, items: itemsWithDetails };
+    }));
+
+    return enhancedOrders;
   }
 
   async createRentalProperty(

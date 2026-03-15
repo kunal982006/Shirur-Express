@@ -28,10 +28,9 @@ export default function ProductCard({
   quantity,
   onIncreaseQuantity,
   onDecreaseQuantity,
-  onDecreaseQuantity,
 }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const priceAsNumber = parseFloat(product.price as string);
   const mrpAsNumber = product.mrp ? parseFloat(product.mrp as string) : null;
   const discountPercentage = mrpAsNumber && mrpAsNumber > priceAsNumber
@@ -53,7 +52,7 @@ export default function ProductCard({
       )}
 
       {/* Image Section - Fixed Square Container with Consistent Image Display */}
-      <div 
+      <div
         className={`relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden ${product.imageUrl ? 'cursor-pointer' : ''}`}
         onClick={() => product.imageUrl && setIsModalOpen(true)}
       >
@@ -154,7 +153,7 @@ export default function ProductCard({
 
       {/* Full-Screen Image Modal using React Portal to escape overflow-hidden */}
       {isModalOpen && product.imageUrl && typeof window !== 'undefined' && createPortal(
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300"
           onClick={() => setIsModalOpen(false)}
         >
@@ -170,11 +169,11 @@ export default function ProductCard({
             >
               <X className="h-8 w-8" />
             </Button>
-            <img 
-              src={product.imageUrl} 
-              alt={product.name} 
+            <img
+              src={product.imageUrl}
+              alt={product.name}
               className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
-              onClick={(e) => e.stopPropagation()} 
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         </div>,

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input"; // Import Input
 import { Separator } from "@/components/ui/separator"; // Import Separator
-import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { useCartStore } from "@/hooks/use-cart-store";
 import type { RestaurantMenuItem, ServiceProvider } from "@shared/schema";
@@ -50,6 +50,7 @@ const OverviewTab = ({ restaurant }: { restaurant: ServiceProvider }) => (
 
 export default function RestaurantDetail() {
     const [, params] = useRoute("/restaurants/:id");
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const id = params?.id;
     const { addItem, items, removeItem, updateQuantity } = useCartStore();
     const [searchQuery, setSearchQuery] = useState("");
@@ -139,15 +140,41 @@ export default function RestaurantDetail() {
                     <Button variant="ghost" size="icon"><Share2 className="h-5 w-5" /></Button>
                 </div>
             </div>
+            
+            {/* Restaurant Hero Banner */}
+            <div className="relative h-48 md:h-72 w-full bg-muted overflow-hidden">
+                {restaurant.profileImageUrl ? (
+                    <img 
+                        src={restaurant.profileImageUrl} 
+                        alt={restaurant.businessName} 
+                        className="w-full h-full object-cover"
+                        onClick={() => setSelectedImage(restaurant.profileImageUrl)}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                        <UtensilsCrossed className="h-16 w-16 text-gray-400 opacity-20" />
+                    </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <h1 className="text-3xl font-extrabold drop-shadow-lg">{restaurant.businessName}</h1>
+                    <div className="flex items-center gap-2 mt-1 drop-shadow-md">
+                        <Badge variant="secondary" className="bg-white/90 text-primary font-bold">
+                            {restaurant.rating || "4.2"} ★
+                        </Badge>
+                        <span className="text-sm font-medium">{restaurant.specializations?.join(", ")}</span>
+                    </div>
+                </div>
+            </div>
 
             <div className="max-w-5xl mx-auto">
-                {/* Restaurant Hero Info */}
+                {/* Restaurant Basic Info (Additional details) */}
                 <div className="p-4 space-y-4">
                     <div className="flex justify-between items-start">
-                        <div>
-                            <h1 className="text-2xl font-extrabold mb-1">{restaurant.businessName}</h1>
-                            <p className="text-muted-foreground text-sm">{restaurant.specializations?.join(", ")}</p>
-                            <p className="text-muted-foreground text-sm">{restaurant.address}</p>
+                        <div className="flex-1">
+                            <p className="text-muted-foreground text-sm flex items-center gap-1">
+                                <MapPin className="h-3 w-3" /> {restaurant.address}
+                            </p>
                             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                                 {isRestaurantClosed ? (
                                     <span className="flex items-center gap-1 text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded">
@@ -166,12 +193,12 @@ export default function RestaurantDetail() {
                                 <span>Free Delivery</span>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center bg-green-700/10 px-2 py-1.5 rounded-lg">
-                            <span className="flex items-center gap-1 text-green-700 font-extrabold text-lg">
-                                {restaurant.rating || "4.2"}<Star className="h-4 w-4 fill-green-700" />
+                        <div className="flex flex-col items-center bg-green-700/10 px-3 py-2 rounded-xl">
+                            <span className="flex items-center gap-1 text-green-700 font-extrabold text-xl">
+                                {restaurant.rating || "4.2"}<Star className="h-4 w-4 fill-green-700 underline-offset-4" />
                             </span>
                             <div className="h-[1px] w-full bg-green-700/20 my-1" />
-                            <span className="text-[10px] font-medium text-green-700">1K+ ratings</span>
+                            <span className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">1K+ ratings</span>
                         </div>
                     </div>
                 </div>
@@ -251,10 +278,48 @@ export default function RestaurantDetail() {
                         <OverviewTab restaurant={restaurant} />
                     </TabsContent>
                     <TabsContent value="reviews">
-                        <div className="p-8 text-center text-muted-foreground">Reviews coming soon</div>
+                        <div className="p-12 text-center text-muted-foreground border-2 border-dashed rounded-2xl m-4 bg-muted/5">
+                            <Star className="h-12 w-12 opacity-20 mx-auto mb-4" />
+                            <h3 className="font-bold text-lg text-foreground/80">Be the first to review</h3>
+                            <p className="text-sm max-w-[250px] mx-auto mt-1">Share your dining experience with others.</p>
+                        </div>
                     </TabsContent>
-                    <TabsContent value="photos">
-                        <div className="p-8 text-center text-muted-foreground">Photos coming soon</div>
+                    <TabsContent value="photos" className="m-0 p-4">
+                        {(() => {
+                            const allPhotos = [
+                                ...(restaurant.profileImageUrl ? [restaurant.profileImageUrl] : []),
+                                ...(restaurant.galleryImages || [])
+                            ];
+                            
+                            return allPhotos.length > 0 ? (
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {allPhotos.map((img, index) => (
+                                        <div 
+                                            key={index} 
+                                            className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-all border shadow-sm group"
+                                            onClick={() => setSelectedImage(img)}
+                                        >
+                                            <img 
+                                                src={img} 
+                                                alt={`${restaurant.businessName} photo ${index + 1}`} 
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                            {index === 0 && restaurant.profileImageUrl === img && (
+                                                <div className="absolute top-2 left-2 bg-primary/90 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-sm">
+                                                    FEATURED
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/5">
+                                    <Info className="h-12 w-12 opacity-20 mb-4" />
+                                    <h3 className="font-bold text-lg text-foreground/80">No photos available</h3>
+                                    <p className="text-sm max-w-[250px] mx-auto mt-1">Images of decor and food uploaded by the restaurant will appear here.</p>
+                                </div>
+                            );
+                        })()}
                     </TabsContent>
                 </Tabs>
             </div>
@@ -273,6 +338,33 @@ export default function RestaurantDetail() {
                             </span>
                         </Button>
                     </Link>
+                </div>
+            )}
+            {/* Full-Screen Image Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div className="relative max-w-5xl w-full h-[90vh] p-4 flex items-center justify-center">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full h-12 w-12 z-50 scale-125 transition-transform active:scale-95"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(null);
+                            }}
+                        >
+                            <X className="h-8 w-8" />
+                        </Button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Restaurant gallery full screen" 
+                            className="max-h-full max-w-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                            onClick={(e) => e.stopPropagation()} 
+                        />
+                    </div>
                 </div>
             )}
         </div>

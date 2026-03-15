@@ -48,11 +48,12 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
                             <img src={image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl w-[90vw] p-0 border-none bg-transparent shadow-none [&>button]:right-[-20px] [&>button]:top-[-20px] [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full">
+                    <DialogContent className="max-w-4xl w-[95vw] p-0 border-none bg-transparent shadow-none [&>button]:right-2 [&>button]:top-2 [&>button]:text-white [&>button]:bg-black/40 [&>button]:backdrop-blur-md [&>button]:rounded-full [&>button]:h-10 [&>button]:w-10 [&>button]:scale-125 z-[100]">
+                        <div className="fixed inset-0 bg-black/80 backdrop-blur-md -z-10" />
                         <img
                             src={image}
                             alt={item.name}
-                            className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                            className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
                         />
                     </DialogContent>
                 </Dialog>

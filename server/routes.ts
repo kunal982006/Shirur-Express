@@ -601,6 +601,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  // --- DELETE PROVIDER PROFILE IMAGES (Refactored to POST for reliable body handling) ---
+  app.post("/api/provider/profile/image/delete", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      console.log(`[ProfileImageDelete] ID: ${providerId}`);
+      
+      const updatedProfile = await storage.updateServiceProvider(providerId, {
+        profileImageUrl: null as any,
+      });
+      res.json({ message: "Profile banner removed", profile: updatedProfile });
+    } catch (error: any) {
+      console.error("Delete profile image error:", error);
+      res.status(500).json({ message: error.message || "Error removing profile banner" });
+    }
+  });
+
+  app.post("/api/provider/profile/gallery/delete", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { imageUrl, index } = req.body;
+      
+      console.log(`[GalleryDelete] ID: ${providerId}, Target: ${imageUrl || "ALL"}, Index: ${index}`);
+
+      const currentProfile = await storage.getServiceProvider(providerId);
+      if (!currentProfile) {
+        return res.status(404).json({ message: "Provider profile nahi mila." });
+      }
+
+      const existingGallery = currentProfile.galleryImages || [];
+      let updatedGallery: string[] = [...existingGallery];
+
+      let deleted = false;
+
+      // 1. Try URL-based deletion (Ultra-Robust)
+      if (typeof imageUrl === 'string' && imageUrl.trim().length > 0) {
+        const targetUrl = imageUrl.trim();
+        const initialCount = updatedGallery.length;
+        
+        updatedGallery = updatedGallery.filter(url => {
+          if (!url) return false;
+          const trimmedUrl = url.trim();
+          
+          if (trimmedUrl === targetUrl) return false;
+          try {
+            if (decodeURIComponent(trimmedUrl) === decodeURIComponent(targetUrl)) return false;
+          } catch (e) {}
+
+          const getPublicPart = (u: string) => {
+             const parts = u.split('upload/');
+             if (parts.length > 1) return parts[1].split('?')[0];
+             return u.split('/').pop()?.split('?')[0] || u; 
+          };
+
+          const targetPublic = getPublicPart(targetUrl);
+          const currentPublic = getPublicPart(trimmedUrl);
+          if (targetPublic === currentPublic && targetPublic.length > 5) return false;
+          
+          if (trimmedUrl.includes(targetUrl) || targetUrl.includes(trimmedUrl)) {
+             if (Math.abs(trimmedUrl.length - targetUrl.length) < 50) return false;
+          }
+
+          return true;
+        });
+
+        if (updatedGallery.length < initialCount) {
+          deleted = true;
+          console.log(`[GalleryDelete] Image deleted by URL match.`);
+        }
+      }
+
+      // 2. Fallback: Try Index-based deletion
+      if (!deleted && typeof index === 'number' && index >= 0 && index < existingGallery.length) {
+        console.log(`[GalleryDelete] URL match failed. Falling back to Index: ${index}`);
+        updatedGallery = existingGallery.filter((_, i) => i !== index);
+        deleted = true;
+      }
+
+      // 3. Special Case: Clear all
+      if (imageUrl === "" || imageUrl === null) {
+        updatedGallery = [];
+        deleted = true;
+      }
+
+      if (!deleted && imageUrl !== "" && imageUrl !== null) {
+          return res.status(400).json({ 
+            message: "Image gallery mein nahi mili. Ho sakta hai pehle hi delete ho gayi ho.",
+            debug: { target: imageUrl?.substring(0, 30), index, galleryCount: existingGallery.length }
+          });
+      }
+
+      const updatedProfile = await storage.updateServiceProvider(providerId, {
+        galleryImages: updatedGallery,
+      });
+
+      res.json({ 
+        message: (imageUrl === "" || imageUrl === null) ? "Photo gallery cleared!" : "Gallery image removed!", 
+        profile: updatedProfile 
+      });
+    } catch (error: any) {
+      console.error("Delete gallery image error:", error);
+      res.status(500).json({ message: error.message || "Error removing gallery image" });
+    }
+  });
+
   // --- PROVIDER AVAILABILITY TOGGLE (Shop Open/Close) ---
   app.patch("/api/provider/availability", isProvider, async (req: CustomRequest, res: Response) => {
     try {

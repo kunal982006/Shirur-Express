@@ -222,12 +222,17 @@ export default function SearchResults() {
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/street-food")}
                                 renderItem={(item: any) => (
-                                    <div onClick={() => setLocation(`/street-food?item=${item.id}`)} className="cursor-pointer group w-36">
-                                        <div className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100">
-                                            <img src={item.imageUrl || "/placeholder-street-food.jpg"} className="w-full h-full object-cover" alt={item.name} />
+                                    <div className="cursor-pointer group w-36">
+                                        <div 
+                                            className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
+                                            onClick={() => setSelectedImage(item.imageUrl || "/placeholder-street-food.jpg")}
+                                        >
+                                            <img src={item.imageUrl || "/placeholder-street-food.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt={item.name} />
                                         </div>
-                                        <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-                                        <p className="text-xs text-gray-500">₹{item.price}</p>
+                                        <div onClick={() => setLocation(`/street-food?item=${item.id}`)}>
+                                            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+                                            <p className="text-xs text-gray-500">₹{item.price}</p>
+                                        </div>
                                     </div>
                                 )}
                             />
@@ -241,12 +246,17 @@ export default function SearchResults() {
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/cake-shop")}
                                 renderItem={(item: any) => (
-                                    <div onClick={() => setLocation(`/cake-shop?item=${item.id}`)} className="cursor-pointer group w-36">
-                                        <div className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100">
-                                            <img src={item.imageUrl || "/placeholder-cake.jpg"} className="w-full h-full object-cover" alt={item.name} />
+                                    <div className="cursor-pointer group w-36">
+                                        <div 
+                                            className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
+                                            onClick={() => setSelectedImage(item.imageUrl || "/placeholder-cake.jpg")}
+                                        >
+                                            <img src={item.imageUrl || "/placeholder-cake.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt={item.name} />
                                         </div>
-                                        <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-                                        <p className="text-xs text-gray-500">₹{item.price}</p>
+                                        <div onClick={() => setLocation(`/cake-shop?item=${item.id}`)}>
+                                            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+                                            <p className="text-xs text-gray-500">₹{item.price}</p>
+                                        </div>
                                     </div>
                                 )}
                             />
@@ -258,8 +268,18 @@ export default function SearchResults() {
                                 <h2 className="text-lg font-bold mb-3 px-1">Grocery Items</h2>
                                 <div className="grid grid-cols-2 gap-3">
                                     {grocery.map((item: any) => (
-                                        <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                                            <img src={item.image || "/placeholder-grocery.jpg"} className="w-full h-24 object-contain mb-2" alt={item.name} />
+                                        <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer">
+                                            <div
+                                                className="w-full h-24 mb-2 overflow-hidden flex items-center justify-center cursor-pointer"
+                                                onClick={(e) => {
+                                                    if (item.imageUrl) {
+                                                        e.stopPropagation();
+                                                        setSelectedImage(item.imageUrl);
+                                                    }
+                                                }}
+                                            >
+                                                <img src={item.imageUrl || "/placeholder-grocery.jpg"} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" alt={item.name} />
+                                            </div>
                                             <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
                                             <p className="text-sm font-bold mt-1">₹{item.price}</p>
                                         </div>

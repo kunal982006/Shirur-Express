@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ export default function OfferDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const { toast } = useToast();
     const [, setLocation] = useLocation();
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
 
     const { data: offer, isLoading, error } = useQuery<OfferDetails>({
@@ -279,17 +281,16 @@ export default function OfferDetailsPage() {
                             return (
                                 <Card key={product.id} className="overflow-hidden">
                                     <div className="aspect-square bg-gray-100 relative">
-                                        {product.imageUrl ? (
-                                            <img
-                                                src={product.imageUrl}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                No Image
+                                            <div 
+                                                className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
+                                                onClick={() => product.imageUrl && setSelectedImage(product.imageUrl)}
+                                            >
+                                                <img
+                                                    src={product.imageUrl}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
-                                        )}
                                         {hasDiscount && (
                                             <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs">
                                                 {Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)}% OFF
@@ -369,6 +370,33 @@ export default function OfferDetailsPage() {
                             Proceed to Checkout
                             <ShoppingBag className="ml-2 h-5 w-5" />
                         </Button>
+                    </div>
+                </div>
+            )}
+            {/* Full-Screen Image Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div className="relative max-w-4xl w-full h-full p-4 flex items-center justify-center">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full h-12 w-12 z-50"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(null);
+                            }}
+                        >
+                            <X className="h-8 w-8" />
+                        </Button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Product details full screen" 
+                            className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                            onClick={(e) => e.stopPropagation()} 
+                        />
                     </div>
                 </div>
             )}

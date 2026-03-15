@@ -365,8 +365,11 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/street-food")}
         renderItem={(item: any) => (
-          <div onClick={() => navigate(`/street-food?item=${item.id}`)} className="cursor-pointer group">
-            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
+          <div className="cursor-pointer group">
+            <div 
+              className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100"
+              onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
+            >
               <img
                 src={item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                 alt={item.name}
@@ -383,13 +386,18 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-            <p className="text-xs text-gray-500 truncate">{item.description || " Delicious street food"}</p>
-            <div className="flex items-center justify-between mt-1.5">
-              <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
-              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 rounded-full border-blue-200 text-blue-600 hover:bg-blue-50">
-                Add +
-              </Button>
+            <div 
+              className="flex flex-col mt-1.5"
+              onClick={() => navigate(`/street-food?item=${item.id}`)}
+            >
+              <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+              <p className="text-xs text-gray-500 truncate">{item.description || " Delicious street food"}</p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
+                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 rounded-full border-blue-200 text-blue-600 hover:bg-blue-50">
+                  Add +
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -402,8 +410,11 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/restaurants")}
         renderItem={(item: any) => (
-          <div onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")} className="cursor-pointer group">
-            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
+          <div className="cursor-pointer group">
+            <div 
+              className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100"
+              onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
+            >
               <img
                 src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                 alt={item.name}
@@ -421,31 +432,36 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-            <p className="text-xs text-gray-500 truncate">{item.description || item.category || "Restaurant Special"}</p>
-            <div className="flex items-center justify-between mt-1.5">
-              <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
-              <Button
-                size="sm"
-                className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addItem({
-                    id: item.id,
-                    name: item.name,
-                    price: Number(item.price),
-                    imageUrl: item.imageUrl,
-                    providerId: item.providerId,
-                    itemType: 'restaurant'
-                  });
-                  toast({
-                    title: "Added to Cart",
-                    description: `${item.name} added to your cart.`
-                  });
-                }}
-              >
-                Add
-              </Button>
+            <div 
+              className="flex flex-col mt-1.5"
+              onClick={() => navigate(`/restaurants/${item.providerId}`)}
+            >
+              <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+              <p className="text-xs text-gray-500 truncate">{item.description || item.category || "Restaurant Special"}</p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
+                <Button
+                  size="sm"
+                  className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addItem({
+                      id: item.id,
+                      name: item.name,
+                      price: Number(item.price),
+                      imageUrl: item.imageUrl,
+                      providerId: item.providerId,
+                      itemType: 'restaurant'
+                    });
+                    toast({
+                      title: "Added to Cart",
+                      description: `${item.name} added to your cart.`
+                    });
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -495,8 +511,11 @@ export default function Home() {
         isLoading={isPopularLoading}
         onSeeAll={() => navigate("/cake-shop")}
         renderItem={(cake: any) => (
-          <div onClick={() => navigate(`/cake-shop?item=${cake.id}`)} className="cursor-pointer group">
-            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-pink-50">
+          <div className="cursor-pointer group">
+            <div 
+              className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-pink-50"
+              onClick={() => setSelectedImage(cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
+            >
               <img
                 src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
                 alt={cake.name}
@@ -508,13 +527,18 @@ export default function Home() {
                 Trending
               </div>
             </div>
-            <h3 className="font-bold text-gray-800 text-sm truncate">{cake.name}</h3>
-            <p className="text-xs text-gray-500 truncate">{cake.weight || "1 kg"} • {cake.flavor || "Chocolate"}</p>
-            <div className="flex items-center justify-between mt-1.5">
-              <span className="text-sm font-bold text-gray-900">₹{cake.price}</span>
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200">
-                +
-              </Button>
+            <div 
+              className="flex flex-col mt-1.5"
+              onClick={() => navigate(`/cake-shop?item=${cake.id}`)}
+            >
+              <h3 className="font-bold text-gray-800 text-sm truncate">{cake.name}</h3>
+              <p className="text-xs text-gray-500 truncate">{cake.weight || "1 kg"} • {cake.flavor || "Chocolate"}</p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-sm font-bold text-gray-900">₹{cake.price}</span>
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200">
+                  +
+                </Button>
+              </div>
             </div>
           </div>
         )}

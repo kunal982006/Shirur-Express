@@ -5,18 +5,18 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import {
+import type {
   ServiceProvider,
   ServiceCategory,
   ServiceProblem,
   Booking,
   Invoice,
-  User,
-  ServiceTemplate, // NAYA
-  ServiceOffering, // NAYA
-  RestaurantOrder, // NAYA
-  RentalProperty, // NAYA
-  GroceryOrder, // NAYA
+  User as UserType,
+  ServiceTemplate,
+  ServiceOffering,
+  RestaurantOrder,
+  RentalProperty,
+  GroceryOrder,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,10 @@ import {
   Home,
   Trash2,
   ArrowLeft,
+  User,
+  Phone,
+  ShoppingBag,
+  MapPin,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
@@ -108,7 +112,7 @@ type ProviderProfileWithCategory = ServiceProvider & {
 
 // Booking API se jaisi aayegi (user aur invoice ke saath)
 type FullBooking = Booking & {
-  user: Pick<User, "id" | "username" | "phone">;
+  user: Pick<UserType, "id" | "username" | "phone">;
   invoice: Invoice | null;
   problem: { id: string; name: string; categoryId: string } | null;
   serviceOffering: { id: string; name: string; imageUrl?: string | null; template: { name: string } | null } | null;
@@ -2064,7 +2068,7 @@ const GroceryOrdersManager: React.FC<{
 };
 
 const GroceryOrderCard: React.FC<{
-  order: GroceryOrder;
+  order: GroceryOrder & { user?: any };
   onStatusChange: (id: string, status: string) => void;
   isPending?: boolean;
   isHistory?: boolean;
@@ -2073,11 +2077,21 @@ const GroceryOrderCard: React.FC<{
     <Card className={`shadow-md ${isPending ? "border-l-4 border-green-500 animate-in fade-in slide-in-from-bottom-2" : ""}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
-            <CardDescription>
-              {new Date(order.createdAt || new Date()).toLocaleTimeString()}
-            </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-lg flex items-center gap-2">
+              Order #{order.id.slice(0, 8)}
+              <span className="text-xs font-normal text-muted-foreground">
+                {new Date(order.createdAt || new Date()).toLocaleTimeString()}
+              </span>
+            </CardTitle>
+            <div className="flex flex-col text-sm text-foreground/80">
+               <span className="font-semibold flex items-center gap-1">
+                 <User className="h-3 w-3" /> {order.user?.username || "Customer"}
+               </span>
+               <span className="flex items-center gap-1 text-muted-foreground">
+                 <Phone className="h-3 w-3" /> {order.user?.phone || "No phone"}
+               </span>
+            </div>
           </div>
           <Badge variant={isPending ? "destructive" : "outline"}>
             {(order.status || 'pending').toUpperCase().replace(/_/g, " ")}
@@ -2085,20 +2099,43 @@ const GroceryOrderCard: React.FC<{
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <div className="bg-muted/50 p-3 rounded-md mb-3">
-          {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
-            <div key={idx} className="flex justify-between text-sm mb-1">
-              <span>{item.quantity} x {item.name || item.productId}</span>
-              <span className="font-medium">₹{item.price * item.quantity}</span>
-            </div>
-          ))}
-          <div className="border-t mt-2 pt-2 flex justify-between font-bold">
-            <span>Total</span>
-            <span>₹{order.total}</span>
+        <div className="bg-muted/30 border rounded-lg overflow-hidden mb-3">
+          <div className="px-3 py-2 border-b bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Items
+          </div>
+          <div className="divide-y">
+            {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+              <div key={idx} className="flex items-center gap-3 p-3">
+                <div className="h-12 w-12 rounded-md bg-white border flex-shrink-0 overflow-hidden shadow-sm">
+                   {item.imageUrl ? (
+                     <img src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" />
+                   ) : (
+                     <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground">
+                       <ShoppingBag className="h-6 w-6 opacity-20" />
+                     </div>
+                   )}
+                </div>
+                <div className="flex-1 min-w-0">
+                   <p className="font-medium text-sm truncate">{item.name || item.productId}</p>
+                   <p className="text-xs text-muted-foreground">₹{item.price} per unit</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                   <p className="text-sm font-bold">x{item.quantity}</p>
+                   <p className="text-xs font-semibold text-primary">₹{item.price * item.quantity}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-3 bg-muted/20 border-t flex justify-between items-center font-bold text-lg">
+            <span className="text-sm text-muted-foreground">Order Total</span>
+            <span className="text-primary">₹{order.total}</span>
           </div>
         </div>
-        <div className="text-sm space-y-1">
-          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+        <div className="text-sm space-y-1 bg-blue-50/50 p-3 rounded-md border border-blue-100/50">
+          <p className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-blue-500 mt-0.5" />
+            <span><strong>Delivery Address:</strong> {order.deliveryAddress}</span>
+          </p>
         </div>
       </CardContent>
       {!isHistory && (
@@ -2469,9 +2506,13 @@ const ProfileSettingsManager: React.FC<{
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const updated = response.data.profile;
+      queryClient.setQueryData(["providerProfile", userId], (old: any) => {
+        if (!old) return old;
+        return { ...old, profileImageUrl: updated.profileImageUrl };
+      });
       toast({ title: "Success", description: "Profile banner/logo updated." });
-      queryClient.invalidateQueries({ queryKey: ["providerProfile", userId] });
       setProfileFile(null);
     },
     onError: (error: any) => {
@@ -2494,9 +2535,13 @@ const ProfileSettingsManager: React.FC<{
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const updated = response.data.profile;
+      queryClient.setQueryData(["providerProfile", userId], (old: any) => {
+        if (!old) return old;
+        return { ...old, galleryImages: updated.galleryImages };
+      });
       toast({ title: "Success", description: "Gallery images have been added." });
-      queryClient.invalidateQueries({ queryKey: ["providerProfile", userId] });
       setGalleryFiles(null);
     },
     onError: (error: any) => {
@@ -2519,6 +2564,47 @@ const ProfileSettingsManager: React.FC<{
       setGalleryFiles(e.target.files);
     }
   };
+
+  // Delete Profile Pic Mutation
+  const deleteProfilePicMutation = useMutation({
+    mutationFn: () => api.post("/provider/profile/image/delete"),
+    onSuccess: (response) => {
+      const updated = response.data.profile;
+      queryClient.setQueryData(["providerProfile", userId], (old: any) => {
+        if (!old) return old;
+        return { ...old, profileImageUrl: updated.profileImageUrl };
+      });
+      toast({ title: "Removed", description: "Profile banner has been removed." });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.message || "Failed to remove image.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete Gallery Image Mutation
+  const deleteGalleryImageMutation = useMutation({
+    mutationFn: ({ imageUrl, index }: { imageUrl: string, index?: number }) => 
+      api.post("/provider/profile/gallery/delete", { imageUrl, index }),
+    onSuccess: (response) => {
+      const updated = response.data.profile;
+      queryClient.setQueryData(["providerProfile", userId], (old: any) => {
+        if (!old) return old;
+        return { ...old, galleryImages: updated.galleryImages };
+      });
+      toast({ title: "Removed", description: "Gallery image removed." });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.message || "Failed to remove image.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleProfileUpload = () => {
     if (profileFile) profilePicMutation.mutate(profileFile);
@@ -2600,6 +2686,25 @@ const ProfileSettingsManager: React.FC<{
                 )}
                 {profilePicMutation.isPending ? "Uploading Banner..." : "Save Banner Image"}
               </Button>
+
+              {providerProfile.profileImageUrl && !profileFile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 mt-2"
+                  onClick={() => {
+                    if (confirm("Remove this banner image?")) deleteProfilePicMutation.mutate();
+                  }}
+                  disabled={deleteProfilePicMutation.isPending}
+                >
+                  {deleteProfilePicMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Remove Current Banner
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -2658,7 +2763,21 @@ const ProfileSettingsManager: React.FC<{
           {/* Gallery Grid */}
           <div>
             <h3 className="text-sm font-bold mb-4 text-foreground/80 flex items-center justify-between">
-              Current Gallery ({providerProfile.galleryImages?.length || 0})
+              <span>Current Gallery ({providerProfile.galleryImages?.length || 0})</span>
+              {providerProfile.galleryImages && providerProfile.galleryImages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 font-bold"
+                  onClick={() => {
+                    if (confirm("Clear your entire photo gallery?")) deleteGalleryImageMutation.mutate("");
+                  }}
+                  disabled={deleteGalleryImageMutation.isPending}
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  CLEAR ALL PHOTOS
+                </Button>
+              )}
             </h3>
             {providerProfile.galleryImages && providerProfile.galleryImages.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 auto-rows-fr">
@@ -2675,6 +2794,22 @@ const ProfileSettingsManager: React.FC<{
                     <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                       Photo {index + 1}
                     </div>
+                    
+                    <button
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0"
+                      onClick={() => {
+                        if (confirm("Delete this gallery image?")) {
+                          deleteGalleryImageMutation.mutate({ imageUrl: url, index });
+                        }
+                      }}
+                      disabled={deleteGalleryImageMutation.isPending}
+                    >
+                      {deleteGalleryImageMutation.isPending ? (
+                         <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3 h-3" />
+                      )}
+                    </button>
                   </div>
                 ))}
               </div>
