@@ -1,7 +1,7 @@
 
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Search, ArrowLeft, MapPin, Star, Clock } from "lucide-react";
+import { Loader2, Search, ArrowLeft, MapPin, Star, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -20,6 +20,7 @@ export default function SearchResults() {
     const queryParams = useQueryParams();
     const initialTerm = queryParams.get("term") || "";
     const [searchTerm, setSearchTerm] = useState(initialTerm);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const { data: results, isLoading, error } = useQuery({
         queryKey: ["/api/search", searchTerm],
@@ -147,24 +148,63 @@ export default function SearchResults() {
                                 <h2 className="text-lg font-bold mb-3 px-1">Dishes from Restaurants</h2>
                                 <div className="space-y-3">
                                     {menuItems.map((item: any) => (
-                                        <div key={item.id} onClick={() => setLocation(`/restaurants/${item.providerId}`)} className="bg-white p-3 rounded-xl shadow-sm flex justify-between gap-3 cursor-pointer">
+                                        <div key={item.id} onClick={() => setLocation(`/restaurants/${item.providerId}`)} className="bg-white p-3 rounded-xl shadow-sm flex justify-between gap-3 cursor-pointer hover:border-primary/30 transition-colors border border-transparent">
                                             <div className="flex-1">
                                                 <div className="flex items-start gap-2">
-                                                    {item.isVeg ? (
-                                                        <img src="/veg-icon.png" className="w-4 h-4 mt-1" alt="Veg" />
-                                                    ) : (
-                                                        <img src="/non-veg-icon.png" className="w-4 h-4 mt-1" alt="Non-Veg" />
-                                                    )}
+                                                    {/* Extreme Left: Restaurant Profile Image instead of Veg/Non-Veg */}
+                                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 mt-1">
+                                                        <img 
+                                                            src={item.providerImage || "/placeholder-restaurant.jpg"} 
+                                                            alt={item.providerName || "Restaurant"} 
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    
                                                     <div>
-                                                        <h3 className="font-medium text-gray-900">{item.name}</h3>
-                                                        <p className="text-xs text-gray-500 font-medium">₹{item.price}</p>
-                                                        <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.description}</p>
+                                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                                            {item.isVeg ? (
+                                                                <div className="h-3 w-3 border border-green-600 flex items-center justify-center rounded-sm">
+                                                                    <div className="h-1.5 w-1.5 bg-green-600 rounded-full" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="h-3 w-3 border border-red-600 flex items-center justify-center rounded-sm">
+                                                                    <div className="h-1.5 w-1.5 bg-red-600 rounded-full" />
+                                                                </div>
+                                                            )}
+                                                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider line-clamp-1">{item.providerName || "Restaurant"}</span>
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-900">{item.name}</h3>
+                                                        <p className="text-sm font-bold text-gray-900 mt-0.5">₹{item.price}</p>
+                                                        <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="relative w-24 h-24 flex-shrink-0">
-                                                <img src={item.imageUrl || "/placeholder-food.jpg"} className="w-full h-full object-cover rounded-lg bg-gray-100" alt={item.name} />
-                                                <Button size="sm" variant="secondary" className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-7 text-xs shadow-md bg-white text-green-600 hover:bg-gray-50 border border-gray-200 font-bold uppercase">
+                                            <div className="relative w-28 h-28 flex-shrink-0 group">
+                                                {/* Image Container with click handler for full-screen view */}
+                                                <div 
+                                                    className="w-full h-full rounded-xl overflow-hidden cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3");
+                                                    }}
+                                                >
+                                                    <img 
+                                                        src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
+                                                        className="w-full h-full object-cover bg-gray-100 group-hover:scale-105 transition-transform duration-300" 
+                                                        alt={item.name} 
+                                                    />
+                                                </div>
+                                                {/* Adjusted Add Button position to fit the larger image container */}
+                                                <Button 
+                                                    size="sm" 
+                                                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-8 px-6 text-sm shadow-md bg-white text-primary hover:bg-gray-50 border border-gray-200 font-bold uppercase rounded-lg z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // In future, this could directly add to cart
+                                                        // For now it mimics the previous behavior but prevents modal opening
+                                                        setLocation(`/restaurants/${item.providerId}`);
+                                                    }}
+                                                >
                                                     Add
                                                 </Button>
                                             </div>
@@ -253,6 +293,35 @@ export default function SearchResults() {
                     </>
                 )}
             </main>
+            
+            {/* Full-Screen Image Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div className="relative max-w-4xl w-full h-full p-4 flex items-center justify-center">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full h-12 w-12 z-50"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(null);
+                            }}
+                        >
+                            <X className="h-8 w-8" />
+                        </Button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Food details full screen" 
+                            className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                            onClick={(e) => e.stopPropagation()} 
+                        />
+                    </div>
+                </div>
+            )}
+            
         </div>
     );
 }

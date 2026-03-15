@@ -2242,8 +2242,12 @@ export class DatabaseStorage implements IStorage {
         imageUrl: restaurantMenuItems.imageUrl,
         description: restaurantMenuItems.description,
         isVeg: restaurantMenuItems.isVeg,
-        category: restaurantMenuItems.category
-      }).from(restaurantMenuItems).where(or(
+        category: restaurantMenuItems.category,
+        providerName: serviceProviders.businessName,
+        providerImage: serviceProviders.profileImageUrl
+      }).from(restaurantMenuItems)
+      .leftJoin(serviceProviders, eq(restaurantMenuItems.providerId, serviceProviders.id))
+      .where(or(
         ilike(restaurantMenuItems.name, lowerQuery),
         ilike(restaurantMenuItems.category, lowerQuery),
         ilike(restaurantMenuItems.cuisine, lowerQuery)

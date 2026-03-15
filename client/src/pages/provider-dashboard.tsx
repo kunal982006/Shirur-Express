@@ -111,7 +111,7 @@ type FullBooking = Booking & {
   user: Pick<User, "id" | "username" | "phone">;
   invoice: Invoice | null;
   problem: { id: string; name: string; categoryId: string } | null;
-  serviceOffering: { id: string; name: string; template: { name: string } | null } | null;
+  serviceOffering: { id: string; name: string; imageUrl?: string | null; template: { name: string } | null } | null;
 };
 
 // Bill/Invoice create karne ka Zod schema
@@ -942,28 +942,43 @@ const BookingList: React.FC<{
               Customer: {booking.user.username} | Phone: {booking.user.phone}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-1">
-            <p className="text-xs text-muted-foreground">
-              Booking ID: {booking.id.slice(-8)}
-            </p>
-            <p>
-              <strong>Service Type:</strong> {booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}
-            </p>
-            <p>
-              <strong>Address:</strong> {booking.userAddress}
-            </p>
-            <p>
-              <strong>Scheduled:</strong>{" "}
-              {booking.scheduledAt
-                ? new Date(booking.scheduledAt).toLocaleString("en-IN")
-                : "ASAP"}
-            </p>
-            {booking.isUrgent && <Badge variant="destructive">URGENT</Badge>}
-            {booking.notes && (
-              <p className="pt-2">
-                <strong>Notes:</strong> {booking.notes}
-              </p>
-            )}
+          <CardContent className="space-y-3">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              {booking.serviceOffering?.imageUrl && (
+                <div className="w-full md:w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 border bg-muted">
+                  <img
+                    src={booking.serviceOffering.imageUrl}
+                    alt={booking.serviceOffering.name || "Service"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1 space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Booking ID: {booking.id.slice(-8)}
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <p className="text-sm">
+                    <strong>Service:</strong> {booking.serviceOffering?.name || booking.problem?.name || booking.serviceOffering?.template?.name || "Service Request"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Type:</strong> {booking.serviceType?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}
+                  </p>
+                </div>
+                <p className="text-sm">
+                  <strong>Customer:</strong> {booking.user.username} ({booking.user.phone})
+                </p>
+                <p className="text-sm">
+                  <strong>Address:</strong> {booking.userAddress}
+                </p>
+                {booking.isUrgent && <Badge variant="destructive" className="mt-1">URGENT</Badge>}
+                {booking.notes && (
+                  <p className="pt-2 text-sm italic border-t mt-2">
+                    <strong>Notes:</strong> {booking.notes}
+                  </p>
+                )}
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <ProviderBookingActions

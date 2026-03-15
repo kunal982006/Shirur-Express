@@ -1,7 +1,9 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Minus, Plus } from "lucide-react";
+import { ShoppingBag, Minus, Plus, X } from "lucide-react";
 
 interface ProductCardProps {
   product: {
@@ -26,7 +28,10 @@ export default function ProductCard({
   quantity,
   onIncreaseQuantity,
   onDecreaseQuantity,
+  onDecreaseQuantity,
 }: ProductCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const priceAsNumber = parseFloat(product.price as string);
   const mrpAsNumber = product.mrp ? parseFloat(product.mrp as string) : null;
   const discountPercentage = mrpAsNumber && mrpAsNumber > priceAsNumber
@@ -48,7 +53,10 @@ export default function ProductCard({
       )}
 
       {/* Image Section - Fixed Square Container with Consistent Image Display */}
-      <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+      <div 
+        className={`relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden ${product.imageUrl ? 'cursor-pointer' : ''}`}
+        onClick={() => product.imageUrl && setIsModalOpen(true)}
+      >
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -143,6 +151,35 @@ export default function ProductCard({
           </div>
         </div>
       </CardContent>
+
+      {/* Full-Screen Image Modal using React Portal to escape overflow-hidden */}
+      {isModalOpen && product.imageUrl && typeof window !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div className="relative max-w-4xl w-full h-full p-4 flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full h-12 w-12 z-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsModalOpen(false);
+              }}
+            >
+              <X className="h-8 w-8" />
+            </Button>
+            <img 
+              src={product.imageUrl} 
+              alt={product.name} 
+              className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()} 
+            />
+          </div>
+        </div>,
+        document.body
+      )}
     </Card>
   );
 }

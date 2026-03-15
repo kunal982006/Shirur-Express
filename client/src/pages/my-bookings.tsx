@@ -241,20 +241,6 @@ export default function MyBookings() {
                             </p>
 
                             <div className="space-y-2 text-sm">
-                              {booking.scheduledAt && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Clock className="h-4 w-4" />
-                                  <span>
-                                    {format(new Date(booking.scheduledAt), "EEEE, MMMM d, yyyy")}
-                                  </span>
-                                </div>
-                              )}
-                              {booking.preferredTimeSlots && booking.preferredTimeSlots.length > 0 && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Clock className="h-4 w-4" />
-                                  <span>Time: {booking.preferredTimeSlots[0]}</span>
-                                </div>
-                              )}
                               <div className="flex items-start gap-2 text-muted-foreground">
                                 <MapPin className="h-4 w-4 mt-0.5" />
                                 <span>{booking.userAddress}</span>
