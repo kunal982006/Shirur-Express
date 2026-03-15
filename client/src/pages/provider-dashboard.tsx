@@ -1087,16 +1087,56 @@ const ProviderBookingActions: React.FC<{
   // --- Handlers khatam ---
 
 
+  // Cancel booking mutation (for provider - before job starts)
+  const cancelBookingMutation = useMutation({
+    mutationFn: (bookingId: string) =>
+      api.patch(`/bookings/${bookingId}/provider-cancel`),
+    onSuccess: () => {
+      toast({
+        title: "Booking Cancelled",
+        description: "The booking has been cancelled successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["providerBookings"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cancel Failed",
+        description: error.response?.data?.message || "Failed to cancel booking.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCancelBooking = () => {
+    if (confirm("Are you sure you want to cancel this booking? The customer will be notified.")) {
+      cancelBookingMutation.mutate(booking.id);
+    }
+  };
+
   // --- Logic ke hisaab se button dikhao ---
   if (booking.status === "pending" || booking.status === "accepted") {
     return (
-      <Button
-        onClick={handleStartJob}
-        className="bg-blue-600 hover:bg-blue-700"
-        disabled={updateBookingStatusMutation.isPending}
-      >
-        <Play className="mr-2 h-4 w-4" /> Start Job
-      </Button>
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          onClick={handleStartJob}
+          className="bg-blue-600 hover:bg-blue-700"
+          disabled={updateBookingStatusMutation.isPending}
+        >
+          <Play className="mr-2 h-4 w-4" /> Start Job
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={handleCancelBooking}
+          disabled={cancelBookingMutation.isPending}
+        >
+          {cancelBookingMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <X className="mr-2 h-4 w-4" />
+          )}
+          Cancel Booking
+        </Button>
+      </div>
     );
   }
 

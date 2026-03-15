@@ -1470,7 +1470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // ----- FIX KHATAM -----
 
-  // (Customer) Apni booking cancel karna
+  // (Customer) Apni booking cancel karna - allowed before job starts (pending or accepted)
   app.patch("/api/bookings/:id/cancel", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
@@ -1484,15 +1484,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (booking.userId !== userId) {
         return res.status(403).json({ message: "Aap yeh booking cancel nahi kar sakte." });
       }
-      if (booking.status !== 'pending') {
-        return res.status(400).json({ message: `Aap '${booking.status}' booking ko cancel nahi kar sakte.` });
+      // Allow cancellation for 'pending' and 'accepted' (before job starts)
+      if (booking.status !== 'pending' && booking.status !== 'accepted') {
+        return res.status(400).json({ message: `Job already started. '${booking.status}' booking ko cancel nahi kar sakte.` });
       }
 
       const cancelledBooking = await storage.updateBookingStatus(bookingId, "cancelled");
+
+      // --- PUSH NOTIFICATION to Provider ---
+      try {
+        if (booking.providerId) {
+          const provider = await storage.getServiceProvider(booking.providerId);
+          if (provider) {
+            const providerUser = await storage.getUser(provider.userId);
+            if (providerUser?.fcmToken) {
+              await sendPushNotification(providerUser.fcmToken, {
+                type: 'ORDER_UPDATE',
+                title: '❌ Booking Cancelled by Customer',
+                body: `A customer has cancelled their booking. Booking ID: ${bookingId.slice(-8)}`,
+                data: { bookingId, action: 'BOOKING_CANCELLED' },
+              });
+              console.log(`[FCM] Booking cancelled notification sent to provider ${booking.providerId}`);
+            }
+          }
+        }
+      } catch (notifError) {
+        console.error('[FCM] Cancel notification failed (non-critical):', notifError);
+      }
+
       res.json(cancelledBooking);
 
     } catch (error: any) {
       console.error("Cancel booking error:", error);
+      res.status(500).json({ message: error.message || "Error cancelling booking" });
+    }
+  });
+
+  // (Provider) Provider booking cancel karna - allowed before job starts (pending or accepted)
+  app.patch("/api/bookings/:id/provider-cancel", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { id: bookingId } = req.params;
+
+      const booking = await storage.getBooking(bookingId);
+
+      if (!booking || booking.providerId !== providerId) {
+        return res.status(404).json({ message: "Booking nahi mili ya aapke liye nahi hai." });
+      }
+      // Allow cancellation for 'pending' and 'accepted' (before job starts)
+      if (booking.status !== 'pending' && booking.status !== 'accepted') {
+        return res.status(400).json({ message: `Job already started. '${booking.status}' booking ko cancel nahi kar sakte.` });
+      }
+
+      const cancelledBooking = await storage.updateBookingStatus(bookingId, "cancelled");
+
+      // --- PUSH NOTIFICATION to Customer ---
+      try {
+        const customerUser = await storage.getUser(booking.userId);
+        const providerProfile = await storage.getServiceProvider(providerId);
+        const providerName = providerProfile?.businessName || 'The provider';
+
+        if (customerUser?.fcmToken) {
+          await sendPushNotification(customerUser.fcmToken, {
+            type: 'ORDER_UPDATE',
+            title: '❌ Booking Cancelled',
+            body: `${providerName} has cancelled your booking. Please try booking with another provider.`,
+            data: { bookingId, action: 'BOOKING_CANCELLED_BY_PROVIDER' },
+          });
+          console.log(`[FCM] Provider cancel notification sent to customer ${booking.userId}`);
+        }
+      } catch (notifError) {
+        console.error('[FCM] Provider cancel notification failed (non-critical):', notifError);
+      }
+
+      res.json(cancelledBooking);
+
+    } catch (error: any) {
+      console.error("Provider cancel booking error:", error);
       res.status(500).json({ message: error.message || "Error cancelling booking" });
     }
   });

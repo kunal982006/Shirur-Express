@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+
 import { format } from "date-fns";
 import {
   CheckCircle,
@@ -59,6 +61,34 @@ type BookingWithDetails = {
 export default function MyBookings() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Cancel booking mutation (for customer)
+  const cancelBookingMutation = useMutation({
+    mutationFn: async (bookingId: string) => {
+      const response = await apiRequest("PATCH", `/api/bookings/${bookingId}/cancel`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to cancel booking');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Booking Cancelled",
+        description: "Your booking has been cancelled successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cancel Failed",
+        description: error.message || "Could not cancel the booking.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: bookings, isLoading: isLoadingBookings } = useQuery<BookingWithDetails[]>({
     queryKey: ["/api/customer/my-bookings"],
@@ -316,6 +346,31 @@ export default function MyBookings() {
                             </p>
                           </div>
                         </div>
+
+                        {/* Cancel Button - shown before job starts */}
+                        {(booking.status === 'pending' || booking.status === 'accepted') && (
+                          <div className="mt-4 pt-4 border-t">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                              disabled={cancelBookingMutation.isPending}
+                              onClick={() => {
+                                if (confirm('Are you sure you want to cancel this booking?')) {
+                                  cancelBookingMutation.mutate(booking.id);
+                                }
+                              }}
+                              data-testid={`cancel-booking-${booking.id}`}
+                            >
+                              {cancelBookingMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <XCircle className="mr-2 h-4 w-4" />
+                              )}
+                              Cancel Booking
+                            </Button>
+                          </div>
+                        )}
                       </CardHeader>
                     </Card>
                   );
