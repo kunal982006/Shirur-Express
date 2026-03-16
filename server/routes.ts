@@ -1426,17 +1426,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const uniqueTokens = [...new Set(allTokens)];
             console.log(`[FCM Ringing] Sending to ${uniqueTokens.length} device(s)`);
 
+            // Fetch customer details for richer notification
+            const bookingCustomer = await storage.getUser(userId);
+            const customerPhone = booking.userPhone || bookingCustomer?.phone || 'N/A';
+            const customerName = bookingCustomer?.username || 'Customer';
+
             for (const deviceToken of uniqueTokens) {
               const fcmResult = await sendPushNotification(deviceToken, {
                 type: 'ORDER_REQUEST',
-                title: '🔔 New Service Booking!',
-                body: `New ${booking.serviceType} booking request`,
+                title: `🔔 New ${booking.serviceType?.charAt(0).toUpperCase()}${booking.serviceType?.slice(1)} Booking!`,
+                body: `📞 ${customerPhone} • 📍 ${booking.userAddress || 'Check App'}`,
                 data: {
                   orderId: booking.id,
-                  customerName: booking.userPhone,
-                  amount: "Check App",
-                  pickupAddress: "N/A",
-                  dropAddress: booking.userAddress
+                  orderType: 'service',
+                  customerName: customerName,
+                  customerPhone: customerPhone,
+                  amount: booking.estimatedCost || 'Check App',
+                  itemsSummary: `${booking.serviceType} service booking`,
+                  dropAddress: booking.userAddress || 'Check App',
+                  navigateTo: '/provider/dashboard'
                 }
               });
 
@@ -1881,17 +1889,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 allTokens.push(sfAdmin.fcmToken);
               }
               const uniqueTokens = [...new Set(allTokens)];
+              // Build items summary for street food
+              const sfItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
+              const sfItemsSummary = sfItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (sfItems.length > 3 ? ` +${sfItems.length - 3} more` : '');
+              const sfAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+              const sfCustomer = await storage.getUser(updatedOrder?.userId);
+              const sfPhone = sfCustomer?.phone || 'N/A';
+
               for (const deviceToken of uniqueTokens) {
                 await sendPushNotification(deviceToken, {
                   type: 'ORDER_REQUEST',
-                  title: `${orderLabel} Order Paid!`,
-                  body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please manually inform vendor to prepare.`,
+                  title: `${orderLabel} Order — ₹${sfAmount}`,
+                  body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
                   data: {
                     orderId: database_order_id,
-                    orderType: orderType || 'grocery',
-                    customerName: 'Customer',
-                    amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
-                    dropAddress: updatedOrder?.deliveryAddress || 'Check App'
+                    orderType: orderType || 'street_food',
+                    customerName: sfCustomer?.username || 'Customer',
+                    customerPhone: sfPhone,
+                    amount: sfAmount,
+                    itemsSummary: sfItemsSummary || 'Street food order',
+                    dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                    navigateTo: '/provider/dashboard'
                   }
                 });
               }
@@ -1913,17 +1931,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const uniqueTokens = [...new Set(allTokens)];
                 console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
 
+                // Build items summary for restaurant/grocery
+                const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
+                const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
+                const orderAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+                const orderCustomer = await storage.getUser(updatedOrder?.userId);
+                const orderPhone = orderCustomer?.phone || 'N/A';
+
                 for (const deviceToken of uniqueTokens) {
                   await sendPushNotification(deviceToken, {
                     type: 'ORDER_REQUEST',
-                    title: `${orderLabel} Order Paid!`,
-                    body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
+                    title: `${orderLabel} Order — ₹${orderAmount}`,
+                    body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
                     data: {
                       orderId: database_order_id,
                       orderType: orderType || 'grocery',
-                      customerName: 'Customer',
-                      amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
-                      dropAddress: updatedOrder?.deliveryAddress || 'Check App'
+                      customerName: orderCustomer?.username || 'Customer',
+                      customerPhone: orderPhone,
+                      amount: orderAmount,
+                      itemsSummary: itemsSummary || `${orderLabel} order`,
+                      dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                      navigateTo: '/provider/dashboard'
                     }
                   });
                 }

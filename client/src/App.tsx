@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { lazy, Suspense } from "react";
 import Header from "@/components/layout/header";
+import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import { Loader2 } from "lucide-react";
 
 import Home from "@/pages/home";
@@ -128,6 +129,7 @@ function App() {
               </main>
 
             </div>
+            <OrderNotificationPopup />
             <Toaster />
           </TooltipProvider>
         </LocationProvider>

@@ -1,5 +1,5 @@
 // Shirur Express Service Worker - Enhanced for PWABuilder v3
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE_NAME = `shirur-express-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `shirur-express-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `shirur-express-images-${CACHE_VERSION}`;
@@ -235,28 +235,44 @@ self.addEventListener('push', (event) => {
     console.log('[ServiceWorker] Push received');
 
     const data = event.data?.json() ?? {};
-    const title = data.title || 'Shirur Express';
+    const title = data.notification?.title || data.title || 'Shirur Express';
+    const body = data.notification?.body || data.body || 'You have a new notification';
+    const notifType = data.data?.type || data.type || 'default';
+
     const options = {
-        body: data.body || 'You have a new notification',
+        body: body,
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-72x72.png',
-        vibrate: [100, 50, 100],
-        tag: data.tag || 'default',
+        vibrate: notifType === 'ORDER_REQUEST' ? [300, 100, 300, 100, 300] : [100, 50, 100],
+        tag: data.tag || notifType,
         renotify: true,
-        requireInteraction: false,
+        requireInteraction: notifType === 'ORDER_REQUEST',
         silent: false,
         data: {
-            url: data.url || '/',
+            ...data.data,
+            url: notifType === 'ORDER_REQUEST' ? '/provider/dashboard' : (data.url || '/'),
             timestamp: Date.now()
         },
-        actions: [
-            { action: 'open', title: 'Open', icon: '/icons/icon-72x72.png' },
-            { action: 'close', title: 'Dismiss' }
-        ]
+        actions: notifType === 'ORDER_REQUEST'
+            ? [{ action: 'view', title: '📋 View Order', icon: '/icons/icon-72x72.png' }]
+            : [
+                { action: 'open', title: 'Open', icon: '/icons/icon-72x72.png' },
+                { action: 'close', title: 'Dismiss' }
+            ]
     };
 
     event.waitUntil(
-        self.registration.showNotification(title, options)
+        Promise.all([
+            self.registration.showNotification(title, options),
+            // Forward ORDER_REQUEST to open clients for in-app popup
+            notifType === 'ORDER_REQUEST'
+                ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                    clientList.forEach(client => {
+                        client.postMessage({ type: 'ORDER_REQUEST', data: data.data || {} });
+                    });
+                })
+                : Promise.resolve()
+        ])
     );
 });
 
@@ -269,6 +285,7 @@ self.addEventListener('notificationclick', (event) => {
         return;
     }
 
+    // For ORDER_REQUEST, always go to provider dashboard
     const urlToOpen = event.notification.data?.url || '/';
 
     event.waitUntil(
