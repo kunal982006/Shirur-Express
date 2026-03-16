@@ -118,14 +118,23 @@ export default function Header() {
                     Delivery Dashboard
                   </Button>
                 )}
-                {user?.role === 'provider' && !isDeliveryPartner && (
+                {(user?.role === 'provider' || user?.username === 'streetfood_admin') && !isDeliveryPartner && (
                   <Button
                     variant="ghost"
                     onClick={() => setLocation("/provider/dashboard")}
                     className="text-sm font-medium"
                   >
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Provider Dashboard
+                    {user?.username === 'streetfood_admin' ? 'Orders Dashboard' : 'Provider Dashboard'}
+                  </Button>
+                )}
+                {user?.role === 'admin' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation("/admin")}
+                    className="text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600 border-red-500/20"
+                  >
+                    {user?.username === 'streetfood_admin' ? 'Vendor Manager' : 'Admin Panel'}
                   </Button>
                 )}
                 {user && (
@@ -176,10 +185,16 @@ export default function Header() {
                         <span>Delivery Dashboard</span>
                       </DropdownMenuItem>
                     )}
-                    {user.role === 'provider' && !isDeliveryPartner && (
+                    {(user.role === 'provider' || user.username === 'streetfood_admin') && !isDeliveryPartner && (
                       <DropdownMenuItem onClick={() => setLocation("/provider/dashboard")}>
                         <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Provider Dashboard</span>
+                        <span>{user.username === 'streetfood_admin' ? 'Orders Dashboard' : 'Provider Dashboard'}</span>
+                      </DropdownMenuItem>
+                    )}
+                    {user.role === 'admin' && (
+                      <DropdownMenuItem onClick={() => setLocation("/admin")} className="text-red-500 font-medium">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>{user.username === 'streetfood_admin' ? 'Vendor Manager' : 'Admin Panel'}</span>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem onClick={() => setLocation("/settings")}>
@@ -225,7 +240,6 @@ export default function Header() {
           <span className="text-[10px] font-medium">Bookings</span>
         </Button>
 
-        {/* Dashboard - show delivery or provider based on user type */}
         {isDeliveryPartner && (
           <Button
             variant="ghost"
@@ -236,14 +250,24 @@ export default function Header() {
             <span className="text-[10px] font-medium">Deliveries</span>
           </Button>
         )}
-        {user?.role === 'provider' && !isDeliveryPartner && (
+        {(user?.role === 'provider' || user?.username === 'streetfood_admin') && !isDeliveryPartner && (
           <Button
             variant="ghost"
             className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/provider/dashboard' ? 'text-primary' : ''}`}
             onClick={() => setLocation("/provider/dashboard")}
           >
             <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Dashboard</span>
+            <span className="text-[10px] font-medium">{user?.username === 'streetfood_admin' ? 'Orders' : 'Dashboard'}</span>
+          </Button>
+        )}
+        {user?.role === 'admin' && user?.username === 'streetfood_admin' && (
+          <Button
+            variant="ghost"
+            className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/admin' ? 'text-primary' : ''}`}
+            onClick={() => setLocation("/admin")}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Vendors</span>
           </Button>
         )}
 

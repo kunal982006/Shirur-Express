@@ -515,12 +515,18 @@ export const streetFoodOrders = pgTable("street_food_orders", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   userId: varchar("user_id").notNull(),
   providerId: varchar("provider_id").notNull(), // Street food orders might be single provider too
+  riderId: varchar("rider_id"), // Nullable initially
   items: jsonb("items").$type<Array<{ productId: string; quantity: number; price: number; name: string; providerId: string }>>(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
-  status: text("status").default("pending"),
+  status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, out_for_delivery, delivered, declined, cancelled
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
+  deliveryOtp: text("delivery_otp"),
+  deliveryOtpGeneratedAt: timestamp("delivery_otp_generated_at"),
+  riderAcceptedAt: timestamp("rider_accepted_at"),
+  pickedUpAt: timestamp("picked_up_at"),
+  deliveredAt: timestamp("delivered_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -560,6 +566,14 @@ export type InsertRestaurantOrder = z.infer<typeof insertRestaurantOrderSchema>;
 export const streetFoodOrdersRelations = relations(streetFoodOrders, ({ one }) => ({
   user: one(users, {
     fields: [streetFoodOrders.userId],
+    references: [users.id],
+  }),
+  provider: one(serviceProviders, {
+    fields: [streetFoodOrders.providerId],
+    references: [serviceProviders.id],
+  }),
+  rider: one(users, {
+    fields: [streetFoodOrders.riderId],
     references: [users.id],
   }),
 }));

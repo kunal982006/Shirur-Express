@@ -17,6 +17,7 @@ import type {
   RestaurantOrder,
   RentalProperty,
   GroceryOrder,
+  StreetFoodOrder,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -2810,7 +2811,7 @@ const ProfileSettingsManager: React.FC<{
                   size="sm"
                   className="h-8 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 font-bold"
                   onClick={() => {
-                    if (confirm("Clear your entire photo gallery?")) deleteGalleryImageMutation.mutate("");
+                    if (confirm("Clear your entire photo gallery?")) deleteGalleryImageMutation.mutate({ imageUrl: "" });
                   }}
                   disabled={deleteGalleryImageMutation.isPending}
                 >
@@ -2865,6 +2866,205 @@ const ProfileSettingsManager: React.FC<{
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+// --- COMPONENT 6: STREET FOOD ORDERS MANAGER (ADMIN PIPELINE) ---
+const StreetFoodOrdersManager: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch Live Orders (Polling every 10 seconds)
+  const { data: orders, isLoading } = useQuery<StreetFoodOrder[]>({
+    queryKey: ["adminStreetFoodOrders"],
+    queryFn: async () => {
+      const res = await api.get("/provider/street-food-orders");
+      return res.data;
+    },
+    refetchInterval: 10000,
+  });
+
+  // Update Status Mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/provider/street-food-orders/${orderId}/status`, { status }),
+    onSuccess: (data) => {
+      toast({
+        title: "Order Updated",
+        description: `Order status changed to ${data.data.status}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["adminStreetFoodOrders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Loading live orders...
+      </div>
+    );
+  }
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <h3 className="text-xl font-semibold">No Active Orders</h3>
+        <p className="text-muted-foreground mt-2">
+          New street food orders will appear here automatically.
+        </p>
+      </div>
+    );
+  }
+
+  // Same status flow mostly
+  const pendingOrders = orders.filter((o) => ["pending", "paid"].includes(o.status || ""));
+  const activeOrders = orders.filter((o) => ["accepted", "preparing", "ready_for_pickup"].includes(o.status || ""));
+  const pastOrders = orders.filter((o) => ["picked_up", "delivered", "cancelled", "out_for_delivery"].includes(o.status || ""));
+
+  return (
+    <Tabs defaultValue="pending" className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="pending" className="relative">
+          Pending
+          {pendingOrders.length > 0 && (
+            <Badge variant="destructive" className="ml-2 absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full">
+              {pendingOrders.length}
+            </Badge>
+          )}
+        </TabsTrigger>
+        <TabsTrigger value="active">Active ({activeOrders.length})</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pending" className="mt-6 space-y-4">
+        {pendingOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No pending orders.</p>
+        ) : (
+          pendingOrders.map((order) => (
+            <StreetFoodOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isPending={true}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="active" className="mt-6 space-y-4">
+        {activeOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No active orders.</p>
+        ) : (
+          activeOrders.map((order) => (
+            <StreetFoodOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="history" className="mt-6 space-y-4">
+        {pastOrders.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No order history.</p>
+        ) : (
+          pastOrders.map((order) => (
+            <StreetFoodOrderCard
+              key={order.id}
+              order={order}
+              onStatusChange={handleStatusChange}
+              isHistory={true}
+            />
+          ))
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const StreetFoodOrderCard: React.FC<{
+  order: StreetFoodOrder & { user?: any; provider?: any; rider?: any };
+  onStatusChange: (id: string, status: string) => void;
+  isPending?: boolean;
+  isHistory?: boolean;
+}> = ({ order, onStatusChange, isPending, isHistory }) => {
+  return (
+    <Card className={`shadow-md ${isPending ? "border-l-4 border-orange-500 animate-in fade-in slide-in-from-bottom-2" : ""}`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <span>{new Date(order.createdAt || new Date()).toLocaleTimeString()}</span>
+              <span>•</span>
+              <span className="font-semibold text-foreground">{order.user?.username || "Guest"}</span>
+              <span>•</span>
+               <Badge variant="secondary">{order.provider?.businessName || "Vendor"}</Badge>
+            </CardDescription>
+          </div>
+          <Badge variant={isPending ? "destructive" : "outline"}>
+            {order.status?.toUpperCase().replace(/_/g, " ")}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="bg-muted/50 p-3 rounded-md mb-3">
+          {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+            <div key={idx} className="flex justify-between text-sm mb-1">
+              <span>{item.quantity} x {item.name}</span>
+              <span className="font-medium">₹{item.price * item.quantity}</span>
+            </div>
+          ))}
+          <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+            <span>Total</span>
+            <span>₹{order.totalAmount}</span>
+          </div>
+        </div>
+        <div className="text-sm space-y-1">
+          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+          {order.rider && (
+            <p className="text-blue-600"><strong>Rider:</strong> {order.rider.username} ({order.rider.phone})</p>
+          )}
+        </div>
+      </CardContent>
+      {!isHistory && (
+        <CardFooter className="flex justify-end gap-2 pt-2">
+          {isPending ? (
+            <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+              Mark as Preparing
+            </Button>
+          ) : (
+            <>
+              {(order.status === "accepted") && (
+                <Button className="bg-blue-600 hover:bg-blue-700" size="sm" onClick={() => onStatusChange(order.id, "preparing")}>
+                  Mark as Preparing
+                </Button>
+              )}
+              {order.status === "preparing" && (
+                <Button className="bg-orange-500 hover:bg-orange-600" size="sm" onClick={() => onStatusChange(order.id, "ready_for_pickup")}>
+                  Ready for Pickup
+                </Button>
+              )}
+              {order.status === "ready_for_pickup" && (
+                <span className="text-sm text-muted-foreground italic">Waiting for rider...</span>
+              )}
+            </>
+          )}
+        </CardFooter>
+      )}
+    </Card>
   );
 };
 
@@ -2969,6 +3169,17 @@ const ProviderDashboard: React.FC = () => {
 
   if (!user) {
     return <Redirect to="/login" />;
+  }
+
+  // **STREET FOOD ADMIN OVERRIDE**: Render ONLY the street food orders manager
+  if (user.username === "streetfood_admin") {
+    return (
+      <div className="container mx-auto pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold mb-2">Street Food Dashboard</h1>
+        <p className="text-muted-foreground mb-6">Manage all vendor incoming orders from customers here. You will receive push notifications when orders are paid.</p>
+        <StreetFoodOrdersManager />
+      </div>
+    );
   }
 
   if (user.role !== "provider") {

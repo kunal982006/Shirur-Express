@@ -277,6 +277,7 @@ export interface IStorage {
   createStreetFoodOrder(order: InsertStreetFoodOrder & { userId: string }): Promise<StreetFoodOrder>;
   getStreetFoodOrder(id: string): Promise<StreetFoodOrder | undefined>;
   getRunnerOrders(runnerId?: string): Promise<StreetFoodOrder[]>;
+  getAllStreetFoodOrders(): Promise<StreetFoodOrder[]>;
   updateStreetFoodOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<StreetFoodOrder>;
   createStreetFoodVendor(vendor: InsertServiceProvider & { userId: string; categoryId: string }): Promise<ServiceProvider>;
   deleteStreetFoodVendor(id: string): Promise<void>;
@@ -1522,6 +1523,11 @@ export class DatabaseStorage implements IStorage {
 
   async getRunnerOrders(): Promise<StreetFoodOrder[]> {
     return db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt));
+  }
+
+  async getAllStreetFoodOrders(): Promise<StreetFoodOrder[]> {
+    const orders = await db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt));
+    return orders;
   }
 
   async updateStreetFoodOrderStatus(id: string, status: string, razorpayPaymentId?: string, razorpayOrderId?: string): Promise<StreetFoodOrder> {

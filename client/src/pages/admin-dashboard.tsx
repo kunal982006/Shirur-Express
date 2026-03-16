@@ -224,7 +224,9 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food">(
+        user?.username === "streetfood_admin" ? "street_food" : "overview"
+    );
     const [searchQuery, setSearchQuery] = useState("");
 
     // Featured Tab State
@@ -370,7 +372,7 @@ export default function AdminDashboard() {
         u.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const tabs = [
+    const baseTabs = [
         { id: "overview", label: "Overview", icon: BarChart3 },
         { id: "orders", label: "Orders", icon: ShoppingCart },
         { id: "bookings", label: "Bookings", icon: CalendarCheck },
@@ -378,7 +380,13 @@ export default function AdminDashboard() {
         { id: "users", label: "Users", icon: Users },
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
+        { id: "street_food", label: "Street Food", icon: Sandwich },
     ] as const;
+
+    const tabs = user?.username === "streetfood_admin" 
+        ? [{ id: "street_food", label: "Street Food Dashboard", icon: Sandwich }] as const
+        : baseTabs;
+
 
     if (!user || user.role !== 'admin') {
         return (
@@ -403,7 +411,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <h1 className="text-lg font-bold tracking-tight">Shirur Express</h1>
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Admin Console</p>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">{user?.username === "streetfood_admin" ? "Street Food Vendor Manager" : "Admin Console"}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -1008,7 +1016,10 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* ═══ STREET FOOD TAB REMOVED ═══ */}
+                {/* ═══ STREET FOOD TAB ═══ */}
+                {activeTab === "street_food" && (
+                     <AdminStreetFood />
+                )}
 
             </main>
         </div>

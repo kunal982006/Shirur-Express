@@ -1866,30 +1866,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // --- PUSH NOTIFICATION (RINGING) — Only after payment is verified! ---
         try {
-          const providerId = updatedOrder?.providerId;
-          if (providerId) {
-            const provider = await storage.getServiceProvider(providerId);
-            if (provider && provider.user) {
-              const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
-                : orderType === 'street_food' ? '🌮 Street Food'
-                  : '🛒 Grocery';
-              console.log(`[FCM] Payment verified! Sending Ring to ${provider.businessName}`);
+          const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
+            : orderType === 'street_food' ? '🌮 Street Food'
+              : '🛒 Grocery';
 
-              // Multi-device support: send to all tokens
+          if (orderType === 'street_food') {
+            const sfAdmin = await storage.getUserByUsername('streetfood_admin');
+            if (sfAdmin) {
+              console.log(`[FCM] Payment verified! Sending Ring to streetfood_admin`);
               const allTokens: string[] = [];
-              if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
-                allTokens.push(...provider.user.fcmTokens);
-              } else if (provider.user.fcmToken) {
-                allTokens.push(provider.user.fcmToken);
+              if (sfAdmin.fcmTokens && Array.isArray(sfAdmin.fcmTokens)) {
+                allTokens.push(...sfAdmin.fcmTokens);
+              } else if (sfAdmin.fcmToken) {
+                allTokens.push(sfAdmin.fcmToken);
               }
               const uniqueTokens = [...new Set(allTokens)];
-              console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
-
               for (const deviceToken of uniqueTokens) {
                 await sendPushNotification(deviceToken, {
                   type: 'ORDER_REQUEST',
                   title: `${orderLabel} Order Paid!`,
-                  body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
+                  body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please manually inform vendor to prepare.`,
                   data: {
                     orderId: database_order_id,
                     orderType: orderType || 'grocery',
@@ -1898,6 +1894,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     dropAddress: updatedOrder?.deliveryAddress || 'Check App'
                   }
                 });
+              }
+            }
+          } else {
+            const providerId = updatedOrder?.providerId;
+            if (providerId) {
+              const provider = await storage.getServiceProvider(providerId);
+              if (provider && provider.user) {
+                console.log(`[FCM] Payment verified! Sending Ring to ${provider.businessName}`);
+
+                // Multi-device support: send to all tokens
+                const allTokens: string[] = [];
+                if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+                  allTokens.push(...provider.user.fcmTokens);
+                } else if (provider.user.fcmToken) {
+                  allTokens.push(provider.user.fcmToken);
+                }
+                const uniqueTokens = [...new Set(allTokens)];
+                console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
+
+                for (const deviceToken of uniqueTokens) {
+                  await sendPushNotification(deviceToken, {
+                    type: 'ORDER_REQUEST',
+                    title: `${orderLabel} Order Paid!`,
+                    body: `Order #${database_order_id.slice(0, 8)} — Payment confirmed. Please prepare the order.`,
+                    data: {
+                      orderId: database_order_id,
+                      orderType: orderType || 'grocery',
+                      customerName: 'Customer',
+                      amount: updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App',
+                      dropAddress: updatedOrder?.deliveryAddress || 'Check App'
+                    }
+                  });
+                }
               }
             }
           }
@@ -2033,7 +2062,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // --- MENU MANAGEMENT ROUTES (GENERIC) ---
+  // --- STREET FOOD ORDERS ROUTES (PROVIDER DASHBOARD) ---
+
+  // Get Live Orders for Street Food (Only accessible by streetfood_admin, but going through provider auth route technically checks for 'admin' or 'provider'?)
+  // Let's create an endpoint that doesn't strictly check for req.provider if it's streetfood_admin
+  app.get("/api/provider/street-food-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user?.username !== "streetfood_admin") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      // Assuming storage has a method getAllStreetFoodOrders
+      const orders = await storage.getAllStreetFoodOrders();
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get street food orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching orders" });
+    }
+  });
+
+  // Update Street Food Order Status
+  app.patch("/api/provider/street-food-orders/:id/status", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user?.username !== "streetfood_admin") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const order = await storage.getStreetFoodOrder(id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const updatedOrder = await storage.updateStreetFoodOrderStatus(id, status);
+      res.json(updatedOrder);
+    } catch (error: any) {
+      console.error("Update order status error:", error);
+      res.status(500).json({ message: error.message || "Error updating order status" });
+    }
+  });
 
   // Get Menu Items
   app.get("/api/provider/menu-items/:categorySlug", async (req: Request, res: Response) => {
@@ -3325,6 +3392,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete Vendor Profile Details completely
+  app.delete("/api/admin/street-food/vendors/:id", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteStreetFoodVendor(id);
+      res.json({ success: true, message: "Vendor and all menu items deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete street food vendor error:", error);
+      res.status(500).json({ message: error.message || "Failed to delete vendor" });
+    }
+  });
+
+  // Manage Gallery Images for Street Food Vendors
+  app.post("/api/admin/street-food/vendors/:id/gallery", isAdmin, upload.single('image'), async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No image provided" });
+      const { id } = req.params;
+
+      const vendor = await db.query.serviceProviders.findFirst({
+        where: eq(serviceProviders.id, id)
+      });
+      if (!vendor) return res.status(404).json({ message: "Vendor not found" });
+
+      const imageUrl = await uploadToCloudinary(req.file.buffer);
+      const currentGallery = vendor.galleryImages || [];
+
+      const [updatedVendor] = await db.update(serviceProviders)
+        .set({ galleryImages: [...currentGallery, imageUrl] })
+        .where(eq(serviceProviders.id, id))
+        .returning();
+
+      res.status(201).json({ imageUrl, galleryImages: updatedVendor.galleryImages });
+    } catch (error: any) {
+      console.error("Upload street food gallery error:", error);
+      res.status(500).json({ message: error.message || "Failed to upload image" });
+    }
+  });
+
+  app.delete("/api/admin/street-food/vendors/:id/gallery", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { imageUrl, index } = req.body;
+      const { id } = req.params;
+
+      if (!imageUrl && index === undefined) {
+        return res.status(400).json({ message: "imageUrl or index is required" });
+      }
+
+      const vendor = await db.query.serviceProviders.findFirst({
+        where: eq(serviceProviders.id, id)
+      });
+
+      if (!vendor) return res.status(404).json({ message: "Vendor not found" });
+
+      let currentGallery = vendor.galleryImages || [];
+      let newGallery = [...currentGallery];
+
+      if (index !== undefined && index >= 0 && index < currentGallery.length) {
+         newGallery.splice(index, 1);
+      } else if (imageUrl) {
+         newGallery = currentGallery.filter(url => url !== imageUrl);
+      } else {
+         return res.status(400).json({ message: "Invalid image identifier provided." });
+      }
+
+      const [updatedVendor] = await db.update(serviceProviders)
+        .set({ galleryImages: newGallery })
+        .where(eq(serviceProviders.id, id))
+        .returning();
+
+      res.json({ success: true, galleryImages: updatedVendor.galleryImages });
+    } catch (error: any) {
+      console.error("Delete street food gallery image error:", error);
+      res.status(500).json({ message: error.message || "Failed to delete image" });
+    }
+  });
+
   // =========================================
   // AUTO-SEED: Admin Account
   // =========================================
@@ -3348,6 +3491,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("✅ Admin role granted to: main_branch");
       } else {
         console.log("✅ Admin account ready: main_branch");
+      }
+
+      // Auto-seed Street Food Admin Account
+      const streetfoodAdminUsername = "streetfood_admin";
+      let streetfoodAdmin = await db.query.users.findFirst({
+        where: eq(users.username, streetfoodAdminUsername)
+      });
+      if (!streetfoodAdmin) {
+        const sfHashedPassword = await bcrypt.hash("street123", 10);
+        [streetfoodAdmin] = await db.insert(users).values({
+          username: streetfoodAdminUsername,
+          email: "streetfood@shirurexpress.com",
+          password: sfHashedPassword,
+          role: "admin", // Using 'admin' role, but we will check username/specific permissions later if needed
+        }).returning();
+        console.log("✅ Streetfood Admin account created: streetfood_admin");
+      } else if (streetfoodAdmin.role !== "admin") {
+        await db.update(users).set({ role: "admin" }).where(eq(users.id, streetfoodAdmin.id));
+        console.log("✅ Admin role granted to: streetfood_admin");
+      } else {
+        console.log("✅ Streetfood Admin account ready: streetfood_admin");
       }
     } catch (e: any) {
       console.error("⚠️ Admin seed error:", e.message);

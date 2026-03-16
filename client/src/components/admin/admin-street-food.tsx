@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,8 @@ import api from "@/lib/api";
 type Vendor = {
     id: string;
     businessName: string;
+    profileImageUrl?: string;
+    galleryImages?: string[];
     createdAt: string;
 };
 
@@ -137,8 +140,12 @@ export default function AdminStreetFood() {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                                        <Store className="h-6 w-6 text-orange-500" />
+                                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                                        {vendor.profileImageUrl ? (
+                                            <img src={vendor.profileImageUrl} alt="Logo" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Store className="h-6 w-6 text-orange-500" />
+                                        )}
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-lg max-w-[180px] truncate">{vendor.businessName}</h3>
@@ -163,6 +170,10 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
     // Vendor Edit State
     const [isVendorEditOpen, setIsVendorEditOpen] = useState(false);
     const [vendorNameEdit, setVendorNameEdit] = useState(vendor?.businessName || "");
+    const [vendorLogoEdit, setVendorLogoEdit] = useState<File | null>(null);
+
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+    const [galleryUploadFile, setGalleryUploadFile] = useState<File | null>(null);
 
     const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -184,12 +195,62 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
 
     const editVendorM = useMutation({
         mutationFn: async () => {
-            return api.put(`/admin/street-food/vendors/${vendor?.id}`, { businessName: vendorNameEdit }).then(r => r.data);
+            const formData = new FormData();
+            formData.append("businessName", vendorNameEdit);
+            if (vendorLogoEdit) {
+                formData.append("image", vendorLogoEdit);
+            }
+            return api.put(`/admin/street-food/vendors/${vendor?.id}`, formData).then(r => r.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
             toast({ title: "Vendor Updated", description: "Profile updated successfully." });
             setIsVendorEditOpen(false);
+            setVendorLogoEdit(null);
+        },
+        onError: (err: any) => {
+            toast({ title: "Error", description: err.response?.data?.message || err.message, variant: "destructive" });
+        }
+    });
+
+    const deleteVendorM = useMutation({
+        mutationFn: async () => {
+            return api.delete(`/admin/street-food/vendors/${vendor?.id}`).then(r => r.data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
+            toast({ title: "Vendor Deleted", description: "Vendor and all their items have been removed." });
+            onBack();
+        },
+        onError: (err: any) => {
+            toast({ title: "Error", description: err.response?.data?.message || err.message, variant: "destructive" });
+        }
+    });
+
+    const uploadGalleryM = useMutation({
+        mutationFn: async () => {
+            if (!galleryUploadFile) return;
+            const formData = new FormData();
+            formData.append("image", galleryUploadFile);
+            return api.post(`/admin/street-food/vendors/${vendor?.id}/gallery`, formData).then(r => r.data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
+            toast({ title: "Image Uploaded", description: "Gallery updated." });
+            setGalleryUploadFile(null);
+        },
+        onError: (err: any) => {
+            toast({ title: "Error", description: err.response?.data?.message || err.message, variant: "destructive" });
+        }
+    });
+
+    const deleteGalleryImageM = useMutation({
+        mutationFn: async (imageUrl: string) => {
+            return api.delete(`/admin/street-food/vendors/${vendor?.id}/gallery`, { data: { imageUrl } }).then(r => r.data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
+            toast({ title: "Image Removed", description: "Gallery updated." });
         },
         onError: (err: any) => {
             toast({ title: "Error", description: err.response?.data?.message || err.message, variant: "destructive" });
@@ -278,31 +339,122 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     </div>
                 </div>
 
-                <Dialog open={isVendorEditOpen} onOpenChange={setIsVendorEditOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="border-white/10 hover:bg-white/5 gap-2">
-                            <Edit2 className="h-4 w-4" /> Edit Profile
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>Edit Vendor Profile</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 mt-4">
-                            <div className="space-y-2">
-                                <Label>Business Name</Label>
-                                <Input value={vendorNameEdit} onChange={e => setVendorNameEdit(e.target.value)} className="bg-white/5 border-white/10" autoFocus />
-                            </div>
-                            <Button
-                                onClick={() => editVendorM.mutate()}
-                                className="w-full bg-orange-500 hover:bg-orange-600"
-                                disabled={!vendorNameEdit.trim() || editVendorM.isPending}
-                            >
-                                {editVendorM.isPending ? "Saving..." : "Save Changes"}
+                <div className="flex items-center gap-2">
+                    <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="border-white/10 hover:bg-white/5 gap-2">
+                                <ImageIcon className="h-4 w-4" /> Gallery
                             </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                        </DialogTrigger>
+                        <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>Manage Photo Gallery</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-6 mt-4">
+                                <div className="flex items-end gap-4">
+                                    <div className="flex-1 space-y-2">
+                                        <Label>Upload New Image</Label>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setGalleryUploadFile(e.target.files?.[0] || null)}
+                                            className="bg-white/5 border-white/10 cursor-pointer text-sm"
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={() => uploadGalleryM.mutate()}
+                                        disabled={!galleryUploadFile || uploadGalleryM.isPending}
+                                        className="bg-orange-500 hover:bg-orange-600"
+                                    >
+                                        {uploadGalleryM.isPending ? "Uploading..." : "Upload"}
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {vendor.galleryImages?.map((url, idx) => (
+                                        <div key={idx} className="relative group rounded-xl overflow-hidden aspect-video bg-gray-800 border border-white/10">
+                                            <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    onClick={() => deleteGalleryImageM.mutate(url)}
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {(!vendor.galleryImages || vendor.galleryImages.length === 0) && (
+                                        <div className="col-span-full py-8 text-center text-gray-500 text-sm">
+                                            No gallery images uploaded yet.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isVendorEditOpen} onOpenChange={setIsVendorEditOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="border-white/10 hover:bg-white/5 gap-2">
+                                <Edit2 className="h-4 w-4" /> Edit Profile
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Edit Vendor Profile</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 mt-4">
+                                <div className="space-y-2">
+                                    <Label>Vendor Logo (Profile Image)</Label>
+                                    <div className="flex items-center gap-4">
+                                        {vendor.profileImageUrl && !vendorLogoEdit && (
+                                            <img src={vendor.profileImageUrl} alt="Logo" className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                                        )}
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setVendorLogoEdit(e.target.files?.[0] || null)}
+                                            className="bg-white/5 border-white/10 cursor-pointer text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Business Name</Label>
+                                    <Input value={vendorNameEdit} onChange={e => setVendorNameEdit(e.target.value)} className="bg-white/5 border-white/10" autoFocus />
+                                </div>
+                                <Button
+                                    onClick={() => editVendorM.mutate()}
+                                    className="w-full bg-orange-500 hover:bg-orange-600"
+                                    disabled={!vendorNameEdit.trim() || editVendorM.isPending}
+                                >
+                                    {editVendorM.isPending ? "Saving..." : "Save Changes"}
+                                </Button>
+                                <Separator className="my-4 bg-white/10" />
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" className="w-full gap-2 border border-red-800 bg-red-950/30 hover:bg-red-900/50">
+                                            <Trash2 className="h-4 w-4" /> Delete Vendor Completely
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-gray-400">
+                                                This action cannot be undone. This will permanently delete the street food vendor <span className="text-white font-bold">{vendor.businessName}</span> and remove all of their menu items from the servers.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="bg-white/5 text-white border-0 hover:bg-white/10 mt-2 sm:mt-0">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deleteVendorM.mutate()} className="bg-red-600 text-white hover:bg-red-700">Yes, delete vendor</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
 
             <div className="flex justify-between items-center bg-[#111827] p-4 rounded-xl border border-white/5">
