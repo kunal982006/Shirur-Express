@@ -3114,25 +3114,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let fcmTokens: string[] = [];
 
       if (audience === 'all_users' || audience === 'everyone') {
-        // All users who have an FCM token
-        const userRows = await db.select({ fcmToken: users.fcmToken }).from(users).where(sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`);
-        fcmTokens.push(...userRows.map(u => u.fcmToken!));
+        // All users — collect both fcmToken and fcmTokens arrays
+        const userRows = await db.select({ fcmToken: users.fcmToken, fcmTokens: users.fcmTokens }).from(users).where(sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`);
+        for (const u of userRows) {
+          if (u.fcmTokens && Array.isArray(u.fcmTokens)) {
+            fcmTokens.push(...u.fcmTokens);
+          } else if (u.fcmToken) {
+            fcmTokens.push(u.fcmToken);
+          }
+        }
       }
 
       if (audience === 'customers') {
-        const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(eq(users.role, 'customer'), sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`));
-        fcmTokens.push(...rows.map(r => r.fcmToken!));
+        const rows = await db.select({ fcmToken: users.fcmToken, fcmTokens: users.fcmTokens }).from(users).where(and(eq(users.role, 'customer'), sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`));
+        for (const r of rows) {
+          if (r.fcmTokens && Array.isArray(r.fcmTokens)) {
+            fcmTokens.push(...r.fcmTokens);
+          } else if (r.fcmToken) {
+            fcmTokens.push(r.fcmToken);
+          }
+        }
       }
 
       if (audience === 'providers' || audience === 'everyone') {
-        // All providers' user accounts
         const providerUserIds = await db.select({ userId: serviceProviders.userId }).from(serviceProviders);
         if (providerUserIds.length > 0) {
-          const providerUsers = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+          const providerUsers = await db.select({ fcmToken: users.fcmToken, fcmTokens: users.fcmTokens }).from(users).where(and(
             inArray(users.id, providerUserIds.map(p => p.userId)),
             sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
           ));
-          fcmTokens.push(...providerUsers.map(u => u.fcmToken!));
+          for (const u of providerUsers) {
+            if (u.fcmTokens && Array.isArray(u.fcmTokens)) {
+              fcmTokens.push(...u.fcmTokens);
+            } else if (u.fcmToken) {
+              fcmTokens.push(u.fcmToken);
+            }
+          }
         }
       }
 
@@ -3141,11 +3158,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (restaurantCat) {
           const restProviders = await db.select({ userId: serviceProviders.userId }).from(serviceProviders).where(eq(serviceProviders.categoryId, restaurantCat.id));
           if (restProviders.length > 0) {
-            const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+            const rows = await db.select({ fcmToken: users.fcmToken, fcmTokens: users.fcmTokens }).from(users).where(and(
               inArray(users.id, restProviders.map(p => p.userId)),
               sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
             ));
-            fcmTokens.push(...rows.map(r => r.fcmToken!));
+            for (const r of rows) {
+              if (r.fcmTokens && Array.isArray(r.fcmTokens)) {
+                fcmTokens.push(...r.fcmTokens);
+              } else if (r.fcmToken) {
+                fcmTokens.push(r.fcmToken);
+              }
+            }
           }
         }
       }
@@ -3155,11 +3178,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (sfCat) {
           const sfProviders = await db.select({ userId: serviceProviders.userId }).from(serviceProviders).where(eq(serviceProviders.categoryId, sfCat.id));
           if (sfProviders.length > 0) {
-            const rows = await db.select({ fcmToken: users.fcmToken }).from(users).where(and(
+            const rows = await db.select({ fcmToken: users.fcmToken, fcmTokens: users.fcmTokens }).from(users).where(and(
               inArray(users.id, sfProviders.map(p => p.userId)),
               sql`${users.fcmToken} IS NOT NULL AND ${users.fcmToken} != ''`
             ));
-            fcmTokens.push(...rows.map(r => r.fcmToken!));
+            for (const r of rows) {
+              if (r.fcmTokens && Array.isArray(r.fcmTokens)) {
+                fcmTokens.push(...r.fcmTokens);
+              } else if (r.fcmToken) {
+                fcmTokens.push(r.fcmToken);
+              }
+            }
           }
         }
       }
@@ -3180,7 +3209,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: 'ORDER_UPDATE',
             title,
             body: message,
-            data: { type: 'ADMIN_BROADCAST' }
+            data: {
+              type: 'ADMIN_BROADCAST',
+              title: title,
+              body: message,
+              navigateTo: '/',
+            }
           })
         )
       );
