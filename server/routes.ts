@@ -62,6 +62,41 @@ function getCachedOrFetch<T>(key: string, ttlMs: number, fetcher: () => Promise<
 }
 // ========================================================================
 
+// ===== ADMIN NOTIFICATION HELPER =====
+// Sends a copy of every order/booking notification to the admin (main_branch) account
+async function notifyAdmin(payload: {
+  title: string;
+  body: string;
+  data: Record<string, string>;
+}) {
+  try {
+    const adminUser = await storage.getUserByUsername('main_branch');
+    if (!adminUser) return;
+
+    const allTokens: string[] = [];
+    if (adminUser.fcmTokens && Array.isArray(adminUser.fcmTokens)) {
+      allTokens.push(...adminUser.fcmTokens);
+    } else if (adminUser.fcmToken) {
+      allTokens.push(adminUser.fcmToken);
+    }
+    const uniqueTokens = [...new Set(allTokens)];
+    if (uniqueTokens.length === 0) return;
+
+    console.log(`[FCM Admin] Sending notification to main_branch (${uniqueTokens.length} device(s))`);
+    for (const deviceToken of uniqueTokens) {
+      await sendPushNotification(deviceToken, {
+        type: 'ORDER_REQUEST',
+        title: `👑 ${payload.title}`,
+        body: payload.body,
+        data: { ...payload.data, navigateTo: '/admin' },
+      });
+    }
+  } catch (err: any) {
+    console.error('[FCM Admin] Notification failed (non-critical):', err?.message);
+  }
+}
+// =====================================================================
+
 // Custom request types
 interface CustomRequest extends Request {
   provider?: {
@@ -1469,6 +1504,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // --- END FIREBASE FCM RINGING ---
 
+      // --- ADMIN NOTIFICATION: Also alert admin (main_branch) ---
+      try {
+        const providerName = booking.providerId
+          ? (await storage.getServiceProvider(booking.providerId))?.businessName || 'Unknown'
+          : 'Unassigned';
+        await notifyAdmin({
+          title: `New ${booking.serviceType} Booking`,
+          body: `Provider: ${providerName} • 📞 ${booking.userPhone || 'N/A'} • 📍 ${booking.userAddress || 'N/A'}`,
+          data: {
+            orderId: booking.id,
+            orderType: 'service',
+            providerName,
+            amount: booking.estimatedCost || 'Check App',
+            itemsSummary: `${booking.serviceType} service booking`,
+            dropAddress: booking.userAddress || 'N/A',
+          }
+        });
+      } catch (adminErr) {
+        console.error('[Admin Notif] Service booking admin alert failed:', adminErr);
+      }
+
       res.status(201).json(booking);
     } catch (error: any) {
       console.error("Create booking error:", error);
@@ -1962,6 +2018,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('[FCM Error] Post-payment notification failed (non-critical):', fcmError);
         }
         // --- END PUSH NOTIFICATION ---
+
+        // --- ADMIN NOTIFICATION: Also alert admin (main_branch) ---
+        try {
+          const adminOrderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
+            : orderType === 'street_food' ? '🌮 Street Food'
+              : '🛒 Grocery';
+          let adminProviderName = 'N/A';
+          if (orderType === 'street_food') {
+            adminProviderName = 'Street Food Admin';
+          } else if (updatedOrder?.providerId) {
+            const prov = await storage.getServiceProvider(updatedOrder.providerId);
+            adminProviderName = prov?.businessName || 'Unknown';
+          }
+          const adminAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+          const adminItems = Array.isArray(updatedOrder?.items)
+            ? updatedOrder.items.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (updatedOrder.items.length > 3 ? ` +${updatedOrder.items.length - 3} more` : '')
+            : '';
+          await notifyAdmin({
+            title: `${adminOrderLabel} Order — ₹${adminAmount}`,
+            body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}`,
+            data: {
+              orderId: database_order_id,
+              orderType: orderType || 'grocery',
+              providerName: adminProviderName,
+              amount: adminAmount,
+              itemsSummary: adminItems || `${adminOrderLabel} order`,
+              dropAddress: updatedOrder?.deliveryAddress || 'N/A',
+            }
+          });
+        } catch (adminErr) {
+          console.error('[Admin Notif] Order admin alert failed:', adminErr);
+        }
       } else {
         res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
