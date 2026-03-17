@@ -174,6 +174,31 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
+  // --- REVERSE GEOCODING PROXY (Google Maps) ---
+  app.get("/api/reverse-geocode", async (req: Request, res: Response) => {
+    try {
+      const { lat, lng } = req.query;
+      if (!lat || !lng) {
+        return res.status(400).json({ message: "lat and lng are required" });
+      }
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ message: "Google Maps API key not configured" });
+      }
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === "OK" && data.results && data.results.length > 0) {
+        res.json({ address: data.results[0].formatted_address });
+      } else {
+        res.json({ address: null, status: data.status });
+      }
+    } catch (error: any) {
+      console.error("Reverse geocode error:", error);
+      res.status(500).json({ message: error.message || "Reverse geocoding failed" });
+    }
+  });
+
   // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
   app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
     const assetlinks = [
@@ -2986,12 +3011,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/admin/orders — All orders (merged)
+  // NOTE: We select specific columns to avoid querying columns (like rider_id)
+  // that exist in the Drizzle schema but haven't been migrated to the DB yet.
   app.get("/api/admin/orders", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {
       const [gOrders, sfOrders, rOrders] = await Promise.all([
-        db.select().from(groceryOrders).orderBy(desc(groceryOrders.createdAt)).limit(100),
-        db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt)).limit(100),
-        db.select().from(restaurantOrders).orderBy(desc(restaurantOrders.createdAt)).limit(100),
+        db.select({
+          id: groceryOrders.id,
+          userId: groceryOrders.userId,
+          status: groceryOrders.status,
+          total: groceryOrders.total,
+          deliveryAddress: groceryOrders.deliveryAddress,
+          createdAt: groceryOrders.createdAt,
+        }).from(groceryOrders).orderBy(desc(groceryOrders.createdAt)).limit(100),
+        db.select({
+          id: streetFoodOrders.id,
+          userId: streetFoodOrders.userId,
+          status: streetFoodOrders.status,
+          totalAmount: streetFoodOrders.totalAmount,
+          deliveryAddress: streetFoodOrders.deliveryAddress,
+          createdAt: streetFoodOrders.createdAt,
+        }).from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt)).limit(100),
+        db.select({
+          id: restaurantOrders.id,
+          userId: restaurantOrders.userId,
+          status: restaurantOrders.status,
+          totalAmount: restaurantOrders.totalAmount,
+          deliveryAddress: restaurantOrders.deliveryAddress,
+          createdAt: restaurantOrders.createdAt,
+        }).from(restaurantOrders).orderBy(desc(restaurantOrders.createdAt)).limit(100),
       ]);
 
       const merged = [

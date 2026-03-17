@@ -96,6 +96,8 @@ export default function Checkout() {
 
   // Determine Delivery Fee directly based on item type
   const isGrocery = items.some(item => item.itemType === 'grocery');
+  const GROCERY_MIN_ORDER = 50; // Minimum order amount for GMart grocery
+  const isBelowMinOrder = isGrocery && subtotal < GROCERY_MIN_ORDER;
   const isCake = items.some(item => item.itemType === 'cake');
 
   // FREE DELIVERY PROMOTION - Set to 0 for all services during initial months
@@ -146,19 +148,14 @@ export default function Checkout() {
           lng: longitude
         });
 
-        // Attempt reverse geocoding
+        // Attempt reverse geocoding via Google Maps
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
+          const response = await api.get(`/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          const data = response.data;
 
-          if (data && data.display_name) {
-            // Only update if the field is empty to avoid overwriting user edits? 
-            // Or always update since user clicked "Detect Location"?
-            // Let's assume on "Detect" we should provide the address.
-            form.setValue("deliveryAddress", data.display_name);
-            toast({ title: "Address Found", description: "Location address updated." });
+          if (data && data.address) {
+            form.setValue("deliveryAddress", data.address);
+            toast({ title: "📍 Address Found", description: "Your exact location address has been detected." });
           } else {
             toast({ title: "Location Detected", description: "Could not fetch street address. Please enter details." });
           }
@@ -203,6 +200,12 @@ export default function Checkout() {
     // Distance check only applies when GPS is used (already disabled for launch)
     if (!useManualAddress && !isDeliverable) {
       toast({ title: "Not Deliverable", description: "Sorry, we do not deliver to this location (too far).", variant: "destructive" });
+      return;
+    }
+
+    // Minimum order check for grocery
+    if (isBelowMinOrder) {
+      toast({ title: "⚠️ Minimum Order ₹50", description: `Please add ₹${(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more to place a grocery order.`, variant: "destructive" });
       return;
     }
 
@@ -608,15 +611,28 @@ export default function Checkout() {
                       <span>₹{total.toFixed(2)}</span>
                     </div>
                   </CardContent>
+                  {isBelowMinOrder && (
+                    <div className="px-6 pb-3">
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Minimum Order ₹{GROCERY_MIN_ORDER}</AlertTitle>
+                        <AlertDescription>
+                          Add ₹{(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more to place your grocery order.
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
                   <CardFooter>
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder || (!useManualAddress && (!isDeliverable || !userLocation))}
+                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || (!useManualAddress && (!isDeliverable || !userLocation))}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : isBelowMinOrder ? (
+                        `Add ₹${(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more`
                       ) : !useManualAddress && !isDeliverable ? (
                         "Not Deliverable"
                       ) : !useManualAddress && !userLocation ? (

@@ -120,14 +120,14 @@ export default function BookingSlotForm({
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          // Attempt reverse geocoding with OpenStreetMap Nominatim
+          // Reverse geocoding via Google Maps
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            `/api/reverse-geocode?lat=${latitude}&lng=${longitude}`
           );
           const data = await response.json();
-          if (data && data.display_name) {
-            form.setValue("userAddress", data.display_name);
-            toast({ title: "Location Detected", description: "Address updated successfully." });
+          if (data && data.address) {
+            form.setValue("userAddress", data.address);
+            toast({ title: "📍 Location Detected", description: "Your exact address has been found." });
           } else {
             form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
             toast({ title: "Location Detected", description: "Could not fetch address name, using coordinates." });

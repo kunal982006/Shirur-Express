@@ -448,9 +448,28 @@ export default function Grocery() {
               <div>
                 <p className="text-sm text-muted-foreground">{items.reduce((total, item) => total + item.quantity, 0)} Items</p>
                 <p className="text-xl font-bold">₹{getTotalPrice().toFixed(2)}</p>
+                {getTotalPrice() < 50 && (
+                  <p className="text-xs text-orange-600 font-medium">Min. order ₹50 • Add ₹{(50 - getTotalPrice()).toFixed(2)} more</p>
+                )}
               </div>
-              <Button onClick={() => setLocation("/checkout")} size="lg">
-                Proceed to Checkout
+              <Button
+                onClick={() => {
+                  if (getTotalPrice() < 50) {
+                    toast({
+                      title: "⚠️ Minimum Order ₹50",
+                      description: `Please add ₹${(50 - getTotalPrice()).toFixed(2)} more to proceed.`,
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  setLocation("/checkout");
+                }}
+                size="lg"
+                disabled={getTotalPrice() < 50}
+              >
+                {getTotalPrice() < 50
+                  ? `Add ₹${(50 - getTotalPrice()).toFixed(2)} more`
+                  : "Proceed to Checkout"}
                 <ShoppingBag className="ml-2 h-5 w-5" />
               </Button>
             </div>
