@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { reverseGeocode } from "@/lib/google-maps";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -148,25 +149,18 @@ export default function Checkout() {
           lng: longitude
         });
 
-        // Attempt reverse geocoding via Google Maps API (client-side to respect Referrer restrictions)
+        // Attempt reverse geocoding via Google Maps API JS Client (client-side to respect Referrer restrictions)
         try {
-          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-          if (!apiKey) throw new Error("Google Maps API key not found");
-          
-          const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&language=en`);
-          const data = await response.json();
-
-          if (data.status === "OK" && data.results && data.results.length > 0) {
-            form.setValue("deliveryAddress", data.results[0].formatted_address);
+          const address = await reverseGeocode(latitude, longitude);
+          if (address) {
+            form.setValue("deliveryAddress", address);
             toast({ title: "📍 Address Found", description: "Your exact location address has been detected." });
           } else {
-            console.error("Geocoding failed:", data);
             toast({ title: "Location Detected", description: "Could not fetch street address. Please enter details." });
           }
         } catch (error) {
-          console.error("Reverse geocoding failed", error);
-          // Fallback or just silent fail for address text
-          toast({ title: "Location Detected", description: "Please enter your specific address." });
+          console.error("Geocoding failed:", error);
+          toast({ title: "Location Detected", description: "Geocoding failed, using coordinates instead." });
         } finally {
           setIsLocating(false);
         }

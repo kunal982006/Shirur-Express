@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { reverseGeocode } from "@/lib/google-maps";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -120,22 +121,18 @@ export default function BookingSlotForm({
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          // Reverse geocoding via Google Maps API (client-side)
-          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-          if (!apiKey) throw new Error("Google Maps API key not found");
+          // Reverse geocoding via Google Maps API JS Client (client-side)
+          const address = await reverseGeocode(latitude, longitude);
           
-          const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&language=en`);
-          const data = await response.json();
-          
-          if (data.status === "OK" && data.results && data.results.length > 0) {
-            form.setValue("userAddress", data.results[0].formatted_address);
+          if (address) {
+            form.setValue("userAddress", address);
             toast({ title: "📍 Location Detected", description: "Your exact address has been found." });
           } else {
-            console.error("Geocoding failed:", data);
             form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
             toast({ title: "Location Detected", description: "Could not fetch address name, using coordinates." });
           }
         } catch (error) {
+          console.error("Geocoding failed:", error);
           form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
           toast({ title: "Location Detected", description: "Using coordinates (Address fetch failed)." });
         } finally {

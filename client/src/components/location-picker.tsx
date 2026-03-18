@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { loadGoogleMaps } from "@/lib/google-maps";
+
 import { Loader2, MapPin, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -87,42 +89,21 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
 
     // Load Google Maps Script
     useEffect(() => {
-        // Check if already loaded
-        if (window.google?.maps) {
-            initMap();
-            return;
-        }
-
-        // Check if script is already being loaded
-        const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
-        if (existingScript) {
-            existingScript.addEventListener('load', initMap);
-            return;
-        }
-
-        // Define callback before loading script
-        window.initGoogleMapsCallback = () => {
-            initMap();
-        };
-
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsCallback`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = () => {
-            setIsLoading(false);
-            toast({
-                title: "Error",
-                description: "Failed to load Google Maps. Please check your API key.",
-                variant: "destructive"
+        loadGoogleMaps()
+            .then(() => {
+                initMap();
+            })
+            .catch((error: any) => {
+                console.error(error);
+                setIsLoading(false);
+                toast({
+                    title: "Error",
+                    description: "Failed to load Google Maps. Please check your API key/restrictions.",
+                    variant: "destructive"
+                });
             });
-        };
-        document.head.appendChild(script);
 
         return () => {
-            // Cleanup callback
-            delete window.initGoogleMapsCallback;
             // Cleanup marker
             if (markerRef.current) {
                 markerRef.current.setMap(null);
