@@ -120,15 +120,18 @@ export default function BookingSlotForm({
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          // Reverse geocoding via Google Maps
-          const response = await fetch(
-            `/api/reverse-geocode?lat=${latitude}&lng=${longitude}`
-          );
+          // Reverse geocoding via Google Maps API (client-side)
+          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+          if (!apiKey) throw new Error("Google Maps API key not found");
+          
+          const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&language=en`);
           const data = await response.json();
-          if (data && data.address) {
-            form.setValue("userAddress", data.address);
+          
+          if (data.status === "OK" && data.results && data.results.length > 0) {
+            form.setValue("userAddress", data.results[0].formatted_address);
             toast({ title: "📍 Location Detected", description: "Your exact address has been found." });
           } else {
+            console.error("Geocoding failed:", data);
             form.setValue("userAddress", `Lat: ${latitude}, Long: ${longitude}`);
             toast({ title: "Location Detected", description: "Could not fetch address name, using coordinates." });
           }

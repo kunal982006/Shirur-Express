@@ -174,31 +174,6 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  // --- REVERSE GEOCODING PROXY (Google Maps) ---
-  app.get("/api/reverse-geocode", async (req: Request, res: Response) => {
-    try {
-      const { lat, lng } = req.query;
-      if (!lat || !lng) {
-        return res.status(400).json({ message: "lat and lng are required" });
-      }
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ message: "Google Maps API key not configured" });
-      }
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === "OK" && data.results && data.results.length > 0) {
-        res.json({ address: data.results[0].formatted_address });
-      } else {
-        res.json({ address: null, status: data.status });
-      }
-    } catch (error: any) {
-      console.error("Reverse geocode error:", error);
-      res.status(500).json({ message: error.message || "Reverse geocoding failed" });
-    }
-  });
-
   // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
   app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
     const assetlinks = [

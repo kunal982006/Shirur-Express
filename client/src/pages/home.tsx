@@ -76,6 +76,7 @@ export default function Home() {
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null); // ADDED: For full-screen image modal
+  const [showRestaurantPopup, setShowRestaurantPopup] = useState(false);
 
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -346,7 +347,13 @@ export default function Home() {
               <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
                 {/* ServiceCard ki jagah, chota icon button banao */}
                 <div
-                  onClick={() => navigate(`/${service.slug}`)}
+                  onClick={() => {
+                    if (service.slug === "restaurants") {
+                      setShowRestaurantPopup(true);
+                    } else {
+                      navigate(`/${service.slug}`);
+                    }
+                  }}
                   className="cursor-pointer p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all"
                 >
                   <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
@@ -408,7 +415,7 @@ export default function Home() {
         title="Popular Restaurant Food"
         items={popularData?.menuItems || []}
         isLoading={isPopularLoading}
-        onSeeAll={() => navigate("/restaurants")}
+        onSeeAll={() => setShowRestaurantPopup(true)}
         renderItem={(item: any) => (
           <div className="cursor-pointer group">
             <div 
@@ -472,7 +479,7 @@ export default function Home() {
         title="Popular Restaurants"
         items={popularData?.restaurants || []}
         isLoading={isPopularLoading}
-        onSeeAll={() => navigate("/restaurants")}
+        onSeeAll={() => setShowRestaurantPopup(true)}
         renderItem={(provider: any) => (
           <div onClick={() => navigate(`/restaurants/${provider.id}`)} className="cursor-pointer group">
             <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100">
@@ -544,6 +551,33 @@ export default function Home() {
         )}
       />
       
+      {/* Restaurant Expansion Popup */}
+      <Dialog open={showRestaurantPopup} onOpenChange={setShowRestaurantPopup}>
+        <DialogContent className="max-w-[320px] p-6 rounded-3xl text-center flex flex-col items-center gap-4 bg-[#fcf9f2] border-0 shadow-2xl">
+          <div className="w-24 h-20 relative flex items-center justify-center -mt-2">
+             <div className="absolute inset-x-0 bottom-0 h-10 bg-orange-100 rounded-xl transform -skew-x-6 opacity-60"></div>
+             <img src="/attached_assets/image.png" className="w-16 h-16 object-cover rounded-md z-10 shadow-sm border border-white" alt="Map Route" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+             <div className="hidden z-10 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
+               <MapPin className="h-10 w-10 text-destructive" />
+             </div>
+          </div>
+          
+          <div className="space-y-1.5 mt-2">
+            <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Connecting More Restaurants</h3>
+            <p className="text-sm text-gray-800 leading-snug font-medium pb-1">
+              We are currently expanding our restaurant network. Until then, please enjoy our existing top-rated selections.
+            </p>
+          </div>
+          
+          <Button 
+            className="w-full bg-[#5b8a3e] hover:bg-[#4b7a2e] text-white font-semibold h-11 text-base rounded-[14px] mt-1 shadow-sm"
+            onClick={() => setShowRestaurantPopup(false)}
+          >
+            OK
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {/* Full-Screen Image Modal */}
       {selectedImage && (
         <div 

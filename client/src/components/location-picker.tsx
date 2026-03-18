@@ -3,8 +3,6 @@ import { Loader2, MapPin, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyA9Oh5VpGkUF8GhcM45gEFmEFgQTgpXEB8";
-
 interface LocationPickerProps {
     onAddressSelect: (address: string) => void;
     currentAddress?: string;
@@ -107,8 +105,9 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
             initMap();
         };
 
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsCallback`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsCallback`;
         script.async = true;
         script.defer = true;
         script.onerror = () => {
