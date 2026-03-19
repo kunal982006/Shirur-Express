@@ -2998,7 +2998,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           total: groceryOrders.total,
           deliveryAddress: groceryOrders.deliveryAddress,
           createdAt: groceryOrders.createdAt,
-        }).from(groceryOrders).orderBy(desc(groceryOrders.createdAt)).limit(100),
+          items: groceryOrders.items,
+          username: users.username,
+          phone: users.phone,
+          businessName: serviceProviders.businessName,
+        })
+        .from(groceryOrders)
+        .leftJoin(users, eq(groceryOrders.userId, users.id))
+        .leftJoin(serviceProviders, eq(groceryOrders.providerId, serviceProviders.id))
+        .orderBy(desc(groceryOrders.createdAt)).limit(100),
+        
         db.select({
           id: streetFoodOrders.id,
           userId: streetFoodOrders.userId,
@@ -3006,7 +3015,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalAmount: streetFoodOrders.totalAmount,
           deliveryAddress: streetFoodOrders.deliveryAddress,
           createdAt: streetFoodOrders.createdAt,
-        }).from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt)).limit(100),
+          items: streetFoodOrders.items,
+          username: users.username,
+          phone: users.phone,
+          businessName: serviceProviders.businessName,
+        })
+        .from(streetFoodOrders)
+        .leftJoin(users, eq(streetFoodOrders.userId, users.id))
+        .leftJoin(serviceProviders, eq(streetFoodOrders.providerId, serviceProviders.id))
+        .orderBy(desc(streetFoodOrders.createdAt)).limit(100),
+        
         db.select({
           id: restaurantOrders.id,
           userId: restaurantOrders.userId,
@@ -3014,13 +3032,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalAmount: restaurantOrders.totalAmount,
           deliveryAddress: restaurantOrders.deliveryAddress,
           createdAt: restaurantOrders.createdAt,
-        }).from(restaurantOrders).orderBy(desc(restaurantOrders.createdAt)).limit(100),
+          items: restaurantOrders.items,
+          username: users.username,
+          phone: users.phone,
+          businessName: serviceProviders.businessName,
+        })
+        .from(restaurantOrders)
+        .leftJoin(users, eq(restaurantOrders.userId, users.id))
+        .leftJoin(serviceProviders, eq(restaurantOrders.providerId, serviceProviders.id))
+        .orderBy(desc(restaurantOrders.createdAt)).limit(100),
       ]);
 
+      // Map grocery product IDs to names and images
+      const groceryItemIds = new Set<string>();
+      gOrders.forEach(o => {
+          if (Array.isArray(o.items)) {
+              o.items.forEach((item: any) => groceryItemIds.add(item.productId));
+          }
+      });
+      const gProducts = groceryItemIds.size > 0 
+          ? await db.select({ id: groceryProducts.id, name: groceryProducts.name, imageUrl: groceryProducts.imageUrl }).from(groceryProducts).where(inArray(groceryProducts.id, Array.from(groceryItemIds))) 
+          : [];
+      const gProductMap = new Map(gProducts.map(p => [p.id, p]));
+
+      // Map street food IDs to images
+      const sfItemIds = new Set<string>();
+      sfOrders.forEach(o => {
+          if (Array.isArray(o.items)) {
+              o.items.forEach((item: any) => sfItemIds.add(item.productId || item.itemId));
+          }
+      });
+      const sfProducts = sfItemIds.size > 0
+          ? await db.select({ id: streetFoodItems.id, name: streetFoodItems.name, imageUrl: streetFoodItems.imageUrl }).from(streetFoodItems).where(inArray(streetFoodItems.id, Array.from(sfItemIds)))
+          : [];
+      const sfProductMap = new Map(sfProducts.map(p => [p.id, p]));
+
+      // Map restaurant menu IDs to images
+      const rItemIds = new Set<string>();
+      rOrders.forEach(o => {
+          if (Array.isArray(o.items)) {
+              o.items.forEach((item: any) => rItemIds.add(item.menuItemId));
+          }
+      });
+      const rProducts = rItemIds.size > 0
+          ? await db.select({ id: restaurantMenuItems.id, name: restaurantMenuItems.name, imageUrl: restaurantMenuItems.imageUrl }).from(restaurantMenuItems).where(inArray(restaurantMenuItems.id, Array.from(rItemIds)))
+          : [];
+      const rProductMap = new Map(rProducts.map(p => [p.id, p]));
+
       const merged = [
-        ...gOrders.map(o => ({ ...o, orderType: 'grocery' as const, amount: o.total })),
-        ...sfOrders.map(o => ({ ...o, orderType: 'street_food' as const, amount: o.totalAmount })),
-        ...rOrders.map(o => ({ ...o, orderType: 'restaurant' as const, amount: o.totalAmount })),
+        ...gOrders.map(o => ({ 
+            ...o, 
+            orderType: 'grocery' as const, 
+            amount: o.total,
+            user: { username: o.username || 'Unknown', phone: o.phone },
+            provider: { businessName: o.businessName || 'Unknown' },
+            items: Array.isArray(o.items) ? o.items.map((i: any) => ({
+                ...i,
+                name: gProductMap.get(i.productId)?.name || i.name || 'Unknown Item',
+                imageUrl: gProductMap.get(i.productId)?.imageUrl,
+            })) : [],
+        })),
+        ...sfOrders.map(o => ({ 
+            ...o, 
+            orderType: 'street_food' as const, 
+            amount: o.totalAmount,
+            user: { username: o.username || 'Unknown', phone: o.phone },
+            provider: { businessName: o.businessName || 'Unknown' },
+            items: Array.isArray(o.items) ? o.items.map((i: any) => ({
+                ...i,
+                name: sfProductMap.get(i.productId || i.itemId)?.name || i.name || 'Unknown Item',
+                imageUrl: sfProductMap.get(i.productId || i.itemId)?.imageUrl,
+            })) : [],
+        })),
+        ...rOrders.map(o => ({ 
+            ...o, 
+            orderType: 'restaurant' as const, 
+            amount: o.totalAmount,
+            user: { username: o.username || 'Unknown', phone: o.phone },
+            provider: { businessName: o.businessName || 'Unknown' },
+            items: Array.isArray(o.items) ? o.items.map((i: any) => ({
+                ...i,
+                name: rProductMap.get(i.menuItemId)?.name || i.name || 'Unknown Item',
+                imageUrl: rProductMap.get(i.menuItemId)?.imageUrl,
+            })) : [],
+        })),
       ].sort((a, b) => {
         const dA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dB = b.createdAt ? new Date(b.createdAt).getTime() : 0;

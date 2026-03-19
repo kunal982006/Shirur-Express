@@ -92,7 +92,7 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md p-8 space-y-6 bg-card text-card-foreground rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center">Login</h2>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
             <FormField
               control={form.control}
               name="username"
@@ -100,7 +100,7 @@ const Login: React.FC = () => {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your username" {...field} />
+                    <Input placeholder="Enter your username" autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,6 +117,7 @@ const Login: React.FC = () => {
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="********"
+                        autoComplete="new-password"
                         {...field}
                       />
                       <Button

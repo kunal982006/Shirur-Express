@@ -41,6 +41,8 @@ import {
     BarChart3,
     LogOut,
     ChevronRight,
+    ChevronDown,
+    ChevronUp,
     Signal,
     Crown,
     Star, // ADDED
@@ -83,6 +85,9 @@ interface Order {
     amount: string | null;
     deliveryAddress: string;
     createdAt: string | null;
+    user?: { username: string; phone: string | null };
+    provider?: { businessName: string };
+    items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
 }
 
 interface Booking {
@@ -235,6 +240,7 @@ export default function AdminDashboard() {
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");
     const [broadcastMessage, setBroadcastMessage] = useState("");
+    const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     // Auth guard
     useEffect(() => {
@@ -652,28 +658,74 @@ export default function AdminDashboard() {
                             {!filteredOrders || filteredOrders.length === 0 ? (
                                 <p className="text-center text-gray-600 py-12">No orders found</p>
                             ) : filteredOrders.map(o => (
-                                <div key={o.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${o.orderType === 'grocery' ? 'bg-green-500/15' :
-                                        o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
-                                        }`}>
-                                        {o.orderType === 'grocery' ? <ShoppingBasket className="h-5 w-5 text-green-400" /> :
-                                            o.orderType === 'street_food' ? <Sandwich className="h-5 w-5 text-orange-400" /> :
-                                                <UtensilsCrossed className="h-5 w-5 text-red-400" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-mono text-sm text-gray-400">#{o.id.slice(0, 10)}</span>
-                                            <span className="text-sm font-medium capitalize text-gray-100">{o.orderType.replace("_", " ")}</span>
-                                            <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(o.status)}`}>
-                                                {(o.status || 'pending').replace(/_/g, ' ')}
-                                            </span>
+                                <div key={o.id} className="group">
+                                    <div 
+                                        className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors cursor-pointer"
+                                        onClick={() => setExpandedOrderId(expandedOrderId === o.id ? null : o.id)}
+                                    >
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${o.orderType === 'grocery' ? 'bg-green-500/15' :
+                                            o.orderType === 'street_food' ? 'bg-orange-500/15' : 'bg-red-500/15'
+                                            }`}>
+                                            {o.orderType === 'grocery' ? <ShoppingBasket className="h-5 w-5 text-green-400" /> :
+                                                o.orderType === 'street_food' ? <Sandwich className="h-5 w-5 text-orange-400" /> :
+                                                    <UtensilsCrossed className="h-5 w-5 text-red-400" />}
                                         </div>
-                                        {o.deliveryAddress && <p className="text-sm text-gray-500 mt-1 truncate">{o.deliveryAddress}</p>}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-mono text-sm text-gray-400">#{o.id.slice(0, 10)}</span>
+                                                <span className="text-sm font-medium capitalize text-gray-100">{o.orderType.replace("_", " ")}</span>
+                                                <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(o.status)}`}>
+                                                    {(o.status || 'pending').replace(/_/g, ' ')}
+                                                </span>
+                                            </div>
+                                            {o.user && <p className="text-sm text-gray-300 mt-1 truncate font-medium">{o.user.username} {o.user.phone ? `(${o.user.phone})` : ''}</p>}
+                                            {o.provider && <p className="text-xs text-blue-400 mt-0.5 truncate">{o.provider.businessName}</p>}
+                                            {o.deliveryAddress && <p className="text-xs text-gray-500 mt-0.5 truncate">{o.deliveryAddress}</p>}
+                                        </div>
+                                        <div className="text-right shrink-0 flex items-center gap-3">
+                                            <div>
+                                                {o.amount && <p className="text-lg font-bold text-gray-100">₹{parseFloat(o.amount).toFixed(0)}</p>}
+                                                <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(o.createdAt)}</p>
+                                            </div>
+                                            <div className="text-gray-500 group-hover:text-gray-300 transition-colors">
+                                                {expandedOrderId === o.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        {o.amount && <p className="text-lg font-bold text-gray-100">₹{parseFloat(o.amount).toFixed(0)}</p>}
-                                        <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(o.createdAt)}</p>
-                                    </div>
+                                    
+                                    {/* Expandable Order Details */}
+                                    {expandedOrderId === o.id && (
+                                        <div className="bg-black/20 border-t border-white/5 px-6 py-4">
+                                            <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                                                <Package className="h-4 w-4 text-gray-500" /> Order Items ({o.items?.length || 0})
+                                            </h4>
+                                            
+                                            {!o.items || o.items.length === 0 ? (
+                                                <p className="text-sm text-gray-500 italic">No items details available.</p>
+                                            ) : (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {o.items.map((item, idx) => (
+                                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                                            <div className="w-12 h-12 rounded-md bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10">
+                                                                {item.imageUrl ? (
+                                                                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <ImageIcon className="h-5 w-5 text-gray-600" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h5 className="text-sm font-medium text-gray-200 truncate">{item.name}</h5>
+                                                                <div className="flex items-center justify-between mt-1">
+                                                                    <span className="text-xs text-gray-400">Qty: {item.quantity}</span>
+                                                                    <span className="text-xs font-semibold text-gray-300">₹{parseFloat(item.price as unknown as string).toFixed(2)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
