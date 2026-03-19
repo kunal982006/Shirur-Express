@@ -146,14 +146,10 @@ export default function DeleteAccount() {
                                         <FormItem>
                                             <FormLabel>Registered Phone Number <span className="text-destructive">*</span></FormLabel>
                                             <FormControl>
-                                                <div className="flex relative">
-                                                    <div className="flex items-center justify-center px-3 border rounded-l-md bg-muted text-muted-foreground text-sm font-medium border-r-0">
-                                                        +91
-                                                    </div>
+                                                <div className="flex relative mt-2">
                                                     <Input
-                                                        placeholder="9876543210"
+                                                        placeholder="Enter registered mobile number"
                                                         {...field}
-                                                        className="rounded-l-none"
                                                         maxLength={10}
                                                         inputMode="numeric"
                                                         pattern="[0-9]*"

@@ -250,6 +250,7 @@ export const groceryOrders = pgTable("grocery_orders", {
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
   status: text("status").default("pending"),
+  paymentMethod: text("payment_method").default("online"),
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
   razorpaySignature: text("razorpay_signature"),
@@ -324,7 +325,7 @@ export const insertBookingSchema = createInsertSchema(bookings).pick({
   userAddress: true, userPhone: true, notes: true, isUrgent: true, providerId: true,
 });
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
-  items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true,
+  items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true, paymentMethod: true,
 });
 export const insertRentalPropertySchema = createInsertSchema(rentalProperties).pick({
   listingType: true, title: true, description: true, propertyType: true, rent: true, area: true,
@@ -520,6 +521,7 @@ export const streetFoodOrders = pgTable("street_food_orders", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
   status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, out_for_delivery, delivered, declined, cancelled
+  paymentMethod: text("payment_method").default("online"),
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
   deliveryOtp: text("delivery_otp"),
@@ -531,7 +533,7 @@ export const streetFoodOrders = pgTable("street_food_orders", {
 });
 
 export const insertStreetFoodOrderSchema = createInsertSchema(streetFoodOrders).pick({
-  items: true, totalAmount: true, deliveryAddress: true, providerId: true,
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true,
 });
 
 export type StreetFoodOrder = typeof streetFoodOrders.$inferSelect;
@@ -546,6 +548,7 @@ export const restaurantOrders = pgTable("restaurant_orders", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text("delivery_address").notNull(),
   status: text("status").default("pending"), // pending, accepted, preparing, ready_for_pickup, picked_up, out_for_delivery, delivered, declined, cancelled
+  paymentMethod: text("payment_method").default("online"),
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
   deliveryOtp: text("delivery_otp"),
@@ -557,7 +560,7 @@ export const restaurantOrders = pgTable("restaurant_orders", {
 });
 
 export const insertRestaurantOrderSchema = createInsertSchema(restaurantOrders).pick({
-  items: true, totalAmount: true, deliveryAddress: true, providerId: true,
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true,
 });
 
 export type RestaurantOrder = typeof restaurantOrders.$inferSelect;

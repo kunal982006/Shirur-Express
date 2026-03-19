@@ -367,7 +367,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Contact Phone</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="+91..." {...field} />
+                                                <Input placeholder="Enter phone number..." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

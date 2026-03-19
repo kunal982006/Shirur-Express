@@ -73,7 +73,7 @@ export default function CallRequestModal({
       providerId: provider.id,
       callType: callTime,
       preferredTimeSlot: callTime === "schedule" ? selectedTimeSlot : null,
-      customerPhone: "+91 9876543210", // In real app, this would come from user profile
+      customerPhone: "9876543210", // In real app, this would come from user profile
     };
 
     callRequestMutation.mutate(requestData);

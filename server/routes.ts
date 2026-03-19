@@ -200,8 +200,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId!;
       const orderData = insertGroceryOrderSchema.parse(req.body);
       const order = await storage.createGroceryOrder({ ...orderData, userId });
-      // NOTE: Push notification moved to /api/payment/verify-signature
-      // Provider is notified ONLY after payment is verified successfully
+      
+      if (orderData.paymentMethod === 'cod') {
+        await sendOrderNotifications(order, 'grocery', order.id);
+      }
 
       res.status(201).json(order);
     } catch (error: any) {
@@ -223,8 +225,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
       console.log("Created Street Food Order:", order); // DEBUG LOG
 
-      // NOTE: Push notification moved to /api/payment/verify-signature
-      // Provider is notified ONLY after payment is verified successfully
+      if (orderData.paymentMethod === 'cod') {
+        await sendOrderNotifications(order, 'street_food', order.id);
+      }
 
       res.status(201).json(order);
     } catch (error: any) {
@@ -276,12 +279,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Username/Phone and password are required." });
       }
-      const user = await storage.getUserByUsername(username.toLowerCase());
+
+      const input = username.trim();
+      let user;
+
+      // Check if input is a 10-digit phone number
+      if (/^\d{10}$/.test(input)) {
+        user = await storage.getUserByPhone(input);
+      } 
+      
+      // Fallback: Check if input is a username
+      if (!user) {
+        user = await storage.getUserByUsername(input.toLowerCase());
+      }
+
       if (!user) {
         await bcrypt.compare("dummyPassword", "$2b$10$abcdefghijklmnopqrstuv");
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
@@ -1904,6 +1920,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- HELPER FUNCTION FOR ORDER NOTIFICATIONS ---
+  async function sendOrderNotifications(updatedOrder: any, orderType: string, database_order_id: string) {
+    try {
+      const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
+        : orderType === 'street_food' ? '🌮 Street Food'
+          : '🛒 Grocery';
+
+      if (orderType === 'street_food') {
+        const sfAdmin = await storage.getUserByUsername('streetfood_admin');
+        if (sfAdmin) {
+          console.log(`[FCM] New Order Notification! Sending Ring to streetfood_admin`);
+          const allTokens: string[] = [];
+          if (sfAdmin.fcmTokens && Array.isArray(sfAdmin.fcmTokens)) {
+            allTokens.push(...sfAdmin.fcmTokens);
+          } else if (sfAdmin.fcmToken) {
+            allTokens.push(sfAdmin.fcmToken);
+          }
+          const uniqueTokens = [...new Set(allTokens)];
+          const sfItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
+          const sfItemsSummary = sfItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (sfItems.length > 3 ? ` +${sfItems.length - 3} more` : '');
+          const sfAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+          const orderUserId = updatedOrder?.userId;
+          let sfCustomer;
+          let sfPhone = 'N/A';
+          if (orderUserId) {
+              sfCustomer = await storage.getUser(orderUserId);
+              sfPhone = sfCustomer?.phone || 'N/A';
+          }
+
+          for (const deviceToken of uniqueTokens) {
+            await sendPushNotification(deviceToken, {
+              type: 'ORDER_REQUEST',
+              title: `${orderLabel} Order — ₹${sfAmount} (COD/Paid)`,
+              body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+              data: {
+                orderId: database_order_id,
+                orderType: orderType || 'street_food',
+                customerName: sfCustomer?.username || 'Customer',
+                customerPhone: sfPhone,
+                amount: sfAmount,
+                itemsSummary: sfItemsSummary || 'Street food order',
+                dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                navigateTo: '/provider/dashboard'
+              }
+            });
+          }
+        }
+      } else {
+        const providerId = updatedOrder?.providerId;
+        if (providerId) {
+          const provider = await storage.getServiceProvider(providerId);
+          if (provider && provider.user) {
+            console.log(`[FCM] New Order Notification! Sending Ring to ${provider.businessName}`);
+            const allTokens: string[] = [];
+            if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+              allTokens.push(...provider.user.fcmTokens);
+            } else if (provider.user.fcmToken) {
+              allTokens.push(provider.user.fcmToken);
+            }
+            const uniqueTokens = [...new Set(allTokens)];
+            const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
+            const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
+            const orderAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+            
+            const orderUserId = updatedOrder?.userId;
+            let orderCustomer;
+            let orderPhone = 'N/A';
+            if (orderUserId) {
+                orderCustomer = await storage.getUser(orderUserId);
+                orderPhone = orderCustomer?.phone || 'N/A';
+            }
+
+            for (const deviceToken of uniqueTokens) {
+              await sendPushNotification(deviceToken, {
+                type: 'ORDER_REQUEST',
+                title: `${orderLabel} Order — ₹${orderAmount} (COD/Paid)`,
+                body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+                data: {
+                  orderId: database_order_id,
+                  orderType: orderType || 'grocery',
+                  customerName: orderCustomer?.username || 'Customer',
+                  customerPhone: orderPhone,
+                  amount: orderAmount,
+                  itemsSummary: itemsSummary || `${orderLabel} order`,
+                  dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                  navigateTo: '/provider/dashboard'
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (fcmError) {
+      console.error('[FCM Error] Post-payment notification failed (non-critical):', fcmError);
+    }
+    
+    try {
+      const adminOrderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
+        : orderType === 'street_food' ? '🌮 Street Food'
+          : '🛒 Grocery';
+      let adminProviderName = 'N/A';
+      if (orderType === 'street_food') {
+        adminProviderName = 'Street Food Admin';
+      } else if (updatedOrder?.providerId) {
+        const prov = await storage.getServiceProvider(updatedOrder.providerId);
+        adminProviderName = prov?.businessName || 'Unknown';
+      }
+      const adminAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+      const adminItems = Array.isArray(updatedOrder?.items)
+        ? updatedOrder.items.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (updatedOrder.items.length > 3 ? ` +${updatedOrder.items.length - 3} more` : '')
+        : '';
+      await notifyAdmin({
+        title: `${adminOrderLabel} Order — ₹${adminAmount}`,
+        body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}`,
+        data: {
+          orderId: database_order_id,
+          orderType: orderType || 'grocery',
+          providerName: adminProviderName,
+          amount: adminAmount,
+          itemsSummary: adminItems || `${adminOrderLabel} order`,
+          dropAddress: updatedOrder?.deliveryAddress || 'N/A',
+        }
+      });
+    } catch (adminErr) {
+      console.error('[Admin Notif] Order admin alert failed:', adminErr);
+    }
+  }
+
   // --- PAYMENT VERIFICATION ROUTE (GENERIC) ---
   app.post("/api/payment/verify-signature", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
@@ -2134,9 +2278,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createRestaurantOrder({ ...orderData, userId });
       console.log("Created Restaurant Order:", order);
 
-      // NOTE: Push notification moved to /api/payment/verify-signature
-      // Provider is notified ONLY after payment is verified successfully
-      // -----------------------------------
+      if (orderData.paymentMethod === 'cod') {
+        await sendOrderNotifications(order, 'restaurant', order.id);
+      }
 
       res.status(201).json(order);
     } catch (error: any) {
@@ -3476,11 +3620,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ADMIN STREET FOOD MANAGEMENT
   // =========================================
 
+  // Helper: resolve real street-food category UUID
+  async function getStreetFoodCategoryId(): Promise<string> {
+    const cat = await db.query.serviceCategories.findFirst({
+      where: eq(serviceCategories.slug, "street-food")
+    });
+    return cat?.id || "street_food"; // fallback to literal if category missing
+  }
+
+  // One-time auto-migration: fix vendors that were created with wrong categoryId AND clean up old vendors
+  (async () => {
+    try {
+      const realId = await getStreetFoodCategoryId();
+
+      // Step 1: Fix wrong categoryId ('street_food' literal → real UUID)
+      if (realId !== "street_food") {
+        const result = await db.update(serviceProviders)
+          .set({ categoryId: realId })
+          .where(eq(serviceProviders.categoryId, "street_food"))
+          .returning();
+        if (result.length > 0) {
+          console.log(`[Migration] Fixed categoryId for ${result.length} street food vendor(s): 'street_food' → '${realId}'`);
+        }
+      }
+
+      // Step 2: Remove old street food vendors not owned by streetfood_admin
+      const adminUser = await db.query.users.findFirst({
+        where: eq(users.username, "streetfood_admin")
+      });
+
+      if (adminUser) {
+        // Get all street food vendors NOT owned by the admin
+        const oldVendors = await db.query.serviceProviders.findMany({
+          where: and(
+            eq(serviceProviders.categoryId, realId),
+            sql`${serviceProviders.userId} != ${adminUser.id}`
+          )
+        });
+
+        if (oldVendors.length > 0) {
+          console.log(`[Cleanup] Found ${oldVendors.length} old street food vendor(s) not owned by streetfood_admin. Removing...`);
+          for (const vendor of oldVendors) {
+            // Delete their menu items first
+            await db.delete(streetFoodItems).where(eq(streetFoodItems.providerId, vendor.id));
+            // Delete the vendor profile
+            await db.delete(serviceProviders).where(eq(serviceProviders.id, vendor.id));
+            console.log(`[Cleanup] Deleted old vendor: ${vendor.businessName} (${vendor.id})`);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[Migration] Street food migration/cleanup skipped:", err);
+    }
+  })();
+
   // Get all street food vendors
   app.get("/api/admin/street-food/vendors", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
+      const categoryId = await getStreetFoodCategoryId();
       const vendors = await db.query.serviceProviders.findMany({
-        where: eq(serviceProviders.categoryId, "street_food"),
+        where: eq(serviceProviders.categoryId, categoryId),
         orderBy: (providers, { desc }) => [desc(providers.createdAt)]
       });
       res.json(vendors);
@@ -3499,9 +3698,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const adminUserId = req.userId;
       if (!adminUserId) return res.status(401).json({ message: "Admin user ID not found" });
 
+      const categoryId = await getStreetFoodCategoryId();
+
       const [newVendor] = await db.insert(serviceProviders).values({
         userId: adminUserId.toString(),
-        categoryId: "street_food",
+        categoryId,
         businessName: name,
         address: "Added via Admin Panel", // Default required field
         isVerified: true,

@@ -197,7 +197,7 @@ export default function BookBeauty() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Phone</FormLabel>
-                                                <FormControl><Input placeholder="+91..." {...field} /></FormControl>
+                                                <FormControl><Input placeholder="Enter phone number..." {...field} /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

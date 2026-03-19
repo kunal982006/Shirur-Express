@@ -781,9 +781,13 @@ const BookingsManager: React.FC<{
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
                     <span>🎂 Order #{order.id.slice(0, 8)}</span>
-                    <Badge className="bg-orange-600">
-                      {order.status?.toUpperCase() || "PENDING"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {order.paymentMethod === 'cod' && <Badge variant="outline" className="text-orange-600 border-orange-600 bg-orange-50 dark:bg-orange-950/30">COD</Badge>}
+                      {order.paymentMethod === 'online' && <Badge variant="outline" className="text-blue-600 border-blue-600 bg-blue-50 dark:bg-blue-950/30">PAID Online</Badge>}
+                      <Badge className="bg-orange-600">
+                        {order.status?.toUpperCase() || "PENDING"}
+                      </Badge>
+                    </div>
                   </CardTitle>
                   <CardDescription>
                     Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}
@@ -834,9 +838,13 @@ const BookingsManager: React.FC<{
                 <CardHeader>
                   <CardTitle className="flex justify-between items-center">
                     <span>Order #{order.id.slice(0, 8)}</span>
-                    <Badge className="bg-green-600">
-                      {order.status?.toUpperCase() || "CONFIRMED"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {order.paymentMethod === 'cod' && <Badge variant="outline" className="text-orange-600 border-orange-600 bg-orange-50 dark:bg-orange-950/30">COD</Badge>}
+                      {order.paymentMethod === 'online' && <Badge variant="outline" className="text-blue-600 border-blue-600 bg-blue-50 dark:bg-blue-950/30">PAID Online</Badge>}
+                      <Badge className="bg-green-600">
+                        {order.status?.toUpperCase() || "CONFIRMED"}
+                      </Badge>
+                    </div>
                   </CardTitle>
                   <CardDescription>
                     Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}

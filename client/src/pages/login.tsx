@@ -21,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
-  username: z.string().min(1, { message: "Username is required." }),
+  username: z.string().min(1, { message: "Username or Phone Number is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
@@ -98,9 +98,9 @@ const Login: React.FC = () => {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Username or Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your username" autoComplete="off" {...field} />
+                    <Input placeholder="Enter username or 10-digit phone" autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

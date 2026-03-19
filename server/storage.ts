@@ -358,6 +358,10 @@ export class DatabaseStorage implements IStorage {
     return db.query.users.findFirst({ where: eq(users.username, username) });
   }
 
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    return db.query.users.findFirst({ where: eq(users.phone, phone) });
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     return db.query.users.findFirst({ where: eq(users.email, email) });
   }

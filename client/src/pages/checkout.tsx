@@ -58,6 +58,8 @@ export default function Checkout() {
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
   const { toast } = useToast();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [codConfirmed, setCodConfirmed] = useState(false);
 
   // --- LOCATION & FEE STATE ---
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -247,6 +249,7 @@ export default function Checkout() {
           totalAmount: total.toFixed(2), // Schema expects totalAmount
           deliveryAddress: values.deliveryAddress,
           providerId: isRestaurant ? items[0].providerId : undefined, // Restaurant order needs providerId at root
+          paymentMethod, // NEW
           // runnerId will be assigned by backend
         };
       } else {
@@ -259,6 +262,7 @@ export default function Checkout() {
           total: total.toFixed(2),
           deliveryAddress: values.deliveryAddress,
           providerId: items[0]?.providerId || null,
+          paymentMethod, // NEW
         };
       }
 
@@ -287,6 +291,16 @@ export default function Checkout() {
       }
 
       const databaseOrderId = dbOrder.id;
+
+      if (paymentMethod === "cod") {
+        toast({
+          title: "✅ Order Placed!",
+          description: "Your Cash on Delivery order has been successfully placed.",
+        });
+        clearCart();
+        setLocation("/order-success");
+        return;
+      }
 
       // 3. Ab Razorpay ka order create karo
       const rzpOrderResponse = await api.post("/payment/create-order", {
@@ -582,6 +596,62 @@ export default function Checkout() {
 
               {/* Right Column: Price Summary & Pay Button */}
               <div>
+                <Card className="mb-4">
+                  <CardHeader>
+                    <CardTitle>Payment Method</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-4">
+                      <Button
+                        type="button"
+                        variant={paymentMethod === "online" ? "default" : "outline"}
+                        className="flex-1"
+                        onClick={() => setPaymentMethod("online")}
+                      >
+                        💳 Pay Online
+                      </Button>
+                      <div className="flex-1 flex flex-col gap-1">
+                        <Button
+                          type="button"
+                          variant={paymentMethod === "cod" ? "default" : "outline"}
+                          className="w-full"
+                          disabled={total > 500}
+                          onClick={() => {
+                            if (total <= 500) setPaymentMethod("cod");
+                          }}
+                        >
+                          💵 Cash on Delivery
+                        </Button>
+                        {total > 500 && (
+                          <span className="text-[10px] text-red-500 text-center font-medium leading-tight">
+                            Available for orders up to ₹500 only.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {paymentMethod === "cod" && (
+                      <div className="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg border border-orange-200 dark:border-orange-800 space-y-3 mt-4">
+                        <p className="text-sm text-orange-800 dark:text-orange-200 font-medium flex items-start gap-2">
+                          <AlertCircle className="h-5 w-5 shrink-0" />
+                          To prevent accidental orders, please confirm:
+                        </p>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            checked={codConfirmed}
+                            onChange={(e) => setCodConfirmed(e.target.checked)}
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            I confirm I want to place this order using Cash on Delivery. I am ready to pay cash when the order arrives.
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
                 <Card className="sticky top-24">
                   <CardHeader>
                     <CardTitle>Price Summary</CardTitle>
@@ -624,7 +694,7 @@ export default function Checkout() {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || (!useManualAddress && (!isDeliverable || !userLocation))}
+                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || (!useManualAddress && (!isDeliverable || !userLocation)) || (paymentMethod === "cod" && !codConfirmed)}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
@@ -635,6 +705,8 @@ export default function Checkout() {
                         "Not Deliverable"
                       ) : !useManualAddress && !userLocation ? (
                         "Detect Location to Pay"
+                      ) : paymentMethod === "cod" ? (
+                        `Confirm COD Order (₹${total.toFixed(2)})`
                       ) : (
                         `Pay Securely (₹${total.toFixed(2)})`
                       )}

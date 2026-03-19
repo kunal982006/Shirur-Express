@@ -66,10 +66,7 @@ export default function Settings() {
     // Update form values when user data loads
     useEffect(() => {
         if (user) {
-            // Strip +91 or 91 if present for display
             let phone = user.phone || "";
-            if (phone.startsWith("+91")) phone = phone.slice(3);
-            else if (phone.startsWith("91") && phone.length === 12) phone = phone.slice(2);
             // clean non-digits just in case
             phone = phone.replace(/\D/g, '');
 
@@ -210,13 +207,9 @@ export default function Settings() {
                                             <FormLabel>Phone Number</FormLabel>
                                             <FormControl>
                                                 <div className="flex relative">
-                                                    <div className="flex items-center justify-center px-3 border rounded-l-md bg-muted text-muted-foreground text-sm font-medium border-r-0">
-                                                        +91
-                                                    </div>
                                                     <Input
                                                         placeholder="9876543210"
                                                         {...field}
-                                                        className="rounded-l-none"
                                                         maxLength={10}
                                                         inputMode="numeric"
                                                         pattern="[0-9]*"

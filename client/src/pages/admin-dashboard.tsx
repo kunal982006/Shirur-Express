@@ -88,6 +88,7 @@ interface Order {
     user?: { username: string; phone: string | null };
     provider?: { businessName: string };
     items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
+    paymentMethod?: string | null;
 }
 
 interface Booking {
@@ -677,6 +678,16 @@ export default function AdminDashboard() {
                                                 <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(o.status)}`}>
                                                     {(o.status || 'pending').replace(/_/g, ' ')}
                                                 </span>
+                                                {o.paymentMethod === 'cod' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold uppercase tracking-wider">
+                                                        COD
+                                                    </span>
+                                                )}
+                                                {o.paymentMethod === 'online' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                                                        PAID Online
+                                                    </span>
+                                                )}
                                             </div>
                                             {o.user && <p className="text-sm text-gray-300 mt-1 truncate font-medium">{o.user.username} {o.user.phone ? `(${o.user.phone})` : ''}</p>}
                                             {o.provider && <p className="text-xs text-blue-400 mt-0.5 truncate">{o.provider.businessName}</p>}

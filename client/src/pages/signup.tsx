@@ -204,13 +204,9 @@ export default function Signup() {
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
                       <div className="flex">
-                        <div className="flex items-center justify-center px-3 border rounded-l-md bg-muted text-muted-foreground text-sm font-medium border-r-0">
-                          +91
-                        </div>
                         <Input
                           placeholder="9876543210"
                           {...field}
-                          className="rounded-l-none"
                           maxLength={10}
                           inputMode="numeric"
                           pattern="[0-9]*"
