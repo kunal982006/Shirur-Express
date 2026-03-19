@@ -1,0 +1,5 @@
+﻿Searching for parlors by name...
+Found Providers:
+- ID: pdkw5eetm3yy5pblcs1gqexv, Name: Unique Salon, CategoryID: 8f9a5743-b2f7-4e4f-ba89-06ac496de09c
+- ID: ae0afs4sp07891gj3f8sujrr, Name: Raykar unisex salon, CategoryID: 8f9a5743-b2f7-4e4f-ba89-06ac496de09c
+- ID: vvahx703oxsd24t0iyvbvjyw, Name: Sneh hair& beauty , CategoryID: 8f9a5743-b2f7-4e4f-ba89-06ac496de09c

@@ -1,0 +1,53 @@
+﻿Checking categories...
+All Categories: [
+  {
+    id: '1da6c0b7-f920-4468-8d0c-5bcf2fae55ad',
+    name: 'Plumber',
+    slug: 'plumber'
+  },
+  {
+    id: '8f9a5743-b2f7-4e4f-ba89-06ac496de09c',
+    name: 'Beauty Parlor',
+    slug: 'beauty'
+  },
+  {
+    id: 'ccd00d82-f647-4da6-b295-e8c1d4abec26',
+    name: 'Cake Shop',
+    slug: 'cake-shop'
+  },
+  {
+    id: '64e16fb1-7ade-47b0-a12f-2400c0fdde7b',
+    name: 'Grocery',
+    slug: 'grocery'
+  },
+  {
+    id: '0a5a40cb-2d52-49cb-b584-eee3392c22ee',
+    name: 'Rental',
+    slug: 'rental'
+  },
+  {
+    id: '7f0b4ead-2756-4ace-8fd8-f76fb796f343',
+    name: 'Street Food',
+    slug: 'street-food'
+  },
+  {
+    id: '6810f39a-bceb-417a-b2ca-9555b99856da',
+    name: 'Restaurants',
+    slug: 'restaurants'
+  },
+  {
+    id: '1b9d3dde-8d3f-44a6-9de9-75de6650fa29',
+    name: 'Technician & Electrician',
+    slug: 'electrician'
+  },
+  {
+    id: 'g0ymzik37l0bhk2zagdy7gl8',
+    name: 'Delivery Partner',
+    slug: 'delivery-partner'
+  }
+]
+Found Beauty Category: Beauty Parlor (ID: 8f9a5743-b2f7-4e4f-ba89-06ac496de09c)
+Providers in Beauty Category:
+- ID: pdkw5eetm3yy5pblcs1gqexv, Name: Unique Salon
+- ID: ae0afs4sp07891gj3f8sujrr, Name: Raykar unisex salon
+- ID: vvahx703oxsd24t0iyvbvjyw, Name: Sneh hair& beauty 
