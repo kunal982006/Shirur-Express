@@ -71,7 +71,7 @@ export default function Header() {
 
   // Check if we're on the homepage - only hide top header, keep bottom nav
   const isHomePage = location === "/" || location === "";
-  const hideTopHeader = isHomePage || location.startsWith("/admin");
+  const hideTopHeader = isHomePage || location.startsWith("/admin") || location.startsWith("/search");
 
   return (
     <>

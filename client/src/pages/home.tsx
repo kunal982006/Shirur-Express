@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api"; // ADDED
@@ -66,10 +66,11 @@ const services = [
 
 export default function Home() {
   const [, navigate] = useLocation();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [selectedService, setSelectedService] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [location, setLocation] = useState("Select your location");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -115,13 +116,11 @@ export default function Home() {
             ? data.suggestions 
             : (Array.isArray(data) ? data : []);
           setSuggestions(suggestionsArray);
-          setShowSuggestions(true);
         } catch (error) {
           console.error("Failed to fetch suggestions", error);
         }
       } else {
         setSuggestions([]);
-        setShowSuggestions(false);
       }
     }, 300); // 300ms debounce
 
@@ -137,7 +136,7 @@ export default function Home() {
 
   const handleSuggestionClick = (suggestion: string) => {
     setSelectedService(suggestion);
-    setShowSuggestions(false);
+    setIsFocused(false);
     // Optional: Auto search on click?
     // navigate(`/search?term=${encodeURIComponent(suggestion)}&location=${encodeURIComponent(location)}`);
   };
@@ -281,23 +280,22 @@ export default function Home() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
+              ref={inputRef}
               type="text"
               placeholder="Search for Services or Products (Electrician, Cake, Rental...)"
               className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
               value={selectedService}
               onChange={handleInputChange}
-              onFocus={() => {
-                if (selectedService.length > 0) setShowSuggestions(true);
-              }}
+              onFocus={() => setIsFocused(true)}
               onBlur={() => {
                 // Delay hiding suggestions to allow clicking them
-                setTimeout(() => setShowSuggestions(false), 200);
+                setTimeout(() => setIsFocused(false), 200);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearch();
               }}
             />
-            {showSuggestions && suggestions.length > 0 && (
+            {isFocused && suggestions.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                 <ul className="py-1">
                   {suggestions.map((suggestion, index) => (

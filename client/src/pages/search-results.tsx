@@ -24,7 +24,7 @@ export default function SearchResults() {
     
     // Autocomplete state
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const [suggestionDidYouMean, setSuggestionDidYouMean] = useState<string | null>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -55,14 +55,14 @@ export default function SearchResults() {
                     const data = await res.json();
                     setSuggestions(data.suggestions || []);
                     setSuggestionDidYouMean(data.didYouMean || null);
-                    setShowSuggestions(true);
+                    // Dropdown visibility is strictly controlled by `isFocused` state
                     setHighlightedIndex(-1);
                 } catch (e) {
                     console.error("Suggestions fetch failed:", e);
                 }
             } else {
                 setSuggestions([]);
-                setShowSuggestions(false);
+                setIsFocused(false);
                 setSuggestionDidYouMean(null);
             }
         }, 300);
@@ -72,7 +72,7 @@ export default function SearchResults() {
     const handleSearch = useCallback((term?: string) => {
         const finalTerm = term || searchTerm;
         if (finalTerm.trim()) {
-            setShowSuggestions(false);
+            setIsFocused(false);
             setLocation(`/search?term=${encodeURIComponent(finalTerm)}`);
         }
     }, [searchTerm, setLocation]);
@@ -83,7 +83,7 @@ export default function SearchResults() {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (!showSuggestions || suggestions.length === 0) {
+        if (!isFocused || suggestions.length === 0) {
             if (e.key === 'Enter') handleSearch();
             return;
         }
@@ -98,13 +98,13 @@ export default function SearchResults() {
             if (highlightedIndex >= 0) {
                 const selected = suggestions[highlightedIndex];
                 setSearchTerm(selected);
-                setShowSuggestions(false);
+                setIsFocused(false);
                 handleSearch(selected);
             } else {
                 handleSearch();
             }
         } else if (e.key === 'Escape') {
-            setShowSuggestions(false);
+            setIsFocused(false);
         }
     };
 
@@ -144,14 +144,14 @@ export default function SearchResults() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                             placeholder="Search for food, services, grocery..."
                             className="pl-9 h-10 w-full bg-gray-100 border-none focus-visible:ring-1 focus-visible:ring-primary"
                             autoFocus
                         />
                         {/* Autocomplete Suggestions Dropdown */}
-                        {showSuggestions && suggestions.length > 0 && (
+                        {isFocused && suggestions.length > 0 && (
                             <div 
                                 ref={suggestionsRef}
                                 className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-auto"
@@ -180,7 +180,7 @@ export default function SearchResults() {
                                             }`}
                                             onMouseDown={() => {
                                                 setSearchTerm(suggestion);
-                                                setShowSuggestions(false);
+                                                setIsFocused(false);
                                                 handleSearch(suggestion);
                                             }}
                                             onMouseEnter={() => setHighlightedIndex(index)}
