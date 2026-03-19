@@ -109,7 +109,12 @@ export default function Home() {
       if (selectedService.length > 2) {
         try {
           const res = await api.get(`/api/search/suggestions?q=${encodeURIComponent(selectedService)}`);
-          setSuggestions(res.data);
+          // New format: { suggestions: string[], didYouMean: string | null }
+          const data = res.data;
+          const suggestionsArray = Array.isArray(data?.suggestions) 
+            ? data.suggestions 
+            : (Array.isArray(data) ? data : []);
+          setSuggestions(suggestionsArray);
           setShowSuggestions(true);
         } catch (error) {
           console.error("Failed to fetch suggestions", error);

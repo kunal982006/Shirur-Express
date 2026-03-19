@@ -324,15 +324,16 @@ export interface IStorage {
   getPopularCakes(): Promise<CakeProduct[]>;
   searchItemsForAdmin(query: string, type: 'street_food' | 'restaurant' | 'cake'): Promise<any[]>;
   searchGlobal(query: string): Promise<{
-    services: ServiceCategory[];
-    restaurants: ServiceProvider[];
-    streetFood: StreetFoodItem[];
-    menuItems: RestaurantMenuItem[];
-    cakes: CakeProduct[];
-    grocery: GroceryProduct[];
-    rentals: RentalProperty[];
+    services: any[];
+    restaurants: any[];
+    streetFood: any[];
+    menuItems: any[];
+    cakes: any[];
+    grocery: any[];
+    rentals: any[];
+    didYouMean: string | null;
   }>;
-  searchSuggestions(query: string): Promise<string[]>;
+  searchSuggestions(query: string): Promise<{ suggestions: string[]; didYouMean: string | null }>;
   getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
 }
 
@@ -2237,26 +2238,192 @@ export class DatabaseStorage implements IStorage {
     return [];
   }
 
-  async searchGlobal(query: string) {
-    const lowerQuery = `%${query.toLowerCase()}%`;
-    const sanitizedQuery = query.trim();
+  // ===== ELASTIC / FUZZY SEARCH ENGINE =====
+  
+  // Comprehensive synonym dictionary for ALL services
+  // Maps common misspellings, alternate names, and aliases to canonical search terms
+  private readonly searchSynonyms: Record<string, string[]> = {
+    // --- FOOD ITEMS ---
+    'shawarma': ['shorma', 'sharma', 'shawrma', 'shwarma', 'shavrma', 'shaurma', 'showrma', 'shawrama'],
+    'chicken': ['chiken', 'chikken', 'chkin', 'chickan', 'chiken', 'chikin', 'chcken'],
+    'biryani': ['biriyani', 'biriani', 'briyani', 'bryani', 'biryni', 'biryanee', 'biriyanee', 'biryaniii'],
+    'paneer': ['panner', 'panir', 'paner', 'panneer', 'pneer'],
+    'samosa': ['samossa', 'somosa', 'samoosa', 'smosa'],
+    'momos': ['momo', 'momoz', 'momus', 'momoes'],
+    'naan': ['nan', 'naaan', 'nann'],
+    'chapati': ['chapathi', 'chapatti', 'chapti', 'chapathi'],
+    'roti': ['rotii', 'rooti', 'rotti'],
+    'pulao': ['pulav', 'pilaf', 'pilau', 'pulau'],
+    'dosa': ['dhosa', 'dosai', 'dhosai'],
+    'idli': ['idly', 'idaly', 'idlee'],
+    'manchurian': ['manchurean', 'manchoorian', 'manchurien', 'manchurain'],
+    'gobi': ['gobhi', 'gobbi', 'gobhee'],
+    'kebab': ['kabab', 'kebap', 'kabob', 'kababs'],
+    'fried rice': ['freid rice', 'frid rice', 'friedrice', 'fry rice'],
+    'pizza': ['piza', 'pizaa', 'pizzza', 'piazza'],
+    'burger': ['burgar', 'berger', 'burgur', 'burgerr'],
+    'sandwich': ['sandwitch', 'sandwish', 'sandwhich', 'sanwich', 'sandwch'],
+    'pasta': ['psta', 'pastaa'],
+    'noodles': ['noodels', 'nudels', 'noodls', 'noodless'],
+    'tandoori': ['tanduri', 'tandoory', 'tandori', 'tandhori'],
+    'malai': ['malay', 'malaii', 'mlai'],
+    'tikka': ['tika', 'tikaa', 'tikha'],
+    'masala': ['masla', 'masalla', 'msala'],
+    'dal': ['daal', 'dhal', 'dhaal', 'dall'],
+    'paratha': ['parantha', 'pratha', 'paratha', 'partha', 'paratha'],
+    'thali': ['thaali', 'thalli', 'thaly'],
+    'chole': ['chhole', 'chola', 'cholay', 'choley'],
+    'pav bhaji': ['pavbhaji', 'pav baji', 'pavbaji'],
+    'vada pav': ['vadapav', 'vada paw', 'vadapaw', 'wada pav'],
+    'poha': ['pohe', 'pohaa', 'pohay'],
+    'bhel': ['bhell', 'bhel puri', 'bhelpuri'],
+    'pani puri': ['panipuri', 'pani poori', 'golgappa', 'gol gappa', 'gol gappe'],
+    'chaat': ['chat', 'chatt', 'chaaat'],
+    'lassi': ['lasi', 'lassie', 'lasee'],
+    'kulfi': ['kulfy', 'kulfee', 'kulphee'],
+    'gulab jamun': ['gulabjamun', 'gulab jamoon', 'gulab jaman'],
+    'jalebi': ['jaleby', 'jilebi', 'jalebii'],
+    'rasgulla': ['rasogulla', 'rasgula', 'rosogulla'],
+    'kheer': ['khir', 'khear', 'kher'],
+    'milkshake': ['milk shake', 'milkshek', 'milkshake'],
+    'juice': ['juce', 'juuce', 'joos'],
+    'roll': ['rool', 'rol'],
+    'wrap': ['warp', 'wrrap', 'raap'],
+    'frankie': ['franky', 'frankee', 'frankii'],
+    'schezwan': ['shezwan', 'schezuan', 'szechuan', 'sezwan'],
+    'mughlai': ['mughlaii', 'mughlae', 'mughlay'],
+    'cake': ['cakee', 'kake', 'caek'],
+    'pastry': ['pastri', 'pastree', 'pastery'],
+    'brownie': ['brownee', 'browny', 'brownii'],
+    'cookie': ['coookie', 'cooky', 'cokie'],
+    'ice cream': ['icecream', 'ice creem', 'icecrem'],
+    'chocolate': ['choclate', 'chocklate', 'chocolat', 'chocholate', 'chocalate'],
+    'vanilla': ['vanila', 'vanilla', 'vanela'],
+    'strawberry': ['stawberry', 'strawbery', 'strabery'],
+    'butterscotch': ['buterscotch', 'butterscoch', 'butterscoch'],
+    
+    // --- HOME SERVICES ---
+    'electrician': ['electrican', 'electritian', 'electrian', 'eletricain', 'electricin', 'electrisan', 'bijli wala', 'bijliwala'],
+    'plumber': ['plumer', 'plumber', 'plummber', 'plamer', 'plumbar', 'nalwala', 'nal wala'],
+    'carpenter': ['carpanter', 'carpeter', 'carpnter', 'carpinter', 'mistri'],
+    'painter': ['paintar', 'paynter', 'panther', 'penter', 'pentar'],
+    'pest control': ['pestcontrol', 'pest contol', 'pest kontrol', 'kide marne wala'],
+    'ac repair': ['ac repir', 'ac ripar', 'ac repar', 'air conditioner repair', 'ac service'],
+    'appliance repair': ['appliance repir', 'appliance ripar', 'appliance repar'],
+    
+    // --- BEAUTY / SALON ---
+    'beauty parlor': ['beauty parlour', 'beauty parlar', 'buty parlor', 'beauty salon', 'byuti parlar'],
+    'haircut': ['hair cut', 'harecut', 'harcut', 'baal katna'],
+    'facial': ['facal', 'fecial', 'ficial', 'fecal'],
+    'manicure': ['menicure', 'manikure', 'mannicure'],
+    'pedicure': ['pedicur', 'pedikure', 'paddikure'],
+    'waxing': ['waxin', 'vaxing', 'waksing'],
+    'threading': ['threding', 'threeding', 'thrading'],
+    'massage': ['masage', 'masaj', 'massage'],
+    'bridal': ['bridel', 'bridol', 'braidel', 'bridal makeup'],
+    'mehendi': ['mehndi', 'mehandi', 'mehandi', 'heena', 'henna'],
+    
+    // --- GROCERY ---
+    'grocery': ['grocerry', 'grocary', 'grosery', 'groosry', 'kirana'],
+    'vegetables': ['vegtables', 'vegatables', 'vegitables', 'sabji', 'sabzi'],
+    'fruits': ['fruts', 'froots', 'fuits', 'phal'],
+    'milk': ['milkk', 'doodh', 'dudh'],
+    'bread': ['bred', 'braed', 'pav'],
+    'rice': ['ryce', 'chawal', 'chaval'],
+    'flour': ['flowr', 'flor', 'atta', 'aata', 'maida'],
+    'sugar': ['suagar', 'suger', 'cheeni', 'chini'],
+    'oil': ['oyl', 'tel'],
+    'spices': ['spicees', 'masale', 'masalay'],
+    'eggs': ['egs', 'ande', 'egg'],
+    'butter': ['butar', 'buttar', 'makhan'],
+    
+    // --- RENTAL / PROPERTY ---
+    'rental': ['rentel', 'rantal', 'kiraya', 'rent'],
+    'apartment': ['appartment', 'apartmant', 'apartement', 'flat'],
+    'house': ['hous', 'ghar', 'home'],
+    'room': ['rom', 'ruum', 'kamra'],
+    'pg': ['paying guest', 'payingguest'],
+    'bhk': ['bedroom', 'bedrom'],
+  };
 
+  // Resolve a misspelled query to its canonical term(s)
+  private resolveSearchQuery(query: string): { resolvedQuery: string; didYouMean: string | null } {
+    const lowerQuery = query.toLowerCase().trim();
+    
+    // 1. Check if the query itself is a canonical term
+    if (this.searchSynonyms[lowerQuery]) {
+      return { resolvedQuery: lowerQuery, didYouMean: null };
+    }
+    
+    // 2. Check if the query matches any synonym
+    for (const [canonical, aliases] of Object.entries(this.searchSynonyms)) {
+      if (aliases.includes(lowerQuery)) {
+        return { resolvedQuery: canonical, didYouMean: canonical };
+      }
+    }
+    
+    // 3. Partial match — check if query is a substring of any synonym
+    for (const [canonical, aliases] of Object.entries(this.searchSynonyms)) {
+      for (const alias of aliases) {
+        if (alias.startsWith(lowerQuery) || lowerQuery.startsWith(alias)) {
+          return { resolvedQuery: canonical, didYouMean: canonical };
+        }
+      }
+    }
+    
+    // 4. No match — return as-is
+    return { resolvedQuery: lowerQuery, didYouMean: null };
+  }
+
+  async searchGlobal(query: string) {
+    const sanitizedQuery = query.trim();
     if (!sanitizedQuery) {
       return {
-        services: [], restaurants: [], streetFood: [], menuItems: [], cakes: [], grocery: [], rentals: []
+        services: [], restaurants: [], streetFood: [], menuItems: [], cakes: [], grocery: [], rentals: [],
+        didYouMean: null
       };
     }
 
+    // Step 1: Resolve synonyms first
+    const { resolvedQuery, didYouMean } = this.resolveSearchQuery(sanitizedQuery);
+    
+    // Step 2: Build fuzzy SQL using pg_trgm similarity + ILIKE fallback
+    const likePattern = `%${resolvedQuery}%`;
+    // Also search with original query in case synonym resolution isn't needed
+    const originalLikePattern = `%${sanitizedQuery.toLowerCase()}%`;
+
     const [services, restaurants, streetFood, menuItems, cakes, grocery, rentals] = await Promise.all([
-      db.select().from(serviceCategories).where(ilike(serviceCategories.name, lowerQuery)).limit(5),
+      // Services — fuzzy match on category name
+      db.select({
+        id: serviceCategories.id,
+        name: serviceCategories.name,
+        slug: serviceCategories.slug,
+        icon: serviceCategories.icon,
+        description: serviceCategories.description,
+      }).from(serviceCategories)
+        .where(sql`(
+          similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${serviceCategories.name}) LIKE ${likePattern}
+          OR LOWER(${serviceCategories.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) DESC`)
+        .limit(8),
+
+      // Restaurants — fuzzy match on business name
       db.query.serviceProviders.findMany({
         where: and(
-          ilike(serviceProviders.businessName, lowerQuery),
+          sql`(
+            similarity(LOWER(${serviceProviders.businessName}), ${resolvedQuery}) > 0.15
+            OR LOWER(${serviceProviders.businessName}) LIKE ${likePattern}
+            OR LOWER(${serviceProviders.businessName}) LIKE ${originalLikePattern}
+          )`,
           eq(serviceProviders.categoryId, 'restaurants'),
           eq(serviceProviders.isAvailable, true)
         ),
-        limit: 5
+        limit: 8
       }),
+
+      // Street Food — fuzzy match on name
       db.select({
         id: streetFoodItems.id,
         name: streetFoodItems.name,
@@ -2265,8 +2432,17 @@ export class DatabaseStorage implements IStorage {
         imageUrl: streetFoodItems.imageUrl,
         description: streetFoodItems.description,
         isPopular: streetFoodItems.isPopular,
-        isVeg: streetFoodItems.isVeg
-      }).from(streetFoodItems).where(ilike(streetFoodItems.name, lowerQuery)).limit(5),
+        isVeg: streetFoodItems.isVeg,
+      }).from(streetFoodItems)
+        .where(sql`(
+          similarity(LOWER(${streetFoodItems.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${streetFoodItems.name}) LIKE ${likePattern}
+          OR LOWER(${streetFoodItems.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${streetFoodItems.name}), ${resolvedQuery}) DESC`)
+        .limit(10),
+
+      // Restaurant Menu Items — fuzzy match on name, category, cuisine
       db.select({
         id: restaurantMenuItems.id,
         name: restaurantMenuItems.name,
@@ -2279,50 +2455,135 @@ export class DatabaseStorage implements IStorage {
         providerName: serviceProviders.businessName,
         providerImage: serviceProviders.profileImageUrl
       }).from(restaurantMenuItems)
-      .leftJoin(serviceProviders, eq(restaurantMenuItems.providerId, serviceProviders.id))
-      .where(or(
-        ilike(restaurantMenuItems.name, lowerQuery),
-        ilike(restaurantMenuItems.category, lowerQuery),
-        ilike(restaurantMenuItems.cuisine, lowerQuery)
-      )).limit(50),
-      db.select().from(cakeProducts).where(ilike(cakeProducts.name, lowerQuery)).limit(5),
-      db.select().from(groceryProducts).where(ilike(groceryProducts.name, lowerQuery)).limit(5),
-      db.select().from(rentalProperties).where(or(
-        ilike(rentalProperties.title, lowerQuery),
-        ilike(rentalProperties.locality, lowerQuery)
-      )).limit(5)
+        .leftJoin(serviceProviders, eq(restaurantMenuItems.providerId, serviceProviders.id))
+        .where(sql`(
+          similarity(LOWER(${restaurantMenuItems.name}), ${resolvedQuery}) > 0.15
+          OR similarity(LOWER(COALESCE(${restaurantMenuItems.category}, '')), ${resolvedQuery}) > 0.2
+          OR similarity(LOWER(COALESCE(${restaurantMenuItems.cuisine}, '')), ${resolvedQuery}) > 0.2
+          OR LOWER(${restaurantMenuItems.name}) LIKE ${likePattern}
+          OR LOWER(COALESCE(${restaurantMenuItems.category}, '')) LIKE ${likePattern}
+          OR LOWER(COALESCE(${restaurantMenuItems.cuisine}, '')) LIKE ${likePattern}
+          OR LOWER(${restaurantMenuItems.name}) LIKE ${originalLikePattern}
+          OR LOWER(COALESCE(${restaurantMenuItems.category}, '')) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${restaurantMenuItems.name}), ${resolvedQuery}) DESC`)
+        .limit(50),
+
+      // Cakes — fuzzy match on name
+      db.select().from(cakeProducts)
+        .where(sql`(
+          similarity(LOWER(${cakeProducts.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${cakeProducts.name}) LIKE ${likePattern}
+          OR LOWER(${cakeProducts.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${cakeProducts.name}), ${resolvedQuery}) DESC`)
+        .limit(10),
+
+      // Grocery — fuzzy match on name
+      db.select().from(groceryProducts)
+        .where(sql`(
+          similarity(LOWER(${groceryProducts.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${groceryProducts.name}) LIKE ${likePattern}
+          OR LOWER(${groceryProducts.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${groceryProducts.name}), ${resolvedQuery}) DESC`)
+        .limit(10),
+
+      // Rental Properties — fuzzy match on title and locality
+      db.select().from(rentalProperties)
+        .where(sql`(
+          similarity(LOWER(${rentalProperties.title}), ${resolvedQuery}) > 0.15
+          OR similarity(LOWER(COALESCE(${rentalProperties.locality}, '')), ${resolvedQuery}) > 0.15
+          OR LOWER(${rentalProperties.title}) LIKE ${likePattern}
+          OR LOWER(COALESCE(${rentalProperties.locality}, '')) LIKE ${likePattern}
+          OR LOWER(${rentalProperties.title}) LIKE ${originalLikePattern}
+          OR LOWER(COALESCE(${rentalProperties.locality}, '')) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${rentalProperties.title}), ${resolvedQuery}) DESC`)
+        .limit(8)
     ]);
 
     return {
-      services, restaurants, streetFood, menuItems, cakes, grocery, rentals
+      services, restaurants, streetFood, menuItems, cakes, grocery, rentals,
+      didYouMean
     };
   }
 
-  async searchSuggestions(query: string): Promise<string[]> {
-    const lowerQuery = `%${query.toLowerCase()}%`;
-    if (!query.trim()) return [];
+  async searchSuggestions(query: string): Promise<{ suggestions: string[]; didYouMean: string | null }> {
+    if (!query.trim()) return { suggestions: [], didYouMean: null };
 
-    const [services, restaurants, streetFood, cakes, grocery] = await Promise.all([
-      db.select({ name: serviceCategories.name }).from(serviceCategories).where(ilike(serviceCategories.name, lowerQuery)).limit(3),
+    const { resolvedQuery, didYouMean } = this.resolveSearchQuery(query);
+    const likePattern = `%${resolvedQuery}%`;
+    const originalLikePattern = `%${query.toLowerCase()}%`;
+
+    const [services, restaurants, streetFood, menuItems, cakes, grocery] = await Promise.all([
+      db.select({ name: serviceCategories.name }).from(serviceCategories)
+        .where(sql`(
+          similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${serviceCategories.name}) LIKE ${likePattern}
+          OR LOWER(${serviceCategories.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) DESC`)
+        .limit(3),
       db.query.serviceProviders.findMany({
-        where: and(ilike(serviceProviders.businessName, lowerQuery), eq(serviceProviders.categoryId, 'restaurants')),
+        where: and(
+          sql`(
+            similarity(LOWER(${serviceProviders.businessName}), ${resolvedQuery}) > 0.15
+            OR LOWER(${serviceProviders.businessName}) LIKE ${likePattern}
+            OR LOWER(${serviceProviders.businessName}) LIKE ${originalLikePattern}
+          )`,
+          eq(serviceProviders.categoryId, 'restaurants')
+        ),
         limit: 3,
         columns: { businessName: true }
       }),
-      db.select({ name: streetFoodItems.name }).from(streetFoodItems).where(ilike(streetFoodItems.name, lowerQuery)).limit(3),
-      db.select({ name: cakeProducts.name }).from(cakeProducts).where(ilike(cakeProducts.name, lowerQuery)).limit(3),
-      db.select({ name: groceryProducts.name }).from(groceryProducts).where(ilike(groceryProducts.name, lowerQuery)).limit(3),
+      db.select({ name: streetFoodItems.name }).from(streetFoodItems)
+        .where(sql`(
+          similarity(LOWER(${streetFoodItems.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${streetFoodItems.name}) LIKE ${likePattern}
+          OR LOWER(${streetFoodItems.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${streetFoodItems.name}), ${resolvedQuery}) DESC`)
+        .limit(3),
+      db.select({ name: restaurantMenuItems.name }).from(restaurantMenuItems)
+        .where(sql`(
+          similarity(LOWER(${restaurantMenuItems.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${restaurantMenuItems.name}) LIKE ${likePattern}
+          OR LOWER(${restaurantMenuItems.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${restaurantMenuItems.name}), ${resolvedQuery}) DESC`)
+        .limit(4),
+      db.select({ name: cakeProducts.name }).from(cakeProducts)
+        .where(sql`(
+          similarity(LOWER(${cakeProducts.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${cakeProducts.name}) LIKE ${likePattern}
+          OR LOWER(${cakeProducts.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${cakeProducts.name}), ${resolvedQuery}) DESC`)
+        .limit(3),
+      db.select({ name: groceryProducts.name }).from(groceryProducts)
+        .where(sql`(
+          similarity(LOWER(${groceryProducts.name}), ${resolvedQuery}) > 0.15
+          OR LOWER(${groceryProducts.name}) LIKE ${likePattern}
+          OR LOWER(${groceryProducts.name}) LIKE ${originalLikePattern}
+        )`)
+        .orderBy(sql`similarity(LOWER(${groceryProducts.name}), ${resolvedQuery}) DESC`)
+        .limit(3),
     ]);
 
-    const suggestions = [
+    const allSuggestions = [
       ...services.map(s => s.name),
       ...restaurants.map(r => r.businessName),
       ...streetFood.map(s => s.name),
+      ...menuItems.map(m => m.name),
       ...cakes.map(c => c.name),
       ...grocery.map(g => g.name),
     ];
 
-    return Array.from(new Set(suggestions)).slice(0, 10);
+    return {
+      suggestions: Array.from(new Set(allSuggestions)).slice(0, 10),
+      didYouMean
+    };
   }
   async getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]> {
     return db.query.restaurantMenuItems.findMany({

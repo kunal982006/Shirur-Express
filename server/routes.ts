@@ -806,7 +806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // --- GLOBAL SEARCH ---
+  // --- GLOBAL FUZZY SEARCH (Elastic Search Engine) ---
   app.get("/api/search", async (req: Request, res: Response) => {
     try {
       const { q } = req.query;
@@ -814,7 +814,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Search query 'q' is required" });
       }
 
+      console.log(`[Search] Query: "${q}"`);
       const results = await storage.searchGlobal(q);
+      console.log(`[Search] Results — ${results.menuItems?.length || 0} menu items, ${results.streetFood?.length || 0} street food, ${results.services?.length || 0} services${results.didYouMean ? `, didYouMean: "${results.didYouMean}"` : ''}`);
       res.json(results);
     } catch (error: any) {
       console.error("Global search error:", error);
@@ -826,10 +828,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { q } = req.query;
       if (!q || typeof q !== 'string') {
-        return res.json([]); // Return empty for no query
+        return res.json({ suggestions: [], didYouMean: null });
       }
-      const suggestions = await storage.searchSuggestions(q);
-      res.json(suggestions);
+      const result = await storage.searchSuggestions(q);
+      res.json(result);
     } catch (error: any) {
       console.error("Search suggestions error:", error);
       res.status(500).json({ message: "Error fetching suggestions" });

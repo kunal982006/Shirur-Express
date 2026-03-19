@@ -47,6 +47,16 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 
       // Quick test query
       await client.query('SELECT 1');
+      
+      // Enable pg_trgm extension for fuzzy/elastic search
+      try {
+        await client.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+        await client.query("SET pg_trgm.similarity_threshold = 0.15");
+        console.log("✅ [DB] pg_trgm extension enabled for fuzzy search.");
+      } catch (trgmErr: any) {
+        console.warn("⚠️ [DB] pg_trgm extension could not be enabled:", trgmErr.message);
+      }
+      
       client.release();
 
       console.log("✅ [DB] Database connected successfully.");

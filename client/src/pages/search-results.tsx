@@ -1,10 +1,10 @@
 
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Search, ArrowLeft, MapPin, Star, Clock, X } from "lucide-react";
+import { Loader2, Search, ArrowLeft, MapPin, Star, Clock, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list";
 
@@ -21,6 +21,14 @@ export default function SearchResults() {
     const initialTerm = queryParams.get("term") || "";
     const [searchTerm, setSearchTerm] = useState(initialTerm);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    
+    // Autocomplete state
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [suggestionDidYouMean, setSuggestionDidYouMean] = useState<string | null>(null);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const { data: results, isLoading, error } = useQuery({
         queryKey: ["/api/search", searchTerm],
@@ -38,12 +46,70 @@ export default function SearchResults() {
         setSearchTerm(initialTerm);
     }, [initialTerm]);
 
-    const handleSearch = (e: React.FormEvent) => {
+    // Debounced autocomplete suggestions
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (searchTerm.length > 1) {
+                try {
+                    const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(searchTerm)}`);
+                    const data = await res.json();
+                    setSuggestions(data.suggestions || []);
+                    setSuggestionDidYouMean(data.didYouMean || null);
+                    setShowSuggestions(true);
+                    setHighlightedIndex(-1);
+                } catch (e) {
+                    console.error("Suggestions fetch failed:", e);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+                setSuggestionDidYouMean(null);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleSearch = useCallback((term?: string) => {
+        const finalTerm = term || searchTerm;
+        if (finalTerm.trim()) {
+            setShowSuggestions(false);
+            setLocation(`/search?term=${encodeURIComponent(finalTerm)}`);
+        }
+    }, [searchTerm, setLocation]);
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchTerm.trim()) {
-            setLocation(`/search?term=${encodeURIComponent(searchTerm)}`);
+        handleSearch();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!showSuggestions || suggestions.length === 0) {
+            if (e.key === 'Enter') handleSearch();
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHighlightedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIndex(prev => Math.max(prev - 1, -1));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (highlightedIndex >= 0) {
+                const selected = suggestions[highlightedIndex];
+                setSearchTerm(selected);
+                setShowSuggestions(false);
+                handleSearch(selected);
+            } else {
+                handleSearch();
+            }
+        } else if (e.key === 'Escape') {
+            setShowSuggestions(false);
         }
     };
+
+    // Derived data
+    const didYouMean = results?.didYouMean || null;
 
     const services = results?.services || [];
     const restaurants = results?.restaurants || [];
@@ -65,24 +131,92 @@ export default function SearchResults() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3 flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => setLocation("/")}>
-                    <ArrowLeft className="h-6 w-6 text-gray-700" />
-                </Button>
-                <form onSubmit={handleSearch} className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search for food, services..."
-                        className="pl-9 h-10 w-full bg-gray-100 border-none focus-visible:ring-1 focus-visible:ring-primary"
-                    />
-                </form>
+            {/* Header with Smart Search */}
+            <header className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" onClick={() => setLocation("/")}>
+                        <ArrowLeft className="h-6 w-6 text-gray-700" />
+                    </Button>
+                    <form onSubmit={handleSubmit} className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                        <Input
+                            ref={inputRef}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                            placeholder="Search for food, services, grocery..."
+                            className="pl-9 h-10 w-full bg-gray-100 border-none focus-visible:ring-1 focus-visible:ring-primary"
+                            autoFocus
+                        />
+                        {/* Autocomplete Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div 
+                                ref={suggestionsRef}
+                                className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-auto"
+                                style={{ backdropFilter: 'blur(12px)' }}
+                            >
+                                {suggestionDidYouMean && (
+                                    <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100 flex items-center gap-1.5">
+                                        <Sparkles className="h-3 w-3 text-amber-500" />
+                                        <span>Showing results for <button 
+                                            className="font-bold text-primary hover:underline"
+                                            onClick={() => {
+                                                setSearchTerm(suggestionDidYouMean);
+                                                handleSearch(suggestionDidYouMean);
+                                            }}
+                                        >{suggestionDidYouMean}</button></span>
+                                    </div>
+                                )}
+                                <ul className="py-1">
+                                    {suggestions.map((suggestion, index) => (
+                                        <li
+                                            key={index}
+                                            className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 transition-colors ${
+                                                index === highlightedIndex
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'hover:bg-gray-50 text-gray-700'
+                                            }`}
+                                            onMouseDown={() => {
+                                                setSearchTerm(suggestion);
+                                                setShowSuggestions(false);
+                                                handleSearch(suggestion);
+                                            }}
+                                            onMouseEnter={() => setHighlightedIndex(index)}
+                                        >
+                                            <Search className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                                            <span className="text-sm font-medium truncate">{suggestion}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </form>
+                </div>
             </header>
 
             {/* Results */}
             <main className="max-w-3xl mx-auto p-4 space-y-6">
+                {/* "Did you mean" Banner */}
+                {didYouMean && !isLoading && (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl">
+                        <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                        <p className="text-sm text-gray-700">
+                            Showing results for{' '}
+                            <button
+                                className="font-bold text-primary hover:underline"
+                                onClick={() => {
+                                    setSearchTerm(didYouMean);
+                                    handleSearch(didYouMean);
+                                }}
+                            >
+                                "{didYouMean}"
+                            </button>
+                        </p>
+                    </div>
+                )}
+
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                         <Loader2 className="h-8 w-8 animate-spin mb-2 text-primary" />
@@ -94,7 +228,7 @@ export default function SearchResults() {
                     <div className="text-center py-12 text-gray-500">
                         <Search className="h-12 w-12 mx-auto mb-3 opacity-20" />
                         <h3 className="text-lg font-medium text-gray-900">No results found</h3>
-                        <p>Try searching for "Chicken", "Plumber", or "Pizza"</p>
+                        <p className="mt-1">Try searching for "Chicken", "Plumber", or "Pizza"</p>
                     </div>
                 )}
 
