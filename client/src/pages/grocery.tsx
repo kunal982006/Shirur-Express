@@ -226,6 +226,11 @@ export default function Grocery() {
 
   const filteredProducts = products
     ? products.filter(product => {
+      // Temporarily hide products without a real image (i.e. default basket)
+      if (!isRealImage(product.imageUrl)) {
+        return false;
+      }
+
       // Search and Categories are already filtered by Server.
       // Only filter brands client-side if selected.
       const matchesBrand = selectedBrands.length === 0 || (product.brand && selectedBrands.includes(product.brand));

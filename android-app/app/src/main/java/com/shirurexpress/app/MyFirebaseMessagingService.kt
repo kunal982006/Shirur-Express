@@ -114,7 +114,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0, notificationBuilder.build())
+        val notification = notificationBuilder.build()
+        // FLAG_INSISTENT makes the sound loop continuously until the user interacts with the notification
+        notification.flags = notification.flags or android.app.Notification.FLAG_INSISTENT
+        
+        notificationManager.notify(0, notification)
     }
 
     private fun sendNotification(title: String, messageBody: String) {

@@ -18,6 +18,7 @@ export default function OrderNotificationPopup() {
   const [notification, setNotification] = useState<OrderNotificationData | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
@@ -33,7 +34,9 @@ export default function OrderNotificationPopup() {
     try {
       const audio = new Audio('/notification.mp3');
       audio.volume = 0.6;
+      audio.loop = true; // Loop continuously 
       audio.play().catch(() => { /* Browser may block autoplay */ });
+      setActiveAudio(audio);
     } catch (e) { /* Ignore audio errors */ }
 
     // Vibrate on mobile
@@ -49,12 +52,20 @@ export default function OrderNotificationPopup() {
 
   const dismissNotification = useCallback(() => {
     setIsExiting(true);
+    
+    // Stop audio
+    if (activeAudio) {
+      activeAudio.pause();
+      activeAudio.currentTime = 0;
+      setActiveAudio(null);
+    }
+
     setTimeout(() => {
       setIsVisible(false);
       setNotification(null);
       setIsExiting(false);
     }, 400);
-  }, []);
+  }, [activeAudio]);
 
   const handleViewOrder = useCallback(() => {
     dismissNotification();
