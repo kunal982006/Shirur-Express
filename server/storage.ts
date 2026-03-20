@@ -1285,17 +1285,36 @@ export class DatabaseStorage implements IStorage {
       .from(streetFoodItems)
       .where(and(...conditions));
   }
-  async getRestaurantMenuItems(
-    providerId?: string,
-  ): Promise<RestaurantMenuItem[]> {
-    if (providerId) {
+  async getRestaurantMenuItems(providerId?: string): Promise<RestaurantMenuItem[]> {
+    if (!providerId) {
       return db.query.restaurantMenuItems.findMany({
-        where: eq(restaurantMenuItems.providerId, providerId),
+        where: eq(restaurantMenuItems.isAvailable, true),
       });
     }
-    return db.query.restaurantMenuItems.findMany({
-      where: eq(restaurantMenuItems.isAvailable, true),
+
+    const restaurantItems = await db.query.restaurantMenuItems.findMany({
+      where: eq(restaurantMenuItems.providerId, providerId),
     });
+
+    const cakes = await db.query.cakeProducts.findMany({
+      where: eq(cakeProducts.providerId, providerId),
+    });
+
+    const mappedCakes: RestaurantMenuItem[] = cakes.map((cake) => ({
+      id: cake.id,
+      providerId: cake.providerId,
+      name: cake.name,
+      description: cake.description || null,
+      category: cake.category || "Cakes",
+      imageUrl: cake.imageUrl,
+      price: cake.price ? String(cake.price) : "0",
+      isVeg: true,
+      isAvailable: cake.isAvailable !== false,
+      cuisine: "Bakery",
+      isPopular: cake.isPopular || false,
+    }));
+
+    return [...restaurantItems, ...mappedCakes];
   }
 
 
@@ -1605,31 +1624,6 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getRestaurantMenuItems(providerId: string): Promise<RestaurantMenuItem[]> {
-    const restaurantItems = await db.query.restaurantMenuItems.findMany({
-      where: eq(restaurantMenuItems.providerId, providerId),
-    });
-
-    const cakes = await db.query.cakeProducts.findMany({
-      where: eq(cakeProducts.providerId, providerId),
-    });
-
-    const mappedCakes: RestaurantMenuItem[] = cakes.map((cake) => ({
-      id: cake.id,
-      providerId: cake.providerId,
-      name: cake.name,
-      description: cake.description || null,
-      category: cake.category || "Cakes",
-      imageUrl: cake.imageUrl,
-      price: cake.price ? String(cake.price) : "0",
-      isVeg: true,
-      isAvailable: cake.isAvailable !== false,
-      cuisine: "Bakery",
-      isPopular: cake.isPopular || false,
-    }));
-
-    return [...restaurantItems, ...mappedCakes];
-  }
 
   async getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]> {
     return db.query.restaurantOrders.findMany({
