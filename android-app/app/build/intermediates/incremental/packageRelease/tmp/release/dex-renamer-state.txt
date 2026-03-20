@@ -1,4 +1,0 @@
-#Sun Jan 25 12:49:50 IST 2026
-base.0=C\:\\Users\\Sai\\Desktop\\The_Shirur_Express\\android-app\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
-path.0=classes.dex
-renamed.0=classes.dex

@@ -2404,7 +2404,7 @@ export class DatabaseStorage implements IStorage {
         .orderBy(sql`similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) DESC`)
         .limit(8),
 
-      // Restaurants — fuzzy match on business name
+      // Restaurants & Providers — fuzzy match on business name
       db.query.serviceProviders.findMany({
         where: and(
           sql`(
@@ -2412,7 +2412,6 @@ export class DatabaseStorage implements IStorage {
             OR LOWER(${serviceProviders.businessName}) LIKE ${likePattern}
             OR LOWER(${serviceProviders.businessName}) LIKE ${originalLikePattern}
           )`,
-          eq(serviceProviders.categoryId, 'restaurants'),
           eq(serviceProviders.isAvailable, true)
         ),
         limit: 8
@@ -2521,14 +2520,11 @@ export class DatabaseStorage implements IStorage {
         .orderBy(sql`similarity(LOWER(${serviceCategories.name}), ${resolvedQuery}) DESC`)
         .limit(3),
       db.query.serviceProviders.findMany({
-        where: and(
-          sql`(
+        where: sql`(
             similarity(LOWER(${serviceProviders.businessName}), ${resolvedQuery}) > 0.15
             OR LOWER(${serviceProviders.businessName}) LIKE ${likePattern}
             OR LOWER(${serviceProviders.businessName}) LIKE ${originalLikePattern}
           )`,
-          eq(serviceProviders.categoryId, 'restaurants')
-        ),
         limit: 3,
         columns: { businessName: true }
       }),

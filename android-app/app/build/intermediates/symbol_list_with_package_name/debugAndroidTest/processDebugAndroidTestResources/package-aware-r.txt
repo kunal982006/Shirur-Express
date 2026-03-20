@@ -1,0 +1,3 @@
+com.shirurexpress.app.test
+style WhiteBackgroundDialogTheme
+style WhiteBackgroundTheme

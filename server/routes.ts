@@ -108,6 +108,7 @@ interface CustomRequest extends Request {
 }
 interface AuthRequest extends Request {
   userId?: string;
+  user?: User;
 }
 interface DeliveryPartnerRequest extends Request {
   userId?: string;
@@ -161,13 +162,12 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Not logged in." });
   }
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, req.session.userId)
-  });
+  const user = await storage.getUser(req.session.userId);
   if (!user || user.role !== 'admin') {
     return res.status(403).json({ message: "Admin access required." });
   }
   req.userId = req.session.userId;
+  req.user = user;
   next();
 };
 
@@ -225,9 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
       console.log("Created Street Food Order:", order); // DEBUG LOG
 
-      if (orderData.paymentMethod === 'cod') {
-        await sendOrderNotifications(order, 'street_food', order.id);
-      }
+      // Ringing system for Street Food Admin and Main Admin
+      await sendOrderNotifications(order, 'street_food', order.id);
 
       res.status(201).json(order);
     } catch (error: any) {

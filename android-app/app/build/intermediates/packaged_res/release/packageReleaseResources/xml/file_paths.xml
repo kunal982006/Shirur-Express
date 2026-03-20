@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<paths>
-    <!-- Temporary camera photos stored in app's cache directory -->
-    <cache-path name="camera_photos" path="camera_photos/" />
-</paths>
