@@ -14,17 +14,6 @@ const NESTED_SERVICES = {
 };
 const MAIN_BEAUTY_CATEGORIES = Object.keys(NESTED_SERVICES);
 
-const PREMIUM_DUMMY_PARLOR = {
-  id: "premium-dummy-1",
-  businessName: "L'Aura Elite Spa & Studio",
-  profileImageUrl: "https://images.unsplash.com/photo-1560944527-a4a429848866?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  rating: "5.0",
-  reviewCount: 428,
-  address: "Platinum Tower, Downtown",
-  isVerified: true,
-  specializations: ["Hair Services", "Skincare Services", "Nail Services", "Bridal & Special Events"],
-  isPremiumDummy: true
-};
 // --- End Data ---
 
 export default function Beauty() {
@@ -42,15 +31,9 @@ export default function Beauty() {
   const filteredParlors = useMemo(() => {
     let allP = beautyParlors ? [...beautyParlors] : [];
 
-    // Inject the premium dummy to make them feel "WOW, 4 parlors!"
-    if (beautyParlors && !allP.find(p => p.id === PREMIUM_DUMMY_PARLOR.id)) {
-      // Add it to the top so it's the first thing they see and sets a premium tone
-      allP.unshift(PREMIUM_DUMMY_PARLOR);
-    }
-
     if (filterMainCategory !== "All") {
       allP = allP.filter((parlor: any) =>
-        parlor.specializations?.includes(filterMainCategory) || parlor.isPremiumDummy
+        parlor.specializations?.includes(filterMainCategory)
       );
     }
     return allP;
@@ -142,7 +125,7 @@ export default function Beauty() {
                   transition={{ delay: 0.1 * index + 0.3, duration: 0.6, type: "spring", bounce: 0.4 }}
                 >
                   <Card className="group relative border-none shadow-lg hover:shadow-[0_20px_40px_-15px_rgba(236,72,153,0.3)] transition-all duration-500 rounded-3xl overflow-hidden h-full flex flex-col bg-white">
-                    <Link to={parlor.isPremiumDummy ? "#" : `/beauty/${parlor.id}`} className="flex flex-col h-full block hover:no-underline">
+                    <Link to={`/beauty/${parlor.id}`} className="flex flex-col h-full block hover:no-underline">
                       {/* Large Premium Image Area */}
                       <div className="relative h-64 sm:h-80 w-full overflow-hidden">
                         {parlor.profileImageUrl ? (
@@ -161,12 +144,7 @@ export default function Beauty() {
 
                           {/* Overlay Badges Top Right */}
                           <div className="flex flex-col gap-2 items-end self-end">
-                            {parlor.isPremiumDummy && (
-                              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-none shadow-lg flex items-center gap-1.5 px-3 py-1 text-sm font-semibold pointer-events-none">
-                                <Crown className="w-3.5 h-3.5" /> Elite Member
-                              </Badge>
-                            )}
-                            {parlor.isVerified && !parlor.isPremiumDummy && (
+                            {parlor.isVerified && (
                               <Badge className="bg-rose-500/90 backdrop-blur-sm text-white border-none shadow-lg flex items-center gap-1.5 px-3 py-1 text-sm pointer-events-none">
                                 <Sparkles className="w-3.5 h-3.5" /> Verified
                               </Badge>
@@ -210,15 +188,9 @@ export default function Beauty() {
 
                         <div className="mt-auto">
                           <Button
-                            className={`w-full h-12 text-base font-semibold rounded-xl shadow-md transition-all duration-300 ${parlor.isPremiumDummy ? 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white'}`}
-                            onClick={(e) => {
-                              if (parlor.isPremiumDummy) {
-                                e.preventDefault();
-                                alert("Welcome to our new elite partner! Menu coming shortly and you won't be disappointed.");
-                              }
-                            }}
+                            className="w-full h-12 text-base font-semibold rounded-xl shadow-md transition-all duration-300 bg-rose-500 hover:bg-rose-600 text-white"
                           >
-                            {parlor.isPremiumDummy ? "Explore Elite Services" : "View Services Menu"}
+                            View Services Menu
                           </Button>
                         </div>
                       </CardContent>
