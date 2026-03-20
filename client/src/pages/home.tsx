@@ -31,6 +31,8 @@ import {
   Truck,
   LayoutDashboard,
   User,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -80,7 +82,7 @@ export default function Home() {
 
   const { user, logout } = useAuth();
   const { toast } = useToast();
-  const { addItem } = useCartStore(); // ADDED
+  const { items, addItem, updateQuantity, getTotalPrice } = useCartStore(); // ADDED
 
   // Auto-redirect admin users to admin dashboard
   useEffect(() => {
@@ -443,27 +445,57 @@ export default function Home() {
               <p className="text-xs text-gray-500 truncate">{item.description || item.category || "Restaurant Special"}</p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
-                <Button
-                  size="sm"
-                  className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addItem({
-                      id: item.id,
-                      name: item.name,
-                      price: Number(item.price),
-                      imageUrl: item.imageUrl,
-                      providerId: item.providerId,
-                      itemType: 'restaurant'
-                    });
-                    toast({
-                      title: "Added to Cart",
-                      description: `${item.name} added to your cart.`
-                    });
-                  }}
-                >
-                  Add
-                </Button>
+                {items.find((i: any) => i.id === item.id) ? (
+                  <div className="flex items-center gap-2 bg-white rounded-md shadow-sm border p-0.5" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, -1);
+                      }}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-4 text-center text-sm font-semibold">
+                      {items.find((i: any) => i.id === item.id)?.quantity || 0}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, 1);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem({
+                        id: item.id,
+                        name: item.name,
+                        price: Number(item.price),
+                        imageUrl: item.imageUrl,
+                        providerId: item.providerId,
+                        itemType: 'restaurant'
+                      });
+                      toast({
+                        title: "Added to Cart",
+                        description: `${item.name} added to your cart.`
+                      });
+                    }}
+                  >
+                    Add
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -572,6 +604,26 @@ export default function Home() {
               className="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()} 
             />
+          </div>
+        </div>
+      )}
+
+      {/* Cart Summary Header/Button */}
+      {items.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] border-t z-[100] animate-in slide-in-from-bottom-5">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">{items.reduce((total: number, item: any) => total + item.quantity, 0)} Items</p>
+              <p className="text-xl font-extrabold text-primary">₹{getTotalPrice().toFixed(2)}</p>
+            </div>
+            <Button
+              onClick={() => navigate("/checkout")}
+              size="lg"
+              className="px-8 font-bold shadow-md hover:shadow-lg transition-all"
+            >
+              View Cart
+              <ShoppingBasket className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
       )}
