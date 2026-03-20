@@ -53,9 +53,11 @@ class IncomingOrderActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.pickupText).text = "Pickup: $pickup"
         findViewById<TextView>(R.id.dropText).text = "Drop: $drop"
 
+        val navigateTo = intent.getStringExtra("navigateTo")
+
         // Setup "Order Confirmed" button — opens dashboard directly
         findViewById<Button>(R.id.btnConfirm).setOnClickListener {
-            confirmOrder(orderId)
+            confirmOrder(orderId, navigateTo)
         }
 
         // Start Ringing
@@ -83,13 +85,16 @@ class IncomingOrderActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmOrder(orderId: String?) {
+    private fun confirmOrder(orderId: String?, navigateTo: String?) {
         stopRingtone()
+
+        val path = navigateTo ?: "/provider/orders/$orderId"
+        val fullUrl = if (path.startsWith("http")) path else "https://shirur-express.onrender.com$path"
 
         // Open Main Activity (WebView) deep linked to the order
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            data = Uri.parse("https://shirur-express.onrender.com/provider/orders/$orderId")
+            data = Uri.parse(fullUrl)
         }
         startActivity(intent)
         finish()

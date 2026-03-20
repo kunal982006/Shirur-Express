@@ -3246,9 +3246,9 @@ const ProviderDashboard: React.FC = () => {
       tabs.unshift({ value: "menu", label: "Menu / Services" });
       tabs.unshift({ value: "bookings", label: "Bookings" }); // Menu waalon ko bhi booking aa sakti hai
 
-      // Grocery and Cake Shop providers get orders tab
+      // Cake Shop providers get orders tab
       const slug = providerProfile.category?.slug;
-      if (slug === "grocery" || slug === "cake-shop") {
+      if (slug === "cake-shop") {
         tabs.unshift({ value: "grocery-orders", label: "Live Orders" });
       }
     }

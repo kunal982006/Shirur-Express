@@ -250,7 +250,7 @@ self.addEventListener('push', (event) => {
         silent: false,
         data: {
             ...data.data,
-            url: notifType === 'ORDER_REQUEST' ? '/provider/dashboard' : (data.url || '/'),
+            url: notifType === 'ORDER_REQUEST' ? (data.data?.navigateTo || '/provider/dashboard') : (data.url || '/'),
             timestamp: Date.now()
         },
         actions: notifType === 'ORDER_REQUEST'

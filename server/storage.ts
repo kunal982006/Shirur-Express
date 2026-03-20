@@ -963,6 +963,7 @@ export class DatabaseStorage implements IStorage {
       deliveryAddress: order.deliveryAddress,
       userId: order.userId,
       providerId: order.providerId, // NAYA FIELD
+      paymentMethod: order.paymentMethod, // NEW FIX
     };
     const [newOrder] = await db
       .insert(groceryOrders)

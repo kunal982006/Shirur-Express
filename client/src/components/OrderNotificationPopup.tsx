@@ -21,8 +21,8 @@ export default function OrderNotificationPopup() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
-  // Only render for provider users
-  const isProvider = user?.role === 'provider';
+  // Render for both provider and admin users
+  const isProviderOrAdmin = user?.role === 'provider' || user?.role === 'admin';
 
   const showNotification = useCallback((data: OrderNotificationData) => {
     setNotification(data);
@@ -58,12 +58,12 @@ export default function OrderNotificationPopup() {
 
   const handleViewOrder = useCallback(() => {
     dismissNotification();
-    setLocation('/provider/dashboard');
-  }, [setLocation, dismissNotification]);
+    setLocation(notification?.navigateTo || '/provider/dashboard');
+  }, [setLocation, dismissNotification, notification]);
 
   // Listen for messages from Android WebView bridge
   useEffect(() => {
-    if (!isProvider) return;
+    if (!isProviderOrAdmin) return;
 
     // Method 1: Android WebView bridge callback
     (window as any).onOrderNotification = (dataStr: string) => {
@@ -98,9 +98,9 @@ export default function OrderNotificationPopup() {
       window.removeEventListener('message', handleMessage);
       delete (window as any).onOrderNotification;
     };
-  }, [isProvider, showNotification]);
+  }, [isProviderOrAdmin, showNotification]);
 
-  if (!isProvider || !isVisible || !notification) return null;
+  if (!isProviderOrAdmin || !isVisible || !notification) return null;
 
   const orderTypeConfig: Record<string, { icon: string; label: string; gradient: string }> = {
     'restaurant': { icon: '🍽️', label: 'Restaurant Order', gradient: 'from-orange-500 to-red-500' },

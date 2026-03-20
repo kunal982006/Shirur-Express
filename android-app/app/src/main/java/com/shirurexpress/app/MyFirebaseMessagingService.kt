@@ -63,6 +63,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             putExtra("amount", data["amount"])
             putExtra("pickupAddress", data["pickupAddress"])
             putExtra("dropAddress", data["dropAddress"])
+            putExtra("navigateTo", data["navigateTo"])
         }
         
         // For Android 10+ (API 29+) we need to use a full-screen intent notification
