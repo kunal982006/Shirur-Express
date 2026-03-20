@@ -3136,11 +3136,11 @@ const ProviderDashboard: React.FC = () => {
       }
     };
 
-    // Only sync when user is logged in and profile is loaded
-    if (user?.id && providerProfile?.id) {
+    // Only sync when user is logged in
+    if (user?.id) {
       syncFcmToken();
     }
-  }, [user?.id, providerProfile?.id]);
+  }, [user?.id]);
   // --- FCM TOKEN SYNC END ---
 
   // --- SHOP AVAILABILITY TOGGLE MUTATION (Moved here to fix React hooks order) ---

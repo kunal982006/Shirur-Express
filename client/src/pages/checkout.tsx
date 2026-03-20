@@ -248,7 +248,7 @@ export default function Checkout() {
           })),
           totalAmount: total.toFixed(2), // Schema expects totalAmount
           deliveryAddress: values.deliveryAddress,
-          providerId: isRestaurant ? items[0].providerId : undefined, // Restaurant order needs providerId at root
+          providerId: items[0]?.providerId || "unknown", // Both restaurant and street food need it at root
           paymentMethod, // NEW
           // runnerId will be assigned by backend
         };

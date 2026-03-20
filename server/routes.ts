@@ -2329,7 +2329,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Let's create an endpoint that doesn't strictly check for req.provider if it's streetfood_admin
   app.get("/api/provider/street-food-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
-      if (req.user?.username !== "streetfood_admin") {
+      const user = await storage.getUser(req.userId!);
+      if (user?.username !== "streetfood_admin") {
         return res.status(403).json({ message: "Access denied" });
       }
       // Assuming storage has a method getAllStreetFoodOrders
@@ -2344,7 +2345,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update Street Food Order Status
   app.patch("/api/provider/street-food-orders/:id/status", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
-      if (req.user?.username !== "streetfood_admin") {
+      const user = await storage.getUser(req.userId!);
+      if (user?.username !== "streetfood_admin") {
         return res.status(403).json({ message: "Access denied" });
       }
       const { id } = req.params;

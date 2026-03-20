@@ -258,7 +258,27 @@ export default function AdminDashboard() {
         };
     }, []);
 
+    // --- FCM TOKEN SYNC FROM ANDROID APP ---
+    useEffect(() => {
+        const syncFcmToken = async () => {
+            if (typeof window !== 'undefined' && (window as any).AndroidApp) {
+                try {
+                    const token = (window as any).AndroidApp.getFcmToken();
+                    if (token && token.length > 0) {
+                        console.log('[FCM Admin] Token from Android:', token.substring(0, 20) + '...');
+                        await api.post('/users/fcm-token', { token });
+                    }
+                } catch (error) {
+                    console.error('[FCM Admin] Error syncing token:', error);
+                }
+            }
+        };
 
+        if (user?.id) {
+            syncFcmToken();
+        }
+    }, [user?.id]);
+    // --- FCM TOKEN SYNC END ---
 
     // Queries
     const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
