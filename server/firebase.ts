@@ -100,14 +100,20 @@ export async function sendPushNotification(fcmToken: string, payload: {
             }
         };
 
-        // Include notification payload for ALL types so system tray shows rich info
-        if (payload.title || payload.body) {
+        if (payload.type === 'ORDER_REQUEST') {
+            // For ORDER_REQUEST, send data-only to bypass system tray.
+            // This allows Android's IncomingOrderActivity to loop the ringtone continuously
+            // instead of playing a single short system beep!
+            if (payload.title) message.data!.title = payload.title;
+            if (payload.body) message.data!.body = payload.body;
+        } else if (payload.title || payload.body) {
+            // Standard system notification for other types
             message.notification = {
                 title: payload.title,
                 body: payload.body,
             };
             message.android!.notification = {
-                channelId: payload.type === 'ORDER_REQUEST' ? 'order_alerts' : 'fcm_default_channel',
+                channelId: 'fcm_default_channel',
                 priority: 'max',
                 defaultSound: true,
                 defaultVibrateTimings: true,

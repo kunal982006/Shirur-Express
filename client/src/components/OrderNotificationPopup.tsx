@@ -19,6 +19,7 @@ export default function OrderNotificationPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
+  const [ringController, setRingController] = useState<{stop: () => void} | null>(null);
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
@@ -30,24 +31,78 @@ export default function OrderNotificationPopup() {
     setIsVisible(true);
     setIsExiting(false);
 
-    // Play notification sound
+    // Play notification sound continuously using Web Audio API (Proper Ring)
     try {
-      const audio = new Audio('/notification.mp3');
-      audio.volume = 0.6;
-      audio.loop = true; // Loop continuously 
-      audio.play().catch(() => { /* Browser may block autoplay */ });
-      setActiveAudio(audio);
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        const ctx = new AudioContextClass();
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(440, ctx.currentTime);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(480, ctx.currentTime);
+        
+        gainNode.gain.value = 0;
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        osc1.start();
+        osc2.start();
+        
+        const ringLoop = () => {
+          if (ctx.state === 'closed') return;
+          const t = ctx.currentTime;
+          // Smooth ramp limits audio clicking
+          gainNode.gain.setTargetAtTime(0.5, t, 0.02); // Ring 1
+          gainNode.gain.setTargetAtTime(0, t + 0.4, 0.02);
+          
+          gainNode.gain.setTargetAtTime(0.5, t + 0.6, 0.02); // Ring 2
+          gainNode.gain.setTargetAtTime(0, t + 1.0, 0.02);
+        };
+        
+        ringLoop();
+        const interval = setInterval(ringLoop, 3000); // Repeat every 3 seconds
+        
+        setRingController({
+          stop: () => {
+            clearInterval(interval);
+            try { osc1.stop(); osc2.stop(); ctx.close(); } catch(e) {}
+          }
+        });
+      } else {
+        // Fallback for older browsers
+        const audio = new Audio('/notification.mp3');
+        audio.volume = 0.6;
+        audio.loop = true; 
+        audio.play().catch(() => {});
+        setActiveAudio(audio);
+      }
     } catch (e) { /* Ignore audio errors */ }
 
     // Vibrate on mobile
     if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200, 100, 200]);
+      navigator.vibrate([400, 200, 400, 2000]); // Ring pattern
+      // Keep vibrating
+      const vibInterval = setInterval(() => {
+        if (navigator.vibrate) navigator.vibrate([400, 200, 400, 2000]);
+      }, 3000);
+      
+      // Store vibration interval killer
+      setRingController(prev => {
+        if (!prev) return { stop: () => clearInterval(vibInterval) };
+        const oldStop = prev.stop;
+        return { stop: () => { oldStop(); clearInterval(vibInterval); } };
+      });
     }
 
-    // Auto-dismiss after 30 seconds
+    // Auto-dismiss after 60 seconds (extended to allow more time to answer)
     setTimeout(() => {
       dismissNotification();
-    }, 30000);
+    }, 60000);
   }, []);
 
   const dismissNotification = useCallback(() => {
@@ -59,6 +114,11 @@ export default function OrderNotificationPopup() {
       activeAudio.currentTime = 0;
       setActiveAudio(null);
     }
+    
+    setRingController(prev => {
+      if (prev) prev.stop();
+      return null;
+    });
 
     setTimeout(() => {
       setIsVisible(false);
