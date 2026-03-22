@@ -1370,7 +1370,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const items = await db.select()
         .from(streetFoodItems)
-        .where(and(...conditions));
+        .where(and(...conditions))
+        .orderBy(sql`CAST(${streetFoodItems.price} AS NUMERIC) ASC`);
 
       console.log("[DEBUG] Street food items found:", items.length);
       if (items.length === 0) {
@@ -1408,7 +1409,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const provider = await db.query.serviceProviders.findFirst({
         where: eq(serviceProviders.id, req.params.id),
         with: {
-          beautyServices: { with: { template: true } },
+          beautyServices: { 
+            with: { template: true },
+            orderBy: (beautyServices, { asc }) => [asc(beautyServices.price)]
+          },
           user: true,
           category: true,
         }
@@ -2500,7 +2504,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch all active cakes for the main cake shop display
       const allCakes = await db.select()
         .from(cakeProducts)
-        .orderBy(desc(cakeProducts.isPopular), desc(cakeProducts.id));
+        .orderBy(asc(cakeProducts.price), desc(cakeProducts.isPopular), desc(cakeProducts.id));
       res.json(allCakes);
     } catch (error: any) {
       console.error("Get all cakes error:", error);

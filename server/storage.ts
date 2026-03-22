@@ -1289,6 +1289,7 @@ export class DatabaseStorage implements IStorage {
     if (!providerId) {
       return db.query.restaurantMenuItems.findMany({
         where: eq(restaurantMenuItems.isAvailable, true),
+        orderBy: (restaurantMenuItems, { asc }) => [asc(restaurantMenuItems.price)],
       });
     }
 
@@ -1314,7 +1315,8 @@ export class DatabaseStorage implements IStorage {
       isPopular: cake.isPopular || false,
     }));
 
-    return [...restaurantItems, ...mappedCakes];
+    const merged = [...restaurantItems, ...mappedCakes];
+    return merged.sort((a, b) => Number(a.price) - Number(b.price));
   }
 
 
