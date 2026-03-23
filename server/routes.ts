@@ -1355,33 +1355,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { providerId, search, category } = req.query;
       console.log("[DEBUG] /api/street-food-items called with providerId:", providerId);
 
-      if (!providerId) {
-        return res.status(400).json({ message: "providerId is required" });
+      const conditions = [];
+      if (providerId) {
+        conditions.push(eq(streetFoodItems.providerId, providerId as string));
       }
-
-      const conditions = [eq(streetFoodItems.providerId, providerId as string)];
-
       if (search) {
         conditions.push(ilike(streetFoodItems.name, `%${search}%`));
       }
-      if (category) {
+      if (category && category !== 'all') {
         conditions.push(eq(streetFoodItems.category, category as string));
       }
 
-      const items = await db.select()
-        .from(streetFoodItems)
-        .where(and(...conditions))
-        .orderBy(sql`CAST(${streetFoodItems.price} AS NUMERIC) ASC`);
+      const items = await db.query.streetFoodItems.findMany({
+        where: conditions.length > 0 ? and(...conditions) : undefined,
+        with: {
+          provider: true
+        },
+        orderBy: [sql`CAST(${streetFoodItems.price} AS NUMERIC) ASC`]
+      });
 
       console.log("[DEBUG] Street food items found:", items.length);
-      if (items.length === 0) {
-        // Let's also check if there are ANY items for this provider without filtering
-        const allItems = await db.select().from(streetFoodItems);
-        console.log("[DEBUG] Total items in streetFoodItems table:", allItems.length);
-        if (allItems.length > 0) {
-          console.log("[DEBUG] Sample item providerIds:", allItems.slice(0, 3).map(i => i.providerId));
-        }
-      }
 
       res.json(items);
     } catch (error: any) {

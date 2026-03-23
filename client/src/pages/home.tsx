@@ -46,7 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { LocationPicker } from "@/components/location-picker";
+
 import { useToast } from "@/hooks/use-toast";
 import { OffersCarousel } from "@/components/offers-carousel";
 import { useCartStore } from "@/hooks/use-cart-store"; // ADDED
@@ -73,11 +73,7 @@ export default function Home() {
   const [selectedService, setSelectedService] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
-  const [location, setLocation] = useState("Select your location");
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null); // ADDED: For full-screen image modal
   const [showBeautyPopup, setShowBeautyPopup] = useState(false);
 
@@ -101,10 +97,6 @@ export default function Home() {
     }
   };
 
-  const handleAddressSelect = (address: string) => {
-    setLocation(address);
-    setIsLocationOpen(false);
-  };
 
   // REMOVED LOCAL TRIE - Using Backend Search API for suggestions
   // Debounce logic for API calls
@@ -155,38 +147,10 @@ export default function Home() {
     queryFn: () => api.get("/homepage/popular").then(r => r.data),
   });
 
-  const handleLocationClick = () => {
-    // Geolocation logic remains the same
-    if (!navigator.geolocation) {
-      setLocationStatus('error');
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-    setLocationStatus('loading');
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setLocationStatus('success');
-        setLocation("Current GPS Location (Captured)");
-      },
-      (error) => {
-        console.error("Geolocation Error:", error);
-        setLocationStatus('error');
-        alert("Unable to retrieve your location. Please type manually.");
-        setLatitude(null);
-        setLongitude(null);
-        setLocation("");
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
-
   const handleSearch = () => {
     // Navigation to a generic search results page
-    if (selectedService && (location || (latitude && longitude))) {
-      const coords = (latitude && longitude) ? `&lat=${latitude}&lng=${longitude}` : '';
-      navigate(`/search?term=${encodeURIComponent(selectedService)}&location=${encodeURIComponent(location)}${coords}`);
+    if (selectedService) {
+      navigate(`/search?term=${encodeURIComponent(selectedService)}`);
     }
   };
 
@@ -196,30 +160,16 @@ export default function Home() {
       {/* 1. Top Location Header (Zomato Style) */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between p-3 max-w-7xl mx-auto">
-          {/* Location Picker Trigger */}
-          <Dialog open={isLocationOpen} onOpenChange={setIsLocationOpen}>
-            <DialogTrigger asChild>
-              <div className="flex flex-col cursor-pointer max-w-[70%]">
-                <div className="flex items-center gap-1 text-primary font-extrabold text-lg leading-tight">
-                  <MapPin className="h-5 w-5 text-primary fill-current" />
-                  <span className="truncate">Home</span>
-                  <ChevronDown className="h-4 w-4 text-gray-600" />
-                </div>
-                <p className="text-xs text-muted-foreground truncate pl-6 font-medium">
-                  {location}
-                </p>
-              </div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
-              <div className="p-4 bg-primary text-primary-foreground">
-                <h2 className="font-bold text-lg">Select Location</h2>
-                <p className="text-xs opacity-90">Choose your delivery location</p>
-              </div>
-              <div className="p-4">
-                <LocationPicker onAddressSelect={handleAddressSelect} currentAddress={location} />
-              </div>
-            </DialogContent>
-          </Dialog>
+          {/* App Logo & Name */}
+          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => navigate("/")}>
+            <div className="h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center shrink-0">
+              <img src="/shirur-express-logo.png" alt="Shirur Express" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex flex-col justify-center">
+              <span className="text-primary font-extrabold text-[22px] sm:text-[26px] leading-none tracking-tight">Shirur</span>
+              <span className="text-gray-500 font-extrabold text-[12px] sm:text-[14px] leading-none tracking-[0.15em] mt-0.5">EXPRESS</span>
+            </div>
+          </div>
 
           {/* Profile & Notifications */}
           <div className="flex items-center gap-3">
@@ -643,21 +593,31 @@ export default function Home() {
         </div>
       )}
 
-      {/* Cart Summary Header/Button */}
+      {/* Floating Cart Banner (Zomato Style) */}
       {items.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] border-t z-[100] animate-in slide-in-from-bottom-5">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">{items.reduce((total: number, item: any) => total + item.quantity, 0)} Items</p>
-              <p className="text-xl font-extrabold text-primary">₹{getTotalPrice().toFixed(2)}</p>
+        <div className="fixed bottom-20 md:bottom-6 left-4 right-4 z-[100] animate-in slide-in-from-bottom-5 cursor-pointer" onClick={() => navigate("/checkout")}>
+          <div className="relative overflow-hidden bg-gray-900 rounded-2xl shadow-2xl p-3 flex justify-between items-center border border-gray-800">
+            {/* Left side: Cart Info */}
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center bg-white/10 rounded-full">
+                <ShoppingBasket className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-sm leading-tight">Shirur Express Cart</span>
+                <span className="text-gray-300 text-[11px] font-medium">{items.reduce((total: number, item: any) => total + item.quantity, 0)} items • ₹{getTotalPrice().toFixed(2)}</span>
+              </div>
             </div>
+
+            {/* Right side: View Cart Button */}
             <Button
-              onClick={() => navigate("/checkout")}
-              size="lg"
-              className="px-8 font-bold shadow-md hover:shadow-lg transition-all"
+              className="bg-green-600 hover:bg-green-700 text-white rounded-xl h-10 px-5 font-bold shadow-md"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/checkout");
+              }}
             >
               View Cart
-              <ShoppingBasket className="ml-2 h-5 w-5" />
+              <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </div>

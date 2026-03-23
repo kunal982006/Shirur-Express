@@ -5,77 +5,129 @@ import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ArrowLeft, Flame, MapPin, Star, ChefHat, Sparkles } from "lucide-react";
-import type { ServiceProvider } from "@shared/schema";
+import { Search, ArrowLeft, Flame, MapPin, Star, ChefHat, Sparkles, Plus, Minus, ShoppingBasket, ChevronRight } from "lucide-react";
+import type { StreetFoodItem, ServiceProvider } from "@shared/schema";
+import { useCartStore } from "@/hooks/use-cart-store";
+import { useToast } from "@/hooks/use-toast";
 
-// Compact Street Vendor Card Component for Mobile Grid
-function StreetVendorCard({ vendor, onClick }: { vendor: ServiceProvider; onClick: () => void }) {
-  const rating = vendor.rating ? parseFloat(vendor.rating.toString()).toFixed(1) : "New";
-  const specializations = vendor.specializations || [];
-  const image = vendor.profileImageUrl || vendor.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60";
+// Type definition for the joined data from the backend
+type StreetFoodItemWithProvider = StreetFoodItem & {
+  provider: ServiceProvider;
+};
+
+// Beautiful Street Food Item Card
+function StreetFoodItemCard({ item, onClick }: { item: StreetFoodItemWithProvider; onClick: () => void }) {
+  const { items, addItem, updateQuantity } = useCartStore();
+  const { toast } = useToast();
+  const cartItem = items.find((i) => i.id === item.id);
+
+  const vendorName = item.provider?.businessName || "Street Vendor";
+  const rating = item.provider?.rating ? parseFloat(item.provider.rating.toString()).toFixed(1) : "New";
+  const image = item.imageUrl || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=60";
+  const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't trigger card click
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: price as number,
+      imageUrl: item.imageUrl || undefined,
+      providerId: item.providerId,
+      itemType: 'street_food',
+    });
+    toast({
+      title: "Added to Cart",
+      description: `${item.name} added to your cart.`
+    });
+  };
+
+  const handleUpdateQuantity = (e: React.MouseEvent, change: number) => {
+    e.stopPropagation();
+    updateQuantity(item.id, change);
+  };
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl cursor-pointer group shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-      style={{ background: "linear-gradient(to bottom right, #fff7ed, #fef3c7)" }}
+      className="relative overflow-hidden rounded-2xl cursor-pointer group shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white"
       onClick={onClick}
     >
-      {/* Image Container */}
-      <div className="relative h-28 sm:h-36 w-full overflow-hidden">
+      {/* Food Image Container */}
+      <div className="relative h-32 sm:h-40 w-full overflow-hidden">
         <img
           src={image}
-          alt={vendor.businessName}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=60")}
         />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* Soft Gradient for text legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent" />
+
+        {/* Veg/NonVeg Mark */}
+        {item.isVeg !== null && (
+          <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm p-1 rounded-md shadow-sm">
+            <div className={`h-2.5 w-2.5 rounded-full ${item.isVeg ? 'bg-green-600' : 'bg-red-600'}`} />
+          </div>
+        )}
 
         {/* Rating Badge */}
-        <div
-          className="absolute top-2 right-2 flex items-center gap-0.5 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold shadow-lg"
-          style={{ background: "linear-gradient(to right, #f59e0b, #ea580c)" }}
-        >
-          <Star className="h-2.5 w-2.5 fill-white" />
+        <div className="absolute top-2 right-2 flex items-center gap-0.5 bg-white/95 backdrop-blur-sm text-gray-800 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm">
+          <Star className="h-2.5 w-2.5 text-yellow-500 fill-yellow-500" />
           <span>{rating}</span>
         </div>
 
-        {/* Fire Icon for Popular */}
-        {Number(rating) >= 4.0 && (
-          <div className="absolute top-2 left-2">
-            <Flame className="h-4 w-4 text-orange-400 animate-pulse" style={{ color: "#fb923c" }} />
-          </div>
-        )}
-
-        {/* Closed Overlay */}
-        {vendor.isAvailable === false && (
-          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-            <span className="text-white font-bold text-xs px-2 py-1 border border-white rounded">Closed</span>
-          </div>
-        )}
+        {/* Vendor Name overlaid on image */}
+        <h3 className="absolute bottom-2 left-2 right-2 font-bold text-white text-xs truncate shadow-black drop-shadow-md">
+          {vendorName}
+        </h3>
       </div>
 
       {/* Content */}
-      <div className="p-2.5">
-        <h3 className="font-bold text-sm text-foreground truncate leading-tight mb-1">
-          {vendor.businessName}
-        </h3>
-
-        <p className="text-[10px] text-muted-foreground truncate mb-1.5">
-          {specializations.slice(0, 2).join(" • ") || "Street Food"}
+      <div className="p-3">
+        <div className="flex justify-between items-start gap-2 mb-1">
+          <h4 className="font-extrabold text-foreground text-sm leading-tight line-clamp-2">{item.name}</h4>
+        </div>
+        
+        <p className="text-[10px] text-muted-foreground line-clamp-1 mb-2">
+          {item.description || item.category || "Delicious street food"}
         </p>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <MapPin className="h-2.5 w-2.5" />
-            <span className="truncate max-w-[60px]">{vendor.address?.split(",")[0] || "Local"}</span>
-          </div>
-          <Badge
-            variant="secondary"
-            className="text-[9px] px-1.5 py-0 border-0"
-            style={{ background: "#ffedd5", color: "#ea580c" }}
-          >
-            ₹50-150
-          </Badge>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="font-black text-gray-900 text-sm">₹{price}</span>
+          
+          {/* Add to Cart Actions */}
+          {cartItem ? (
+            <div className="flex items-center gap-1.5 bg-gray-50 rounded-lg border shadow-sm p-0.5" onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 focus:ring-0"
+                onClick={(e) => handleUpdateQuantity(e, -1)}
+              >
+                <Minus className="h-3 w-3" />
+              </Button>
+              <span className="w-4 text-center text-xs font-bold leading-none select-none">
+                {cartItem.quantity}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50 focus:ring-0"
+                onClick={(e) => handleUpdateQuantity(e, 1)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              size="sm" 
+              className="h-7 text-[10px] font-bold px-3 rounded-lg shadow-sm hover:shadow-md transition-shadow" 
+              style={{ background: "linear-gradient(to right, #ea580c, #f97316)" }}
+              onClick={handleAdd}
+            >
+              Add
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -111,9 +163,12 @@ export default function StreetFood() {
     console.log("StreetFood List mounted");
   }, []);
 
-  const { data: vendors, isLoading } = useQuery<ServiceProvider[]>({
-    queryKey: ["street-food-vendors"],
-    queryFn: () => apiRequest("GET", "/api/service-providers?category=street-food").then(res => res.json())
+  const { data: menuItems, isLoading } = useQuery<StreetFoodItemWithProvider[]>({
+    queryKey: ["street-food-items", activeCategory],
+    queryFn: () => {
+      const catParam = activeCategory !== "all" ? `?category=${encodeURIComponent(activeCategory)}` : "";
+      return apiRequest("GET", `/api/street-food-items${catParam}`).then(res => res.json());
+    }
   });
 
   const categories = [
@@ -125,11 +180,14 @@ export default function StreetFood() {
     { id: "chinese", label: "Chinese", icon: <span className="text-sm">🍜</span> },
   ];
 
-  const filteredVendors = vendors?.filter(v =>
-    v.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    v.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    v.specializations?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredItems = menuItems?.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.provider?.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.category?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
+
+  const { items, getTotalPrice } = useCartStore();
+  const cartTotalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen pb-24" style={{ background: "linear-gradient(to bottom, #fff7ed, var(--background), var(--background))" }}>
@@ -213,9 +271,9 @@ export default function StreetFood() {
           <div>
             <h2 className="font-bold text-lg text-foreground flex items-center gap-2">
               <Flame className="h-5 w-5" style={{ color: "#f97316" }} />
-              {filteredVendors.length} vendors near you
+              {filteredItems.length} items to crave
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Discover authentic street food</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Mouth-watering dishes nearby</p>
           </div>
         </div>
 
@@ -230,7 +288,7 @@ export default function StreetFood() {
               />
             ))}
           </div>
-        ) : filteredVendors.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <div className="text-center py-16">
             <div
               className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
@@ -238,23 +296,23 @@ export default function StreetFood() {
             >
               <ChefHat className="h-10 w-10" style={{ color: "#f97316" }} />
             </div>
-            <h3 className="font-bold text-lg text-foreground mb-2">No vendors found</h3>
+            <h3 className="font-bold text-lg text-foreground mb-2">No items found</h3>
             <p className="text-sm text-muted-foreground">Try searching for something else</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filteredVendors.map(vendor => (
-              <StreetVendorCard
-                key={vendor.id}
-                vendor={vendor}
-                onClick={() => setLocation(`/street-food/${vendor.id}`)}
+            {filteredItems.map(item => (
+              <StreetFoodItemCard
+                key={item.id}
+                item={item}
+                onClick={() => setLocation(`/street-food/${item.providerId}`)}
               />
             ))}
           </div>
         )}
 
         {/* Popular Tags Section */}
-        {!isLoading && filteredVendors.length > 0 && (
+        {!isLoading && filteredItems.length > 0 && (
           <div className="mt-8 mb-4">
             <h3 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4" style={{ color: "#f59e0b" }} />
@@ -285,6 +343,36 @@ export default function StreetFood() {
           </div>
         )}
       </div>
+
+      {/* Floating Cart Banner (Zomato Style) */}
+      {cartTotalItems > 0 && (
+        <div className="fixed bottom-20 md:bottom-6 left-4 right-4 z-[100] animate-in slide-in-from-bottom-5 cursor-pointer" onClick={() => window.location.href = "/checkout"}>
+          <div className="relative overflow-hidden bg-gray-900 rounded-2xl shadow-2xl p-3 flex justify-between items-center border border-gray-800">
+            {/* Left side: Cart Info */}
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center bg-white/10 rounded-full">
+                <ShoppingBasket className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-sm leading-tight">Shirur Express Cart</span>
+                <span className="text-gray-300 text-[11px] font-medium">{cartTotalItems} items • ₹{getTotalPrice().toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Right side: View Cart Button */}
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white rounded-xl h-10 px-5 font-bold shadow-md"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = "/checkout";
+              }}
+            >
+              View Cart
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
