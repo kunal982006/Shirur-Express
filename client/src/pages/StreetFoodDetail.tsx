@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,11 +46,107 @@ const OverviewTab = ({ vendor }: { vendor: ServiceProvider }) => (
   </div>
 );
 
+// Custom hook for a subtle, satisfying clicky sound when scrolling through items
+function useScrollSound() {
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const lastScrollY = useRef(0);
+  
+  // Track continuous scrolling to prevent infinite sound spam
+  const lastSoundTime = useRef(0);
+
+  useEffect(() => {
+    // Only works in browser environment
+    if (typeof window === "undefined") return;
+
+    const playTickSound = () => {
+      const now = Date.now();
+      if (now - lastSoundTime.current < 50) return; // Prevent overlapping sounds (max 1 per 50ms)
+      
+      try {
+        if (!audioCtxRef.current) {
+          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+          if (!AudioContext) return;
+          audioCtxRef.current = new AudioContext();
+        }
+        
+        const ctx = audioCtxRef.current;
+        if (ctx.state === 'suspended') return;
+
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        // A satisfying wooden tick/pop sound
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.04);
+        
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.04);
+        
+        lastSoundTime.current = now;
+      } catch (e) {
+        // Silently ignore audio errors
+      }
+    };
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      // Play a sound every time the user scrolls by 150 pixels
+      if (Math.abs(currentScrollY - lastScrollY.current) > 150) {
+        // Haptic feedback for mobile if enabled/allowed
+        if (navigator.vibrate) {
+            try { navigator.vibrate(5); } catch(e){} // very tiny vibration
+        }
+        playTickSound();
+        lastScrollY.current = currentScrollY;
+      }
+    };
+
+    const initAudio = () => {
+      try {
+        if (!audioCtxRef.current) {
+          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContext) {
+            audioCtxRef.current = new AudioContext();
+          }
+        }
+        if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+          audioCtxRef.current.resume();
+        }
+      } catch (e) {}
+    };
+
+    // User must interact with the page before AudioContext can resume
+    window.addEventListener('click', initAudio, { once: true });
+    window.addEventListener('touchstart', initAudio, { once: true, passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('click', initAudio);
+      window.removeEventListener('touchstart', initAudio);
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        try { audioCtxRef.current.close(); } catch(e){}
+      }
+    };
+  }, []);
+}
+
 export default function StreetFoodDetail() {
   const [, params] = useRoute("/street-food/:vendorId");
   const vendorId = params?.vendorId;
   const { addItem, items, removeItem } = useCartStore();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Initialize scroll sound effect
+  useScrollSound();
 
   // Verify mount
   useEffect(() => {
@@ -130,7 +226,7 @@ export default function StreetFoodDetail() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <div className="p-4 sticky top-0 bg-background z-10 border-b">
+        <div className="p-4 bg-background border-b mb-6 border-white/5 rounded-b-xl shadow-sm">
           <OverviewTab vendor={vendor} />
         </div>
 
