@@ -344,33 +344,21 @@ export default function StreetFood() {
         )}
       </div>
 
-      {/* Floating Cart Banner (Zomato Style) */}
+      {/* Existing Green Cart Banner for Services */}
       {cartTotalItems > 0 && (
-        <div className="fixed bottom-20 md:bottom-6 left-4 right-4 z-[100] animate-in slide-in-from-bottom-5 cursor-pointer" onClick={() => window.location.href = "/checkout"}>
-          <div className="relative overflow-hidden bg-gray-900 rounded-2xl shadow-2xl p-3 flex justify-between items-center border border-gray-800">
-            {/* Left side: Cart Info */}
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 flex items-center justify-center bg-white/10 rounded-full">
-                <ShoppingBasket className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-white font-bold text-sm leading-tight">Shirur Express Cart</span>
-                <span className="text-gray-300 text-[11px] font-medium">{cartTotalItems} items • ₹{getTotalPrice().toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Right side: View Cart Button */}
-            <Button
-              className="bg-green-600 hover:bg-green-700 text-white rounded-xl h-10 px-5 font-bold shadow-md"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.location.href = "/checkout";
-              }}
+        <div className="fixed bottom-20 left-4 right-4 z-[100] md:left-auto md:right-8 md:bottom-8 md:w-96 animate-in slide-in-from-bottom-5">
+            <Button 
+              className="w-full h-14 rounded-xl shadow-2xl bg-green-600 hover:bg-green-700 text-white flex justify-between items-center px-4"
+              onClick={() => window.location.href = "/checkout"}
             >
-              View Cart
-              <ChevronRight className="ml-1 h-4 w-4" />
+                <div className="flex flex-col items-start leading-tight">
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">{cartTotalItems} ITEMS</span>
+                    <span className="font-bold text-lg">₹{getTotalPrice().toFixed(2)} <span className="text-xs font-normal opacity-90">plus taxes</span></span>
+                </div>
+                <span className="font-bold flex items-center gap-2 text-sm uppercase tracking-wide">
+                    View Cart <ChevronRight className="h-4 w-4" />
+                </span>
             </Button>
-          </div>
         </div>
       )}
     </div>
