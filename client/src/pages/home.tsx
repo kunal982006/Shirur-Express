@@ -349,18 +349,19 @@ export default function Home() {
           <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-4 md:gap-6 overflow-x-auto pb-2 scrollbar-hide">
             {/* Ab yahan hum services array ko map karenge, jaisa Food UI mein gol buttons the */}
             {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
-              <div key={service.slug} className="flex flex-col items-center min-w-[70px]">
+              <div 
+                key={service.slug} 
+                className="flex flex-col items-center min-w-[70px] cursor-pointer"
+                onClick={() => {
+                  if (service.slug === "beauty") {
+                    setShowBeautyPopup(true);
+                  } else {
+                    navigate(`/${service.slug}`);
+                  }
+                }}
+              >
                 {/* ServiceCard ki jagah, chota icon button banao */}
-                <div
-                  onClick={() => {
-                    if (service.slug === "beauty") {
-                      setShowBeautyPopup(true);
-                    } else {
-                      navigate(`/${service.slug}`);
-                    }
-                  }}
-                  className="cursor-pointer p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all"
-                >
+                <div className="p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all">
                   <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
                 </div>
                 <span className="text-xs md:text-sm text-center mt-1.5 font-medium text-gray-600 truncate max-w-full">{service.name}</span>

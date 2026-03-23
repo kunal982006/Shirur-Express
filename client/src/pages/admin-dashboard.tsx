@@ -49,6 +49,7 @@ import {
     Utensils,
     Trash2,
     Image as ImageIcon,
+    XCircle,
 } from "lucide-react";
 
 import {
@@ -323,6 +324,45 @@ export default function AdminDashboard() {
                 variant: "destructive"
             });
         }
+    });
+
+    const cancelOrderMutation = useMutation({
+        mutationFn: async ({ type, id }: { type: string; id: string }) => {
+            const res = await api.patch(`/admin/orders/${type}/${id}/cancel`);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast({ title: "✅ Order Cancelled", description: "The order has been cancelled." });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+            setExpandedOrderId(null);
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to cancel order.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    const cancelBookingMutation = useMutation({
+        mutationFn: async (bookingId: string) => {
+            const res = await api.patch(`/admin/bookings/${bookingId}/cancel`);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast({ title: "✅ Booking Cancelled", description: "The booking has been cancelled." });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to cancel booking.",
+                variant: "destructive",
+            });
+        },
     });
 
     const broadcastMutation = useMutation({
@@ -727,10 +767,49 @@ export default function AdminDashboard() {
                                     {/* Expandable Order Details */}
                                     {expandedOrderId === o.id && (
                                         <div className="bg-black/20 border-t border-white/5 px-6 py-4">
-                                            <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-                                                <Package className="h-4 w-4 text-gray-500" /> Order Items ({o.items?.length || 0})
-                                            </h4>
-                                            
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h4 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                                                    <Package className="h-4 w-4 text-gray-500" /> Order Items ({o.items?.length || 0})
+                                                </h4>
+                                                {/* Cancel Order Button — only for active orders */}
+                                                {o.status && !['cancelled', 'delivered', 'completed'].includes(o.status) && (
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-red-400 hover:text-red-300 hover:bg-red-500/15 border border-red-500/30 rounded-lg px-3 py-1.5 h-auto text-xs font-semibold gap-1.5"
+                                                                disabled={cancelOrderMutation.isPending}
+                                                            >
+                                                                {cancelOrderMutation.isPending ? (
+                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                ) : (
+                                                                    <XCircle className="h-3.5 w-3.5" />
+                                                                )}
+                                                                Cancel Order
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-gray-400">
+                                                                    This will mark the order as <span className="text-red-400 font-semibold">cancelled</span>. The provider will no longer see it as an active order. This action cannot be undone.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Keep Order</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={() => cancelOrderMutation.mutate({ type: o.orderType, id: o.id })}
+                                                                    className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                                                >
+                                                                    Yes, Cancel Order
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                )}
+                                            </div>
+
                                             {!o.items || o.items.length === 0 ? (
                                                 <p className="text-sm text-gray-500 italic">No items details available.</p>
                                             ) : (
@@ -776,7 +855,7 @@ export default function AdminDashboard() {
                             {!filteredBookings || filteredBookings.length === 0 ? (
                                 <p className="text-center text-gray-600 py-12">No bookings found</p>
                             ) : filteredBookings.map(b => (
-                                <div key={b.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                                <div key={b.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors group">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
                                         b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
                                         }`}>
@@ -794,9 +873,48 @@ export default function AdminDashboard() {
                                         </div>
                                         {b.userAddress && <p className="text-sm text-gray-500 mt-1 truncate">{b.userAddress}</p>}
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
-                                        <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
+                                    <div className="text-right shrink-0 flex items-center gap-3">
+                                        <div>
+                                            {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
+                                            <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
+                                        </div>
+                                        {/* Cancel Booking Button — only for active bookings */}
+                                        {b.status && !['cancelled', 'completed'].includes(b.status) && (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 text-red-500/60 hover:text-red-400 hover:bg-red-500/15 rounded-xl opacity-0 group-hover:opacity-100 transition-all"
+                                                        disabled={cancelBookingMutation.isPending}
+                                                        title="Cancel Booking"
+                                                    >
+                                                        {cancelBookingMutation.isPending ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <XCircle className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
+                                                        <AlertDialogDescription className="text-gray-400">
+                                                            This will mark the booking as <span className="text-red-400 font-semibold">cancelled</span>. The service provider will no longer see it as an active booking. This cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Keep Booking</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => cancelBookingMutation.mutate(b.id)}
+                                                            className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                                        >
+                                                            Yes, Cancel Booking
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        )}
                                     </div>
                                 </div>
                             ))}

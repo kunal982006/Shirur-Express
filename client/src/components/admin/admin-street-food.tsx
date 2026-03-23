@@ -200,7 +200,9 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
             if (vendorLogoEdit) {
                 formData.append("image", vendorLogoEdit);
             }
-            return api.put(`/admin/street-food/vendors/${vendor?.id}`, formData).then(r => r.data);
+            return api.put(`/admin/street-food/vendors/${vendor?.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            }).then(r => r.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
@@ -232,7 +234,9 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
             if (!galleryUploadFile) return;
             const formData = new FormData();
             formData.append("image", galleryUploadFile);
-            return api.post(`/admin/street-food/vendors/${vendor?.id}/gallery`, formData).then(r => r.data);
+            return api.post(`/admin/street-food/vendors/${vendor?.id}/gallery`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            }).then(r => r.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["/api/admin/street-food/vendors"] });
@@ -271,9 +275,13 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                 formData.append("imageUrl", imageUrl);
             }
             if (editingItemId) {
-                return api.put(`/admin/street-food/vendors/${vendor?.id}/menu/${editingItemId}`, formData).then(r => r.data);
+                return api.put(`/admin/street-food/vendors/${vendor?.id}/menu/${editingItemId}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                }).then(r => r.data);
             }
-            return api.post(`/admin/street-food/vendors/${vendor?.id}/menu`, formData).then(r => r.data);
+            return api.post(`/admin/street-food/vendors/${vendor?.id}/menu`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            }).then(r => r.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [`/api/admin/street-food/vendors/${vendor?.id}/menu`] });

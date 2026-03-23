@@ -3291,6 +3291,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/admin/orders/:type/:id/cancel — Admin cancels any order
+  app.patch("/api/admin/orders/:type/:id/cancel", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, id } = req.params;
+
+      if (!['grocery', 'street_food', 'restaurant'].includes(type)) {
+        return res.status(400).json({ message: "Invalid order type. Must be grocery, street_food, or restaurant." });
+      }
+
+      let updatedOrder;
+      if (type === 'grocery') {
+        const [result] = await db
+          .update(groceryOrders)
+          .set({ status: 'cancelled' })
+          .where(eq(groceryOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      } else if (type === 'street_food') {
+        const [result] = await db
+          .update(streetFoodOrders)
+          .set({ status: 'cancelled' })
+          .where(eq(streetFoodOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      } else {
+        // restaurant
+        const [result] = await db
+          .update(restaurantOrders)
+          .set({ status: 'cancelled' })
+          .where(eq(restaurantOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      }
+
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found." });
+      }
+
+      console.log(`[Admin Cancel] Order ${id} (${type}) cancelled by admin.`);
+      res.json({ message: "Order cancelled successfully.", order: updatedOrder });
+    } catch (error: any) {
+      console.error("Admin cancel order error:", error);
+      res.status(500).json({ message: error.message || "Error cancelling order" });
+    }
+  });
+
+  // PATCH /api/admin/bookings/:id/cancel — Admin cancels any booking
+  app.patch("/api/admin/bookings/:id/cancel", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const [updatedBooking] = await db
+        .update(bookings)
+        .set({ status: 'cancelled' })
+        .where(eq(bookings.id, id))
+        .returning();
+
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found." });
+      }
+
+      console.log(`[Admin Cancel] Booking ${id} cancelled by admin.`);
+      res.json({ message: "Booking cancelled successfully.", booking: updatedBooking });
+    } catch (error: any) {
+      console.error("Admin cancel booking error:", error);
+      res.status(500).json({ message: error.message || "Error cancelling booking" });
+    }
+  });
+
   // GET /api/admin/providers — All providers with category
   app.get("/api/admin/providers", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {

@@ -21,6 +21,7 @@ export default function SearchResults() {
     const initialTerm = queryParams.get("term") || "";
     const [searchTerm, setSearchTerm] = useState(initialTerm);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [showBeautyPopup, setShowBeautyPopup] = useState(false);
     
     // Autocomplete state
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -240,7 +241,17 @@ export default function SearchResults() {
                                 <h2 className="text-lg font-bold mb-3 px-1">Services</h2>
                                 <div className="grid grid-cols-2 gap-3">
                                     {services.map((service: any) => (
-                                        <Card key={service.id} onClick={() => setLocation(`/${service.slug}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                        <Card 
+                                            key={service.id} 
+                                            onClick={() => {
+                                                if (service.slug === "beauty") {
+                                                    setShowBeautyPopup(true);
+                                                } else {
+                                                    setLocation(`/${service.slug}`);
+                                                }
+                                            }} 
+                                            className="cursor-pointer hover:border-primary/50 transition-colors"
+                                        >
                                             <CardContent className="p-4 flex items-center gap-3">
                                                 <div className={`p-2 rounded-full bg-${service.color || 'primary'}/10 text-primary`}>
                                                     {/* Icons are dynamic in home, here we use generic or need map */}
@@ -448,6 +459,35 @@ export default function SearchResults() {
                 )}
             </main>
             
+            {/* Beauty Parlor Expansion Popup */}
+            {showBeautyPopup && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="max-w-[320px] w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4 bg-[#fcf9f2] border-0 shadow-2xl relative">
+                        <div className="w-24 h-20 relative flex items-center justify-center -mt-2">
+                            <div className="absolute inset-x-0 bottom-0 h-10 bg-orange-100 rounded-xl transform -skew-x-6 opacity-60"></div>
+                            <img src="/attached_assets/image.png" className="w-16 h-16 object-cover rounded-md z-10 shadow-sm border border-white" alt="Map Route" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                            <div className="hidden z-10 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
+                                <MapPin className="h-10 w-10 text-destructive" />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-1.5 mt-2">
+                            <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Connecting More Parlors</h3>
+                            <p className="text-sm text-gray-800 leading-snug font-medium pb-1">
+                                We are currently expanding our beauty parlor network. Until then, please enjoy our existing top-rated selections.
+                            </p>
+                        </div>
+                        
+                        <Button 
+                            className="w-full bg-[#5b8a3e] hover:bg-[#4b7a2e] text-white font-semibold h-11 text-base rounded-[14px] mt-1 shadow-sm"
+                            onClick={() => setShowBeautyPopup(false)}
+                        >
+                            OK
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Full-Screen Image Modal */}
             {selectedImage && (
                 <div 
