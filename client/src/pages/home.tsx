@@ -321,6 +321,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 4.5. Jijamata Eats & Other Streets (Popular Street Food Providers) */}
+      <HorizontalScrollList
+        title="Jijamata Eats & Other Streets"
+        items={popularData?.streetFoodProviders || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/street-food")}
+        renderItem={(provider: any) => (
+          <div onClick={() => navigate(`/street-food/${provider.id}`)} className="cursor-pointer group">
+            <div className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2" style={{ background: "linear-gradient(to bottom right, #fff7ed, #fef3c7)" }}>
+              <img
+                src={provider.profileImageUrl || provider.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60"}
+                alt={provider.businessName}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              {!provider.isAvailable && (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs uppercase tracking-wider border border-white/50 px-3 py-1 rounded-full">Closed</span>
+                </div>
+              )}
+              {/* Rating Badge */}
+              <div
+                className="absolute top-2 right-2 flex items-center gap-0.5 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg"
+                style={{ background: "linear-gradient(to right, #f59e0b, #ea580c)" }}
+              >
+                <span className="text-white">★</span> {provider.rating ? parseFloat(provider.rating.toString()).toFixed(1) : "New"}
+              </div>
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-10">
+                <h3 className="font-bold text-white text-sm truncate">{provider.businessName}</h3>
+                <p className="text-[10px] text-gray-300 truncate">{provider.address?.split(",")[0] || "Shirur"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+              <span className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded-md font-medium">Street Food</span>
+            </div>
+          </div>
+        )}
+      />
+
       {/* 5. Popular Street Food Section */}
       <HorizontalScrollList
         title="Popular Street Food"

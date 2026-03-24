@@ -2461,6 +2461,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- ADMIN BULK TOGGLE ROUTE ---
+  app.post("/api/admin/toggle-category-status", async (req: Request, res: Response) => {
+    try {
+      const { categorySlug, isAvailable } = req.body;
+      if (!categorySlug) return res.status(400).json({ message: "categorySlug required" });
+      
+      const category = await db.query.serviceCategories.findFirst({
+        where: eq(serviceCategories.slug, categorySlug)
+      });
+      if (!category) return res.status(404).json({ message: "Category not found" });
+
+      await db.update(serviceProviders)
+        .set({ isAvailable: Boolean(isAvailable) })
+        .where(eq(serviceProviders.categoryId, category.id));
+
+      res.json({ message: "Successfully toggled category providers", isAvailable });
+    } catch (error: any) {
+      console.error("Bulk toggle error:", error);
+      res.status(500).json({ message: error.message || "Error toggling category" });
+    }
+  });
+
   // --- RESTAURANT SPECIFIC MENU ROUTE ---
   app.get("/api/restaurant-menu-items", async (req: Request, res: Response) => {
     try {
@@ -3613,14 +3635,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/homepage/popular", async (_req: Request, res: Response) => {
     try {
       const data = await getCachedOrFetch('homepage_popular', 2 * 60 * 1000, async () => {
-        // Run all 4 DB queries in parallel instead of sequentially
-        const [streetFood, restaurants, cakes, menuItems] = await Promise.all([
+        // Run all DB queries in parallel instead of sequentially
+        const [streetFood, streetFoodProviders, restaurants, cakes, menuItems] = await Promise.all([
           storage.getPopularStreetFood(),
+          storage.getPopularStreetFoodProviders(),
           storage.getPopularRestaurants(),
           storage.getPopularCakes(),
           storage.getPopularRestaurantMenuItems(),
         ]);
-        return { streetFood, restaurants, cakes, menuItems };
+        return { streetFood, streetFoodProviders, restaurants, cakes, menuItems };
       });
       res.json(data);
     } catch (error: any) {

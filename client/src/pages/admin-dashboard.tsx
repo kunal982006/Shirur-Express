@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
                     <div className="max-w-4xl mx-auto space-y-6">
                         {/* Type Selection */}
                         <div className="flex gap-2">
-                            {(['restaurant', 'cake'] as const).map(type => (
+                            {(['restaurant', 'cake', 'street_food_vendor'] as const).map(type => (
                                 <button
                                     key={type}
                                     onClick={() => { setFeaturedType(type); setFeaturedSearch(""); }}
@@ -1164,7 +1164,7 @@ export default function AdminDashboard() {
                                         : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                         }`}
                                 >
-                                    {type === 'restaurant' ? 'Restaurants' : 'Cakes'}
+                                    {type === 'restaurant' ? 'Restaurants' : type === 'cake' ? 'Cakes' : 'Street Food'}
                                 </button>
                             ))}
                         </div>
@@ -1192,6 +1192,7 @@ export default function AdminDashboard() {
                                 // Filter providers based on the selected type
                                 if (featuredType === 'restaurant' && !catName.includes('restaurant')) return false;
                                 if (featuredType === 'cake' && !catName.includes('cake')) return false;
+                                if (featuredType === 'street_food_vendor' && !catName.includes('street')) return false;
 
                                 // Filter by search term
                                 if (featuredSearch && !p.businessName?.toLowerCase().includes(featuredSearch.toLowerCase())) return false;
@@ -1201,13 +1202,14 @@ export default function AdminDashboard() {
                                 <ProviderFeaturedAccordion
                                     key={provider.id.toString() + featuredType}
                                     provider={provider}
-                                    type={featuredType as "restaurant" | "cake"}
+                                    type={featuredType as "restaurant" | "cake" | "street_food_vendor"}
                                 />
                             ))}
                             {providers?.filter(p => {
                                 const catName = p.categoryName?.toLowerCase() || "";
                                 return (featuredType === 'restaurant' && catName.includes('restaurant')) ||
-                                    (featuredType === 'cake' && catName.includes('cake'));
+                                    (featuredType === 'cake' && catName.includes('cake')) ||
+                                    (featuredType === 'street_food_vendor' && catName.includes('street'));
                             }).length === 0 && (
                                     <div className="py-12 text-center text-gray-600 bg-[#111827] rounded-xl border border-white/5">
                                         No providers found for this category.
@@ -1228,13 +1230,13 @@ export default function AdminDashboard() {
 }
 
 // ─── Sub-component for Featured Section Providers ──────────────────
-function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, type: "street_food" | "restaurant" | "cake" }) {
+function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, type: "street_food_vendor" | "restaurant" | "cake" }) {
     const { toast } = useToast();
     const [isExpanded, setIsExpanded] = useState(false);
 
     const { data: menuItems, isLoading } = useQuery({
         queryKey: [`/api/admin/provider-menu/${type}/${provider.id}`],
-        queryFn: () => api.get(`/admin/provider-menu/${type}/${provider.id}`).then(r => r.data),
+        queryFn: () => api.get(`/admin/provider-menu/${type === 'street_food_vendor' ? 'street_food' : type}/${provider.id}`).then(r => r.data),
         enabled: isExpanded,
     });
 
@@ -1254,7 +1256,8 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
 
     // We manually update the local cache so the checkbox toggles instantly visually
     const queryClient = useQueryClient();
-    const handleToggle = (item: any) => {
+    
+    const handleItemToggle = (item: any) => {
         const newIsPopular = !item.isPopular;
 
         // Optimistic update
@@ -1264,9 +1267,25 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
         );
 
         togglePopularMutation.mutate({
-            type,
+            type: type === 'street_food_vendor' ? 'street_food' : type,
             id: item.id,
             isPopular: newIsPopular
+        });
+    };
+
+    const handleProviderToggle = (e: React.MouseEvent) => {
+        e.stopPropagation(); // prevent accordion expansion
+        const newIsPopular = !provider.isPopular;
+        togglePopularMutation.mutate({
+            type: type === 'restaurant' ? 'restaurant' : 'street_food_vendor', // type='cake' doesn't usually toggle the provider but we fallback to it if needed
+            id: provider.id,
+            isPopular: newIsPopular
+        });
+        
+        // Optimistic update for provider
+        queryClient.setQueryData(["/api/admin/service-providers"], (oldData: any[]) => {
+            if (!oldData) return oldData;
+            return oldData.map(p => p.id === provider.id ? { ...p, isPopular: newIsPopular } : p);
         });
     };
 
@@ -1274,10 +1293,10 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
         <div className="bg-[#111827] border border-white/5 rounded-xl overflow-hidden transition-all">
             {/* Header / Clickable row */}
             <div
-                className="flex justify-between items-center p-4 cursor-pointer hover:bg-white/[0.02]"
+                className="flex items-center p-4 cursor-pointer hover:bg-white/[0.02]"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
                     <div className="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10">
                         {provider.profileImageUrl ? (
                             <img src={provider.profileImageUrl} alt="" className="w-full h-full object-cover" />
@@ -1288,12 +1307,26 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                     <div>
                         <h4 className="font-semibold text-sm">{provider.businessName}</h4>
                         <p className="text-xs text-gray-400">
-                            {type === 'street_food' && "Street Food Vendor"}
+                            {type === 'street_food_vendor' && "Street Food Vendor"}
                             {type === 'restaurant' && "Restaurant Provider"}
                             {type === 'cake' && "Cake Baker"}
                         </p>
                     </div>
                 </div>
+                
+                {/* Switch for the Provider itself */}
+                {type !== 'cake' && (
+                    <div className="flex items-center gap-3 mr-4" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-xs text-gray-400">Popular Vendor</span>
+                        <Switch
+                            checked={provider.isPopular || false}
+                            onCheckedChange={() => handleProviderToggle({ stopPropagation: () => {} } as React.MouseEvent)}
+                            disabled={togglePopularMutation.isPending}
+                            className={`${provider.isPopular ? 'bg-yellow-500' : 'bg-gray-700'}`}
+                        />
+                    </div>
+                )}
+
                 <div className="flex flex-col items-end">
                     <span className="text-xs text-blue-400 font-medium bg-blue-500/10 px-2 py-1 rounded-md mb-1 border border-blue-500/20">
                         {isExpanded ? "Hide Menu" : "View Menu"}
@@ -1333,7 +1366,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                                     <div className="flex items-center justify-end shrink-0">
                                         <Switch
                                             checked={item.isPopular}
-                                            onCheckedChange={() => handleToggle(item)}
+                                            onCheckedChange={() => handleItemToggle(item)}
                                             disabled={togglePopularMutation.isPending}
                                             className={`${item.isPopular ? 'bg-yellow-500' : 'bg-gray-700'}`}
                                         />
