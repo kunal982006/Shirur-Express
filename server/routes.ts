@@ -2495,10 +2495,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/cakes", async (req: Request, res: Response) => {
     try {
       // Fetch all active cakes for the main cake shop display
-      const allCakes = await db.select()
+      const records = await db.select({ cake: cakeProducts })
         .from(cakeProducts)
+        .innerJoin(serviceProviders, eq(cakeProducts.providerId, serviceProviders.id))
+        .where(
+          and(
+            eq(cakeProducts.isAvailable, true),
+            eq(serviceProviders.isAvailable, true)
+          )
+        )
         .orderBy(asc(cakeProducts.price), desc(cakeProducts.isPopular), desc(cakeProducts.id));
-      res.json(allCakes);
+        
+      res.json(records.map(r => r.cake));
     } catch (error: any) {
       console.error("Get all cakes error:", error);
       res.status(500).json({ message: error.message || "Error fetching cakes" });

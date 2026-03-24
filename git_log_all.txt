@@ -1,0 +1,29 @@
+﻿commit 799efdd631c892a03dd5e0878ceab14dc6865acb
+Author: Kunal Shinde <kunal982006@gmail.com>
+Date:   Mon Mar 23 19:12:12 2026 +0530
+
+    cart system fixed
+
+commit 462bca33f1177a46e68149e1bba0edb9bed08989
+Author: Kunal Shinde <kunal982006@gmail.com>
+Date:   Mon Mar 23 18:50:23 2026 +0530
+
+    cart system fixed
+
+commit c0067c844767a56b4dfd4a3163049074e59ddc78
+Author: Kunal Shinde <kunal982006@gmail.com>
+Date:   Mon Mar 23 17:58:04 2026 +0530
+
+    Sticky header removed and bringed scrolling sound
+
+commit 46db7e200611832179d6bd74eb2855df3ccad987
+Author: Kunal Shinde <kunal982006@gmail.com>
+Date:   Mon Mar 23 17:48:59 2026 +0530
+
+    strreetfood image & cleared all order list & given cancel button to admin to admin
+
+commit b4fddf231b7f376b5048055bbda1d2fa6a80dce5
+Author: Kunal Shinde <kunal982006@gmail.com>
+Date:   Sun Mar 22 09:38:14 2026 +0530
+
+    pop up

@@ -2212,9 +2212,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPopularCakes(): Promise<CakeProduct[]> {
-    return db.select()
+    const records = await db.select({ cake: cakeProducts })
       .from(cakeProducts)
-      .where(eq(cakeProducts.isPopular, true));
+      .innerJoin(serviceProviders, eq(cakeProducts.providerId, serviceProviders.id))
+      .where(
+        and(
+          eq(cakeProducts.isPopular, true),
+          eq(cakeProducts.isAvailable, true),
+          eq(serviceProviders.isAvailable, true)
+        )
+      );
+    return records.map(r => r.cake);
   }
 
   async searchItemsForAdmin(query: string, type: 'street_food' | 'restaurant' | 'cake'): Promise<any[]> {
