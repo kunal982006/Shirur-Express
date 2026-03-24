@@ -1246,7 +1246,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
         onSuccess: (updatedItem) => {
             toast({
                 title: "Updated",
-                description: `${updatedItem.name} ${updatedItem.isPopular ? 'added to' : 'removed from'} popular items.`
+                description: `${updatedItem.name || updatedItem.businessName} ${updatedItem.isPopular ? 'added to' : 'removed from'} popular items.`
             });
         },
         onError: (error: any) => {
@@ -1315,7 +1315,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                 </div>
                 
                 {/* Switch for the Provider itself */}
-                {type !== 'cake' && (
+                {type === 'restaurant' && (
                     <div className="flex items-center gap-3 mr-4" onClick={(e) => e.stopPropagation()}>
                         <span className="text-xs text-gray-400">Popular Vendor</span>
                         <Switch
