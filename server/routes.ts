@@ -199,6 +199,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId!;
       const orderData = insertGroceryOrderSchema.parse(req.body);
+
+      // SERVER-SIDE: Enforce ₹50 minimum order for grocery
+      const GROCERY_MIN_ORDER = 50;
+      const orderTotal = parseFloat(orderData.total || '0');
+      const orderSubtotal = parseFloat(orderData.subtotal || '0');
+      // Also recalculate from items as a failsafe
+      const itemsTotal = Array.isArray(orderData.items)
+        ? orderData.items.reduce((sum: number, item: any) => sum + (parseFloat(item.price) || 0) * (item.quantity || 1), 0)
+        : 0;
+      const effectiveTotal = Math.max(orderTotal, orderSubtotal, itemsTotal);
+
+      if (effectiveTotal < GROCERY_MIN_ORDER) {
+        return res.status(400).json({ message: `Minimum order amount is ₹${GROCERY_MIN_ORDER}. Your order total is ₹${effectiveTotal.toFixed(2)}.` });
+      }
+
       const order = await storage.createGroceryOrder({ ...orderData, userId });
       
       if (orderData.paymentMethod === 'cod') {
@@ -2646,6 +2661,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CUSTOMER ORDER ROUTES
   // =========================================
 
+  // Get Customer's Grocery Orders
+  app.get("/api/customer/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const orders = await storage.getGroceryOrdersByUser(userId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get customer grocery orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching grocery orders" });
+    }
+  });
+
   // Get Customer's Restaurant Orders
   app.get("/api/customer/restaurant-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
@@ -3705,11 +3732,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Toggle popular status (Admin only)
   app.post("/api/admin/toggle-popular", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
-      const { type, id, isPopular } = req.body;
+      const { type, id, isPopular, popularOrder } = req.body;
       if (!type || !id || isPopular === undefined) {
         return res.status(400).json({ message: "Type, id, and isPopular are required" });
       }
-      const updatedItem = await storage.togglePopularStatus(type, id, isPopular);
+      const updatedItem = await storage.togglePopularStatus(type, id, isPopular, popularOrder);
       res.json(updatedItem);
     } catch (error: any) {
       console.error("Toggle popular status error:", error);

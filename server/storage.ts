@@ -318,7 +318,7 @@ export interface IStorage {
   markOrderReadyForPickup(orderId: string, providerId: string): Promise<RestaurantOrder>;
 
   // POPULAR ITEMS MANAGEMENT
-  togglePopularStatus(type: 'street_food' | 'street_food_vendor' | 'restaurant' | 'cake', id: string, isPopular: boolean): Promise<any>;
+  togglePopularStatus(type: 'street_food' | 'street_food_vendor' | 'restaurant' | 'cake', id: string, isPopular: boolean, popularOrder?: number): Promise<any>;
   getPopularStreetFood(): Promise<StreetFoodItem[]>;
   getPopularStreetFoodProviders(): Promise<ServiceProvider[]>;
   getPopularRestaurants(): Promise<ServiceProvider[]>;
@@ -2169,10 +2169,12 @@ export class DatabaseStorage implements IStorage {
 
   // --- POPULAR ITEMS MANAGEMENT ---
 
-  async togglePopularStatus(type: 'street_food' | 'street_food_vendor' | 'restaurant' | 'cake', id: string, isPopular: boolean): Promise<any> {
+  async togglePopularStatus(type: 'street_food' | 'street_food_vendor' | 'restaurant' | 'cake', id: string, isPopular: boolean, popularOrder?: number): Promise<any> {
     if (type === 'street_food') {
+      const updateData: any = { isPopular };
+      if (popularOrder !== undefined) updateData.popularOrder = popularOrder;
       const [item] = await db.update(streetFoodItems)
-        .set({ isPopular })
+        .set(updateData)
         .where(eq(streetFoodItems.id, id))
         .returning();
       return item;
@@ -2184,8 +2186,10 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return provider;
     } else if (type === 'cake') {
+      const updateData: any = { isPopular };
+      if (popularOrder !== undefined) updateData.popularOrder = popularOrder;
       const [cake] = await db.update(cakeProducts)
-        .set({ isPopular })
+        .set(updateData)
         .where(eq(cakeProducts.id, id))
         .returning();
       return cake;
@@ -2196,7 +2200,8 @@ export class DatabaseStorage implements IStorage {
   async getPopularStreetFood(): Promise<StreetFoodItem[]> {
     return db.select()
       .from(streetFoodItems)
-      .where(and(eq(streetFoodItems.isPopular, true), eq(streetFoodItems.isAvailable, true)));
+      .where(and(eq(streetFoodItems.isPopular, true), eq(streetFoodItems.isAvailable, true)))
+      .orderBy(sql`CASE WHEN ${streetFoodItems.popularOrder} = 0 THEN 9999 ELSE ${streetFoodItems.popularOrder} END ASC`);
   }
 
   async getPopularStreetFoodProviders(): Promise<ServiceProvider[]> {
@@ -2241,7 +2246,8 @@ export class DatabaseStorage implements IStorage {
           eq(cakeProducts.isAvailable, true),
           eq(serviceProviders.isAvailable, true)
         )
-      );
+      )
+      .orderBy(sql`CASE WHEN ${cakeProducts.popularOrder} = 0 THEN 9999 ELSE ${cakeProducts.popularOrder} END ASC`);
     return records.map(r => r.cake);
   }
 
@@ -2622,7 +2628,8 @@ export class DatabaseStorage implements IStorage {
       ),
       with: {
         provider: true
-      }
+      },
+      orderBy: [sql`CASE WHEN ${restaurantMenuItems.popularOrder} = 0 THEN 9999 ELSE ${restaurantMenuItems.popularOrder} END ASC`]
     }) as any;
   }
 }

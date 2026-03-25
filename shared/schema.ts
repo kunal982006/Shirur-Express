@@ -149,6 +149,7 @@ export const cakeProducts = pgTable("cake_products", {
   weightOptions: jsonb("weight_options").$type<Array<{ weight: string; price: number }>>(),
   isCustomizable: boolean("is_customizable").default(false),
   isPopular: boolean("is_popular").default(false),
+  popularOrder: integer("popular_order").default(0),
   isAvailable: boolean("is_available").default(true),
 });
 
@@ -182,6 +183,7 @@ export const streetFoodItems = pgTable("street_food_items", {
   isAvailable: boolean("is_available").default(true),
   spicyLevel: text("spicy_level"),
   isPopular: boolean("is_popular").default(false), // New field
+  popularOrder: integer("popular_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -197,6 +199,7 @@ export const restaurantMenuItems = pgTable("restaurant_menu_items", {
   isAvailable: boolean("is_available").default(true),
   cuisine: text("cuisine"),
   isPopular: boolean("is_popular").default(false), // New field
+  popularOrder: integer("popular_order").default(0),
 });
 
 

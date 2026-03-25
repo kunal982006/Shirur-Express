@@ -1241,7 +1241,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
     });
 
     const togglePopularMutation = useMutation({
-        mutationFn: (data: { type: string, id: string, isPopular: boolean }) =>
+        mutationFn: (data: { type: string, id: string, isPopular: boolean, popularOrder?: number }) =>
             api.post("/admin/toggle-popular", data).then(r => r.data),
         onSuccess: (updatedItem) => {
             toast({
@@ -1270,6 +1270,21 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
             type: type === 'street_food_vendor' ? 'street_food' : type,
             id: item.id,
             isPopular: newIsPopular
+        });
+    };
+
+    const handleItemOrderChange = (item: any, newOrder: number) => {
+        // Optimistic update
+        queryClient.setQueryData(
+            [`/api/admin/provider-menu/${type}/${provider.id}`],
+            (oldData: any[]) => oldData?.map(i => i.id === item.id ? { ...i, popularOrder: newOrder } : i)
+        );
+
+        togglePopularMutation.mutate({
+            type: type === 'street_food_vendor' ? 'street_food' : type,
+            id: item.id,
+            isPopular: item.isPopular,
+            popularOrder: newOrder
         });
     };
 
@@ -1363,7 +1378,24 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                                     </div>
 
                                     {/* Toggle Switch */}
-                                    <div className="flex items-center justify-end shrink-0">
+                                    <div className="flex items-center justify-end shrink-0 gap-3">
+                                        {item.isPopular && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-400">Order:</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className="w-16 bg-black/50 border border-white/10 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                    defaultValue={item.popularOrder || 0}
+                                                    onBlur={(e) => {
+                                                        const newVal = parseInt(e.target.value) || 0;
+                                                        if (newVal !== item.popularOrder) {
+                                                            handleItemOrderChange(item, newVal);
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                         <Switch
                                             checked={item.isPopular}
                                             onCheckedChange={() => handleItemToggle(item)}

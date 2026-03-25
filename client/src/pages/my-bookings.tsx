@@ -484,8 +484,15 @@ export default function MyBookings() {
                               {format(new Date(order.createdAt || new Date()), "PPP p")}
                             </p>
                           </div>
-                          <Badge variant="default" className="bg-green-600">
-                            {order.status?.toUpperCase() || "CONFIRMED"}
+                          <Badge variant="default" className={
+                            order.status === 'delivered' ? 'bg-green-600' :
+                            order.status === 'out_for_delivery' ? 'bg-orange-500' :
+                            order.status === 'assigned' ? 'bg-blue-500' :
+                            order.status === 'ready_for_pickup' ? 'bg-purple-500' :
+                            order.status === 'cancelled' ? 'bg-red-600' :
+                            'bg-green-600'
+                          }>
+                            {(order.status || 'pending').replace(/_/g, ' ').toUpperCase()}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -507,11 +514,34 @@ export default function MyBookings() {
                             </div>
                           </div>
 
-                          <div className="text-sm text-muted-foreground">
+                          {/* Delivery OTP Display */}
+                          {order.deliveryOtp && ['out_for_delivery'].includes(order.status || '') && (
+                            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <Key className="h-5 w-5 text-yellow-700 dark:text-yellow-300" />
+                                <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                                  Delivery OTP — Share with delivery partner
+                                </p>
+                              </div>
+                              <p className="text-3xl font-bold tracking-[0.3em] text-yellow-800 dark:text-yellow-100">
+                                {order.deliveryOtp}
+                              </p>
+                              <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+                                The delivery partner will ask for this OTP to confirm delivery
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4" />
                               <span>{order.deliveryAddress}</span>
                             </div>
+                            {order.paymentMethod && (
+                              <Badge variant="outline" className="text-xs">
+                                {order.paymentMethod === 'cod' ? '💵 COD' : '💳 Online'}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </CardContent>
