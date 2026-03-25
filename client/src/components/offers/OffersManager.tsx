@@ -320,6 +320,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
         // Build discounted prices object if combo price is set
         const discountedPrices: Record<string, number> = {};
+        const comboDetails = []; // Added comboDetails array
         if (comboPrice && selectedProducts.length > 0) {
             // Distribute discount proportionally across products (for display purposes)
             const discountRatio = comboPriceNum / totalIndividualPrice;
@@ -327,6 +328,16 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
                 const originalPrice = typeof p.price === 'string' ? parseFloat(p.price) : p.price;
                 discountedPrices[p.id] = Math.round(originalPrice * discountRatio * 100) / 100;
             });
+
+            // Save actual combo details for 1-click buy
+            if (selectedProducts.length >= 2) {
+                comboDetails.push({
+                    name: title + " Combo",
+                    originalPrice: totalIndividualPrice,
+                    discountedPrice: comboPriceNum,
+                    productIds: selectedProducts.map(p => p.id),
+                });
+            }
         }
 
         saveOfferMutation.mutate({
@@ -336,6 +347,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
             productType,
             productIds: selectedProducts.map(p => p.id),
             discountedPrices: Object.keys(discountedPrices).length > 0 ? discountedPrices : undefined,
+            comboDetails: comboDetails.length > 0 ? comboDetails : undefined, // Include comboDetails
             expiryDate,
             isActive: true,
         });

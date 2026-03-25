@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus, X } from "lucide-react";
+import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus, X, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,12 @@ interface OfferDetails {
     productType: string;
     productIds?: string[];
     discountedPrices?: Record<string, number>;
+    comboDetails?: Array<{
+        name: string;
+        originalPrice: number;
+        discountedPrice: number;
+        productIds: string[];
+    }>;
     expiryDate: string;
     isActive: boolean;
     provider?: {
@@ -157,6 +163,34 @@ export default function OfferDetailsPage() {
         updateQuantity(productId, -1);
     };
 
+    const handleAddComboToCart = (combo: any, offerData: OfferDetails) => {
+        if (isExpired) return;
+        
+        const comboId = `combo_${offerData.id}_${combo.name.replace(/\s+/g, '_')}`;
+        const existingItem = items.find(item => item.id === comboId);
+        
+        if (existingItem) {
+            updateQuantity(comboId, 1);
+            toast({
+                title: "➕ Quantity Updated!",
+                description: `${combo.name} quantity increased to ${existingItem.quantity + 1}.`,
+            });
+        } else {
+            addItem({
+                id: comboId,
+                name: combo.name, // Already has "Combo" in the title from OffersManager
+                price: combo.discountedPrice,
+                imageUrl: offerData.imageUrl || undefined,
+                providerId: offerData.providerId,
+                itemType: getItemType(),
+            });
+            toast({
+                title: "✅ Added to Cart!",
+                description: `${combo.name} has been added to your cart.`,
+            });
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -259,6 +293,85 @@ export default function OfferDetailsPage() {
                         <p className="text-red-600 text-center font-medium">
                             This offer has expired. Products may no longer be available at these prices.
                         </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Special Combos */}
+            {offer.comboDetails && offer.comboDetails.length > 0 && (
+                <div className="max-w-4xl mx-auto p-4 border-b">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Package className="h-6 w-6 text-green-600" />
+                        <h3 className="font-bold text-xl text-green-700">Special Combos</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {offer.comboDetails.map((combo, idx) => {
+                            const comboId = `combo_${offer.id}_${combo.name.replace(/\s+/g, '_')}`;
+                            const cartQuantity = getCartQuantity(comboId);
+                            
+                            return (
+                                <Card key={idx} className="overflow-hidden border-green-200 bg-green-50 shadow-sm relative transition-all hover:shadow-md">
+                                    <Badge className="absolute top-3 right-3 bg-green-600 text-white z-10 border-none shadow-sm px-2 py-0.5 text-xs font-bold">
+                                        Save ₹{(combo.originalPrice - combo.discountedPrice).toFixed(0)}!
+                                    </Badge>
+                                    <div className="flex items-start p-4 h-full">
+                                        <div className="h-16 w-16 shrink-0 rounded-lg bg-white mr-4 flex items-center justify-center border border-green-100 shadow-sm">
+                                            <Package className="h-8 w-8 text-green-500" />
+                                        </div>
+                                        <div className="flex flex-col flex-1 h-full min-w-0">
+                                            <h4 className="font-bold text-lg text-green-900 leading-tight mb-1 pr-16 truncate">{combo.name}</h4>
+                                            {/* Show included items */}
+                                            {offer.products && (
+                                                <p className="text-sm text-green-700/80 mb-4 line-clamp-2 leading-snug">
+                                                    Includes: <span className="font-medium text-green-800">{offer.products.filter(p => combo.productIds.includes(p.id)).map(p => p.name).join(', ')}</span>
+                                                </p>
+                                            )}
+                                            
+                                            <div className="mt-auto flex items-end justify-between">
+                                                <div>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-black text-2xl text-green-700 tracking-tight">₹{combo.discountedPrice}</span>
+                                                        <span className="text-sm text-green-600/60 line-through font-medium">₹{combo.originalPrice}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {cartQuantity > 0 ? (
+                                                    <div className="flex items-center h-10 bg-green-600 rounded-md shadow-sm shrink-0">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-10 w-10 p-0 text-white hover:bg-green-700 hover:text-white rounded-l-md rounded-r-none"
+                                                            onClick={() => handleDecreaseQuantity(comboId)}
+                                                        >
+                                                            <Minus className="h-4 w-4" />
+                                                        </Button>
+                                                        <span className="font-bold text-white w-8 text-center">{cartQuantity}</span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-10 w-10 p-0 text-white hover:bg-green-700 hover:text-white rounded-r-md rounded-l-none"
+                                                            onClick={() => handleIncreaseQuantity(comboId)}
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-green-600 hover:bg-green-700 text-white shadow-sm font-medium h-10 px-5 shrink-0"
+                                                        onClick={() => handleAddComboToCart(combo, offer)}
+                                                        disabled={isExpired}
+                                                    >
+                                                        <ShoppingCart className="h-4 w-4 mr-2" />
+                                                        Add
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            );
+                        })}
                     </div>
                 </div>
             )}

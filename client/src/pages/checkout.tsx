@@ -255,7 +255,13 @@ export default function Checkout() {
       } else {
         // Grocery Order Payload
         orderPayload = {
-          items: items.map(item => ({ productId: item.id, quantity: item.quantity, price: item.price })),
+          items: items.map(item => ({ 
+            productId: item.id, 
+            quantity: item.quantity, 
+            price: item.price,
+            name: item.name,        // NEW: Required so provider can see Combo name
+            imageUrl: item.imageUrl // NEW: Support images for combos/products
+          })),
           subtotal: subtotal.toFixed(2),
           platformFee: platformFee.toFixed(2),
           deliveryFee: deliveryFee.toFixed(2),
