@@ -870,6 +870,16 @@ export default function AdminDashboard() {
                                             <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(b.status)}`}>
                                                 {(b.status || 'pending').replace(/_/g, ' ')}
                                             </span>
+                                            {b.paymentMethod === 'cod' && (
+                                                <span className="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold uppercase tracking-wider">
+                                                    COD
+                                                </span>
+                                            )}
+                                            {b.paymentMethod === 'online' && (
+                                                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                                                    PAID Online
+                                                </span>
+                                            )}
                                         </div>
                                         {b.userAddress && <p className="text-sm text-gray-500 mt-1 truncate">{b.userAddress}</p>}
                                     </div>

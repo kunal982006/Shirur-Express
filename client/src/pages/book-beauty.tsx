@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     Form,
     FormControl,
@@ -41,6 +42,7 @@ const bookingSchema = z.object({
         required_error: "Please select a date",
     }),
     notes: z.string().optional(),
+    paymentMethod: z.enum(["online", "cod"]).default("cod"),
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -78,6 +80,7 @@ export default function BookBeauty() {
             userPhone: user?.phone || "",
             userAddress: "",
             notes: "",
+            paymentMethod: "cod",
         },
     });
 
@@ -100,7 +103,8 @@ export default function BookBeauty() {
                 userAddress: data.userAddress,
                 notes: finalNotes,
                 estimatedCost: totalCost,
-                isUrgent: false
+                isUrgent: false,
+                paymentMethod: data.paymentMethod
             };
 
             const response = await apiRequest("POST", "/api/bookings", bookingData);
@@ -224,6 +228,42 @@ export default function BookBeauty() {
                                             <FormItem>
                                                 <FormLabel>Notes</FormLabel>
                                                 <FormControl><Textarea placeholder="Any special requests..." {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {/* Payment Method */}
+                                    <FormField
+                                        control={form.control}
+                                        name="paymentMethod"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-3">
+                                                <FormLabel>Payment Method</FormLabel>
+                                                <FormControl>
+                                                    <RadioGroup
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                        className="flex flex-col space-y-1"
+                                                    >
+                                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <RadioGroupItem value="online" />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal cursor-pointer">
+                                                                💳 Pay Online 
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <RadioGroupItem value="cod" />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal cursor-pointer">
+                                                                💵 Cash on Delivery
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

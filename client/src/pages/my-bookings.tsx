@@ -41,6 +41,7 @@ type BookingWithDetails = {
     serviceCharge: number;
     spareParts?: Array<{ part: string; cost: number }>;
   };
+  paymentMethod?: string;
   problem?: {
     name: string;
   };
@@ -271,9 +272,16 @@ export default function MyBookings() {
                             </p>
 
                             <div className="space-y-2 text-sm">
-                              <div className="flex items-start gap-2 text-muted-foreground">
-                                <MapPin className="h-4 w-4 mt-0.5" />
-                                <span>{booking.userAddress}</span>
+                              <div className="flex justify-between items-start w-full pr-4 text-muted-foreground">
+                                <span className="flex items-start gap-2">
+                                  <MapPin className="h-4 w-4 mt-0.5" />
+                                  <span>{booking.userAddress}</span>
+                                </span>
+                                {booking.paymentMethod && (
+                                  <Badge variant="outline" className="text-xs whitespace-nowrap ml-2">
+                                    {booking.paymentMethod === 'cod' ? '💵 COD' : '💳 Online'}
+                                  </Badge>
+                                )}
                               </div>
                             </div>
 

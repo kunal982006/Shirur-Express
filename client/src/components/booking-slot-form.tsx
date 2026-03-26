@@ -25,6 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,7 @@ const bookingSchema = z.object({
   preferredTimeSlot: z.string().min(1, "Please select a time slot"),
   bookingType: z.enum(["instant", "scheduled"]), // Added bookingType
   notes: z.string().optional(),
+  paymentMethod: z.enum(["online", "cod"]).default("cod"),
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -88,6 +90,7 @@ export default function BookingSlotForm({
       notes: "",
       bookingType: "scheduled", // Default to scheduled
       scheduledDate: undefined,
+      paymentMethod: "cod",
     },
   });
 
@@ -193,6 +196,7 @@ export default function BookingSlotForm({
         userPhone: data.userPhone,
         userAddress: data.userAddress,
         notes: data.notes,
+        paymentMethod: data.paymentMethod,
       };
 
       const response = await apiRequest("POST", "/api/bookings", bookingData);
@@ -459,6 +463,42 @@ export default function BookingSlotForm({
                 <FormMessage />
               </FormItem>
             )}
+          />
+
+          {/* Payment Method */}
+          <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                  <FormItem className="space-y-3">
+                      <FormLabel>Payment Method</FormLabel>
+                      <FormControl>
+                          <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex flex-col space-y-1"
+                          >
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                      <RadioGroupItem value="online" />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                      💳 Pay Online 
+                                  </FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                      <RadioGroupItem value="cod" />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                      💵 Cash on Delivery
+                                  </FormLabel>
+                              </FormItem>
+                          </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                  </FormItem>
+              )}
           />
 
           <Button

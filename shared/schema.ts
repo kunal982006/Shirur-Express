@@ -107,6 +107,7 @@ export const bookings = pgTable("bookings", {
   serviceOtpExpiresAt: timestamp("service_otp_expires_at"),
   // Removed .references() to stop crash. Relation handles it.
   invoiceId: text("invoice_id"),
+  paymentMethod: text("payment_method").default("cod"),
 });
 
 export const invoices = pgTable("invoices", {
@@ -326,6 +327,7 @@ export const insertServiceProviderSchema = createInsertSchema(serviceProviders).
 export const insertBookingSchema = createInsertSchema(bookings).pick({
   serviceType: true, problemId: true, scheduledAt: true, preferredTimeSlots: true,
   userAddress: true, userPhone: true, notes: true, isUrgent: true, providerId: true,
+  paymentMethod: true,
 });
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
   items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true, paymentMethod: true,
