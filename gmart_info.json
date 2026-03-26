@@ -1,0 +1,41 @@
+{
+  "summary": [
+    {
+      "providerId": "exs8e1sk39ei23l5pc6vfu40",
+      "businessName": "grocery",
+      "productCount": 1731
+    }
+  ],
+  "sampleProducts": [
+    {
+      "name": "Sahyadri Elaichi Tea 500gm"
+    },
+    {
+      "name": "Aarambh 250gm"
+    },
+    {
+      "name": "Aarambh 250gm"
+    },
+    {
+      "name": "Tata Tea Pre.1kg"
+    },
+    {
+      "name": "Red Label Natural Care 500gm"
+    },
+    {
+      "name": "Red Label 500gm"
+    },
+    {
+      "name": "Vikram Gold 500gm"
+    },
+    {
+      "name": "Tata Gold 1kg"
+    },
+    {
+      "name": "Aarambh 500 gm"
+    },
+    {
+      "name": "Aarambh Assam Tea 1kg"
+    }
+  ]
+}
