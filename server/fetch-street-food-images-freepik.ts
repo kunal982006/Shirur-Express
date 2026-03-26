@@ -28,6 +28,8 @@ function markKeyExhausted(index: number) {
     currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
 }
 
+const usedImageUrls = new Set<string>();
+
 async function searchFreepik(query: string): Promise<string | null> {
     let attempts = 0;
     while (attempts < API_KEYS.length) {
@@ -39,7 +41,7 @@ async function searchFreepik(query: string): Promise<string | null> {
             continue;
         }
         const keyIndex = currentKeyIndex;
-        const url = `https://api.freepik.com/v1/resources?locale=en-US&term=${encodeURIComponent(query)}&page=1&limit=1&format=photo&premium=0`;
+        const url = `https://api.freepik.com/v1/resources?locale=en-US&term=${encodeURIComponent(query)}&page=1&limit=15&format=photo&premium=0`;
         try {
             const res = await fetch(url, {
                 headers: {
@@ -59,13 +61,30 @@ async function searchFreepik(query: string): Promise<string | null> {
             }
             const data = await res.json() as any;
             if (data.data && data.data.length > 0) {
-                const item = data.data[0];
-                return item.image?.source?.url || 
-                       item.image?.source?.medium?.url ||
-                       item.image?.source?.small?.url ||
-                       item.source?.url || 
-                       (item.images?.[0]?.url) ||
-                       item.url ||
+                // Loop to find an unused image
+                for (const item of data.data) {
+                    const imgUrl = item.image?.source?.url || 
+                                   item.image?.source?.medium?.url ||
+                                   item.image?.source?.small?.url ||
+                                   item.source?.url || 
+                                   (item.images?.[0]?.url) ||
+                                   item.url ||
+                                   null;
+                                   
+                    if (imgUrl && !usedImageUrls.has(imgUrl)) {
+                        usedImageUrls.add(imgUrl);
+                        return imgUrl;
+                    }
+                }
+                
+                // If somehow all 15 are used (very rare), just return the first one
+                const fallbackItem = data.data[0];
+                return fallbackItem.image?.source?.url || 
+                       fallbackItem.image?.source?.medium?.url ||
+                       fallbackItem.image?.source?.small?.url ||
+                       fallbackItem.source?.url || 
+                       (fallbackItem.images?.[0]?.url) ||
+                       fallbackItem.url ||
                        null;
             }
             return null;
