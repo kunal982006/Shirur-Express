@@ -158,7 +158,10 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 pb-16">
 
       {/* 1. Top Location Header (Zomato Style) */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+      <header 
+        className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="flex items-center justify-between p-3 max-w-7xl mx-auto">
           {/* App Logo & Name */}
           <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => navigate("/")}>
@@ -228,7 +231,10 @@ export default function Home() {
       </header>
 
       {/* 4. Unified Search Bar (Image Reference: Are you hungry) */}
-      <section className="p-4 bg-white shadow-sm sticky top-[61px] z-30">
+      <section 
+        className="p-4 bg-white shadow-sm sticky z-30 transition-all"
+        style={{ top: 'calc(68px + env(safe-area-inset-top))' }}
+      >
         <div className="max-w-7xl mx-auto flex gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

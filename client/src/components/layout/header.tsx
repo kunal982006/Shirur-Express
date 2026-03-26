@@ -77,7 +77,13 @@ export default function Header() {
     <>
       {/* Only show top header on non-home/admin pages */}
       {!hideTopHeader && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b h-16 flex items-center px-4">
+        <header 
+          className="fixed top-0 left-0 right-0 z-50 bg-background border-b flex items-center px-4"
+          style={{ 
+            paddingTop: 'env(safe-area-inset-top)',
+            height: 'calc(4rem + env(safe-area-inset-top))'
+          }}
+        >
           <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
             <div className="flex items-center gap-4">
               {/* Mobile Navigation (Hamburger) Removed - Replaced by Bottom Nav */}
@@ -219,7 +225,13 @@ export default function Header() {
       )}
 
       {/* Bottom Navigation for Mobile - ALWAYS VISIBLE */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t h-16 flex justify-around items-center md:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+      <div 
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-center md:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+        style={{ 
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          height: 'calc(4rem + env(safe-area-inset-bottom))'
+        }}
+      >
         {/* Home */}
         <Button
           variant="ghost"

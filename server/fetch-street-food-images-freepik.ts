@@ -106,6 +106,9 @@ function generateSearchQuery(name: string, category: string): string {
 }
 
 async function fetchStreetFoodImages() {
+    console.log("🗑️ Deleting all existing street food images...");
+    await db.update(streetFoodItems).set({ imageUrl: null });
+
     console.log("🔍 Fetching all street food items...\n");
 
     const items = await db.query.streetFoodItems.findMany();
