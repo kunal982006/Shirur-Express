@@ -621,18 +621,12 @@ export default function Checkout() {
                           type="button"
                           variant={paymentMethod === "cod" ? "default" : "outline"}
                           className="w-full"
-                          disabled={total > 500}
                           onClick={() => {
-                            if (total <= 500) setPaymentMethod("cod");
+                            setPaymentMethod("cod");
                           }}
                         >
                           💵 Cash on Delivery
                         </Button>
-                        {total > 500 && (
-                          <span className="text-[10px] text-red-500 text-center font-medium leading-tight">
-                            Available for orders up to ₹500 only.
-                          </span>
-                        )}
                       </div>
                     </div>
 
