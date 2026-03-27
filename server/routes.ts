@@ -2711,6 +2711,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const order = await storage.updateProviderOrderStatus(orderId, providerId, status);
+
+      // --- RIDER RING: Notify all online riders when provider starts preparing ---
+      if (status === 'preparing') {
+        try {
+          const provider = await storage.getServiceProvider(providerId);
+          const providerName = provider?.businessName || 'Restaurant';
+          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
+          console.log(`[Rider Ring] Order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
+
+          for (const rider of onlineRiders) {
+            const allTokens: string[] = [];
+            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
+              allTokens.push(...rider.fcmTokens);
+            } else if (rider.fcmToken) {
+              allTokens.push(rider.fcmToken);
+            }
+            const uniqueTokens = [...new Set(allTokens)];
+            for (const token of uniqueTokens) {
+              const result = await sendPushNotification(token, {
+                type: 'ORDER_REQUEST',
+                title: `🍳 ${providerName} is Preparing!`,
+                body: `Order #${orderId.slice(0, 8)} • ₹${order.totalAmount} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                data: {
+                  orderId: order.id,
+                  orderType: 'restaurant',
+                  customerName: 'Customer',
+                  amount: String(order.totalAmount || '0'),
+                  pickupAddress: provider?.address || 'Check App',
+                  dropAddress: order.deliveryAddress || 'Check App',
+                  navigateTo: '/delivery-partner/dashboard',
+                }
+              });
+              if (result.success) {
+                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
+              } else {
+                console.error(`❌ Rider ring failed:`, result.error);
+              }
+            }
+          }
+        } catch (ringErr: any) {
+          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
+        }
+      }
+      // --- END RIDER RING ---
+
       res.json(order);
     } catch (error: any) {
       console.error("Update order status error:", error);
@@ -2743,6 +2788,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const order = await storage.updateGroceryOrderStatusByProvider(orderId, providerId, status);
+
+      // --- RIDER RING: Notify all online riders when provider starts preparing ---
+      if (status === 'preparing') {
+        try {
+          const provider = await storage.getServiceProvider(providerId);
+          const providerName = provider?.businessName || 'Store';
+          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
+          console.log(`[Rider Ring] Grocery order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
+
+          for (const rider of onlineRiders) {
+            const allTokens: string[] = [];
+            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
+              allTokens.push(...rider.fcmTokens);
+            } else if (rider.fcmToken) {
+              allTokens.push(rider.fcmToken);
+            }
+            const uniqueTokens = [...new Set(allTokens)];
+            for (const token of uniqueTokens) {
+              const result = await sendPushNotification(token, {
+                type: 'ORDER_REQUEST',
+                title: `📦 ${providerName} is Preparing!`,
+                body: `Grocery Order #${orderId.slice(0, 8)} • ₹${order.total} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                data: {
+                  orderId: order.id,
+                  orderType: 'grocery',
+                  customerName: 'Customer',
+                  amount: String(order.total || '0'),
+                  pickupAddress: provider?.address || 'Check App',
+                  dropAddress: order.deliveryAddress || 'Check App',
+                  navigateTo: '/delivery-partner/dashboard',
+                }
+              });
+              if (result.success) {
+                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
+              } else {
+                console.error(`❌ Rider ring failed:`, result.error);
+              }
+            }
+          }
+        } catch (ringErr: any) {
+          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
+        }
+      }
+      // --- END RIDER RING ---
+
       res.json(order);
     } catch (error: any) {
       console.error("Update grocery order status error:", error);

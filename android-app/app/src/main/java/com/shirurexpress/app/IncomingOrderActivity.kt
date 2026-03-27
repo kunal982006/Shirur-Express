@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.enableEdgeToEdge
 
 class IncomingOrderActivity : AppCompatActivity() {
 
@@ -22,6 +23,7 @@ class IncomingOrderActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         
         // Unlock screen and wake up device
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {

@@ -1744,6 +1744,24 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async getOnlineDeliveryPartnersWithTokens(): Promise<Array<{ userId: string; fcmToken: string | null; fcmTokens: string[] | null }>> {
+    const partners = await db.query.deliveryPartners.findMany({
+      where: and(
+        eq(deliveryPartners.isOnline, true),
+        eq(deliveryPartners.isActive, true)
+      ),
+      with: { user: true },
+    });
+
+    return partners
+      .filter(p => p.user)
+      .map(p => ({
+        userId: p.userId,
+        fcmToken: p.user?.fcmToken || null,
+        fcmTokens: (p.user?.fcmTokens as string[] | null) || null,
+      }));
+  }
+
   // =========================================
   // RIDER ORDER METHODS
   // =========================================

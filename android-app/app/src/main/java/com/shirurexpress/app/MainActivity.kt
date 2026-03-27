@@ -33,6 +33,8 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import java.io.File
+import com.razorpay.Razorpay
+import androidx.activity.enableEdgeToEdge
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,6 +43,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var errorView: View
     
+    // Razorpay WebView SDK for UPI Intent
+    private var razorpayInstance: Razorpay? = null
+
     // File upload callback for WebView file chooser
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     // URI for camera-captured photo
@@ -114,6 +119,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
         // Initialize views
@@ -129,6 +135,13 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.setColorSchemeResources(R.color.purple_500)
         swipeRefresh.setOnRefreshListener {
             webView.reload()
+        }
+
+        // Initialize Razorpay WebView SDK for UPI Intents
+        try {
+            razorpayInstance = Razorpay("rzp_live_SRufGg7nCYe4l4", webView, this)
+        } catch (e: Exception) {
+            Log.e("RazorpayInit", "Failed to initialize Razorpay WebView SDK", e)
         }
 
         // Setup back button handling
@@ -833,6 +846,15 @@ class MainActivity : AppCompatActivity() {
             return isNotificationPermissionGranted() && 
                    isBatteryOptimizationDisabled() && 
                    isFullScreenIntentGranted()
+        }
+    }
+
+    // Handle incoming results from Razorpay UPI intent
+    @Deprecated("Deprecated in Java but required by Razorpay WebView SDK")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Razorpay.UPI_INTENT_REQUEST_CODE) {
+            razorpayInstance?.onActivityResult(requestCode, resultCode, data)
         }
     }
 }

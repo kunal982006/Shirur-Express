@@ -44,8 +44,7 @@
             android:name=".SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.ShirurExpress.Splash"
-            android:noHistory="true"
-            android:screenOrientation="portrait">
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -57,7 +56,6 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             
             <!-- Deep link handling -->
@@ -75,8 +73,7 @@
             android:name=".IncomingOrderActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:exported="false"
-            android:showOnLockScreen="true"
-            android:screenOrientation="portrait" />
+            android:showOnLockScreen="true" />
         
         <service
             android:name=".MyFirebaseMessagingService"
