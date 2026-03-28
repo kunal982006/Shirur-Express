@@ -1,0 +1,26 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-48:/values-en-rSG/values-en-rSG.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\fb95bd699b358b05728f29b6ecb876c7\\transformed\\play-services-wallet-18.1.3\\res\\values-en-rSG\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "206",
+                        "endColumns": "70",
+                        "endOffsets": "276"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "74",
+                        "endOffsets": "125"
+                    }
+                }
+            ]
+        }
+    ]
+}

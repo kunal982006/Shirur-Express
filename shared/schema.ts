@@ -314,6 +314,17 @@ export const providerOffers = pgTable("provider_offers", {
 });
 
 // =========================================
+// APP SETTINGS TABLE (Platform-wide settings)
+// =========================================
+
+export const appSettings = pgTable("app_settings", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// =========================================
 // 5. ZOD SCHEMAS (Defined after tables)
 // =========================================
 

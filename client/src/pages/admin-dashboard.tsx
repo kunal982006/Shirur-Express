@@ -50,6 +50,7 @@ import {
     Trash2,
     Image as ImageIcon,
     XCircle,
+    Power,
 } from "lucide-react";
 
 import {
@@ -390,6 +391,28 @@ export default function AdminDashboard() {
         enabled: activeTab === 'featured' && featuredSearch.length > 0,
     });
 
+    // --- PLATFORM STATUS TOGGLE ---
+    const { data: platformStatus } = useQuery<{ servicesEnabled: boolean }>({
+        queryKey: ["/api/admin/platform-status"],
+        queryFn: () => api.get("/admin/platform-status").then(r => r.data),
+        refetchInterval: 15000,
+    });
+
+    const togglePlatformMutation = useMutation({
+        mutationFn: (enabled: boolean) =>
+            api.put("/admin/platform-status", { servicesEnabled: enabled }).then(r => r.data),
+        onSuccess: (data: any) => {
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/platform-status"] });
+            toast({
+                title: data.servicesEnabled ? "✅ Services OPEN" : "🔴 Services CLOSED",
+                description: data.message,
+            });
+        },
+        onError: (error: any) => {
+            toast({ title: "Error", description: error.response?.data?.message || "Failed to toggle", variant: "destructive" });
+        },
+    });
+
     const togglePopularMutation = useMutation({
         mutationFn: (data: { type: string; id: string; isPopular: boolean }) =>
             api.post("/admin/toggle-popular", data).then(r => r.data),
@@ -518,6 +541,84 @@ export default function AdminDashboard() {
                 {/* ═══ OVERVIEW TAB ═══ */}
                 {activeTab === "overview" && (
                     <>
+                        {/* ─── Platform Services Toggle ─── */}
+                        <div className={`rounded-2xl border p-5 transition-all duration-500 ${
+                            platformStatus?.servicesEnabled !== false
+                                ? 'bg-gradient-to-r from-emerald-900/30 to-emerald-800/20 border-emerald-500/30'
+                                : 'bg-gradient-to-r from-red-900/30 to-red-800/20 border-red-500/30'
+                        }`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                                        platformStatus?.servicesEnabled !== false
+                                            ? 'bg-emerald-500/20'
+                                            : 'bg-red-500/20'
+                                    }`}>
+                                        <Power className={`h-6 w-6 ${
+                                            platformStatus?.servicesEnabled !== false ? 'text-emerald-400' : 'text-red-400'
+                                        }`} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold">
+                                            Platform Services
+                                        </h3>
+                                        <p className={`text-sm font-medium ${
+                                            platformStatus?.servicesEnabled !== false ? 'text-emerald-400' : 'text-red-400'
+                                        }`}>
+                                            {platformStatus?.servicesEnabled !== false ? '🟢 All services are OPEN' : '🔴 All services are CLOSED'}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-0.5">
+                                            {platformStatus?.servicesEnabled !== false
+                                                ? 'Customers can place orders & bookings'
+                                                : 'No new orders or bookings will be accepted'
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <div className="flex items-center gap-3 cursor-pointer">
+                                            <Switch
+                                                checked={platformStatus?.servicesEnabled !== false}
+                                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500"
+                                            />
+                                        </div>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                {platformStatus?.servicesEnabled !== false
+                                                    ? '🔴 Close All Services?'
+                                                    : '✅ Open All Services?'
+                                                }
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription className="text-gray-400">
+                                                {platformStatus?.servicesEnabled !== false
+                                                    ? 'This will block all new orders and bookings. Customers will see a "Services Closed" message. Existing orders will not be affected.'
+                                                    : 'This will re-enable all services. Customers will be able to place orders and bookings again.'
+                                                }
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => togglePlatformMutation.mutate(!(platformStatus?.servicesEnabled !== false))}
+                                                className={platformStatus?.servicesEnabled !== false
+                                                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                                                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                                }
+                                            >
+                                                {togglePlatformMutation.isPending ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                ) : null}
+                                                {platformStatus?.servicesEnabled !== false ? 'Yes, Close Services' : 'Yes, Open Services'}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </div>
+
                         {/* Stat Cards */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {statsLoading ? (

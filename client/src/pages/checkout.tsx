@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle, Ban } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 // --- NAYE IMPORTS ---
@@ -78,6 +78,14 @@ export default function Checkout() {
     },
     enabled: !!items[0]?.providerId
   });
+
+  // --- PLATFORM STATUS CHECK ---
+  const { data: platformStatus } = useQuery<{ servicesEnabled: boolean }>({
+    queryKey: ['/api/platform-status'],
+    queryFn: () => api.get('/platform-status').then(r => r.data),
+    refetchInterval: 30000,
+  });
+  const servicesClosed = platformStatus?.servicesEnabled === false;
 
   // Calculate Distance when locations are available
   useEffect(() => {
@@ -407,6 +415,19 @@ export default function Checkout() {
 
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
+        {/* --- SERVICES CLOSED BANNER --- */}
+        {servicesClosed && (
+          <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 border-2 border-red-300 dark:border-red-700 p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
+              <Ban className="h-6 w-6 text-red-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-red-700 dark:text-red-400">Services Currently Closed</h3>
+              <p className="text-sm text-red-600 dark:text-red-400/80">We are not accepting new orders right now. Please try again during business hours.</p>
+            </div>
+          </div>
+        )}
+
         {/* --- YEH POORA FORM ME WRAP KIYA HAI --- */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -694,13 +715,15 @@ export default function Checkout() {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || (!useManualAddress && (!isDeliverable || !userLocation)) || (paymentMethod === "cod" && !codConfirmed)}
+                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || servicesClosed || (!useManualAddress && (!isDeliverable || !userLocation)) || (paymentMethod === "cod" && !codConfirmed)}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : isBelowMinOrder ? (
                         `Add ₹${(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more`
+                      ) : servicesClosed ? (
+                        "Services Closed"
                       ) : !useManualAddress && !isDeliverable ? (
                         "Not Deliverable"
                       ) : !useManualAddress && !userLocation ? (

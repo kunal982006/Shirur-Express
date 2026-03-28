@@ -37,6 +37,7 @@ import {
   groceryOrders, // FOR NOTIFICATIONS
   streetFoodOrders, // FOR NOTIFICATIONS
   serviceCategories, // FOR ADMIN DASHBOARD
+  appSettings, // PLATFORM TOGGLE
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -171,8 +172,30 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   next();
 };
 
+// ===== PLATFORM SERVICES TOGGLE (in-memory for fast checks) =====
+let servicesEnabled = true;
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // --- Load services_enabled from DB on startup ---
+  try {
+    const setting = await db.query.appSettings.findFirst({
+      where: eq(appSettings.key, 'services_enabled'),
+    });
+    if (setting) {
+      servicesEnabled = setting.value === 'true';
+    } else {
+      // Seed default setting
+      await db.insert(appSettings).values({
+        key: 'services_enabled',
+        value: 'true',
+      });
+    }
+    console.log(`✅ Platform services status loaded: ${servicesEnabled ? 'OPEN' : 'CLOSED'}`);
+  } catch (e: any) {
+    console.error('⚠️ Could not load platform settings:', e.message);
+  }
 
   // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
   app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
@@ -197,6 +220,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log("Registering Grocery Routes..."); // DEBUG LOG
   app.post("/api/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
+      // --- PLATFORM KILL SWITCH ---
+      if (!servicesEnabled) {
+        return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
+      }
       const userId = req.userId!;
       const orderData = insertGroceryOrderSchema.parse(req.body);
 
@@ -230,6 +257,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log("Registering Street Food Routes..."); // DEBUG LOG
   app.post("/api/street-food-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
+      // --- PLATFORM KILL SWITCH ---
+      if (!servicesEnabled) {
+        return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
+      }
       const userId = req.userId!;
       // Validate body
       const orderData = insertStreetFoodOrderSchema.parse(req.body);
@@ -1450,6 +1481,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ----- YEH RAHA FIX -----
   app.post("/api/bookings", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
+      // --- PLATFORM KILL SWITCH ---
+      if (!servicesEnabled) {
+        return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
+      }
       const userId = req.userId!;
 
       // 1. Ek naya schema banao jo string expect kare
@@ -2280,6 +2315,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/restaurant/orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
+      // --- PLATFORM KILL SWITCH ---
+      if (!servicesEnabled) {
+        return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
+      }
       const userId = req.userId!;
       const orderData = insertRestaurantOrderSchema.parse(req.body);
 
@@ -4151,6 +4190,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Delete street food gallery image error:", error);
       res.status(500).json({ message: error.message || "Failed to delete image" });
+    }
+  });
+
+  // =========================================
+  // PLATFORM STATUS TOGGLE ROUTES
+  // =========================================
+
+  // Public: Check if services are open (for client banner)
+  app.get("/api/platform-status", (_req: Request, res: Response) => {
+    res.json({ servicesEnabled });
+  });
+
+  // Admin: Get platform status
+  app.get("/api/admin/platform-status", isAdmin, (_req: AuthRequest, res: Response) => {
+    res.json({ servicesEnabled });
+  });
+
+  // Admin: Toggle platform services
+  app.put("/api/admin/platform-status", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { servicesEnabled: newStatus } = req.body;
+      if (typeof newStatus !== 'boolean') {
+        return res.status(400).json({ message: "servicesEnabled must be a boolean" });
+      }
+
+      // Update DB
+      const existing = await db.query.appSettings.findFirst({
+        where: eq(appSettings.key, 'services_enabled'),
+      });
+
+      if (existing) {
+        await db.update(appSettings)
+          .set({ value: String(newStatus), updatedAt: new Date() })
+          .where(eq(appSettings.key, 'services_enabled'));
+      } else {
+        await db.insert(appSettings).values({
+          key: 'services_enabled',
+          value: String(newStatus),
+        });
+      }
+
+      // Update in-memory flag
+      servicesEnabled = newStatus;
+      console.log(`🔄 Platform services toggled: ${newStatus ? 'OPEN ✅' : 'CLOSED 🔴'} by admin ${req.userId}`);
+
+      res.json({ servicesEnabled, message: newStatus ? 'All services are now OPEN' : 'All services are now CLOSED' });
+    } catch (error: any) {
+      console.error("Toggle platform status error:", error);
+      res.status(500).json({ message: error.message || "Error toggling platform status" });
     }
   });
 

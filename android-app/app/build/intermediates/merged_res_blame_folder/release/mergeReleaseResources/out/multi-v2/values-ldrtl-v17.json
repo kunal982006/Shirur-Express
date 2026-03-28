@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-48:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\4a4aa80cd28625dfe69277051b2e9e51\\transformed\\material-1.12.0\\res\\values-ldrtl-v17\\values-ldrtl-v17.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,191",
+                        "endColumns": "135,140",
+                        "endOffsets": "186,327"
+                    }
+                }
+            ]
+        }
+    ]
+}
