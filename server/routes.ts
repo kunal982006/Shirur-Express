@@ -4194,8 +4194,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =========================================
-  // PLATFORM STATUS TOGGLE ROUTES
+  // ADMIN OFFER MANAGEMENT (For Street Food)
   // =========================================
+
+  // Get offers for a specific vendor (Admin)
+  app.get("/api/admin/street-food/vendors/:id/offers", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const offers = await db.query.providerOffers.findMany({
+        where: eq(providerOffers.providerId, id),
+        orderBy: (offers, { desc }) => [desc(offers.createdAt)]
+      });
+      res.json(offers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch offers" });
+    }
+  });
+
+  // Create offer for a specific vendor (Admin)
+  app.post("/api/admin/street-food/vendors/:id/offers", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const data = insertProviderOfferSchema.parse(req.body);
+      
+      const [newOffer] = await db.insert(providerOffers).values({
+        ...data,
+        providerId: id,
+      }).returning();
+      
+      res.status(201).json(newOffer);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to create offer" });
+    }
+  });
+
+  // Update offer for a specific vendor (Admin)
+  app.put("/api/admin/street-food/vendors/:id/offers/:offerId", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { offerId } = req.params;
+      const data = req.body;
+      
+      const [updatedOffer] = await db.update(providerOffers)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(providerOffers.id, offerId))
+        .returning();
+      
+      if (!updatedOffer) return res.status(404).json({ message: "Offer not found" });
+      res.json(updatedOffer);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to update offer" });
+    }
+  });
+
+  // Delete offer for a specific vendor (Admin)
+  app.delete("/api/admin/street-food/vendors/:id/offers/:offerId", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { offerId } = req.params;
+      await db.delete(providerOffers).where(eq(providerOffers.id, offerId));
+      res.json({ success: true, message: "Offer deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to delete offer" });
+    }
+  });
+
+  // Search products for a vendor (Admin)
+  app.get("/api/admin/street-food/vendors/:id/products/search", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { search, limit } = req.query;
+      
+      const results = await db.query.streetFoodItems.findMany({
+        where: and(
+          eq(streetFoodItems.providerId, id),
+          ilike(streetFoodItems.name, `%${search || ''}%`)
+        ),
+        limit: limit ? parseInt(limit as string) : 10
+      });
+      
+      res.json(results);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to search products" });
+    }
+  });
+
+  // Get product categories for a vendor (Admin)
+  app.get("/api/admin/street-food/vendors/:id/products/categories", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const items = await db.select({ category: streetFoodItems.category })
+        .from(streetFoodItems)
+        .where(eq(streetFoodItems.providerId, id));
+      
+      const categories = [...new Set(items.map(i => i.category).filter(Boolean))];
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch categories" });
+    }
+  });
 
   // Public: Check if services are open (for client banner)
   app.get("/api/platform-status", (_req: Request, res: Response) => {

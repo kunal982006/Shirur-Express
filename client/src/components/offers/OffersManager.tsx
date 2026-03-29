@@ -63,8 +63,9 @@ interface Product {
 }
 
 interface OffersManagerProps {
-    providerId: string;
+    providerId?: string;
     categorySlug: string;
+    adminVendorId?: string;
 }
 
 // Debounce hook for search optimization
@@ -87,7 +88,10 @@ function useDebounce<T>(value: T, delay: number): T {
 export const OffersManager: React.FC<OffersManagerProps> = ({
     providerId,
     categorySlug,
+    adminVendorId,
 }) => {
+    const isAdmin = !!adminVendorId;
+    const adminUrlPrefix = `/admin/street-food/vendors/${adminVendorId}`;
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -144,10 +148,13 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
     // Fetch product categories for dropdown
     const { data: productCategories = [] } = useQuery<string[]>({
-        queryKey: ["productCategories", productType],
+        queryKey: isAdmin ? ["adminProductCategories", adminVendorId, productType] : ["productCategories", productType],
         queryFn: async () => {
             if (!productType) return [];
-            const res = await api.get(`/provider/products/categories?productType=${productType}`);
+            const url = isAdmin 
+                ? `${adminUrlPrefix}/products/categories`
+                : `/provider/products/categories?productType=${productType}`;
+            const res = await api.get(url);
             return res.data;
         },
         enabled: !!productType && isFormOpen,
@@ -156,7 +163,9 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
     // Fetch products with search & category filter (optimized - only 10 results)
     const { data: searchResults = [], isLoading: isSearching } = useQuery<Product[]>({
-        queryKey: ["productSearch", productType, debouncedSearchQuery, selectedCategory],
+        queryKey: isAdmin 
+            ? ["adminProductSearch", adminVendorId, productType, debouncedSearchQuery, selectedCategory]
+            : ["productSearch", productType, debouncedSearchQuery, selectedCategory],
         queryFn: async () => {
             if (!productType || !debouncedSearchQuery.trim()) return [];
             const params = new URLSearchParams({
@@ -167,7 +176,12 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
             if (selectedCategory) {
                 params.append("category", selectedCategory);
             }
-            const res = await api.get(`/provider/products/search?${params.toString()}`);
+            
+            const url = isAdmin
+                ? `${adminUrlPrefix}/products/search?${params.toString()}`
+                : `/provider/products/search?${params.toString()}`;
+                
+            const res = await api.get(url);
             return res.data;
         },
         enabled: !!productType && !!debouncedSearchQuery.trim() && isFormOpen,
@@ -182,9 +196,10 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
     // Fetch offers
     const { data: offers, isLoading } = useQuery<ProviderOffer[]>({
-        queryKey: ["providerOffers"],
+        queryKey: isAdmin ? ["adminOffers", adminVendorId] : ["providerOffers"],
         queryFn: async () => {
-            const res = await api.get("/provider/offers");
+            const url = isAdmin ? `${adminUrlPrefix}/offers` : "/provider/offers";
+            const res = await api.get(url);
             return res.data;
         },
     });
@@ -193,16 +208,20 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
     const saveOfferMutation = useMutation({
         mutationFn: async (data: any) => {
             if (editingOffer) {
-                return api.put(`/provider/offers/${editingOffer.id}`, data);
+                const url = isAdmin 
+                    ? `${adminUrlPrefix}/offers/${editingOffer.id}`
+                    : `/provider/offers/${editingOffer.id}`;
+                return api.put(url, data);
             }
-            return api.post("/provider/offers", data);
+            const url = isAdmin ? `${adminUrlPrefix}/offers` : "/provider/offers";
+            return api.post(url, data);
         },
         onSuccess: () => {
             toast({
                 title: editingOffer ? "Offer Updated" : "Offer Created",
                 description: "Your offer has been saved successfully.",
             });
-            queryClient.invalidateQueries({ queryKey: ["providerOffers"] });
+            queryClient.invalidateQueries({ queryKey: isAdmin ? ["adminOffers", adminVendorId] : ["providerOffers"] });
             resetForm();
         },
         onError: (error: any) => {
@@ -216,10 +235,13 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
     // Delete mutation
     const deleteOfferMutation = useMutation({
-        mutationFn: (offerId: string) => api.delete(`/provider/offers/${offerId}`),
+        mutationFn: (offerId: string) => {
+            const url = isAdmin ? `${adminUrlPrefix}/offers/${offerId}` : `/provider/offers/${offerId}`;
+            return api.delete(url);
+        },
         onSuccess: () => {
             toast({ title: "Offer Deleted", description: "Offer removed successfully." });
-            queryClient.invalidateQueries({ queryKey: ["providerOffers"] });
+            queryClient.invalidateQueries({ queryKey: isAdmin ? ["adminOffers", adminVendorId] : ["providerOffers"] });
         },
         onError: (error: any) => {
             toast({
@@ -232,10 +254,12 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
 
     // Toggle active status
     const toggleActiveMutation = useMutation({
-        mutationFn: ({ offerId, isActive }: { offerId: string; isActive: boolean }) =>
-            api.put(`/provider/offers/${offerId}`, { isActive }),
+        mutationFn: ({ offerId, isActive }: { offerId: string; isActive: boolean }) => {
+            const url = isAdmin ? `${adminUrlPrefix}/offers/${offerId}` : `/provider/offers/${offerId}`;
+            return api.put(url, { isActive });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["providerOffers"] });
+            queryClient.invalidateQueries({ queryKey: isAdmin ? ["adminOffers", adminVendorId] : ["providerOffers"] });
         },
     });
 

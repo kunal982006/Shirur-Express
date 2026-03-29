@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { OffersManager } from "@/components/offers/OffersManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Store, Utensils, ChevronRight, Image as ImageIcon, Loader2, ArrowLeft, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,6 +168,7 @@ export default function AdminStreetFood() {
 function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onBack: () => void }) {
     const { toast } = useToast();
     const queryClient = useQueryClient();
+    const [activeTab, setActiveTab] = useState("menu");
 
     // Vendor Edit State
     const [isVendorEditOpen, setIsVendorEditOpen] = useState(false);
@@ -341,9 +344,9 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     </Button>
                     <div>
                         <h2 className="text-2xl font-bold flex items-center gap-2">
-                            {vendor.businessName} - Menu
+                            {vendor.businessName}
                         </h2>
-                        <p className="text-gray-400 text-sm">Add and manage menu items and categories.</p>
+                        <p className="text-gray-400 text-sm">Manage menu items, gallery, and promotions.</p>
                     </div>
                 </div>
 
@@ -465,7 +468,18 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                 </div>
             </div>
 
-            <div className="flex justify-between items-center bg-[#111827] p-4 rounded-xl border border-white/5">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="bg-white/5 border border-white/10 p-1 mb-6">
+                    <TabsTrigger value="menu" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                        Menu & Items
+                    </TabsTrigger>
+                    <TabsTrigger value="offers" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                        Offers & Promotions
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="menu" className="space-y-6 mt-0">
+                    <div className="flex justify-between items-center bg-[#111827] p-4 rounded-xl border border-white/5">
                 <div className="flex items-center gap-3">
                     <Utensils className="h-5 w-5 text-orange-500" />
                     <span className="font-medium">{menu?.length || 0} Total Items</span>
@@ -629,6 +643,15 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     ))}
                 </div>
             )}
+                </TabsContent>
+
+                <TabsContent value="offers" className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <OffersManager 
+                        adminVendorId={vendor.id} 
+                        categorySlug="street-food" 
+                    />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
