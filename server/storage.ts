@@ -1515,7 +1515,7 @@ export class DatabaseStorage implements IStorage {
       return db.select().from(table)
         .where(and(...conditions))
         .orderBy(asc(groceryProducts.name))
-        .limit(options.limit || 200);
+        .limit(options.limit || 5000);
     }
 
     return db.select().from(table).where(eq(providerIdField, providerId));

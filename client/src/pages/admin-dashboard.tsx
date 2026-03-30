@@ -102,6 +102,12 @@ interface Booking {
     userPhone: string;
     estimatedCost: string | null;
     createdAt: string | null;
+    notes?: string | null;
+    paymentMethod?: string | null;
+    user?: { username: string; phone: string | null };
+    provider?: { businessName: string; address: string };
+    serviceOffering?: { name: string | null; price: string; imageUrl?: string | null } | null;
+    problem?: { name: string } | null;
 }
 
 interface Provider {
@@ -447,10 +453,19 @@ export default function AdminDashboard() {
         o.status?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredBookings = allBookings?.filter(b =>
-        !searchQuery || b.serviceType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.status?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredBookings = allBookings?.filter(b => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return b.serviceType.toLowerCase().includes(q) ||
+            b.status?.toLowerCase().includes(q) ||
+            b.user?.username?.toLowerCase().includes(q) ||
+            b.user?.phone?.toLowerCase().includes(q) ||
+            b.userPhone?.toLowerCase().includes(q) ||
+            b.userAddress?.toLowerCase().includes(q) ||
+            b.provider?.businessName?.toLowerCase().includes(q) ||
+            b.serviceOffering?.name?.toLowerCase().includes(q) ||
+            b.problem?.name?.toLowerCase().includes(q);
+    });
 
     const filteredProviders = providers?.filter(p =>
         !searchQuery || p.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -982,11 +997,24 @@ export default function AdminDashboard() {
                                                 </span>
                                             )}
                                         </div>
-                                        {b.userAddress && <p className="text-sm text-gray-500 mt-1 truncate">{b.userAddress}</p>}
+                                        {/* Customer Name & Phone */}
+                                        {b.user && <p className="text-sm text-gray-300 mt-1 truncate font-medium">{b.user.username} {b.user.phone ? `(${b.user.phone})` : b.userPhone ? `(${b.userPhone})` : ''}</p>}
+                                        {!b.user && b.userPhone && <p className="text-sm text-gray-300 mt-1 truncate font-medium">📞 {b.userPhone}</p>}
+                                        {/* Service Name */}
+                                        {(b.serviceOffering?.name || b.problem?.name) && (
+                                            <p className="text-xs text-blue-400 mt-0.5 truncate">🔧 {b.serviceOffering?.name || b.problem?.name}</p>
+                                        )}
+                                        {/* Provider Name */}
+                                        {b.provider && <p className="text-xs text-purple-400 mt-0.5 truncate">🏪 {b.provider.businessName}</p>}
+                                        {/* Address */}
+                                        {b.userAddress && <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {b.userAddress}</p>}
+                                        {/* Notes */}
+                                        {b.notes && <p className="text-xs text-gray-600 mt-0.5 truncate italic">💬 {b.notes}</p>}
                                     </div>
                                     <div className="text-right shrink-0 flex items-center gap-3">
                                         <div>
                                             {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
+                                            {b.serviceOffering?.price && !b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.serviceOffering.price).toFixed(0)}</p>}
                                             <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
                                         </div>
                                         {/* Cancel Booking Button — only for active bookings */}

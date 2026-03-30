@@ -2434,7 +2434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? {
           category: category as string | undefined,
           search: search as string | undefined,
-          limit: limit ? parseInt(limit as string) : 200
+          limit: limit ? parseInt(limit as string) : 5000
         }
         : undefined;
 
@@ -3459,10 +3459,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/admin/bookings — All bookings
+  // GET /api/admin/bookings — All bookings (with customer + provider details)
   app.get("/api/admin/bookings", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {
-      const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt)).limit(200);
+      const allBookings = await db.query.bookings.findMany({
+        with: {
+          user: true,
+          provider: true,
+          serviceOffering: true,
+          problem: true,
+        },
+        orderBy: [desc(bookings.createdAt)],
+        limit: 200,
+      });
       res.json(allBookings);
     } catch (error: any) {
       console.error("Admin bookings error:", error);
