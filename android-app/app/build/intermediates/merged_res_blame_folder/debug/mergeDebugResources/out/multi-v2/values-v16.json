@@ -1,18 +1,8 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeDebugResources-39:/values-v16/values-v16.xml",
+            "outputFile": "com.shirurexpress.app-mergeDebugResources-48:/values-v16/values-v16.xml",
             "map": [
-                {
-                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\041694bd88729c2778cd9053e8a6ad56\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "65",
-                        "endOffsets": "116"
-                    }
-                },
                 {
                     "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\537c78cefc6b5426493e664678631c4a\\transformed\\appcompat-1.6.1\\res\\values-v16\\values-v16.xml",
                     "from": {
@@ -22,14 +12,6 @@
                         "endLines": "5",
                         "endColumns": "12",
                         "endOffsets": "223"
-                    },
-                    "to": {
-                        "startLines": "3",
-                        "startColumns": "4",
-                        "startOffsets": "121",
-                        "endLines": "6",
-                        "endColumns": "12",
-                        "endOffsets": "289"
                     }
                 }
             ]

@@ -1,10 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeDebugResources-39:/values-en-rAU/values-en-rAU.xml",
+            "outputFile": "com.shirurexpress.app-mergeDebugResources-48:/values-en-rAU/values-en-rAU.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\041694bd88729c2778cd9053e8a6ad56\\transformed\\core-1.12.0\\res\\values-en-rAU\\values-en-rAU.xml",
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\fb95bd699b358b05728f29b6ecb876c7\\transformed\\play-services-wallet-18.1.3\\res\\values-en-rAU\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "206",
+                        "endColumns": "70",
+                        "endOffsets": "276"
+                    },
+                    "to": {
+                        "startLines": "38",
+                        "startColumns": "4",
+                        "startOffsets": "3665",
+                        "endColumns": "74",
+                        "endOffsets": "3735"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\f92830208c762be3d3ed52295432f36a\\transformed\\core-1.13.0\\res\\values-en-rAU\\values-en-rAU.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

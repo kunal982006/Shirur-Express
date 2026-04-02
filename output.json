@@ -1,0 +1,81 @@
+{
+  "plumberBookings": [
+    {
+      "id": "ihte1afisyj3vazlxxvggb3s",
+      "userId": "bucpl8le5poj80w8g4mvhda0",
+      "providerId": "ce6kk3krye6kzvjp3frptjlc",
+      "serviceType": "plumber",
+      "problemId": "oj5x9qxcxheaqzzrgvdfu8hh",
+      "status": "pending",
+      "scheduledAt": "2026-03-29T09:58:54.064Z",
+      "preferredTimeSlots": [
+        "INSTANT"
+      ],
+      "userAddress": "D9, Riverview Residency, Sushila park, Shirur, Maharashtra 412210, India",
+      "userPhone": "8796521388",
+      "notes": "",
+      "estimatedCost": null,
+      "createdAt": "2026-03-29T09:58:54.243Z",
+      "isUrgent": false,
+      "serviceOtp": null,
+      "serviceOtpExpiresAt": null,
+      "invoiceId": null,
+      "paymentMethod": "cod"
+    }
+  ],
+  "plumberCategories": [
+    "1da6c0b7-f920-4468-8d0c-5bcf2fae55ad"
+  ],
+  "plumberProviders": [
+    {
+      "id": "dqf9g7op292mrax8k31y0ixq",
+      "userId": "115159f1-d692-431f-b0cf-dd161c119f5d",
+      "categoryId": "1da6c0b7-f920-4468-8d0c-5bcf2fae55ad",
+      "businessName": "Plumber",
+      "description": "",
+      "profileImageUrl": null,
+      "galleryImages": null,
+      "experience": 0,
+      "rating": "0.00",
+      "reviewCount": 0,
+      "address": "Shirur pune 412210",
+      "latitude": null,
+      "longitude": null,
+      "serviceArea": 10,
+      "isVerified": false,
+      "isAvailable": true,
+      "isPopular": false,
+      "specializations": [],
+      "createdAt": "2026-03-29T10:10:13.749Z"
+    },
+    {
+      "id": "ce6kk3krye6kzvjp3frptjlc",
+      "userId": "u08fa44nfj7fkxbix0g48gv2",
+      "categoryId": "1da6c0b7-f920-4468-8d0c-5bcf2fae55ad",
+      "businessName": "plumber2",
+      "description": "we are plumber2",
+      "profileImageUrl": null,
+      "galleryImages": null,
+      "experience": 12,
+      "rating": "0.00",
+      "reviewCount": 0,
+      "address": "Main Market, Shirur, Pune",
+      "latitude": "18.82860000",
+      "longitude": "74.37390000",
+      "serviceArea": 10,
+      "isVerified": true,
+      "isAvailable": true,
+      "isPopular": false,
+      "specializations": [
+        "Tap & Mixer",
+        "Pipe & Leakage",
+        "Toilet",
+        "Water Pump",
+        "Basin & Sink",
+        "Water Heater (Geyser)",
+        "Water Tank"
+      ],
+      "createdAt": "2025-11-28T15:55:56.291Z"
+    }
+  ]
+}

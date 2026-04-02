@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeDebugResources-39:/values-w320dp-land-v13/values-w320dp-land-v13.xml",
+            "outputFile": "com.shirurexpress.app-mergeDebugResources-48:/values-w320dp-land-v13/values-w320dp-land-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\d237957a7c88b9bfb5835a483aed87b5\\transformed\\material-1.11.0\\res\\values-w320dp-land-v13\\values-w320dp-land-v13.xml",
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\4a4aa80cd28625dfe69277051b2e9e51\\transformed\\material-1.12.0\\res\\values-w320dp-land-v13\\values-w320dp-land-v13.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <bool name="isTablet">true</bool>
     <dimen name="abc_action_bar_content_inset_material">24dp</dimen>
     <dimen name="abc_action_bar_content_inset_with_nav">80dp</dimen>
     <dimen name="abc_action_bar_default_height_material">64dp</dimen>
@@ -20,6 +21,17 @@
     <dimen name="mtrl_bottomappbar_height">64dp</dimen>
     <dimen name="mtrl_toolbar_default_height">64dp</dimen>
     <integer name="design_snackbar_text_max_lines">1</integer>
+    <style name="CheckoutTheme" parent="android:style/Theme.Dialog">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
     <style name="Widget.Design.TabLayout" parent="Base.Widget.Design.TabLayout">
     <item name="tabGravity">center</item>
     <item name="tabMode">fixed</item>

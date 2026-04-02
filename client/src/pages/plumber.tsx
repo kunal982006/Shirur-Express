@@ -36,7 +36,14 @@ export default function Plumber() {
         .then(res => res.json()),
   });
 
-  const adminProviderId = providers?.[0]?.id;
+  // Prioritize verified and available providers
+  const adminProviderId = providers?.sort((a, b) => {
+    if (a.isVerified && !b.isVerified) return -1;
+    if (!a.isVerified && b.isVerified) return 1;
+    if (a.isAvailable && !b.isAvailable) return -1;
+    if (!a.isAvailable && b.isAvailable) return 1;
+    return 0;
+  })?.[0]?.id;
 
   // 2. Get appliance/item categories (Parent Problems)
   const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({

@@ -64,6 +64,7 @@
     <string name="common_open_on_phone">Buka di ponsel</string>
     <string name="common_signin_button_text">Login</string>
     <string name="common_signin_button_text_long">Login dengan Google</string>
+    <string name="error_a11y_label">Error: tidak valid</string>
     <string name="error_icon_content_description">Error</string>
     <string name="exposed_dropdown_menu_content_description">Tampilkan menu dropdown</string>
     <string name="icon_content_description">Ikon Dialog</string>
@@ -82,6 +83,9 @@
     <string name="material_timepicker_select_time">Pilih waktu</string>
     <string name="material_timepicker_text_input_mode_description">Beralih ke mode masukan teks untuk masukan waktu.</string>
     <string name="mtrl_badge_numberless_content_description">Notifikasi baru</string>
+    <string name="mtrl_checkbox_state_description_checked">Dicentang</string>
+    <string name="mtrl_checkbox_state_description_indeterminate">Dicentang sebagian</string>
+    <string name="mtrl_checkbox_state_description_unchecked">Tidak dicentang</string>
     <string name="mtrl_chip_close_icon_content_description">Menghapus %1$s</string>
     <string name="mtrl_exceed_max_badge_number_content_description" ns2:ignore="PluralsCandidate">Lebih dari %1$d notifikasi baru</string>
     <string name="mtrl_picker_a11y_next_month">Ubah ke bulan berikutnya</string>
@@ -94,7 +98,7 @@
     <string name="mtrl_picker_date_header_selected">%1$s</string>
     <string name="mtrl_picker_date_header_title">Pilih Tanggal</string>
     <string name="mtrl_picker_date_header_unselected">Tanggal yang dipilih</string>
-    <string name="mtrl_picker_day_of_week_column_header">Kolom hari: %1$s</string>
+    <string name="mtrl_picker_day_of_week_column_header">%1$s</string>
     <string name="mtrl_picker_end_date_description">Tanggal akhir %1$s</string>
     <string name="mtrl_picker_invalid_format">Format tidak valid.</string>
     <string name="mtrl_picker_invalid_format_example">Contoh: %1$s</string>
@@ -125,5 +129,9 @@
     <string name="mtrl_timepicker_confirm">Oke</string>
     <string name="password_toggle_content_description">Tampilkan sandi</string>
     <string msgid="6264217191555673260" name="search_menu_title">"Telusuri"</string>
+    <string name="searchview_clear_text_content_description">Hapus teks</string>
+    <string name="searchview_navigation_content_description">Kembali</string>
+    <string name="side_sheet_accessibility_pane_title">Sheet Samping</string>
     <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+    <string name="wallet_buy_button_place_holder">Beli dengan Google</string>
 </resources>
