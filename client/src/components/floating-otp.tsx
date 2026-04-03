@@ -23,6 +23,7 @@ export function FloatingOtp() {
       return response.json();
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: 5000,
   });
 
   const { data: groceryOrders } = useQuery<any[]>({
@@ -32,6 +33,7 @@ export function FloatingOtp() {
       return response.json();
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: 5000,
   });
 
   const { data: restaurantOrders } = useQuery<any[]>({
@@ -41,6 +43,7 @@ export function FloatingOtp() {
       return response.data;
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: 5000,
   });
 
   // Determine active OTP
