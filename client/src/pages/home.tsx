@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api"; // ADDED
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list"; // ADDED
+import { FloatingOtp } from "@/components/floating-otp"; // ADDED
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -155,6 +156,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <FloatingOtp />
 
       {/* 1. Top Location Header (Zomato Style) */}
       <header 
