@@ -197,6 +197,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error('⚠️ Could not load platform settings:', e.message);
   }
 
+  // --- HEALTH CHECK ROUTE ---
+  app.get("/api/health", (_req, res) => {
+    res.status(200).json({ status: "OK", timestamp: new Date() });
+  });
+
   // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
   app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
     const assetlinks = [
@@ -2409,6 +2414,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedOrder = await storage.updateStreetFoodOrderStatus(id, status);
+
+      // --- RIDER RING: Notify all online riders when provider starts preparing ---
+      if (status === 'preparing') {
+        try {
+          const provider = order.providerId ? await storage.getServiceProvider(order.providerId) : null;
+          const providerName = provider?.businessName || 'Street Food Vendor';
+          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
+          console.log(`[Rider Ring] Street food order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
+
+          for (const rider of onlineRiders) {
+            const allTokens: string[] = [];
+            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
+              allTokens.push(...rider.fcmTokens);
+            } else if (rider.fcmToken) {
+              allTokens.push(rider.fcmToken);
+            }
+            const uniqueTokens = [...new Set(allTokens)];
+            for (const token of uniqueTokens) {
+              const result = await sendPushNotification(token, {
+                type: 'ORDER_REQUEST',
+                title: `🌮 ${providerName} is Preparing!`,
+                body: `Street Food Order #${id.slice(0, 8)} • ₹${updatedOrder.totalAmount} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                data: {
+                  orderId: updatedOrder.id,
+                  orderType: 'street_food',
+                  customerName: 'Customer',
+                  amount: String(updatedOrder.totalAmount || '0'),
+                  pickupAddress: provider?.address || 'Check App',
+                  dropAddress: updatedOrder.deliveryAddress || 'Check App',
+                  navigateTo: '/delivery-partner/dashboard',
+                }
+              });
+              if (result.success) {
+                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
+              } else {
+                console.error(`❌ Rider ring failed:`, result.error);
+              }
+            }
+          }
+        } catch (ringErr: any) {
+          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
+        }
+      }
+      // --- END RIDER RING ---
+
       res.json(updatedOrder);
     } catch (error: any) {
       console.error("Update order status error:", error);
@@ -2979,6 +3029,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let order;
       if (orderType === 'grocery') {
         order = await storage.acceptGroceryOrderAsRider(orderId, riderId);
+      } else if (orderType === 'street_food') {
+        order = await storage.acceptStreetFoodOrderAsRider(orderId, riderId);
       } else {
         order = await storage.acceptOrderAsRider(orderId, riderId);
       }
@@ -2999,6 +3051,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let order;
       if (orderType === 'grocery') {
         order = await storage.updateGroceryOrderStatusByRider(orderId, riderId, 'arrived_at_pickup');
+      } else if (orderType === 'street_food') {
+        order = await storage.updateStreetFoodOrderStatusByRider(orderId, riderId, 'arrived_at_pickup');
       } else {
         order = await storage.updateOrderStatus(orderId, riderId, 'arrived_at_pickup');
       }
@@ -3019,6 +3073,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let result;
       if (orderType === 'grocery') {
         result = await storage.markGroceryOrderPickedUp(orderId, riderId);
+      } else if (orderType === 'street_food') {
+        result = await storage.markStreetFoodOrderPickedUp(orderId, riderId);
       } else {
         result = await storage.markOrderPickedUp(orderId, riderId);
       }
@@ -3043,6 +3099,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let order;
       if (orderType === 'grocery') {
         order = await storage.verifyGroceryDeliveryOtp(orderId, riderId, otp);
+      } else if (orderType === 'street_food') {
+        order = await storage.verifyStreetFoodDeliveryOtp(orderId, riderId, otp);
       } else {
         order = await storage.verifyDeliveryOtp(orderId, riderId, otp);
       }

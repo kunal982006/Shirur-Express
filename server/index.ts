@@ -130,5 +130,22 @@ app.use((req, res, next) => {
   }, () => {
     console.log(`[DEBUG] Server restarted. Debug logs active.`);
     log(`serving on port ${port}`);
+
+    // --- RENDER FREE TIER KEEP-ALIVE ---
+    if (app.get("env") === "production") {
+      const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+      const PING_URL = 'https://shirur-express.onrender.com/api/health';
+      
+      setInterval(() => {
+        fetch(PING_URL)
+          .then(res => {
+            if (res.ok) console.log(`[KEEP-ALIVE] Pinged self successfully.`);
+            else console.error(`[KEEP-ALIVE] Self-ping returned status ${res.status}`);
+          })
+          .catch(err => console.error('[KEEP-ALIVE] Self-ping failed:', err.message));
+      }, REFRESH_INTERVAL);
+      
+      console.log(`[KEEP-ALIVE] Self-ping scheduled every 10 minutes targeting ${PING_URL}.`);
+    }
   });
 })();

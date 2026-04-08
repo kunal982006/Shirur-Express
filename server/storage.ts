@@ -2037,10 +2037,20 @@ export class DatabaseStorage implements IStorage {
       orderBy: [desc(groceryOrders.createdAt)],
     });
 
+    // Get available street food orders
+    const streetFoodOrdersList = await db.query.streetFoodOrders.findMany({
+      where: and(
+        eq(streetFoodOrders.status, 'ready_for_pickup'),
+        sql`${streetFoodOrders.riderId} IS NULL`
+      ),
+      orderBy: [desc(streetFoodOrders.createdAt)],
+    });
+
     // Combine and tag with orderType
     const combined = [
       ...restaurantOrdersList.map(o => ({ ...o, orderType: 'restaurant' })),
       ...groceryOrdersList.map(o => ({ ...o, orderType: 'grocery' })),
+      ...streetFoodOrdersList.map(o => ({ ...o, orderType: 'street_food' })),
     ];
 
     // Sort by createdAt
@@ -2065,9 +2075,15 @@ export class DatabaseStorage implements IStorage {
       orderBy: [desc(groceryOrders.createdAt)],
     });
 
+    const streetFoodOrdersList = await db.query.streetFoodOrders.findMany({
+      where: eq(streetFoodOrders.riderId, riderId),
+      orderBy: [desc(streetFoodOrders.createdAt)],
+    });
+
     const combined = [
       ...restaurantOrdersList.map(o => ({ ...o, orderType: 'restaurant' })),
       ...groceryOrdersList.map(o => ({ ...o, orderType: 'grocery' })),
+      ...streetFoodOrdersList.map(o => ({ ...o, orderType: 'street_food' })),
     ];
 
     combined.sort((a, b) => {
@@ -2180,6 +2196,112 @@ export class DatabaseStorage implements IStorage {
         deliveredAt: new Date(),
       })
       .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async acceptStreetFoodOrderAsRider(orderId: string, riderId: string): Promise<StreetFoodOrder> {
+    const order = await db.query.streetFoodOrders.findFirst({
+      where: eq(streetFoodOrders.id, orderId),
+    });
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.riderId) {
+      throw new Error("Order already claimed by another rider");
+    }
+    if (order.status !== 'ready_for_pickup') {
+      throw new Error("Order is not ready for pickup");
+    }
+
+    const [updated] = await db
+      .update(streetFoodOrders)
+      .set({
+        riderId,
+        status: 'assigned',
+        riderAcceptedAt: new Date(),
+      })
+      .where(eq(streetFoodOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async updateStreetFoodOrderStatusByRider(orderId: string, riderId: string, status: string): Promise<StreetFoodOrder> {
+    const order = await db.query.streetFoodOrders.findFirst({
+      where: and(
+        eq(streetFoodOrders.id, orderId),
+        eq(streetFoodOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    const [updated] = await db
+      .update(streetFoodOrders)
+      .set({ status })
+      .where(eq(streetFoodOrders.id, orderId))
+      .returning();
+
+    return updated;
+  }
+
+  async markStreetFoodOrderPickedUp(orderId: string, riderId: string): Promise<{ order: StreetFoodOrder; otp: string }> {
+    const order = await db.query.streetFoodOrders.findFirst({
+      where: and(
+        eq(streetFoodOrders.id, orderId),
+        eq(streetFoodOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const [updated] = await db
+      .update(streetFoodOrders)
+      .set({
+        status: 'out_for_delivery',
+        deliveryOtp: otp,
+        deliveryOtpGeneratedAt: new Date(),
+        pickedUpAt: new Date(),
+      })
+      .where(eq(streetFoodOrders.id, orderId))
+      .returning();
+
+    return { order: updated, otp };
+  }
+
+  async verifyStreetFoodDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<StreetFoodOrder> {
+    const order = await db.query.streetFoodOrders.findFirst({
+      where: and(
+        eq(streetFoodOrders.id, orderId),
+        eq(streetFoodOrders.riderId, riderId)
+      ),
+    });
+
+    if (!order) {
+      throw new Error("Order not found or not assigned to you");
+    }
+
+    if (order.deliveryOtp !== otp) {
+      throw new Error("Invalid OTP");
+    }
+
+    const [updated] = await db
+      .update(streetFoodOrders)
+      .set({
+        status: 'delivered',
+        deliveredAt: new Date(),
+      })
+      .where(eq(streetFoodOrders.id, orderId))
       .returning();
 
     return updated;
