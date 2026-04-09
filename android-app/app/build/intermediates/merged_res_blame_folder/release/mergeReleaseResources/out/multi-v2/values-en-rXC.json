@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeReleaseResources-48:/values-en-rXC/values-en-rXC.xml",
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-49:/values-en-rXC/values-en-rXC.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\537c78cefc6b5426493e664678631c4a\\transformed\\appcompat-1.6.1\\res\\values-en-rXC\\values-en-rXC.xml",

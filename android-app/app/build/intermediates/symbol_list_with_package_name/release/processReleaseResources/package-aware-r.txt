@@ -3081,6 +3081,7 @@ drawable btn_radio_off_mtrl
 drawable btn_radio_off_to_on_mtrl_animation
 drawable btn_radio_on_mtrl
 drawable btn_radio_on_to_off_mtrl_animation
+drawable button_style
 drawable common_full_open_on_phone
 drawable common_google_signin_btn_icon_dark
 drawable common_google_signin_btn_icon_dark_focused
@@ -3107,7 +3108,6 @@ drawable design_password_eye
 drawable design_snackbar_background
 drawable googleg_disabled_color_18
 drawable googleg_standard_color_18
-drawable ic_alert
 drawable ic_arrow_back_black_24
 drawable ic_call_answer
 drawable ic_call_answer_low
@@ -3129,7 +3129,6 @@ drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_no_internet
 drawable ic_search_black_24
-drawable ic_tick_mark
 drawable indeterminate_static
 drawable m3_avd_hide_password
 drawable m3_avd_show_password
@@ -3203,19 +3202,16 @@ drawable notification_template_icon_bg
 drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
-drawable rzp_border
-drawable rzp_border_bottom
-drawable rzp_green_button
+drawable razorpay_card
 drawable rzp_loader_circle
 drawable rzp_logo
 drawable rzp_name_logo
-drawable rzp_poweredby
-drawable rzp_secured_by_bg
-drawable rzp_white_border_black_bg
 drawable splash_background
+drawable styles
 drawable test_level_drawable
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
+drawable upi_base
 id ALT
 id BOTTOM_END
 id BOTTOM_START
@@ -3303,6 +3299,8 @@ id animateToEnd
 id animateToStart
 id antiClockwise
 id anticipate
+id app_logo
+id app_name
 id arc
 id asConfigured
 id async
@@ -3323,6 +3321,7 @@ id bounceBoth
 id bounceEnd
 id bounceStart
 id btnConfirm
+id btn_go_back
 id buttonPanel
 id buyButton
 id buy_now
@@ -3340,7 +3339,6 @@ id center_vertical
 id chain
 id chain2
 id chains
-id check_list
 id checkbox
 id checked
 id chronometer
@@ -3370,6 +3368,7 @@ id customPanel
 id customerNameText
 id cut
 id dark
+id dark_background
 id date_picker_actions
 id decelerate
 id decelerateAndComplete
@@ -3475,7 +3474,7 @@ id invisible
 id inward
 id italic
 id item_touch_helper_previous_elevation
-id iv_check_mark
+id iv_rzp_name_logo
 id jumpToEnd
 id jumpToStart
 id labeled
@@ -3489,7 +3488,9 @@ id line3
 id linear
 id listMode
 id list_item
+id ll_curtain_container
 id ll_loader
+id ll_parent_container
 id logo_only
 id m3_side_sheet
 id marquee
@@ -3621,12 +3622,9 @@ id right
 id rightToLeft
 id right_icon
 id right_side
+id rl_curtain_header
 id rounded
 id row_index_key
-id rzp_innerbox
-id rzp_outerbox
-id rzp_securedpayments
-id rzp_theMainMagicView
 id sandbox
 id satellite
 id save_non_transition_alpha
@@ -3638,6 +3636,7 @@ id scroll
 id scrollIndicatorDown
 id scrollIndicatorUp
 id scrollView
+id scroll_view
 id scrollable
 id search_badge
 id search_bar
@@ -3723,6 +3722,7 @@ id textTop
 id text_input_end_icon
 id text_input_error_icon
 id text_input_start_icon
+id text_view
 id textinput_counter
 id textinput_error
 id textinput_helper_text
@@ -3748,8 +3748,7 @@ id transition_position
 id transition_scene_layoutid_cache
 id transition_transform
 id triangle
-id tv_sub_item
-id tv_title
+id tv_powered_by
 id unchecked
 id uniform
 id unlabeled
@@ -3893,6 +3892,9 @@ layout abc_tooltip
 layout activity_incoming_order
 layout activity_main
 layout activity_splash
+layout app_display_list_heading_tv
+layout apps_display_grid_element
+layout apps_display_list_element
 layout custom_dialog
 layout design_bottom_navigation_item
 layout design_bottom_sheet_dialog
@@ -3969,20 +3971,20 @@ layout notification_template_icon_group
 layout notification_template_part_chronometer
 layout notification_template_part_time
 layout rzp_loader
-layout rzp_magic_base
-layout sdk_integration_status
 layout select_dialog_item_material
 layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material
-layout single_item
 layout support_simple_spinner_dropdown_item
+layout upi_intent_activity_selector
+layout upi_intent_no_apps_found
 layout wallet_test_layout
 mipmap ic_launcher
 mipmap ic_launcher_foreground
 mipmap ic_launcher_round
 plurals mtrl_badge_content_description
 raw firebase_common_keep
-raw rzp_config
+raw otpelf
+raw rzp_config_customui
 raw tez_inapp_api_config
 string abc_action_bar_home_description
 string abc_action_bar_up_description
@@ -5473,6 +5475,5 @@ styleable WalletFragmentOptions appTheme environment fragmentMode fragmentStyle
 styleable WalletFragmentStyle buyButtonAppearance buyButtonHeight buyButtonText buyButtonWidth maskedWalletDetailsBackground maskedWalletDetailsButtonBackground maskedWalletDetailsButtonTextAppearance maskedWalletDetailsHeaderTextAppearance maskedWalletDetailsLogoImageType maskedWalletDetailsLogoTextColor maskedWalletDetailsTextAppearance
 styleable include constraintSet
 xml file_paths
-xml file_provider_path
 xml ga_ad_services_config
 xml network_security_config

@@ -15,8 +15,7 @@
 -keep class com.google.firebase.iid.FirebaseInstanceIdReceiver { <init>(); }
 -keep class com.google.firebase.messaging.FirebaseMessagingService { <init>(); }
 -keep class com.google.firebase.provider.FirebaseInitProvider { <init>(); }
--keep class com.razorpay.CheckoutActivity { <init>(); }
--keep class com.razorpay.RzpTokenReceiver { <init>(); }
+-keep class com.razorpay.DeeplinkActivity { <init>(); }
 -keep class com.shirurexpress.app.IncomingOrderActivity { <init>(); }
 -keep class com.shirurexpress.app.MainActivity { <init>(); }
 -keep class com.shirurexpress.app.MyFirebaseMessagingService { <init>(); }

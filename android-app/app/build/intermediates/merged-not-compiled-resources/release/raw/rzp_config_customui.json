@@ -1,0 +1,429 @@
+{
+  "config_end_point": "https://butler.razorpay.com/v1/settings",
+  "enable": true,
+  "checkout": {
+    "end_point": "/v1/checkout"
+  },
+  "permissions": {
+    "custom_message": "We need SMS permission to auto fill bank OTP",
+    "enable_custom_message": false,
+    "max_ask_count": 1
+  },
+  "otpelf": {
+    "enable": true,
+    "settings": {
+      "platform": "android"
+    },
+    "endpoint": "https://cdn.razorpay.com/static/otpelf/",
+    "js_file_name": "otpelf.js",
+    "version_file_name": "version.json"
+  },
+  "retry": {
+    "enabled": true,
+    "max_count": -1
+  },
+  "analytics": {
+    "lumberjack": {
+      "key": "NmFhYWUwMDQ2NmMyOGUyNmFhNzQ0ODk2",
+      "sdk_identifier": "customuiandroid",
+      "end_point": "https://lumberjack.razorpay.com/v1/track",
+      "enable": false,
+      "isLumberjackEnabled": true,
+      "blocked_versions": [],
+      "use_v2_table": false,
+      "allowed_events_regex": "default"
+    }
+  },
+  "update_sdk_config": {
+    "latest_version": 16,
+    "msg": "Razorpay: A new version of the sdk is available. Please update.",
+    "enable_alert": true
+  },
+  "upi": {
+    "recurringAutoPaySupportedApps": [
+      "in.org.npci.upiapp",
+      "com.phonepe.app",
+      "net.one97.paytm",
+      "in.amazon.mShop.android.shopping",
+      "com.google.android.apps.nbu.paisa.user"
+    ],
+    "isWhiteListingEnabled": true,
+    "blackListedApps": [
+      "com.myairtelapp"
+    ],
+    "whiteListedApps": [
+      "com.google.android.apps.nbu.paisa.user",
+      "in.org.npci.upiapp",
+      "com.phonepe.app",
+      "com.csam.icici.bank.imobile",
+      "net.one97.paytm",
+      "com.sbi.upi",
+      "com.upi.axispay",
+      "com.samsung.android.spay",
+      "com.snapwork.hdfc",
+      "com.icicibank.pockets",
+      "com.bankofbaroda.upi",
+      "com.freecharge.android",
+      "com.axis.mobile",
+      "com.mycompany.kvb",
+      "com.fss.jnkpsp",
+      "com.fss.idfcpsp",
+      "com.YesBank",
+      "com.microsoft.mobile.polymer",
+      "com.upi.federalbank.org.lotza",
+      "com.mgs.induspsp",
+      "ai.wizely.android",
+      "in.amazon.mShop.android.shopping",
+      "com.rblbank.mobank",
+      "money.bullet",
+      "com.dreamplug.androidapp",
+      "in.bajajfinservmarkets.app",
+      "com.fampay.in",
+      "com.mobikwik_new",
+      "money.jupiter",
+      "com.naviapp",
+      "indwin.c3.shareapp",
+      "com.tatadigital.tcp",
+      "com.nextbillion.groww",
+      "com.shriram.one",
+      "com.pinelabs.fave",
+      "com.ultracash.payment.customer",
+      "com.npst.timepay.society",
+      "com.goibibo",
+      "com.msf.kbank.mobile",
+      "com.kotak811mobilebankingapp.instantsavingsupiscanandpayrecharge",
+      "com.hdfcbank.payzapp",
+      "com.fss.ippbpsp",
+      "com.canarabank.mobility",
+      "com.jio.myjio",
+      "com.IndianBank.IndOASIS",
+      "com.lcode.ucoupi",
+      "com.euronet.iobupi",
+      "com.lcode.csbupi",
+      "com.atyati.tvamapp",
+      "com.popclub.android",
+      "com.idfcfirstbank.optimus",
+      "com.Version1",
+      "com.fedmobile",
+      "com.iexceed.appzillon.ippbMB",
+      "com.infrasoft.uboi",
+      "money.super.payments",
+      "com.eroute.omnicard",
+      "com.ausmallfinancebank.amb",
+      "com.infrasofttech.CentralBank",
+      "in.gokiwi.kiwitpap",
+      "com.fss.indus",
+      "com.paypointz.wallet",
+      "in.irisbyyes.app"
+    ],
+    "upiAppsPreferredOrder": [
+      "com.google.android.apps.nbu.paisa.user",
+      "in.org.npci.upiapp",
+      "com.phonepe.app",
+      "net.one97.paytm"
+    ],
+    "shortcodes": {
+      "com.google.android.apps.nbu.paisa.user": "google_pay",
+      "in.org.npci.upiapp": "bhim",
+      "com.phonepe.app": "phonepe",
+      "com.csam.icici.bank.imobile": "imobile",
+      "net.one97.paytm": "paytm",
+      "com.sbi.upi": "sbi",
+      "com.upi.axispay": "axispay",
+      "com.samsung.android.spay": "samsung",
+      "com.snapwork.hdfc": "hdfc-bank",
+      "com.icicibank.pockets": "icici-pocket",
+      "com.bankofbaroda.upi": "bank-of-baroda",
+      "com.freecharge.android": "freecharge",
+      "com.axis.mobile": "axis",
+      "com.mycompany.kvb": "kvb",
+      "com.fss.jnkpsp": "jk-upi",
+      "com.fss.idfcpsp": "idfc",
+      "com.YesBank": "yes-bank",
+      "com.microsoft.mobile.polymer": "microsoft-kaizala",
+      "com.upi.federalbank.org.lotza": "lotza",
+      "com.mgs.induspsp": "induspay",
+      "ai.wizely.android": "wizely",
+      "in.amazon.mShop.android.shopping": "amazon",
+      "com.rblbank.mobank": "rbl-mobank",
+      "money.bullet": "jupiter",
+      "com.dreamplug.androidapp": "cred",
+      "in.bajajfinservmarkets.app": "finserve",
+      "com.fampay.in": "fampay",
+      "com.mobikwik_new": "mobikwik",
+      "com.mgs.pnbupi": "pnb-bank",
+      "com.dbs.in.digitalbank": "digibank",
+      "money.jupiter": "jupiter",
+      "com.naviapp": "navi",
+      "indwin.c3.shareapp": "slice",
+      "com.tatadigital.tcp": "tataneu",
+      "com.nextbillion.groww": "groww",
+      "com.shriram.one": "shriramone",
+      "com.pinelabs.fave": "fave",
+      "com.ultracash.payment.customer": "ultracash",
+      "com.npst.timepay.society": "timepay",
+      "com.goibibo": "goibibo",
+      "com.msf.kbank.mobile": "kotak",
+      "com.kotak811mobilebankingapp.instantsavingsupiscanandpayrecharge": "kotak811",
+      "com.hdfcbank.payzapp": "payzapp",
+      "com.fss.ippbpsp": "dakpay",
+      "com.canarabank.mobility": "canara",
+      "com.jio.myjio": "myjio",
+      "com.IndianBank.IndOASIS": "indoasis",
+      "com.lcode.ucoupi": "bhim-uco",
+      "com.euronet.iobupi": "bhim-iob",
+      "com.lcode.csbupi": "bhim-csb",
+      "com.atyati.tvamapp": "tvam",
+      "com.popclub.android": "popclubapp",
+      "com.idfcfirstbank.optimus": "idfc-first",
+      "com.Version1": "pnb-one",
+      "com.fedmobile": "fedmobile",
+      "com.iexceed.appzillon.ippbMB": "india-post",
+      "com.infrasoft.uboi": "vyom",
+      "money.super.payments": "super-money",
+      "com.eroute.omnicard": "omnicard",
+      "com.ausmallfinancebank.amb": "au0101",
+      "com.infrasofttech.CentralBank": "cent-mobile",
+      "in.gokiwi.kiwitpap": "kiwi",
+      "com.fss.indus": "indusmobile",
+      "com.indusind.indie": "indus-indie",
+      "com.paypointz.wallet": "digi-khata",
+      "in.irisbyyes.app": "yesbank-iris"
+    },
+    "intentAppCodes": {
+      "com.google.android.apps.nbu.paisa.user": "google_pay",
+      "in.org.npci.upiapp": "bhim",
+      "com.phonepe.app": "phonepe",
+      "com.csam.icici.bank.imobile": "icici",
+      "net.one97.paytm": "paytm",
+      "com.sbi.upi": "sbi",
+      "com.upi.axispay": "axispay",
+      "com.samsung.android.spay": "samsung_pay",
+      "com.snapwork.hdfc": "hdfc-bank",
+      "com.icicibank.pockets": "icici-pocket",
+      "com.bankofbaroda.upi": "bobupi",
+      "com.freecharge.android": "freecharge",
+      "com.axis.mobile": "axis",
+      "com.mycompany.kvb": "kvb",
+      "com.fss.jnkpsp": "jk-upi",
+      "com.enstage.wibmo.hdfc": "payzapp",
+      "com.fss.idfcpsp": "idfc",
+      "com.yesbank.yespaynext": "yes-bank",
+      "com.microsoft.mobile.polymer": "microsoft-kaizala",
+      "com.upi.federalbank.org.lotza": "lotza",
+      "com.mgs.induspsp": "induspay",
+      "ai.wizely.android": "wizely",
+      "in.amazon.mShop.android.shopping": "amazon_pay",
+      "com.rblbank.mobank": "rbl-mobank",
+      "money.bullet": "jupiter",
+      "com.dreamplug.androidapp": "cred",
+      "in.bajajfinservmarkets.app": "finserv",
+      "com.fampay.in": "fampay",
+      "com.mobikwik_new": "mobikwik",
+      "com.mgs.pnbupi": "pnb-bank",
+      "com.dbs.in.digitalbank": "digibank",
+      "money.jupiter": "jupiter"
+    }
+  },
+  "static_rules": {
+    "identify_network": {
+      "visa": "^4",
+      "mastercard": "^(5[1-5]|2[2-7])",
+      "maestro16": "^50(81(25|26|59|92)|8227)|4(437|681)",
+      "amex": "^3[47]",
+      "rupay": "^(508[5-9]|60(80(0|)[^0]|8[1-4]|8500|698[5-9]|699|7[^9]|79[0-7]|798[0-4])|65(2(1[5-9]|[2-9])|30|31[0-4])|817[2-9]|81[89]|820[01])",
+      "discover": "^(65[1,3-9]|6011)",
+      "maestro": "^(6|5(0|[6-9])).{5}",
+      "diners": "^3[0689]",
+      "jcb": "^35"
+    },
+    "network_card_length": {
+      "jcb": 16,
+      "discover": 16,
+      "visa": 16,
+      "mastercard": 16,
+      "amex": 15,
+      "diners": 14,
+      "maestro": 19,
+      "maestro16": 16,
+      "default": 19,
+      "rupay": 16
+    },
+    "logos": {
+      "wallet": {
+        "base_url": "https://cdn.razorpay.com/wallet/",
+        "extension": "png"
+      },
+      "wallet_sq": {
+        "base_url": "https://cdn.razorpay.com/wallet-sq/",
+        "extension": "png"
+      },
+      "bank": {
+        "base_url": "https://cdn.razorpay.com/bank/",
+        "extension": "gif"
+      },
+      "upi": {
+        "base_url": "https://cdn.razorpay.com/app/",
+        "extension": "png"
+      }
+    }
+  },
+  "one_time_otp": {
+    "enabled": false
+  },
+  "ios": {
+    "unhand_exc_enabled": true,
+    "unhand_exc_sleep_time_milli_sec": 30,
+    "ns_exc_enabled": true,
+    "update_sdk_msg": "A new version of the sdk is available (shown only when using test key or simulator)",
+    "show_sdk_update_alert": true,
+    "latest_sdk_version": "1.0.9",
+    "availableApps": [
+      {
+        "uriScheme": "tez://upi/pay",
+        "mandateUriScheme": "tez://upi/mandate",
+        "appName": "Google Pay",
+        "shortcode": "google_pay"
+      },
+      {
+        "uriScheme": "phonepe://pay",
+        "mandateUriScheme": "phonepe://mandate",
+        "appName": "PhonePe",
+        "shortcode": "phonepe"
+      },
+      {
+        "uriScheme": "paytmmp://upi/pay",
+        "mandateUriScheme": "paytmmp://upi/mandate",
+        "appName": "Paytm",
+        "shortcode": "paytm"
+      },
+      {
+        "uriScheme": "credpay://upi/pay",
+        "appName": "CRED",
+        "shortcode": "cred"
+      },
+      {
+        "uriScheme": "mobikwik://upi/pay",
+        "appName": "Mobikwik",
+        "shortcode": "mobikwik"
+      },
+      {
+        "uriScheme": "freecharge://upi/pay",
+        "appName": "Freecharge",
+        "shortcode": "freecharge"
+      },
+      {
+        "uriScheme": "amazonpay://upi/pay",
+        "appName": "AmazonPay",
+        "shortcode": "amazonpay"
+      },
+      {
+        "uriScheme": "navi://upi/pay",
+        "appName": "Navi",
+        "shortcode": "navi"
+      },
+      {
+        "uriScheme": "kiwi://upi/pay",
+        "appName": "Kiwi",
+        "shortcode": "kiwi"
+      },
+      {
+        "uriScheme": "payzapp://upi/pay",
+        "appName": "PayZapp",
+        "shortcode": "payzapp"
+      },
+      {
+        "uriScheme": "jupiter://upi/pay",
+        "appName": "Jupiter",
+        "shortcode": "jupiter"
+      },
+      {
+        "uriScheme": "sbiyono://upi/pay",
+        "appName": "SBI Yono",
+        "shortcode": "sbiyono"
+      },
+      {
+        "uriScheme": "whatsapp-consumer://upi/pay",
+        "appName": "Whatsapp",
+        "shortcode": "whatsapp"
+      },
+      {
+        "uriScheme": "slice-upi://upi://pay",
+        "appName": "Slice",
+        "shortcode": "slice"
+      },
+      {
+        "uriScheme": "bobupi://upi/pay",
+        "appName": "BoB World UPI",
+        "shortcode": "bobupi"
+      },
+      {
+        "uriScheme": "myjio://upi/pay",
+        "appName": "MyJio",
+        "shortcode": "myjio"
+      },
+      {
+        "uriScheme": "freecharge://upi/pay",
+        "appName": "Freecharge",
+        "shortcode": "freecharge"
+      },
+      {
+        "uriScheme": "omnicard://upi/pay",
+        "appName": "Omnicard",
+        "shortcode": "omnicard"
+      },
+      {
+        "uriScheme": "shriramone://upi/pay",
+        "appName": "Shriram One",
+        "shortcode": "shriramone"
+      },
+      {
+        "uriScheme": "indusmobile://upi/pay",
+        "appName": "IndusInd",
+        "shortcode": "indusmobile"
+      },
+      {
+        "uriScheme": "bhim://upi/pay",
+        "appName": "Bhim",
+        "shortcode": "bhim"
+      },
+      {
+        "uriScheme": "popclubapp://upi/pay",
+        "appName": "PopClub",
+        "shortcode": "popclubapp"
+      },
+      {
+        "uriScheme": "in.fampay.app://upi/pay",
+        "appName": "Fampay",
+        "shortcode": "fampay"
+      },
+      {
+        "uriScheme": "kotakbank://pay",
+        "appName": "Kotak811",
+        "shortcode": "kotakbank"
+      },
+      {
+        "uriScheme": "postpe://upi://pay",
+        "appName": "BharatPe",
+        "shortcode": "postpe"
+      }
+    ]
+  },
+  "features": {
+    "block_rooted_devices": true
+  },
+  "feature_flags": {
+    "verbose_logging": {
+      "enabled": false,
+      "rollout_type": "all"
+    },
+    "enable_preload": {
+      "enabled": true,
+      "rollout_type": "canary",
+      "canary_config": {
+        "rollout_percentage": 100
+      },
+      "preload_frequency_hours": 48
+    }
+  }
+}

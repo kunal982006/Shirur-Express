@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="52dp">
+
+    <ImageView android:id="@+id/app_logo"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
+        android:src="@drawable/upi_base"/>
+
+    <TextView android:id="@+id/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="11dp"
+        android:includeFontPadding="false"
+        android:textSize="14sp"
+        android:text="Razorpay"
+        android:ellipsize="end"
+        android:maxLength="15"
+        android:textColor="#DE000000"/>
+
+</LinearLayout>

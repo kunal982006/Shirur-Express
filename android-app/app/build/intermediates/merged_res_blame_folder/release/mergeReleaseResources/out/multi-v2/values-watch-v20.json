@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeReleaseResources-48:/values-watch-v20/values-watch-v20.xml",
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-49:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\4dc52e239eb4339d9b9b8daebf8d6ce3\\transformed\\play-services-auth-17.0.0\\res\\values-watch-v20\\values.xml",

@@ -1,20 +1,20 @@
 -- Merging decision tree log ---
 provider#androidx.core.content.FileProvider
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:87:9-95:20
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:104:9-112:20
 	android:grantUriPermissions
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:91:13-47
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:108:13-47
 	android:authorities
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:89:13-64
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:106:13-64
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:90:13-37
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:107:13-37
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:88:13-62
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:105:13-62
 manifest
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-99:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-99:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-99:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-99:12
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:2:1-9:12
 MERGED from [androidx.databinding:viewbinding:8.13.2] C:\Users\Sai\.gradle\caches\8.13\transforms\300d12c91360e84039d3ed01312ba38e\transformed\viewbinding-8.13.2\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:17:1-24:12
@@ -24,7 +24,8 @@ MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\Sai\.gradle\caches\8.1
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\b766177ea326a5457456e7200c42f632\transformed\viewpager2-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:2:1-9:12
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:17:1-66:12
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:2:1-66:12
+MERGED from [com.razorpay:customui:3.9.22] C:\Users\Sai\.gradle\caches\8.13\transforms\8eecd9a04d532812ea23c00b0a13b3f5\transformed\customui-3.9.22\AndroidManifest.xml:2:1-7:12
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:2:1-40:12
 MERGED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:17:1-39:12
 MERGED from [com.google.android.gms:play-services-auth-api-phone:17.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\95e081f895defa0f4dd5c9dae3a22cbc\transformed\play-services-auth-api-phone-17.1.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.gms:play-services-wallet:18.1.3] C:\Users\Sai\.gradle\caches\8.13\transforms\fb95bd699b358b05728f29b6ecb876c7\transformed\play-services-wallet-18.1.3\AndroidManifest.xml:17:1-22:12
@@ -100,6 +101,7 @@ MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\Sai\.gradle\cach
 MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f530b2e418af14323715aa14e9686f51\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.print:print:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\7ee9583fb465694e5b697f3b648e2fbb\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\ebe5374fdc3ce745f3761b18a6d993bf\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:2:1-30:12
 	package
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:versionName
@@ -112,8 +114,8 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:11-69
 uses-permission#android.permission.INTERNET
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:6:5-67
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:8:5-67
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:8:5-67
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:7:5-67
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:7:5-67
 MERGED from [com.google.android.gms:play-services-maps:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8f6f7df86c35336a13510f79e93f55cc\transformed\play-services-maps-17.0.0\AndroidManifest.xml:24:5-67
 MERGED from [com.google.android.gms:play-services-maps:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8f6f7df86c35336a13510f79e93f55cc\transformed\play-services-maps-17.0.0\AndroidManifest.xml:24:5-67
 MERGED from [com.google.android.gms:play-services-measurement-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\79e04a38b3398126b3523c46526aaa3d\transformed\play-services-measurement-api-21.5.0\AndroidManifest.xml:22:5-67
@@ -130,12 +132,16 @@ MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:
 MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\93c977d0a427e7f908144be83aff1b71\transformed\play-services-measurement-sdk-api-21.5.0\AndroidManifest.xml:23:5-67
 MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\b1c1efc3fe126374b345a96617bfc24e\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:25:5-67
 MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\b1c1efc3fe126374b345a96617bfc24e\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:25:5-67
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:7:5-67
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:7:5-67
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:6:22-64
 uses-permission#android.permission.ACCESS_NETWORK_STATE
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:7:5-79
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:22:5-79
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:22:5-79
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:8:5-79
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:8:5-79
 MERGED from [com.google.android.gms:play-services-maps:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8f6f7df86c35336a13510f79e93f55cc\transformed\play-services-maps-17.0.0\AndroidManifest.xml:23:5-79
 MERGED from [com.google.android.gms:play-services-maps:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8f6f7df86c35336a13510f79e93f55cc\transformed\play-services-maps-17.0.0\AndroidManifest.xml:23:5-79
 MERGED from [com.google.android.gms:play-services-measurement-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\79e04a38b3398126b3523c46526aaa3d\transformed\play-services-measurement-api-21.5.0\AndroidManifest.xml:23:5-79
@@ -154,6 +160,8 @@ MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Us
 MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\b1c1efc3fe126374b345a96617bfc24e\transformed\transport-backend-cct-3.1.8\AndroidManifest.xml:24:5-79
 MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\d0b2ed8f1a50bf539a4987af04777163\transformed\transport-runtime-3.1.8\AndroidManifest.xml:22:5-79
 MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] C:\Users\Sai\.gradle\caches\8.13\transforms\d0b2ed8f1a50bf539a4987af04777163\transformed\transport-runtime-3.1.8\AndroidManifest.xml:22:5-79
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:8:5-79
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:8:5-79
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:7:22-76
 uses-feature#android.hardware.camera
@@ -224,9 +232,61 @@ MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:
 MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\93c977d0a427e7f908144be83aff1b71\transformed\play-services-measurement-sdk-api-21.5.0\AndroidManifest.xml:26:5-79
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:29:22-76
+queries
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:32:5-46:15
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:10:5-38:15
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:10:5-38:15
+package#com.google.android.apps.nbu.paisa.user
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:33:9-74
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:33:18-71
+package#com.phonepe.app
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:34:9-51
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:34:18-48
+package#net.one97.paytm
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:35:9-51
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:35:18-48
+package#com.whatsapp
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:36:9-48
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:36:18-45
+package#in.org.npci.upiapp
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:37:9-54
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:37:18-51
+package#com.freecharge.android
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:38:9-58
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:38:18-55
+package#com.mobikwik_new
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:39:9-52
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:39:18-49
+package#com.amazon.mShop.android.shopping
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:40:9-69
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:40:18-66
+package#com.myairtelapp
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:41:9-51
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:41:18-48
+intent#action:name:android.intent.action.VIEW+data:scheme:upi
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:42:9-45:18
+action#android.intent.action.VIEW
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:13-65
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:21-62
+data
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:13-42
+	android:host
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:85:21-63
+	android:scheme
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:19-39
 application
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:31:5-97:19
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:31:5-97:19
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-114:19
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-114:19
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:22:5-20
@@ -237,8 +297,6 @@ MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:7:5-20
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:28:5-64:19
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:28:5-64:19
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:41:5-64:19
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:41:5-64:19
 MERGED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:22:5-37:19
 MERGED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:22:5-37:19
 MERGED from [com.google.android.gms:play-services-identity:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2a6d2ffe52800130d0b7a30caa593437\transformed\play-services-identity-17.0.0\AndroidManifest.xml:22:5-20
@@ -297,110 +355,102 @@ MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Sai\.gra
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Sai\.gradle\caches\8.13\transforms\7fca00ff91fee32eaa957bc57ce257bf\transformed\profileinstaller-1.3.1\AndroidManifest.xml:23:5-53:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Sai\.gradle\caches\8.13\transforms\6dbd9f0032c66acf000ca3fee8d9338f\transformed\startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Sai\.gradle\caches\8.13\transforms\6dbd9f0032c66acf000ca3fee8d9338f\transformed\startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:12:5-28:19
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:12:5-28:19
 	android:extractNativeLibs
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:36:9-35
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:53:9-35
 	android:label
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:34:9-41
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:51:9-41
 	android:roundIcon
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:35:9-54
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:52:9-54
 	tools:targetApi
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:40:9-29
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:57:9-29
 	android:icon
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:33:9-43
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:50:9-43
 	android:allowBackup
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:32:9-35
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:49:9-35
 	android:theme
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:37:9-51
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:54:9-51
 	android:networkSecurityConfig
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:39:9-69
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:56:9-69
 	android:usesCleartextTraffic
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:38:9-45
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:55:9-45
 activity#com.shirurexpress.app.SplashActivity
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:9-52:20
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:60:9-69:20
 	android:noHistory
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:47:13-37
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:64:13-37
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:45:13-36
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:62:13-36
 	android:theme
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:46:13-62
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:63:13-62
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:13-43
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:61:13-43
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:13-51:29
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:65:13-68:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:49:17-69
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:66:17-69
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:49:25-66
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:66:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:50:17-77
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:67:17-77
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:50:27-74
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:67:27-74
 activity#com.shirurexpress.app.MainActivity
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:54:9-70:20
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:71:9-87:20
 	android:launchMode
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:58:13-44
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:75:13-44
 	android:windowSoftInputMode
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:59:13-55
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:76:13-55
 	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:56:13-36
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:73:13-36
 	android:configChanges
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:57:13-74
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:74:13-74
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:55:13-41
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:72:13-41
 intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:shirur-express.onrender.com+data:scheme:https
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:62:13-69:29
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:79:13-86:29
 	android:autoVerify
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:62:28-53
-action#android.intent.action.VIEW
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:63:17-69
-	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:63:25-66
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:79:28-53
 category#android.intent.category.DEFAULT
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:64:17-76
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:81:17-76
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:64:27-73
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:81:27-73
 category#android.intent.category.BROWSABLE
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:65:17-78
-	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:65:27-75
-data
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:66:17-68:66
-	android:host
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:68:21-63
-	android:scheme
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:67:21-43
-activity#com.shirurexpress.app.IncomingOrderActivity
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:72:9-76:47
-	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:75:13-37
-	android:showOnLockScreen
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:76:13-44
-	android:theme
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:74:13-63
-	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:73:13-50
-service#com.shirurexpress.app.MyFirebaseMessagingService
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:78:9-84:19
-	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:80:13-37
-	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:79:13-55
-intent-filter#action:name:com.google.firebase.MESSAGING_EVENT
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:81:13-83:29
-action#com.google.firebase.MESSAGING_EVENT
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:82:17-78
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:82:25-75
-meta-data#android.support.FILE_PROVIDER_PATHS
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:92:13-94:54
-	android:resource
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:94:17-51
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:82:27-75
+activity#com.shirurexpress.app.IncomingOrderActivity
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:89:9-93:47
+	android:exported
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:92:13-37
+	android:showOnLockScreen
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:93:13-44
+	android:theme
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:91:13-63
 	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:93:17-67
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:90:13-50
+service#com.shirurexpress.app.MyFirebaseMessagingService
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:95:9-101:19
+	android:exported
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:97:13-37
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:96:13-55
+intent-filter#action:name:com.google.firebase.MESSAGING_EVENT
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:98:13-100:29
+action#com.google.firebase.MESSAGING_EVENT
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:99:17-78
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:99:25-75
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:109:13-111:54
+	android:resource
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:111:17-51
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:110:17-67
 uses-sdk
 INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
@@ -423,8 +473,10 @@ MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:5:5-44
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:20:5-44
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:20:5-44
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:6:5-44
-MERGED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:6:5-44
+MERGED from [com.razorpay:customui:3.9.22] C:\Users\Sai\.gradle\caches\8.13\transforms\8eecd9a04d532812ea23c00b0a13b3f5\transformed\customui-3.9.22\AndroidManifest.xml:5:5-44
+MERGED from [com.razorpay:customui:3.9.22] C:\Users\Sai\.gradle\caches\8.13\transforms\8eecd9a04d532812ea23c00b0a13b3f5\transformed\customui-3.9.22\AndroidManifest.xml:5:5-44
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:5:5-44
+MERGED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:20:5-44
 MERGED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:20:5-44
 MERGED from [com.google.android.gms:play-services-auth-api-phone:17.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\95e081f895defa0f4dd5c9dae3a22cbc\transformed\play-services-auth-api-phone-17.1.0\AndroidManifest.xml:5:5-44
@@ -575,6 +627,8 @@ MERGED from [androidx.print:print:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transf
 MERGED from [androidx.print:print:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\7ee9583fb465694e5b697f3b648e2fbb\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\ebe5374fdc3ce745f3761b18a6d993bf\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\ebe5374fdc3ce745f3761b18a6d993bf\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:5:5-44
+MERGED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:5:5-44
 	android:targetSdkVersion
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
@@ -645,54 +699,22 @@ ADDED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\
 		ADDED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:62:17-82
 	android:name
 		ADDED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:61:17-119
-queries
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:10:5-39:15
+package#my.com.tngdigital.ewallet
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:11:9-61
+	android:name
+		ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:11:18-58
 intent#action:name:android.intent.action.VIEW+data:mimeType:*/*+data:scheme:*
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:11:9-17:18
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:13:9-19:18
 intent#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+data:host:pay+data:mimeType:*/*+data:scheme:upi
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:18:9-27:18
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:20:9-29:18
 intent#action:name:android.intent.action.MAIN
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:28:9-30:18
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:30:9-32:18
 intent#action:name:android.intent.action.SEND+data:mimeType:*/*
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:31:9-35:18
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:33:9-37:18
 action#android.intent.action.SEND
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:32:13-65
+ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:34:13-65
 	android:name
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:32:21-62
-intent#action:name:rzp.device_token.share
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:36:9-38:18
-action#rzp.device_token.share
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:37:13-61
-	android:name
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:37:21-58
-receiver#com.razorpay.RzpTokenReceiver
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:42:9-49:20
-	android:exported
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:44:13-36
-	tools:ignore
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:45:13-44
-	android:name
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:43:13-57
-intent-filter#action:name:rzp.device_token.share
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:46:13-48:29
-activity#com.razorpay.CheckoutActivity
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:51:9-59:20
-	android:exported
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:54:13-37
-	android:configChanges
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:53:13-83
-	android:theme
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:55:13-49
-	android:name
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:52:13-57
-intent-filter#action:name:android.intent.action.MAIN
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:56:13-58:29
-meta-data#com.razorpay.plugin.googlepay_all
-ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:61:9-63:58
-	android:value
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:63:13-55
-	android:name
-		ADDED from [com.razorpay:checkout:1.6.38] C:\Users\Sai\.gradle\caches\8.13\transforms\5f92bf27ec1e46db2eb649d0db47693f\transformed\checkout-1.6.38\AndroidManifest.xml:62:13-61
+		ADDED from [com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:34:21-62
 activity#com.google.android.gms.auth.api.signin.internal.SignInHubActivity
 ADDED from [com.google.android.gms:play-services-auth:17.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4dc52e239eb4339d9b9b8daebf8d6ce3\transformed\play-services-auth-17.0.0\AndroidManifest.xml:23:9-27:75
 	android:excludeFromRecents
@@ -959,3 +981,19 @@ action#androidx.profileinstaller.action.BENCHMARK_OPERATION
 ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Sai\.gradle\caches\8.13\transforms\7fca00ff91fee32eaa957bc57ce257bf\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
 	android:name
 		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Sai\.gradle\caches\8.13\transforms\7fca00ff91fee32eaa957bc57ce257bf\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+uses-permission#android.permission.READ_BASIC_PHONE_STATE
+ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:10:5-81
+	android:name
+		ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:10:22-78
+activity#com.razorpay.DeeplinkActivity
+ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:13:9-27:20
+	android:exported
+		ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:15:13-36
+	android:theme
+		ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:16:13-49
+	android:name
+		ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:14:13-57
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:${applicationId}+data:scheme:razorpay
+ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:17:13-26:29
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:com.shirurexpress.app+data:scheme:razorpay
+ADDED from [com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:17:13-26:29

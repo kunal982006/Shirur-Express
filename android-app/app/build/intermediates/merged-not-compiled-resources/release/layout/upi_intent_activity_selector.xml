@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="none"
+    android:background="#9A646464">
+
+    <LinearLayout android:id="@+id/ll_parent_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <View android:id="@+id/dark_background"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"/>
+
+        <LinearLayout android:id="@+id/ll_curtain_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#f0f1f6">
+
+            <RelativeLayout android:id="@+id/rl_curtain_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="#f0f1f6">
+
+                <TextView android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_centerVertical="true"
+                    android:text="PAY USING..."
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FF515978"/>
+
+                <ImageView
+                    android:id="@+id/iv_rzp_name_logo"
+                    android:layout_width="75dp"
+                    android:layout_height="16dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginRight="20dp"
+                    android:contentDescription="Powered By Razorpay"
+                    android:padding="0dp"
+                    android:src="@drawable/rzp_name_logo" />
+
+
+                <TextView android:id="@+id/tv_powered_by"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@+id/iv_rzp_name_logo"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignTop="@+id/iv_rzp_name_logo"
+                    android:text="Powered by"
+                    android:textSize="12dp"
+                    android:textColor="#a1a6b7"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

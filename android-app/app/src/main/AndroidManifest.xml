@@ -28,6 +28,23 @@
 
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
+    <!-- Queries for UPI apps for Razorpay -->
+    <queries>
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <package android:name="com.phonepe.app" />
+        <package android:name="net.one97.paytm" />
+        <package android:name="com.whatsapp" />
+        <package android:name="in.org.npci.upiapp" />
+        <package android:name="com.freecharge.android" />
+        <package android:name="com.mobikwik_new" />
+        <package android:name="com.amazon.mShop.android.shopping" />
+        <package android:name="com.myairtelapp" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

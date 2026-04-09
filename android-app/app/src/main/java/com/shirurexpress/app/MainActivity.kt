@@ -139,7 +139,8 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize Razorpay WebView SDK for UPI Intents
         try {
-            razorpayInstance = Razorpay("rzp_live_SRufGg7nCYe4l4", webView, this)
+            razorpayInstance = Razorpay(this, "rzp_live_SRufGg7nCYe4l4")
+            razorpayInstance?.setWebView(webView)
         } catch (e: Exception) {
             Log.e("RazorpayInit", "Failed to initialize Razorpay WebView SDK", e)
         }
@@ -593,9 +594,9 @@ class MainActivity : AppCompatActivity() {
         webView.evaluateJavascript(js, null)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.let { handleIntent(it) }
+        handleIntent(intent)
     }
 
     private fun handleIntent(intent: Intent) {
@@ -850,11 +851,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Handle incoming results from Razorpay UPI intent
-    @Deprecated("Deprecated in Java but required by Razorpay WebView SDK")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Razorpay.UPI_INTENT_REQUEST_CODE) {
-            razorpayInstance?.onActivityResult(requestCode, resultCode, data)
-        }
+        razorpayInstance?.onActivityResult(requestCode, resultCode, data)
     }
 }

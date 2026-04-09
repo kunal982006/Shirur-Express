@@ -5597,6 +5597,26 @@
     <style name="CardView.Light">
         <item name="cardBackgroundColor">@color/cardview_light_background</item>
     </style>
+    <style name="CheckoutTheme">
+
+        <item name="android:background">@android:color/transparent</item>
+        
+        <item name="android:windowNoTitle">true</item>
+        
+        <item name="android:windowBackground">@android:color/transparent</item>
+        
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        
+        <item name="android:windowIsTranslucent">true</item>
+        
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <item name="android:windowContentOverlay">@null</item>
+        
+        <item name="android:statusBarColor">#99000000</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        
+
+    </style>
     <style name="MaterialAlertDialog.Material3" parent="MaterialAlertDialog.MaterialComponents">
     <item name="backgroundTint">@macro/m3_comp_dialog_container_color</item>
     <item name="enforceMaterialTheme">true</item>
