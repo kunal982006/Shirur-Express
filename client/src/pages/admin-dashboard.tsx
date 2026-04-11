@@ -51,6 +51,10 @@ import {
     Image as ImageIcon,
     XCircle,
     Power,
+    Phone,
+    MapPin,
+    ExternalLink,
+    Navigation,
 } from "lucide-react";
 
 import {
@@ -865,9 +869,35 @@ export default function AdminDashboard() {
                                                     </span>
                                                 )}
                                             </div>
-                                            {o.user && <p className="text-sm text-gray-300 mt-1 truncate font-medium">{o.user.username} {o.user.phone ? `(${o.user.phone})` : ''}</p>}
-                                            {o.provider && <p className="text-xs text-blue-400 mt-0.5 truncate">{o.provider.businessName}</p>}
-                                            {o.deliveryAddress && <p className="text-xs text-gray-500 mt-0.5 truncate">{o.deliveryAddress}</p>}
+                                            {o.user && (
+                                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                    <span className="text-sm text-gray-300 font-medium">{o.user.username}</span>
+                                                    {(o.user.phone) && (
+                                                        <a
+                                                            href={`tel:${o.user.phone}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 active:bg-green-500/35 transition-colors"
+                                                        >
+                                                            <Phone className="h-3 w-3" />
+                                                            {o.user.phone}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {o.provider && <p className="text-xs text-blue-400 mt-0.5">{o.provider.businessName}</p>}
+                                            {o.deliveryAddress && (
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.deliveryAddress)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex items-start gap-1.5 mt-1 text-xs text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
+                                                >
+                                                    <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
+                                                    <span className="break-words leading-relaxed">{o.deliveryAddress}</span>
+                                                    <Navigation className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover/addr:opacity-100 transition-opacity" />
+                                                </a>
+                                            )}
                                         </div>
                                         <div className="text-right shrink-0 flex items-center gap-3">
                                             <div>
@@ -998,18 +1028,50 @@ export default function AdminDashboard() {
                                             )}
                                         </div>
                                         {/* Customer Name & Phone */}
-                                        {b.user && <p className="text-sm text-gray-300 mt-1 truncate font-medium">{b.user.username} {b.user.phone ? `(${b.user.phone})` : b.userPhone ? `(${b.userPhone})` : ''}</p>}
-                                        {!b.user && b.userPhone && <p className="text-sm text-gray-300 mt-1 truncate font-medium">📞 {b.userPhone}</p>}
+                                        {b.user && (
+                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                <span className="text-sm text-gray-300 font-medium">{b.user.username}</span>
+                                                {(b.user.phone || b.userPhone) && (
+                                                    <a
+                                                        href={`tel:${b.user.phone || b.userPhone}`}
+                                                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 active:bg-green-500/35 transition-colors"
+                                                    >
+                                                        <Phone className="h-3 w-3" />
+                                                        {b.user.phone || b.userPhone}
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
+                                        {!b.user && b.userPhone && (
+                                            <a
+                                                href={`tel:${b.userPhone}`}
+                                                className="inline-flex items-center gap-1.5 mt-1 text-sm text-green-400 font-medium hover:text-green-300 active:text-green-200 transition-colors"
+                                            >
+                                                <Phone className="h-3.5 w-3.5" />
+                                                {b.userPhone}
+                                            </a>
+                                        )}
                                         {/* Service Name */}
                                         {(b.serviceOffering?.name || b.problem?.name) && (
-                                            <p className="text-xs text-blue-400 mt-0.5 truncate">🔧 {b.serviceOffering?.name || b.problem?.name}</p>
+                                            <p className="text-xs text-blue-400 mt-0.5">🔧 {b.serviceOffering?.name || b.problem?.name}</p>
                                         )}
                                         {/* Provider Name */}
-                                        {b.provider && <p className="text-xs text-purple-400 mt-0.5 truncate">🏪 {b.provider.businessName}</p>}
+                                        {b.provider && <p className="text-xs text-purple-400 mt-0.5">🏪 {b.provider.businessName}</p>}
                                         {/* Address */}
-                                        {b.userAddress && <p className="text-xs text-gray-500 mt-0.5 truncate">📍 {b.userAddress}</p>}
+                                        {b.userAddress && (
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.userAddress)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-start gap-1.5 mt-1 text-xs text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
+                                            >
+                                                <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
+                                                <span className="break-words leading-relaxed">{b.userAddress}</span>
+                                                <Navigation className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover/addr:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
                                         {/* Notes */}
-                                        {b.notes && <p className="text-xs text-gray-600 mt-0.5 truncate italic">💬 {b.notes}</p>}
+                                        {b.notes && <p className="text-xs text-gray-600 mt-0.5 italic break-words">💬 {b.notes}</p>}
                                     </div>
                                     <div className="text-right shrink-0 flex items-center gap-3">
                                         <div>
@@ -1100,10 +1162,17 @@ export default function AdminDashboard() {
                                             <p className="text-[10px] text-gray-500 mt-0.5">{p.reviewCount || 0} reviews</p>
                                         </div>
                                     </div>
-                                    <div className="bg-black/20 p-3 rounded-xl flex items-center gap-2 min-w-0 border border-white/[0.02]">
-                                        <p className="text-sm text-gray-400 truncate">
-                                            <span className="font-medium text-gray-500">Address:</span> {p.address}
-                                        </p>
+                                    <div className="bg-black/20 p-3 rounded-xl min-w-0 border border-white/[0.02]">
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.address)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-start gap-2 text-sm text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
+                                        >
+                                            <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
+                                            <span className="break-words leading-relaxed flex-1">{p.address}</span>
+                                            <Navigation className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-60 group-hover/addr:opacity-100 text-blue-400" />
+                                        </a>
                                     </div>
                                 </div>
                             ))}
@@ -1168,15 +1237,25 @@ export default function AdminDashboard() {
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>
-                                    <div className="bg-black/20 p-3 rounded-xl flex flex-col gap-1 min-w-0 border border-white/[0.02]">
-                                        <p className="text-sm text-gray-400 truncate">
+                                    <div className="bg-black/20 p-3 rounded-xl flex flex-col gap-2 min-w-0 border border-white/[0.02]">
+                                        <p className="text-sm text-gray-400 break-words">
                                             <span className="font-medium text-gray-500">Email:</span> {u.email}
                                         </p>
                                         {(u.phone || (u.role === 'provider' && u.username)) && (
-                                            <p className="text-sm text-gray-400 truncate flex items-center gap-3">
-                                                {u.phone && <span><span className="font-medium text-gray-500">Phone:</span> {u.phone}</span>}
-                                                {u.role === 'provider' && u.username && <span><span className="font-medium text-gray-500">User:</span> @{u.username}</span>}
-                                            </p>
+                                            <div className="flex items-center gap-3 flex-wrap">
+                                                {u.phone && (
+                                                    <a
+                                                        href={`tel:${u.phone}`}
+                                                        className="inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 active:bg-green-500/35 transition-colors"
+                                                    >
+                                                        <Phone className="h-3.5 w-3.5" />
+                                                        {u.phone}
+                                                    </a>
+                                                )}
+                                                {u.role === 'provider' && u.username && (
+                                                    <span className="text-sm text-gray-400"><span className="font-medium text-gray-500">User:</span> @{u.username}</span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
