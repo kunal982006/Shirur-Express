@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { useCallback } from "react";
 
 import {
   DropdownMenu,
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, Settings, LogOut, Package, User, LayoutDashboard, Truck } from "lucide-react";
+import { Home, Settings, LogOut, Package, User, LayoutDashboard, Truck, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +30,15 @@ export default function Header() {
 
   const { user, isLoading, logout } = useAuth();
   const { toast } = useToast();
+
+  // Back button handler - uses browser history for proper iOS swipe-back support
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      setLocation("/");
+    }
+  }, [setLocation]);
 
   // Check if user is a delivery partner
   const { data: deliveryPartnerProfile } = useQuery({
@@ -85,19 +95,26 @@ export default function Header() {
           }}
         >
           <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
-            <div className="flex items-center gap-4">
-              {/* Mobile Navigation (Hamburger) Removed - Replaced by Bottom Nav */}
+            <div className="flex items-center gap-2">
+              {/* Back Arrow Button */}
+              <button
+                onClick={handleBack}
+                className="back-button-ios flex items-center justify-center w-10 h-10 rounded-full hover:bg-muted active:bg-muted/80 transition-all duration-200 -ml-1 shrink-0"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-5 w-5 text-foreground" />
+              </button>
 
               {/* Logo / Home link */}
-              <Button variant="ghost" className="flex items-center gap-2 hover:bg-transparent" onClick={() => setLocation("/")}>
+              <Button variant="ghost" className="flex items-center gap-2 hover:bg-transparent px-1" onClick={() => setLocation("/")}>
                 <img
                   src="/shirur-express-logo.png"
                   alt="Shirur Express Logo"
-                  className="h-16 w-16 rounded-full object-cover"
+                  className="h-12 w-12 rounded-full object-cover"
                 />
                 <div className="flex flex-col items-start bg-transparent">
-                  <span className="text-2xl font-extrabold tracking-tight leading-none text-primary" style={{ fontFamily: "'Outfit', sans-serif" }}>Shirur Express</span>
-                  <span className="text-xs font-medium text-muted-foreground tracking-widest uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Home Services</span>
+                  <span className="text-xl font-extrabold tracking-tight leading-none text-primary" style={{ fontFamily: "'Outfit', sans-serif" }}>Shirur Express</span>
+                  <span className="text-[10px] font-medium text-muted-foreground tracking-widest uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Home Services</span>
                 </div>
               </Button>
 

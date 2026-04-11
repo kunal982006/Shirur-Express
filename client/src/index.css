@@ -273,4 +273,24 @@
     height: 100%;
     object-fit: cover;
   }
+
+  /* Back button iOS style */
+  .back-button-ios {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .back-button-ios:active {
+    transform: scale(0.9);
+  }
+}
+
+/* iOS overscroll behavior for swipe back */
+html {
+  overscroll-behavior-x: auto;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: auto;
 }
