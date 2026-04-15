@@ -38,6 +38,8 @@ import {
   streetFoodOrders, // FOR NOTIFICATIONS
   serviceCategories, // FOR ADMIN DASHBOARD
   appSettings, // PLATFORM TOGGLE
+  adminPromotionalOffers, // ADMIN PROMOS
+  insertAdminPromotionalOfferSchema, // ADMIN PROMOS
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -1054,9 +1056,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all active offers (for homepage carousel) - PUBLIC (CACHED 2 min)
   app.get("/api/offers/active", async (_req: Request, res: Response) => {
     try {
-      const offers = await getCachedOrFetch('offers_active', 2 * 60 * 1000, async () => {
+      const offersData = await getCachedOrFetch('offers_active_mixed', 2 * 60 * 1000, async () => {
         const now = new Date();
-        return db.query.providerOffers.findMany({
+        const regularOffers = await db.query.providerOffers.findMany({
           where: and(
             eq(providerOffers.isActive, true),
             gt(providerOffers.expiryDate, now)
@@ -1070,14 +1072,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
           },
-          orderBy: (offers, { desc }) => [desc(offers.createdAt)],
         });
+
+        const adminOffers = await db.query.adminPromotionalOffers.findMany({
+          where: eq(adminPromotionalOffers.isActive, true),
+        });
+
+        const mappedAdminOffers = adminOffers.map(ao => ({
+          ...ao,
+          type: "admin_promo" as const,
+          productType: "admin_promo", // For compatibility
+          imageUrl: ao.thumbnailImageUrl, // For carousel display compatibility
+        }));
+
+        const mappedRegularOffers = regularOffers.map(ro => ({
+          ...ro,
+          type: "regular" as const,
+        }));
+
+        const allOffers = [...mappedAdminOffers, ...mappedRegularOffers];
+
+        // Sort: admin promos first, then by createdAt descending
+        allOffers.sort((a, b) => {
+          if (a.type === "admin_promo" && b.type !== "admin_promo") return -1;
+          if (b.type === "admin_promo" && a.type !== "admin_promo") return 1;
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
+
+        return allOffers;
       });
-      res.json(offers);
+      res.json(offersData);
     } catch (error: any) {
       console.error("Get active offers error:", error);
       res.status(500).json({ message: error.message || "Error fetching active offers" });
     }
+  });
+
+  // --- ADMIN PROMOTIONS ROUTES ---
+  app.get("/api/admin/promotions", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const promos = await db.query.adminPromotionalOffers.findMany({
+         orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+      });
+      res.json(promos);
+    } catch(err: any) {
+      res.status(500).json({ message: err.message || "Error fetching promos" });
+    }
+  });
+
+  app.post("/api/admin/promotions", isAdmin, upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'popup', maxCount: 1 }]), async (req: AuthRequest, res: Response) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const thumbnailFile = files['thumbnail']?.[0];
+      const popupFile = files['popup']?.[0];
+      
+      const { title, redirectUrl, isActive } = req.body;
+
+      if (!thumbnailFile || !popupFile) {
+        return res.status(400).json({ message: "Thumbnail and Popup image files are required." });
+      }
+
+      const [thumbnailImageUrl, popupImageUrl] = await Promise.all([
+        uploadToCloudinary(thumbnailFile.buffer),
+        uploadToCloudinary(popupFile.buffer)
+      ]);
+
+      const offerData = insertAdminPromotionalOfferSchema.parse({
+         title,
+         redirectUrl,
+         thumbnailImageUrl,
+         popupImageUrl,
+         isActive: isActive === 'true' || isActive === true,
+      });
+
+      const offer = await db.insert(adminPromotionalOffers).values(offerData).returning();
+      res.status(201).json(offer[0]);
+    } catch(error: any) {
+      console.error("Create admin promo error:", error);
+      res.status(400).json({ message: error.message || "Error creating promo" });
+    }
+  });
+
+  app.delete("/api/admin/promotions/:id", isAdmin, async (req: AuthRequest, res: Response) => {
+     try {
+       const { id } = req.params;
+       await db.delete(adminPromotionalOffers).where(eq(adminPromotionalOffers.id, id));
+       res.json({ message: "Promotional offer deleted successfully" });
+     } catch (err: any) {
+       res.status(500).json({ message: err.message || "Error deleting promo" });
+     }
   });
 
   // Get single offer with products (for offer details page) - PUBLIC

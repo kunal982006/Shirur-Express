@@ -314,6 +314,20 @@ export const providerOffers = pgTable("provider_offers", {
 });
 
 // =========================================
+// ADMIN PROMOTIONAL OFFERS TABLE (Dynamic Pop-ups)
+// =========================================
+
+export const adminPromotionalOffers = pgTable("admin_promotional_offers", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  title: text("title").notNull(),
+  thumbnailImageUrl: text("thumbnail_image_url").notNull(),
+  popupImageUrl: text("popup_image_url").notNull(),
+  redirectUrl: text("redirect_url").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// =========================================
 // APP SETTINGS TABLE (Platform-wide settings)
 // =========================================
 
@@ -427,6 +441,16 @@ export const insertProviderOfferSchema = z.object({
 });
 export type ProviderOffer = typeof providerOffers.$inferSelect;
 export type InsertProviderOffer = z.infer<typeof insertProviderOfferSchema>;
+
+export const insertAdminPromotionalOfferSchema = createInsertSchema(adminPromotionalOffers).pick({
+  title: true,
+  thumbnailImageUrl: true,
+  popupImageUrl: true,
+  redirectUrl: true,
+  isActive: true,
+});
+export type AdminPromotionalOffer = typeof adminPromotionalOffers.$inferSelect;
+export type InsertAdminPromotionalOffer = z.infer<typeof insertAdminPromotionalOfferSchema>;
 
 // =========================================
 // 6. RELATIONS (STRICTLY AT THE BOTTOM)

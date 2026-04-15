@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { useEffect, useCallback, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ProviderOffer {
     id: string;
@@ -19,6 +20,9 @@ interface ProviderOffer {
         businessName: string;
         profileImageUrl?: string;
     };
+    type?: "regular" | "admin_promo";
+    popupImageUrl?: string;
+    redirectUrl?: string;
 }
 
 export function OffersCarousel() {
@@ -29,6 +33,7 @@ export function OffersCarousel() {
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+    const [selectedPromo, setSelectedPromo] = useState<ProviderOffer | null>(null);
 
     const { data: offers, isLoading } = useQuery<ProviderOffer[]>({
         queryKey: ["/api/offers/active"],
@@ -67,13 +72,11 @@ export function OffersCarousel() {
             {/* Carousel Container */}
             <div ref={emblaRef} className="overflow-hidden">
                 <div className="flex">
-                    {offers.map((offer) => (
-                        <Link
-                            key={offer.id}
-                            href={`/offer/${offer.id}`}
-                            className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] pl-2 pr-2 first:pl-0 last:pr-0"
-                        >
-                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden cursor-pointer group shadow-md hover:shadow-xl transition-all duration-300">
+                    {offers.map((offer) => {
+                        const isPromo = offer.type === "admin_promo";
+
+                        const cardContent = (
+                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden group shadow-md hover:shadow-xl transition-all duration-300 w-full h-full">
                                 <img
                                     src={offer.imageUrl}
                                     alt={offer.title}
@@ -95,14 +98,38 @@ export function OffersCarousel() {
                                 </div>
 
                                 {/* Expiry Badge */}
-                                <div className="absolute top-2 right-2">
-                                    <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                                        Limited Time
-                                    </span>
-                                </div>
+                                {!isPromo && (
+                                    <div className="absolute top-2 right-2">
+                                        <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+                                            Limited Time
+                                        </span>
+                                    </div>
+                                )}
                             </div>
-                        </Link>
-                    ))}
+                        );
+
+                        if (isPromo) {
+                            return (
+                                <div 
+                                    key={offer.id} 
+                                    className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] pl-2 pr-2 first:pl-0 last:pr-0 cursor-pointer"
+                                    onClick={() => setSelectedPromo(offer)}
+                                >
+                                    {cardContent}
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <Link
+                                key={offer.id}
+                                href={`/offer/${offer.id}`}
+                                className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] pl-2 pr-2 first:pl-0 last:pr-0"
+                            >
+                                {cardContent}
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -139,6 +166,34 @@ export function OffersCarousel() {
                     ))}
                 </div>
             )}
+
+            {/* Promo Modal */}
+            <Dialog open={!!selectedPromo} onOpenChange={(open) => !open && setSelectedPromo(null)}>
+                <DialogContent className="max-w-[90vw] md:max-w-xl lg:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:bg-white/10 [&>button]:text-white [&>button]:hover:bg-white/20 [&>button]:rounded-full [&>button]:p-2 [&>button]:right-4 [&>button]:top-4 backdrop-blur-sm">
+                    {selectedPromo && (
+                        <div 
+                            className="relative cursor-pointer group rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10" 
+                            onClick={() => {
+                                if (selectedPromo.redirectUrl) {
+                                    window.open(selectedPromo.redirectUrl, "_blank");
+                                }
+                            }}
+                        >
+                            <img 
+                                src={selectedPromo.popupImageUrl} 
+                                alt={selectedPromo.title} 
+                                className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]" 
+                            />
+                            {/* Subtle overlay hint */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                                <span className="bg-white/20 backdrop-blur-md text-white text-sm px-4 py-2 rounded-full font-medium shadow-xl">
+                                    Click to explore
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -55,8 +55,10 @@ import {
     MapPin,
     ExternalLink,
     Navigation,
+    Megaphone,
 } from "lucide-react";
 
+import { AdminPromotions } from "@/components/admin-promotions";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -242,7 +244,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food">(
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
     const [searchQuery, setSearchQuery] = useState("");
@@ -490,6 +492,7 @@ export default function AdminDashboard() {
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
         { id: "street_food", label: "Street Food", icon: Sandwich },
+        { id: "promotions", label: "Promotions", icon: Megaphone },
     ] as const;
 
     const tabs = user?.username === "streetfood_admin" 
@@ -1440,6 +1443,11 @@ export default function AdminDashboard() {
                 {/* ═══ STREET FOOD TAB ═══ */}
                 {activeTab === "street_food" && (
                      <AdminStreetFood />
+                )}
+
+                {/* ═══ PROMOTIONS TAB ═══ */}
+                {activeTab === "promotions" && (
+                     <AdminPromotions />
                 )}
 
             </main>
