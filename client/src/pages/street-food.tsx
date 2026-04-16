@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -261,7 +261,7 @@ export default function StreetFood() {
               Popular searches
             </h3>
             <div className="flex flex-wrap gap-2">
-              {["Pani Puri", "Vada Pav", "Momos", "Bhel Puri", "Dosa", "Samosa", "Pav Bhaji", "Egg Rolls"].map(tag => (
+              {["Pani Puri", "Vada Pav", "#Activity_02", "Momos", "Bhel Puri", "Dosa", "Samosa", "Pav Bhaji", "Egg Rolls"].map(tag => (
                 <button
                   key={tag}
                   onClick={() => setSearchQuery(tag)}
