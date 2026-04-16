@@ -175,7 +175,7 @@ export default function Settings() {
                                                 </div>
                                             </FormControl>
                                             <FormDescription>
-                                                This is your public display name.
+                                                This is your public display name #Activity_02.
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
