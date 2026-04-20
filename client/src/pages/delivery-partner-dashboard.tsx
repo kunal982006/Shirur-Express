@@ -300,6 +300,7 @@ export default function DeliveryPartnerDashboard() {
                         )}
                     </TabsContent>
                 </Tabs>
+            </div>
         </div>
     );
 }

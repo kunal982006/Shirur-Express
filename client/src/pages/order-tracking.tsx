@@ -143,6 +143,7 @@ export default function OrderTracking() {
                                         </a>
                                     </Button>
                                 )}
+                            </div>
                         </CardContent>
                     </Card>
                 )}
