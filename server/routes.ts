@@ -3148,7 +3148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mark Order Picked Up (generates OTP for delivery) - handles both order types
+  // Mark Order Picked Up - handles both order types (OTP removed)
   app.post("/api/rider/orders/:id/picked-up", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
       const orderId = req.params.id;
@@ -3163,36 +3163,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         result = await storage.markOrderPickedUp(orderId, riderId);
       }
-      res.json({ message: "Order picked up! OTP generated for delivery.", order: result.order, deliveryOtp: result.otp });
+      res.json({ message: "Order picked up! Deliver to customer.", order: result.order });
     } catch (error: any) {
       console.error("Pick up order error:", error);
       res.status(400).json({ message: error.message || "Error picking up order" });
     }
   });
 
-  // Verify Delivery OTP and Complete - handles both order types
+  // Mark Delivered - directly completes delivery (OTP removed)
   app.post("/api/rider/orders/:id/verify-delivery", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
       const orderId = req.params.id;
       const riderId = req.userId!;
-      const { otp, orderType } = req.body;
-
-      if (!otp) {
-        return res.status(400).json({ message: "OTP is required" });
-      }
+      const { orderType } = req.body;
 
       let order;
       if (orderType === 'grocery') {
-        order = await storage.verifyGroceryDeliveryOtp(orderId, riderId, otp);
+        order = await storage.markGroceryOrderDelivered(orderId, riderId);
       } else if (orderType === 'street_food') {
-        order = await storage.verifyStreetFoodDeliveryOtp(orderId, riderId, otp);
+        order = await storage.markStreetFoodOrderDelivered(orderId, riderId);
       } else {
-        order = await storage.verifyDeliveryOtp(orderId, riderId, otp);
+        order = await storage.markOrderDelivered(orderId, riderId);
       }
       res.json({ message: "Delivery completed successfully!", order });
     } catch (error: any) {
-      console.error("Verify delivery error:", error);
-      res.status(400).json({ message: error.message || "Error verifying delivery" });
+      console.error("Mark delivered error:", error);
+      res.status(400).json({ message: error.message || "Error marking delivered" });
     }
   });
 

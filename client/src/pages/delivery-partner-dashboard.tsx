@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Loader2, MapPin, Package, CheckCircle, Truck, Phone, User as UserIcon, Navigation, Power, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,10 +35,6 @@ export default function DeliveryPartnerDashboard() {
     const queryClient = useQueryClient();
     const { user } = useAuth();
     const [isOnline, setIsOnline] = useState(false);
-    const [otpDialogOpen, setOtpDialogOpen] = useState(false);
-    const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
-    const [currentOrderType, setCurrentOrderType] = useState<string>('restaurant');
-    const [otp, setOtp] = useState("");
 
     // Fetch delivery partner profile
     const { data: profile } = useQuery({
@@ -149,52 +143,35 @@ export default function DeliveryPartnerDashboard() {
         },
     });
 
-    // Picked Up (generates OTP)
+    // Picked Up (status change only, no OTP)
     const pickupMutation = useMutation({
         mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
             api.post(`/rider/orders/${orderId}/picked-up`, { orderType }),
-        onSuccess: (response) => {
-            const deliveryOtp = response.data.deliveryOtp;
+        onSuccess: () => {
             toast({
                 title: "Order Picked Up!",
-                description: `Delivery OTP: ${deliveryOtp}. Customer will provide this on delivery.`,
+                description: "Now deliver to the customer.",
             });
             queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
         },
     });
 
-    // Verify Delivery OTP
-    const verifyDeliveryMutation = useMutation({
-        mutationFn: ({ orderId, otp, orderType }: { orderId: string; otp: string; orderType: string }) =>
-            api.post(`/rider/orders/${orderId}/verify-delivery`, { otp, orderType }),
+    // Mark Delivered (direct - no OTP)
+    const markDeliveredMutation = useMutation({
+        mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
+            api.post(`/rider/orders/${orderId}/verify-delivery`, { orderType }),
         onSuccess: () => {
-            toast({ title: "Delivery Complete!", description: "Great job! Order delivered successfully." });
-            setOtpDialogOpen(false);
-            setOtp("");
-            setCurrentOrderId(null);
-            setCurrentOrderType('restaurant');
+            toast({ title: "✅ Delivery Complete!", description: "Great job! Order delivered successfully." });
             queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
         },
         onError: (error: any) => {
             toast({
-                title: "Invalid OTP",
-                description: error.response?.data?.message || "Please check the OTP and try again",
+                title: "Error",
+                description: error.response?.data?.message || "Failed to mark as delivered",
                 variant: "destructive",
             });
         },
     });
-
-    const handleDeliverClick = (orderId: string, orderType: string = 'restaurant') => {
-        setCurrentOrderId(orderId);
-        setCurrentOrderType(orderType);
-        setOtpDialogOpen(true);
-    };
-
-    const handleVerifyOtp = () => {
-        if (currentOrderId && otp) {
-            verifyDeliveryMutation.mutate({ orderId: currentOrderId, otp, orderType: currentOrderType });
-        }
-    };
 
     const openGoogleMaps = (address: string) => {
         const encoded = encodeURIComponent(address);
@@ -298,8 +275,8 @@ export default function DeliveryPartnerDashboard() {
                                     type="active"
                                     onArrived={() => arrivedMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onPickup={() => pickupMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
-                                    onDeliver={() => handleDeliverClick(order.id, order.orderType || 'restaurant')}
-                                    isProcessing={arrivedMutation.isPending || pickupMutation.isPending}
+                                    onDeliver={() => markDeliveredMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
+                                    isProcessing={arrivedMutation.isPending || pickupMutation.isPending || markDeliveredMutation.isPending}
                                     openGoogleMaps={openGoogleMaps}
                                 />
                             ))
@@ -323,39 +300,6 @@ export default function DeliveryPartnerDashboard() {
                         )}
                     </TabsContent>
                 </Tabs>
-            </div>
-
-            {/* OTP Verification Dialog */}
-            <Dialog open={otpDialogOpen} onOpenChange={setOtpDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Verify Delivery</DialogTitle>
-                        <DialogDescription>
-                            Enter the 4-digit OTP provided by the customer to complete delivery.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Input
-                            placeholder="Enter OTP"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            maxLength={4}
-                            className="text-center text-2xl tracking-widest"
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOtpDialogOpen(false)}>
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleVerifyOtp}
-                            disabled={otp.length !== 4 || verifyDeliveryMutation.isPending}
-                        >
-                            {verifyDeliveryMutation.isPending ? "Verifying..." : "Complete Delivery"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

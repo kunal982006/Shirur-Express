@@ -314,6 +314,9 @@ export interface IStorage {
   markGroceryOrderPickedUp(orderId: string, riderId: string): Promise<{ order: GroceryOrder; otp: string }>;
   verifyDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<RestaurantOrder>;
   verifyGroceryDeliveryOtp(orderId: string, riderId: string, otp: string): Promise<GroceryOrder>;
+  markOrderDelivered(orderId: string, riderId: string): Promise<RestaurantOrder>;
+  markGroceryOrderDelivered(orderId: string, riderId: string): Promise<GroceryOrder>;
+  markStreetFoodOrderDelivered(orderId: string, riderId: string): Promise<StreetFoodOrder>;
   getOrderTrackingInfo(orderId: string, userId: string): Promise<any>;
   markOrderReadyForPickup(orderId: string, providerId: string): Promise<RestaurantOrder>;
 
@@ -2304,6 +2307,81 @@ export class DatabaseStorage implements IStorage {
       .where(eq(streetFoodOrders.id, orderId))
       .returning();
 
+    return updated;
+  }
+
+  // --- DIRECT MARK DELIVERED (OTP removed) ---
+
+  async markOrderDelivered(orderId: string, riderId: string): Promise<RestaurantOrder> {
+    const order = await db.query.restaurantOrders.findFirst({
+      where: and(
+        eq(restaurantOrders.id, orderId),
+        eq(restaurantOrders.riderId, riderId)
+      ),
+    });
+    if (!order) throw new Error("Order not found or not assigned to you");
+    if (order.status !== 'out_for_delivery') throw new Error("Order is not out for delivery");
+
+    const [updated] = await db
+      .update(restaurantOrders)
+      .set({ status: 'delivered', deliveredAt: new Date(), deliveryOtp: null })
+      .where(eq(restaurantOrders.id, orderId))
+      .returning();
+
+    const partner = await this.getDeliveryPartnerByUserId(riderId);
+    if (partner) {
+      await db.update(deliveryPartners)
+        .set({ totalDeliveries: (partner.totalDeliveries || 0) + 1 })
+        .where(eq(deliveryPartners.id, partner.id));
+    }
+    return updated;
+  }
+
+  async markGroceryOrderDelivered(orderId: string, riderId: string): Promise<GroceryOrder> {
+    const order = await db.query.groceryOrders.findFirst({
+      where: and(
+        eq(groceryOrders.id, orderId),
+        eq(groceryOrders.riderId, riderId)
+      ),
+    });
+    if (!order) throw new Error("Order not found or not assigned to you");
+
+    const [updated] = await db
+      .update(groceryOrders)
+      .set({ status: 'delivered', deliveredAt: new Date() })
+      .where(eq(groceryOrders.id, orderId))
+      .returning();
+
+    const partner = await this.getDeliveryPartnerByUserId(riderId);
+    if (partner) {
+      await db.update(deliveryPartners)
+        .set({ totalDeliveries: (partner.totalDeliveries || 0) + 1 })
+        .where(eq(deliveryPartners.id, partner.id));
+    }
+    return updated;
+  }
+
+  async markStreetFoodOrderDelivered(orderId: string, riderId: string): Promise<StreetFoodOrder> {
+    const order = await db.query.streetFoodOrders.findFirst({
+      where: and(
+        eq(streetFoodOrders.id, orderId),
+        eq(streetFoodOrders.riderId, riderId)
+      ),
+    });
+    if (!order) throw new Error("Order not found or not assigned to you");
+
+    const [updated] = await db
+      .update(streetFoodOrders)
+      .set({ status: 'delivered', deliveredAt: new Date() })
+      .where(eq(streetFoodOrders.id, orderId))
+      .returning();
+
+    const partner = await this.getDeliveryPartnerByUserId(riderId);
+    if (partner) {
+      await db.update(deliveryPartners)
+        .set({ totalDeliveries: (partner.totalDeliveries || 0) + 1 })
+        .where(eq(deliveryPartners.id, partner.id));
+    }
     return updated;
   }
 

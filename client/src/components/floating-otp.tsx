@@ -60,22 +60,6 @@ export function FloatingOtp() {
     }
   }
 
-  if (!activeOtpCode && groceryOrders) {
-    const orderWithOtp = groceryOrders.find((o: any) => o.deliveryOtp && ['out_for_delivery'].includes(o.status || ''));
-    if (orderWithOtp) {
-      activeOtpCode = orderWithOtp.deliveryOtp;
-      activeOtpContext = "Grocery Order";
-    }
-  }
-
-  if (!activeOtpCode && restaurantOrders) {
-    const orderWithOtp = restaurantOrders.find((o: any) => o.deliveryOtp && ['out_for_delivery'].includes(o.status || ''));
-    if (orderWithOtp) {
-      activeOtpCode = orderWithOtp.deliveryOtp;
-      activeOtpContext = "Restaurant Order";
-    }
-  }
-
   useEffect(() => {
     if (activeOtpCode && !hasNotified) {
       toast({

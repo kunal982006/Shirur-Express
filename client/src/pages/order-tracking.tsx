@@ -143,17 +143,6 @@ export default function OrderTracking() {
                                         </a>
                                     </Button>
                                 )}
-                            </div>
-
-                            {/* OTP Display when out for delivery */}
-                            {isOutForDelivery && order.deliveryOtp && (
-                                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-                                    <p className="text-sm text-yellow-700 mb-1">Share this OTP with the delivery partner</p>
-                                    <p className="text-3xl font-bold tracking-widest text-yellow-800">
-                                        {order.deliveryOtp}
-                                    </p>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 )}
