@@ -111,8 +111,8 @@ export default function Checkout() {
   const isBelowMinOrder = isGrocery && subtotal < GROCERY_MIN_ORDER;
   const isCake = items.some(item => item.itemType === 'cake');
 
-  // FREE DELIVERY PROMOTION - Set to 0 for all services during initial months
-  let deliveryFee = 0; // Free delivery for launch period
+  // Flat delivery fee of ₹30 for all orders
+  let deliveryFee = 30;
 
   // Deliverability Check - DISABLED FOR LAUNCH (no distance limit)
   // TODO: Re-enable distance limit after launch period
