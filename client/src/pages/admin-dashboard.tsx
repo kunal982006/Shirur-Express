@@ -885,9 +885,20 @@ export default function AdminDashboard() {
                                                             {o.user.phone}
                                                         </a>
                                                     )}
+                                                    {o.provider && o.provider.businessName && o.provider.businessName !== 'Unknown' && (
+                                                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                                                            <Store className="h-3 w-3" />
+                                                            {o.provider.businessName}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
-                                            {o.provider && <p className="text-xs text-blue-400 mt-0.5">{o.provider.businessName}</p>}
+                                            {o.provider && o.provider.businessName && o.provider.businessName !== 'Unknown' && !o.user && (
+                                                <p className="text-xs text-purple-400 mt-0.5 flex items-center gap-1">
+                                                    <Store className="h-3 w-3" />
+                                                    {o.provider.businessName}
+                                                </p>
+                                            )}
                                             {o.deliveryAddress && (
                                                 <a
                                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.deliveryAddress)}`}
