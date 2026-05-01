@@ -54,7 +54,7 @@ export const serviceProviders = pgTable("service_providers", {
   profileImageUrl: text("profile_image_url"),
   galleryImages: jsonb("gallery_images").$type<string[]>(),
   experience: integer("experience_years"),
-  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("4.50"),
   reviewCount: integer("review_count").default(0),
   address: text("address").notNull(),
   latitude: decimal("latitude", { precision: 10, scale: 8 }),
@@ -63,6 +63,7 @@ export const serviceProviders = pgTable("service_providers", {
   isVerified: boolean("is_verified").default(false),
   isAvailable: boolean("is_available").default(true),
   isPopular: boolean("is_popular").default(false), // New field for Popular Restaurants
+  displayOrder: integer("display_order").default(0), // Admin-controlled display position (lower = shown first)
   specializations: jsonb("specializations").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });

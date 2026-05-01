@@ -339,6 +339,10 @@ export interface IStorage {
   }>;
   searchSuggestions(query: string): Promise<{ suggestions: string[]; didYouMean: string | null }>;
   getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
+
+  // DISPLAY ORDER MANAGEMENT
+  getProviderDisplayOrder(categorySlug: string): Promise<ServiceProvider[]>;
+  bulkUpdateDisplayOrder(updates: { id: string; displayOrder: number }[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -483,7 +487,10 @@ export class DatabaseStorage implements IStorage {
     const results = await db.query.serviceProviders.findMany({
       where: and(...conditions),
       with: withRelations,
-      orderBy: [desc(serviceProviders.rating)],
+      orderBy: [
+        sql`CASE WHEN ${serviceProviders.displayOrder} = 0 THEN 9999 ELSE ${serviceProviders.displayOrder} END ASC`,
+        desc(serviceProviders.rating),
+      ],
     });
 
     return results as any;
@@ -2450,7 +2457,11 @@ export class DatabaseStorage implements IStorage {
         eq(serviceProviders.isAvailable, true),
         eq(serviceProviders.categoryId, category.id)
       ),
-      with: { category: true }
+      with: { category: true },
+      orderBy: [
+        sql`CASE WHEN ${serviceProviders.displayOrder} = 0 THEN 9999 ELSE ${serviceProviders.displayOrder} END ASC`,
+        desc(serviceProviders.rating),
+      ],
     });
   }
 
@@ -2849,6 +2860,37 @@ export class DatabaseStorage implements IStorage {
       },
       orderBy: [sql`CASE WHEN ${restaurantMenuItems.popularOrder} = 0 THEN 9999 ELSE ${restaurantMenuItems.popularOrder} END ASC`]
     }) as any;
+  }
+
+  // --- DISPLAY ORDER MANAGEMENT ---
+
+  async getProviderDisplayOrder(categorySlug: string): Promise<ServiceProvider[]> {
+    const category = await db.query.serviceCategories.findFirst({
+      where: eq(serviceCategories.slug, categorySlug)
+    });
+    if (!category) return [];
+
+    return db.query.serviceProviders.findMany({
+      where: eq(serviceProviders.categoryId, category.id),
+      with: { category: true },
+      orderBy: [
+        sql`CASE WHEN ${serviceProviders.displayOrder} = 0 THEN 9999 ELSE ${serviceProviders.displayOrder} END ASC`,
+        desc(serviceProviders.rating),
+      ],
+    });
+  }
+
+  async bulkUpdateDisplayOrder(updates: { id: string; displayOrder: number; rating?: string }[]): Promise<void> {
+    await db.transaction(async (tx) => {
+      for (const update of updates) {
+        await tx.update(serviceProviders)
+          .set({ 
+             displayOrder: update.displayOrder,
+             ...(update.rating !== undefined && { rating: update.rating })
+          })
+          .where(eq(serviceProviders.id, update.id));
+      }
+    });
   }
 }
 

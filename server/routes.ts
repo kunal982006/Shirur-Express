@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, inArray, ilike, gt, desc, asc, count, gte, sql } from "drizzle-orm";
+import { eq, and, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -3459,6 +3459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // that exist in the Drizzle schema but haven't been migrated to the DB yet.
   app.get("/api/admin/orders", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {
+      const providerUsers = aliasedTable(users, 'provider_users');
       const [gOrders, sfOrders, rOrders] = await Promise.all([
         db.select({
           id: groceryOrders.id,
@@ -3471,10 +3472,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,
+          providerPhone: providerUsers.phone,
         })
         .from(groceryOrders)
         .leftJoin(users, eq(groceryOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(groceryOrders.providerId, serviceProviders.id))
+        .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
         .orderBy(desc(groceryOrders.createdAt)).limit(100),
         
         db.select({
@@ -3488,10 +3491,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,
+          providerPhone: providerUsers.phone,
         })
         .from(streetFoodOrders)
         .leftJoin(users, eq(streetFoodOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(streetFoodOrders.providerId, serviceProviders.id))
+        .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
         .orderBy(desc(streetFoodOrders.createdAt)).limit(100),
         
         db.select({
@@ -3505,10 +3510,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,
+          providerPhone: providerUsers.phone,
         })
         .from(restaurantOrders)
         .leftJoin(users, eq(restaurantOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(restaurantOrders.providerId, serviceProviders.id))
+        .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
         .orderBy(desc(restaurantOrders.createdAt)).limit(100),
       ]);
 
@@ -3554,7 +3561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             orderType: 'grocery' as const, 
             amount: o.total,
             user: { username: o.username || 'Unknown', phone: o.phone },
-            provider: { businessName: o.businessName || 'Unknown' },
+            provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: gProductMap.get(i.productId)?.name || i.name || 'Unknown Item',
@@ -3566,7 +3573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             orderType: 'street_food' as const, 
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
-            provider: { businessName: o.businessName || 'Unknown' },
+            provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: sfProductMap.get(i.productId || i.itemId)?.name || i.name || 'Unknown Item',
@@ -3578,7 +3585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             orderType: 'restaurant' as const, 
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
-            provider: { businessName: o.businessName || 'Unknown' },
+            provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: rProductMap.get(i.menuItemId)?.name || i.name || 'Unknown Item',
@@ -4020,6 +4027,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Error updating status" });
     }
   });
+
+  // =========================================
+  // ADMIN DISPLAY ORDER MANAGEMENT
+  // =========================================
+
+  // Get providers in display order for a given category (Admin only)
+  app.get("/api/admin/provider-display-order", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { category } = req.query;
+      if (!category) {
+        return res.status(400).json({ message: "Category slug is required (e.g., restaurants, street-food, cake-shop)" });
+      }
+      const providers = await storage.getProviderDisplayOrder(category as string);
+      res.json(providers);
+    } catch (error: any) {
+      console.error("Get provider display order error:", error);
+      res.status(500).json({ message: error.message || "Error fetching display order" });
+    }
+  });
+
+  // Bulk update provider display order (Admin only)
+  app.put("/api/admin/provider-display-order", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { updates } = req.body;
+      if (!updates || !Array.isArray(updates) || updates.length === 0) {
+        return res.status(400).json({ message: "updates array is required with [{id, displayOrder}]" });
+      }
+      // Validate each update
+      for (const u of updates) {
+        if (!u.id || typeof u.displayOrder !== 'number') {
+          return res.status(400).json({ message: "Each update must have 'id' (string) and 'displayOrder' (number)" });
+        }
+        if (u.rating !== undefined && typeof u.rating !== 'string') {
+          return res.status(400).json({ message: "If rating is provided, it must be a string." });
+        }
+      }
+      await storage.bulkUpdateDisplayOrder(updates);
+      // Invalidate cache so changes reflect immediately
+      apiCache.delete('homepage_popular');
+      res.json({ message: `Display order updated for ${updates.length} providers` });
+    } catch (error: any) {
+      console.error("Update display order error:", error);
+      res.status(500).json({ message: error.message || "Error updating display order" });
+    }
+  });
+
   // =========================================
   // ADMIN STREET FOOD MANAGEMENT
   // =========================================

@@ -56,6 +56,8 @@ import {
     ExternalLink,
     Navigation,
     Megaphone,
+    ArrowUpDown,
+    GripVertical,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -244,9 +246,14 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions">(
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
+
+    // Display Order Tab State
+    const [displayOrderCategory, setDisplayOrderCategory] = useState("restaurants");
+    const [displayOrderProviders, setDisplayOrderProviders] = useState<any[]>([]);
+    const [displayOrderDirty, setDisplayOrderDirty] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     // Featured Tab State
@@ -493,6 +500,7 @@ export default function AdminDashboard() {
         { id: "featured", label: "Featured", icon: Star },
         { id: "street_food", label: "Street Food", icon: Sandwich },
         { id: "promotions", label: "Promotions", icon: Megaphone },
+        { id: "display_order", label: "Display Order", icon: ArrowUpDown },
     ] as const;
 
     const tabs = user?.username === "streetfood_admin" 
@@ -817,7 +825,7 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && (
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && (
                     <div className="relative max-w-5xl mx-auto mb-6">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -886,18 +894,42 @@ export default function AdminDashboard() {
                                                         </a>
                                                     )}
                                                     {o.provider && o.provider.businessName && o.provider.businessName !== 'Unknown' && (
-                                                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
-                                                            <Store className="h-3 w-3" />
-                                                            {o.provider.businessName}
-                                                        </span>
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                                                                <Store className="h-3 w-3" />
+                                                                {o.provider.businessName}
+                                                            </span>
+                                                            {o.provider.phone && (
+                                                                <a
+                                                                    href={`tel:${o.provider.phone}`}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 hover:bg-blue-500/25 active:bg-blue-500/35 transition-colors"
+                                                                >
+                                                                    <Phone className="h-3 w-3" />
+                                                                    {o.provider.phone}
+                                                                </a>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             )}
                                             {o.provider && o.provider.businessName && o.provider.businessName !== 'Unknown' && !o.user && (
-                                                <p className="text-xs text-purple-400 mt-0.5 flex items-center gap-1">
-                                                    <Store className="h-3 w-3" />
-                                                    {o.provider.businessName}
-                                                </p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className="text-xs text-purple-400 flex items-center gap-1">
+                                                        <Store className="h-3 w-3" />
+                                                        {o.provider.businessName}
+                                                    </p>
+                                                    {o.provider.phone && (
+                                                        <a
+                                                            href={`tel:${o.provider.phone}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 hover:bg-blue-500/25 active:bg-blue-500/35 transition-colors"
+                                                        >
+                                                            <Phone className="h-3 w-3" />
+                                                            {o.provider.phone}
+                                                        </a>
+                                                    )}
+                                                </div>
                                             )}
                                             {o.deliveryAddress && (
                                                 <a
@@ -1461,6 +1493,18 @@ export default function AdminDashboard() {
                      <AdminPromotions />
                 )}
 
+                {/* ═══ DISPLAY ORDER TAB ═══ */}
+                {activeTab === "display_order" && (
+                    <DisplayOrderTab
+                        category={displayOrderCategory}
+                        setCategory={setDisplayOrderCategory}
+                        providers={displayOrderProviders}
+                        setProviders={setDisplayOrderProviders}
+                        dirty={displayOrderDirty}
+                        setDirty={setDisplayOrderDirty}
+                    />
+                )}
+
             </main>
         </div>
     );
@@ -1644,6 +1688,316 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Display Order Tab Component ──────────────────────────────────
+function DisplayOrderTab({
+    category,
+    setCategory,
+    providers,
+    setProviders,
+    dirty,
+    setDirty,
+}: {
+    category: string;
+    setCategory: (c: string) => void;
+    providers: any[];
+    setProviders: (p: any[]) => void;
+    dirty: boolean;
+    setDirty: (d: boolean) => void;
+}) {
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+
+    const categories = [
+        { slug: "restaurants", label: "Restaurants", icon: UtensilsCrossed },
+        { slug: "street-food", label: "Street Food", icon: Sandwich },
+        { slug: "cake-shop", label: "Cake Shops", icon: Package },
+        { slug: "beauty", label: "Beauty Parlors", icon: Scissors },
+        { slug: "electrician", label: "Electricians", icon: Zap },
+        { slug: "plumber", label: "Plumbers", icon: Wrench },
+    ];
+
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ["/api/admin/provider-display-order", category],
+        queryFn: () => api.get(`/admin/provider-display-order?category=${category}`).then(r => r.data),
+    });
+
+    useEffect(() => {
+        if (data && Array.isArray(data)) {
+            setProviders(data);
+            setDirty(false);
+        }
+    }, [data, setProviders, setDirty]);
+
+    const saveMutation = useMutation({
+        mutationFn: (updates: { id: string; displayOrder: number }[]) =>
+            api.put("/admin/provider-display-order", { updates }).then(r => r.data),
+        onSuccess: () => {
+            toast({ title: "✅ Order Saved!", description: "Display order updated successfully. Changes are live." });
+            setDirty(false);
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/provider-display-order"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to save display order.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    const moveItem = (index: number, direction: "up" | "down" | "top" | "bottom") => {
+        const newList = [...providers];
+        if (direction === "up" && index > 0) {
+            [newList[index], newList[index - 1]] = [newList[index - 1], newList[index]];
+        } else if (direction === "down" && index < newList.length - 1) {
+            [newList[index], newList[index + 1]] = [newList[index + 1], newList[index]];
+        } else if (direction === "top" && index > 0) {
+            const [item] = newList.splice(index, 1);
+            newList.unshift(item);
+        } else if (direction === "bottom" && index < newList.length - 1) {
+            const [item] = newList.splice(index, 1);
+            newList.push(item);
+        }
+        setProviders(newList);
+        setDirty(true);
+    };
+
+    const handleSave = () => {
+        const updates = providers.map((p, i) => ({
+            id: p.id,
+            displayOrder: i + 1,
+        }));
+        saveMutation.mutate(updates);
+    };
+
+    const handleReset = () => {
+        refetch();
+        setDirty(false);
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <ArrowUpDown className="h-5 w-5 text-blue-400" />
+                        Manage Display Order
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Control which restaurants and vendors appear first. Drag them up or down to set priority.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    {dirty && (
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 text-sm rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            Reset
+                        </button>
+                    )}
+                    <button
+                        onClick={handleSave}
+                        disabled={!dirty || saveMutation.isPending}
+                        className={`px-5 py-2.5 text-sm rounded-xl font-semibold flex items-center gap-2 transition-all ${
+                            dirty
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40'
+                                : 'bg-white/5 text-gray-600 cursor-not-allowed'
+                        }`}
+                    >
+                        {saveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Save Order
+                    </button>
+                </div>
+            </div>
+
+            {/* Category Selector */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {categories.map((cat) => (
+                    <button
+                        key={cat.slug}
+                        onClick={() => { setCategory(cat.slug); setDirty(false); }}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                            category === cat.slug
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10 hover:text-gray-300'
+                        }`}
+                    >
+                        <cat.icon className="h-4 w-4" />
+                        {cat.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Dirty indicator */}
+            {dirty && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>You have unsaved changes. Click <strong>"Save Order"</strong> to apply.</span>
+                </div>
+            )}
+
+            {/* Provider List */}
+            <div className="rounded-2xl bg-[#111827] border border-white/5 overflow-hidden">
+                <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2">
+                        <GripVertical className="h-4 w-4 text-gray-500" />
+                        {categories.find(c => c.slug === category)?.label || "Providers"}
+                        <span className="text-sm text-gray-500 font-normal ml-2">({providers.length} total)</span>
+                    </h3>
+                    <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full">
+                        Position #1 = Top
+                    </span>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                    </div>
+                ) : providers.length === 0 ? (
+                    <div className="text-center py-16 text-gray-600">
+                        <Store className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                        <p>No providers found for this category.</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-white/5">
+                        {providers.map((provider, index) => (
+                            <div
+                                key={provider.id}
+                                className={`flex items-center gap-4 px-6 py-4 transition-all hover:bg-white/[0.02] ${
+                                    index === 0 ? 'bg-blue-500/[0.03]' : ''
+                                }`}
+                            >
+                                {/* Position Number */}
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
+                                    index === 0
+                                        ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30'
+                                        : index === 1
+                                            ? 'bg-gray-500/15 text-gray-300 border border-gray-500/20'
+                                            : index === 2
+                                                ? 'bg-orange-500/15 text-orange-400 border border-orange-500/20'
+                                                : 'bg-white/5 text-gray-500 border border-white/5'
+                                }`}>
+                                    {index + 1}
+                                </div>
+
+                                {/* Provider Image */}
+                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                                    {provider.profileImageUrl ? (
+                                        <img
+                                            src={provider.profileImageUrl}
+                                            alt={provider.businessName}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <Store className="h-5 w-5 text-gray-600" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Provider Info */}
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium text-sm truncate">{provider.businessName}</h4>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-xs text-gray-500 truncate">{provider.address}</span>
+                                        {provider.isAvailable === false && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 font-medium">
+                                                Closed
+                                            </span>
+                                        )}
+                                        {provider.isPopular && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
+                                                Popular
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Rating Input */}
+                                <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-white/5 px-2 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-colors focus-within:border-blue-500/50">
+                                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500/20" />
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="5"
+                                        step="0.1"
+                                        value={provider.rating || '4.50'}
+                                        onChange={(e) => {
+                                            const newList = [...providers];
+                                            newList[index] = { ...newList[index], rating: e.target.value };
+                                            setProviders(newList);
+                                            setDirty(true);
+                                        }}
+                                        className="w-12 bg-transparent text-xs text-white outline-none font-medium tabular-nums"
+                                    />
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                        onClick={() => moveItem(index, "top")}
+                                        disabled={index === 0}
+                                        title="Move to Top"
+                                        className="p-1.5 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronUp className="h-4 w-4" />
+                                        <ChevronUp className="h-4 w-4 -mt-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveItem(index, "up")}
+                                        disabled={index === 0}
+                                        title="Move Up"
+                                        className="p-2 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronUp className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveItem(index, "down")}
+                                        disabled={index === providers.length - 1}
+                                        title="Move Down"
+                                        className="p-2 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronDown className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveItem(index, "bottom")}
+                                        disabled={index === providers.length - 1}
+                                        title="Move to Bottom"
+                                        className="p-1.5 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronDown className="h-4 w-4" />
+                                        <ChevronDown className="h-4 w-4 -mt-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Sticky Save Bar (when dirty) */}
+            {dirty && (
+                <div className="sticky bottom-4 z-50 flex justify-center animate-in slide-in-from-bottom-2">
+                    <button
+                        onClick={handleSave}
+                        disabled={saveMutation.isPending}
+                        className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center gap-3 transition-all hover:scale-[1.02]"
+                    >
+                        {saveMutation.isPending ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                            <ArrowUpDown className="h-5 w-5" />
+                        )}
+                        Save Display Order ({providers.length} providers)
+                    </button>
                 </div>
             )}
         </div>
