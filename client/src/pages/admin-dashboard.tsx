@@ -39,6 +39,9 @@ import {
     TrendingUp,
     Activity,
     BarChart3,
+    CheckCircle,
+    Clock,
+    Truck,
     LogOut,
     ChevronRight,
     ChevronDown,
@@ -361,6 +364,48 @@ export default function AdminDashboard() {
             toast({
                 title: "Error",
                 description: error.response?.data?.message || "Failed to cancel order.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    const updateOrderStatusMutation = useMutation({
+        mutationFn: async ({ type, id, status }: { type: string; id: string; status: string }) => {
+            const res = await api.patch(`/admin/orders/${type}/${id}/status`, { status });
+            return res.data;
+        },
+        onSuccess: (data: any) => {
+            const newStatus = data?.order?.status || 'updated';
+            toast({ title: "✅ Status Updated", description: `Order status changed to "${newStatus.replace(/_/g, ' ')}".` });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to update order status.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    const markAllDeliveredMutation = useMutation({
+        mutationFn: async () => {
+            const res = await api.post('/admin/orders/mark-all-delivered');
+            return res.data;
+        },
+        onSuccess: (data: any) => {
+            toast({
+                title: "✅ All Orders Delivered",
+                description: `${data.counts?.total || 0} orders marked as delivered (Grocery: ${data.counts?.grocery || 0}, Street Food: ${data.counts?.streetFood || 0}, Restaurant: ${data.counts?.restaurant || 0})`,
+            });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to mark orders as delivered.",
                 variant: "destructive",
             });
         },
@@ -840,11 +885,48 @@ export default function AdminDashboard() {
                 {/* ═══ ORDERS TAB ═══ */}
                 {activeTab === "orders" && (
                     <div className="max-w-5xl mx-auto rounded-3xl bg-[#111827] border border-white/5 overflow-hidden shadow-lg">
-                        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+                        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
                             <h3 className="font-semibold flex items-center gap-2 text-lg">
                                 <ShoppingCart className="h-5 w-5 text-gray-400" /> All Orders
                             </h3>
-                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredOrders?.length || 0} results</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredOrders?.length || 0} results</span>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 rounded-lg px-3 py-1.5 h-auto text-xs font-semibold gap-1.5"
+                                            disabled={markAllDeliveredMutation.isPending}
+                                        >
+                                            {markAllDeliveredMutation.isPending ? (
+                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                            ) : (
+                                                <CheckCircle className="h-3.5 w-3.5" />
+                                            )}
+                                            Mark All Delivered
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>📦 Mark ALL orders as Delivered?</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-gray-400">
+                                                This will mark <span className="text-emerald-400 font-semibold">every pending, accepted, preparing, and in-transit order</span> across Grocery, Street Food, and Restaurant as <span className="text-emerald-400 font-semibold">Delivered</span>. Only already-delivered and cancelled orders will be skipped. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => markAllDeliveredMutation.mutate()}
+                                                className="bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+                                            >
+                                                {markAllDeliveredMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                                                Yes, Mark All Delivered
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
                         </div>
                         <div className="divide-y divide-white/5">
                             {!filteredOrders || filteredOrders.length === 0 ? (
@@ -1001,6 +1083,66 @@ export default function AdminDashboard() {
                                                     </AlertDialog>
                                                 )}
                                             </div>
+
+                                            {/* ─── Admin Order Status Controls ─── */}
+                                            {o.status && !['cancelled', 'delivered', 'completed'].includes(o.status) && (() => {
+                                                const statusFlow = ['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered'];
+                                                const currentIdx = statusFlow.indexOf(o.status || 'pending');
+                                                // Determine next possible statuses
+                                                const nextStatuses = statusFlow.slice(Math.max(currentIdx + 1, 2)); // start from 'accepted' at minimum
+
+                                                const statusButtons: { status: string; label: string; icon: React.ReactNode; color: string }[] = [
+                                                    { status: 'accepted', label: 'Accept', icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'bg-blue-500/15 text-blue-400 border-blue-500/30 hover:bg-blue-500/25' },
+                                                    { status: 'preparing', label: 'Start Preparing', icon: <Clock className="h-3.5 w-3.5" />, color: 'bg-violet-500/15 text-violet-400 border-violet-500/30 hover:bg-violet-500/25' },
+                                                    { status: 'ready_for_pickup', label: 'Ready for Pickup', icon: <Package className="h-3.5 w-3.5" />, color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/25' },
+                                                    { status: 'out_for_delivery', label: 'Out for Delivery', icon: <Truck className="h-3.5 w-3.5" />, color: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/25' },
+                                                    { status: 'delivered', label: 'Mark Delivered', icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25' },
+                                                ];
+
+                                                const availableButtons = statusButtons.filter(b => nextStatuses.includes(b.status));
+
+                                                return availableButtons.length > 0 ? (
+                                                    <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                                                        <div className="flex items-center gap-2 mb-2.5">
+                                                            <ShieldCheck className="h-4 w-4 text-amber-400" />
+                                                            <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Admin Controls</span>
+                                                        </div>
+                                                        {/* Status Progress Bar */}
+                                                        <div className="flex items-center gap-1 mb-3">
+                                                            {statusFlow.map((s, i) => {
+                                                                const isCompleted = i <= currentIdx;
+                                                                const isCurrent = i === currentIdx;
+                                                                return (
+                                                                    <div key={s} className="flex items-center gap-1 flex-1">
+                                                                        <div className={`h-1.5 w-full rounded-full transition-all duration-300 ${
+                                                                            isCompleted ? 'bg-emerald-500' : isCurrent ? 'bg-amber-500' : 'bg-white/10'
+                                                                        }`} />
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            {availableButtons.map((btn) => (
+                                                                <Button
+                                                                    key={btn.status}
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className={`border rounded-lg px-3 py-1.5 h-auto text-xs font-semibold gap-1.5 transition-all ${btn.color}`}
+                                                                    disabled={updateOrderStatusMutation.isPending}
+                                                                    onClick={() => updateOrderStatusMutation.mutate({ type: o.orderType, id: o.id, status: btn.status })}
+                                                                >
+                                                                    {updateOrderStatusMutation.isPending ? (
+                                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                    ) : (
+                                                                        btn.icon
+                                                                    )}
+                                                                    {btn.label}
+                                                                </Button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : null;
+                                            })()}
 
                                             {!o.items || o.items.length === 0 ? (
                                                 <p className="text-sm text-gray-500 italic">No items details available.</p>

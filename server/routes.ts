@@ -3671,6 +3671,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/admin/orders/:type/:id/status — Admin updates any order's status directly
+  app.patch("/api/admin/orders/:type/:id/status", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, id } = req.params;
+      const { status } = req.body;
+
+      if (!['grocery', 'street_food', 'restaurant'].includes(type)) {
+        return res.status(400).json({ message: "Invalid order type. Must be grocery, street_food, or restaurant." });
+      }
+
+      const validStatuses = ['accepted', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      }
+
+      let updatedOrder: any;
+      if (type === 'grocery') {
+        const [result] = await db
+          .update(groceryOrders)
+          .set({ 
+            status,
+            ...(status === 'delivered' ? { deliveredAt: new Date() } : {})
+          })
+          .where(eq(groceryOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      } else if (type === 'street_food') {
+        const [result] = await db
+          .update(streetFoodOrders)
+          .set({ 
+            status,
+            ...(status === 'delivered' ? { deliveredAt: new Date() } : {})
+          })
+          .where(eq(streetFoodOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      } else {
+        // restaurant
+        const [result] = await db
+          .update(restaurantOrders)
+          .set({ 
+            status,
+            ...(status === 'delivered' ? { deliveredAt: new Date() } : {})
+          })
+          .where(eq(restaurantOrders.id, id))
+          .returning();
+        updatedOrder = result;
+      }
+
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found." });
+      }
+
+      console.log(`[Admin Status] Order ${id} (${type}) status updated to '${status}' by admin.`);
+
+      // --- RIDER RING: Notify online riders when admin sets status to 'preparing' ---
+      if (status === 'preparing') {
+        try {
+          let providerName = 'Provider';
+          let providerAddress = 'Check App';
+          if (updatedOrder.providerId) {
+            const provider = await storage.getServiceProvider(updatedOrder.providerId);
+            providerName = provider?.businessName || 'Provider';
+            providerAddress = provider?.address || 'Check App';
+          }
+
+          const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
+          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
+          console.log(`[Admin Rider Ring] Order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
+
+          for (const rider of onlineRiders) {
+            const allTokens: string[] = [];
+            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
+              allTokens.push(...rider.fcmTokens);
+            } else if (rider.fcmToken) {
+              allTokens.push(rider.fcmToken);
+            }
+            const uniqueTokens = [...new Set(allTokens)];
+            for (const token of uniqueTokens) {
+              await sendPushNotification(token, {
+                type: 'ORDER_REQUEST',
+                title: `${orderLabel} ${providerName} is Preparing!`,
+                body: `Order #${id.slice(0, 8)} • ₹${updatedOrder.totalAmount || updatedOrder.total || '0'} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                data: {
+                  orderId: updatedOrder.id,
+                  orderType: type,
+                  customerName: 'Customer',
+                  amount: String(updatedOrder.totalAmount || updatedOrder.total || '0'),
+                  pickupAddress: providerAddress,
+                  dropAddress: updatedOrder.deliveryAddress || 'Check App',
+                  navigateTo: '/delivery-partner/dashboard',
+                }
+              });
+            }
+          }
+        } catch (ringErr: any) {
+          console.error('[Admin Rider Ring Error]', ringErr?.message || ringErr);
+        }
+      }
+      // --- END RIDER RING ---
+
+      res.json({ message: `Order status updated to '${status}'.`, order: updatedOrder });
+    } catch (error: any) {
+      console.error("Admin update order status error:", error);
+      res.status(500).json({ message: error.message || "Error updating order status" });
+    }
+  });
+
   // PATCH /api/admin/bookings/:id/cancel — Admin cancels any booking
   app.patch("/api/admin/bookings/:id/cancel", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
@@ -3691,6 +3799,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Admin cancel booking error:", error);
       res.status(500).json({ message: error.message || "Error cancelling booking" });
+    }
+  });
+
+  // POST /api/admin/orders/mark-all-delivered — Mark ALL non-delivered/non-cancelled orders as delivered
+  app.post("/api/admin/orders/mark-all-delivered", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const now = new Date();
+
+      // Update grocery orders
+      const groceryResult = await db
+        .update(groceryOrders)
+        .set({ status: 'delivered', deliveredAt: now })
+        .where(
+          sql`${groceryOrders.status} NOT IN ('delivered', 'cancelled')`
+        )
+        .returning({ id: groceryOrders.id });
+
+      // Update street food orders
+      const streetFoodResult = await db
+        .update(streetFoodOrders)
+        .set({ status: 'delivered', deliveredAt: now })
+        .where(
+          sql`${streetFoodOrders.status} NOT IN ('delivered', 'cancelled')`
+        )
+        .returning({ id: streetFoodOrders.id });
+
+      // Update restaurant orders
+      const restaurantResult = await db
+        .update(restaurantOrders)
+        .set({ status: 'delivered', deliveredAt: now })
+        .where(
+          sql`${restaurantOrders.status} NOT IN ('delivered', 'cancelled')`
+        )
+        .returning({ id: restaurantOrders.id });
+
+      const totalUpdated = groceryResult.length + streetFoodResult.length + restaurantResult.length;
+      console.log(`[Admin Bulk Deliver] ${totalUpdated} orders marked as delivered (Grocery: ${groceryResult.length}, Street Food: ${streetFoodResult.length}, Restaurant: ${restaurantResult.length})`);
+
+      res.json({
+        message: `${totalUpdated} orders marked as delivered.`,
+        counts: {
+          grocery: groceryResult.length,
+          streetFood: streetFoodResult.length,
+          restaurant: restaurantResult.length,
+          total: totalUpdated,
+        }
+      });
+    } catch (error: any) {
+      console.error("Admin mark-all-delivered error:", error);
+      res.status(500).json({ message: error.message || "Error marking orders as delivered" });
     }
   });
 
