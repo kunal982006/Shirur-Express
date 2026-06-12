@@ -8,7 +8,7 @@ interface FilterBarProps {
 
 export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
     return (
-        <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide sticky top-0 bg-background/95 backdrop-blur z-30 py-4 border-b">
+        <div className="flex items-center gap-3 overflow-x-auto pb-3 scrollbar-hide sticky top-0 bg-background/95 backdrop-blur z-30 pt-1 border-b">
             <Button variant="outline" size="sm" className="rounded-lg h-9 gap-1 text-muted-foreground">
                 <Filter className="h-4 w-4" />
                 Filters

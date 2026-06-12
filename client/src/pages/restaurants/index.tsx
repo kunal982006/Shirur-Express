@@ -37,7 +37,7 @@ export default function RestaurantsIndex() {
         <div className="min-h-screen bg-background pb-20 pt-[calc(4rem+env(safe-area-inset-top))]">
             {/* New Zomato-like Header */}
             <div className="sticky z-40 bg-background shadow-sm" style={{ top: 'calc(4rem + env(safe-area-inset-top))' }}>
-                <div className="p-4 flex flex-col gap-3">
+                <div className="px-4 pt-4 pb-1 flex flex-col gap-3">
                     {/* Search Bar */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
