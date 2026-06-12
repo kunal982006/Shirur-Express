@@ -266,6 +266,8 @@ export const groceryOrders = pgTable("grocery_orders", {
   riderAcceptedAt: timestamp("rider_accepted_at"),
   pickedUpAt: timestamp("picked_up_at"),
   deliveredAt: timestamp("delivered_at"),
+  deliveryMode: text("delivery_mode").default("now"), // "now" or "scheduled"
+  scheduledDeliveryTime: text("scheduled_delivery_time"), // e.g. "2:00 PM", "Custom: 5:45 PM"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -356,7 +358,7 @@ export const insertBookingSchema = createInsertSchema(bookings).pick({
   paymentMethod: true,
 });
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
-  items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true, paymentMethod: true,
+  items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true, paymentMethod: true, deliveryMode: true, scheduledDeliveryTime: true,
 });
 export const insertRentalPropertySchema = createInsertSchema(rentalProperties).pick({
   listingType: true, title: true, description: true, propertyType: true, rent: true, area: true,
@@ -570,11 +572,13 @@ export const streetFoodOrders = pgTable("street_food_orders", {
   riderAcceptedAt: timestamp("rider_accepted_at"),
   pickedUpAt: timestamp("picked_up_at"),
   deliveredAt: timestamp("delivered_at"),
+  deliveryMode: text("delivery_mode").default("now"), // "now" or "scheduled"
+  scheduledDeliveryTime: text("scheduled_delivery_time"), // e.g. "2:00 PM", "Custom: 5:45 PM"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertStreetFoodOrderSchema = createInsertSchema(streetFoodOrders).pick({
-  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true,
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true, deliveryMode: true, scheduledDeliveryTime: true,
 });
 
 export type StreetFoodOrder = typeof streetFoodOrders.$inferSelect;
@@ -597,11 +601,13 @@ export const restaurantOrders = pgTable("restaurant_orders", {
   riderAcceptedAt: timestamp("rider_accepted_at"),
   pickedUpAt: timestamp("picked_up_at"),
   deliveredAt: timestamp("delivered_at"),
+  deliveryMode: text("delivery_mode").default("now"), // "now" or "scheduled"
+  scheduledDeliveryTime: text("scheduled_delivery_time"), // e.g. "2:00 PM", "Custom: 5:45 PM"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertRestaurantOrderSchema = createInsertSchema(restaurantOrders).pick({
-  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true,
+  items: true, totalAmount: true, deliveryAddress: true, providerId: true, paymentMethod: true, deliveryMode: true, scheduledDeliveryTime: true,
 });
 
 export type RestaurantOrder = typeof restaurantOrders.$inferSelect;

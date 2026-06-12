@@ -791,6 +791,16 @@ const BookingsManager: React.FC<{
                   </CardTitle>
                   <CardDescription>
                     Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}
+                    {/* Delivery Time Slot */}
+                    {order.deliveryMode === 'scheduled' && order.scheduledDeliveryTime ? (
+                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-700">
+                        📅 Deliver at {order.scheduledDeliveryTime}
+                      </span>
+                    ) : (
+                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-semibold border border-green-300 dark:border-green-700">
+                        ⚡ Deliver Now
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -848,6 +858,16 @@ const BookingsManager: React.FC<{
                   </CardTitle>
                   <CardDescription>
                     Placed on {new Date(order.createdAt || new Date()).toLocaleString("en-IN")}
+                    {/* Delivery Time Slot */}
+                    {order.deliveryMode === 'scheduled' && order.scheduledDeliveryTime ? (
+                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-700">
+                        📅 Deliver at {order.scheduledDeliveryTime}
+                      </span>
+                    ) : (
+                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-semibold border border-green-300 dark:border-green-700">
+                        ⚡ Deliver Now
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -2136,6 +2156,16 @@ const GroceryOrderCard: React.FC<{
               <span className="text-xs font-normal text-muted-foreground">
                 {new Date(order.createdAt || new Date()).toLocaleTimeString()}
               </span>
+              {/* Delivery Time Slot */}
+              {order.deliveryMode === 'scheduled' && order.scheduledDeliveryTime ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-700">
+                  📅 {order.scheduledDeliveryTime}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-semibold border border-green-300 dark:border-green-700">
+                  ⚡ Now
+                </span>
+              )}
             </CardTitle>
             <div className="flex flex-col text-sm text-foreground/80">
                <span className="font-semibold flex items-center gap-1">

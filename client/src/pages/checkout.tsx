@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle, Ban } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle, Ban, Clock, CalendarClock, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 // --- NAYE IMPORTS ---
@@ -27,6 +27,8 @@ const checkoutSchema = z.object({
   deliveryAddress: z.string().min(10, {
     message: "Please enter a valid delivery address (min. 10 characters).",
   }),
+  deliveryMode: z.enum(["now", "scheduled"]).default("now"),
+  scheduledDeliveryTime: z.string().optional(),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
@@ -58,6 +60,31 @@ export default function Checkout() {
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
   const { toast } = useToast();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [deliveryMode, setDeliveryMode] = useState<"now" | "scheduled">("now");
+  const [selectedSlot, setSelectedSlot] = useState<string>("");
+  const [customTime, setCustomTime] = useState<string>("");
+
+  // Generate time slots from next full hour up to 10 PM
+  const generateTimeSlots = () => {
+    const slots: string[] = [];
+    const now = new Date();
+    let nextHour = new Date(now);
+    nextHour.setMinutes(0, 0, 0);
+    nextHour.setHours(nextHour.getHours() + 1);
+
+    const endHour = 22; // 10 PM
+
+    while (nextHour.getHours() <= endHour && nextHour.getHours() > 0) {
+      const hours = nextHour.getHours();
+      const amPm = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+      slots.push(`${displayHour}:00 ${amPm}`);
+      nextHour.setHours(nextHour.getHours() + 1);
+    }
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
   const [codConfirmed, setCodConfirmed] = useState(false);
 
@@ -131,6 +158,8 @@ export default function Checkout() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       deliveryAddress: "",
+      deliveryMode: "now",
+      scheduledDeliveryTime: "",
     },
   });
 
@@ -242,6 +271,30 @@ export default function Checkout() {
       if (isStreetFood) endpoint = "/street-food-orders";
       if (isRestaurant) endpoint = "/restaurant/orders";
 
+      // Compute delivery slot info
+      const finalDeliveryMode = deliveryMode;
+      let finalScheduledTime = "";
+      if (deliveryMode === "scheduled") {
+        if (selectedSlot === "custom") {
+          if (!customTime) {
+            toast({ title: "Time Required", description: "Please enter a custom delivery time.", variant: "destructive" });
+            setIsPlacingOrder(false);
+            return;
+          }
+          // Format custom time as readable string
+          const [h, m] = customTime.split(':').map(Number);
+          const amPm = h >= 12 ? 'PM' : 'AM';
+          const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
+          finalScheduledTime = `${displayH}:${m.toString().padStart(2, '0')} ${amPm}`;
+        } else if (selectedSlot) {
+          finalScheduledTime = selectedSlot;
+        } else {
+          toast({ title: "Slot Required", description: "Please select a delivery time slot.", variant: "destructive" });
+          setIsPlacingOrder(false);
+          return;
+        }
+      }
+
       let orderPayload;
 
       if (isStreetFood || isRestaurant) {
@@ -258,6 +311,8 @@ export default function Checkout() {
           deliveryAddress: values.deliveryAddress,
           providerId: items[0]?.providerId || "unknown", // Both restaurant and street food need it at root
           paymentMethod, // NEW
+          deliveryMode: finalDeliveryMode,
+          scheduledDeliveryTime: finalDeliveryMode === "scheduled" ? finalScheduledTime : undefined,
           // runnerId will be assigned by backend
         };
       } else {
@@ -277,6 +332,8 @@ export default function Checkout() {
           deliveryAddress: values.deliveryAddress,
           providerId: items[0]?.providerId || null,
           paymentMethod, // NEW
+          deliveryMode: finalDeliveryMode,
+          scheduledDeliveryTime: finalDeliveryMode === "scheduled" ? finalScheduledTime : undefined,
         };
       }
 
@@ -559,6 +616,125 @@ export default function Checkout() {
                         </FormItem>
                       )}
                     />
+                  </CardContent>
+                </Card>
+
+                {/* Delivery Time Slot Card */}
+                <Card className="mb-8">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Clock className="h-5 w-5" />
+                      <span>Delivery Time</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Mode Toggle */}
+                    <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                      <Button
+                        type="button"
+                        variant={deliveryMode === "now" ? "default" : "ghost"}
+                        size="sm"
+                        className={`flex-1 ${deliveryMode === "now" ? "bg-green-600 hover:bg-green-700 text-white" : ""}`}
+                        onClick={() => {
+                          setDeliveryMode("now");
+                          setSelectedSlot("");
+                          setCustomTime("");
+                        }}
+                      >
+                        <Zap className="mr-2 h-4 w-4" />
+                        Order Now
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={deliveryMode === "scheduled" ? "default" : "ghost"}
+                        size="sm"
+                        className={`flex-1 ${deliveryMode === "scheduled" ? "bg-amber-600 hover:bg-amber-700 text-white" : ""}`}
+                        onClick={() => setDeliveryMode("scheduled")}
+                      >
+                        <CalendarClock className="mr-2 h-4 w-4" />
+                        Schedule Delivery
+                      </Button>
+                    </div>
+
+                    {/* Order Now Info */}
+                    {deliveryMode === "now" && (
+                      <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+                          <Zap className="h-4 w-4" />
+                          <strong>Deliver ASAP</strong>
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                          Your order will be prepared and delivered as soon as possible.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Schedule Delivery Options */}
+                    {deliveryMode === "scheduled" && (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                          <p className="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                            <CalendarClock className="h-4 w-4" />
+                            <strong>Choose your delivery time</strong>
+                          </p>
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            Select a time slot when you'd like your order delivered.
+                          </p>
+                        </div>
+
+                        {/* Time Slot Buttons */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {timeSlots.map((slot) => (
+                            <Button
+                              key={slot}
+                              type="button"
+                              variant={selectedSlot === slot ? "default" : "outline"}
+                              size="sm"
+                              className={`text-sm ${selectedSlot === slot ? "bg-amber-600 hover:bg-amber-700 text-white border-amber-600" : ""}`}
+                              onClick={() => {
+                                setSelectedSlot(slot);
+                                setCustomTime("");
+                              }}
+                            >
+                              <Clock className="mr-1 h-3 w-3" />
+                              {slot}
+                            </Button>
+                          ))}
+                          <Button
+                            type="button"
+                            variant={selectedSlot === "custom" ? "default" : "outline"}
+                            size="sm"
+                            className={`text-sm ${selectedSlot === "custom" ? "bg-purple-600 hover:bg-purple-700 text-white border-purple-600" : ""}`}
+                            onClick={() => setSelectedSlot("custom")}
+                          >
+                            ✏️ Custom
+                          </Button>
+                        </div>
+
+                        {/* Custom Time Input */}
+                        {selectedSlot === "custom" && (
+                          <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
+                            <label className="text-sm font-medium text-purple-700 dark:text-purple-300 block mb-2">
+                              Enter your preferred time:
+                            </label>
+                            <input
+                              type="time"
+                              value={customTime}
+                              onChange={(e) => setCustomTime(e.target.value)}
+                              className="w-full px-3 py-2 rounded-md border border-purple-300 dark:border-purple-700 bg-white dark:bg-purple-950/50 text-sm"
+                            />
+                          </div>
+                        )}
+
+                        {timeSlots.length === 0 && selectedSlot !== "custom" && (
+                          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                              No slots available for today. Please use "Custom" to set your preferred time or choose "Order Now".
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

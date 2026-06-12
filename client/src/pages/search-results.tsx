@@ -133,7 +133,10 @@ export default function SearchResults() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header with Smart Search */}
-            <header className="bg-white shadow-sm sticky top-0 z-30 px-4 py-3">
+            <header 
+                className="bg-white shadow-sm sticky top-0 z-30 px-4 pb-3"
+                style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
+            >
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" onClick={() => setLocation("/")}>
                         <ArrowLeft className="h-6 w-6 text-gray-700" />

@@ -2091,7 +2091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await sendPushNotification(deviceToken, {
               type: 'ORDER_REQUEST',
               title: `${orderLabel} Order — ₹${sfAmount} (COD/Paid)`,
-              body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+              body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
               data: {
                 orderId: database_order_id,
                 orderType: orderType || 'street_food',
@@ -2134,7 +2134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await sendPushNotification(deviceToken, {
                 type: 'ORDER_REQUEST',
                 title: `${orderLabel} Order — ₹${orderAmount} (COD/Paid)`,
-                body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+                body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
                 data: {
                   orderId: database_order_id,
                   orderType: orderType || 'grocery',
@@ -2171,7 +2171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : '';
       await notifyAdmin({
         title: `${adminOrderLabel} Order — ₹${adminAmount}`,
-        body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}`,
+        body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Now'}`,
         data: {
           orderId: database_order_id,
           orderType: orderType || 'grocery',
@@ -3469,6 +3469,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deliveryAddress: groceryOrders.deliveryAddress,
           createdAt: groceryOrders.createdAt,
           items: groceryOrders.items,
+          paymentMethod: groceryOrders.paymentMethod,
+          deliveryMode: groceryOrders.deliveryMode,
+          scheduledDeliveryTime: groceryOrders.scheduledDeliveryTime,
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,
@@ -3488,6 +3491,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deliveryAddress: streetFoodOrders.deliveryAddress,
           createdAt: streetFoodOrders.createdAt,
           items: streetFoodOrders.items,
+          paymentMethod: streetFoodOrders.paymentMethod,
+          deliveryMode: streetFoodOrders.deliveryMode,
+          scheduledDeliveryTime: streetFoodOrders.scheduledDeliveryTime,
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,
@@ -3507,6 +3513,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deliveryAddress: restaurantOrders.deliveryAddress,
           createdAt: restaurantOrders.createdAt,
           items: restaurantOrders.items,
+          paymentMethod: restaurantOrders.paymentMethod,
+          deliveryMode: restaurantOrders.deliveryMode,
+          scheduledDeliveryTime: restaurantOrders.scheduledDeliveryTime,
           username: users.username,
           phone: users.phone,
           businessName: serviceProviders.businessName,

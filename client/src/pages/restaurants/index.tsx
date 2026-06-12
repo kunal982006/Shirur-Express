@@ -34,23 +34,10 @@ export default function RestaurantsIndex() {
     ) || [];
 
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen bg-background pb-20 pt-[calc(4rem+env(safe-area-inset-top))]">
             {/* New Zomato-like Header */}
-            <div className="sticky top-0 z-40 bg-background shadow-sm">
+            <div className="sticky z-40 bg-background shadow-sm" style={{ top: 'calc(4rem + env(safe-area-inset-top))' }}>
                 <div className="p-4 flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                        <Link href="/">
-                            <Button variant="ghost" size="icon" className="-ml-2"><ArrowLeft className="h-5 w-5" /></Button>
-                        </Link>
-                        <div className="flex-1">
-                            <h2 className="font-bold text-lg leading-none">Shirur, Pune</h2>
-                            <p className="text-xs text-muted-foreground truncate">Craving the best? The city's top menus are now on yours. 🍽️😋</p>
-                        </div>
-                        <div className="h-9 w-9 bg-secondary rounded-full flex items-center justify-center">
-                            <span className="font-bold text-primary">S</span>
-                        </div>
-                    </div>
-
                     {/* Search Bar */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

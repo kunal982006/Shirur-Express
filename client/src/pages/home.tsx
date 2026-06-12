@@ -163,30 +163,32 @@ export default function Home() {
         className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="flex items-center justify-between p-3 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between p-2 sm:p-3 max-w-7xl mx-auto gap-1 sm:gap-4 overflow-hidden">
           {/* App Logo & Name */}
-          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => navigate("/")}>
-            <div className="h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 cursor-pointer select-none shrink-1 min-w-0" onClick={() => navigate("/")}>
+            <div className="h-10 w-10 sm:h-14 sm:w-14 flex items-center justify-center shrink-0">
               <img src="/shirur-express-logo.png" alt="Shirur Express" className="w-full h-full object-contain" />
             </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-primary font-extrabold text-[22px] sm:text-[26px] leading-none tracking-tight">Shirur</span>
-              <span className="text-gray-500 font-extrabold text-[12px] sm:text-[14px] leading-none tracking-[0.15em] mt-0.5">EXPRESS</span>
+            <div className="flex flex-col justify-center min-w-0">
+              <span className="text-primary font-extrabold text-[18px] sm:text-[24px] leading-none tracking-tight truncate">Shirur</span>
+              <span className="text-gray-500 font-extrabold text-[10px] sm:text-[12px] leading-none tracking-[0.15em] mt-0.5 truncate">EXPRESS</span>
             </div>
           </div>
 
           {/* Profile & Notifications */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Link href="/notifications">
-              <Bell className="h-6 w-6 text-gray-700 cursor-pointer hover:text-primary transition-colors" />
+              <div className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full cursor-pointer transition-colors">
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 hover:text-primary transition-colors" />
+              </div>
             </Link>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-9 w-9 cursor-pointer border-2 border-primary/10">
+                  <Avatar className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer border-2 border-primary/10">
                     <AvatarImage src="/placeholder-user.jpg" />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs sm:text-sm">
                       {user.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -222,7 +224,7 @@ export default function Home() {
               <Button
                 size="sm"
                 onClick={() => navigate("/login")}
-                className="rounded-full px-4 font-bold"
+                className="rounded-full px-3 sm:px-4 text-xs sm:text-sm font-bold h-8 sm:h-9"
               >
                 Login
               </Button>

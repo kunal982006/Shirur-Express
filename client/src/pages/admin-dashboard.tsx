@@ -102,6 +102,8 @@ interface Order {
     provider?: { businessName: string };
     items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
     paymentMethod?: string | null;
+    deliveryMode?: string | null;
+    scheduledDeliveryTime?: string | null;
 }
 
 interface Booking {
@@ -959,6 +961,16 @@ export default function AdminDashboard() {
                                                 {o.paymentMethod === 'online' && (
                                                     <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
                                                         PAID Online
+                                                    </span>
+                                                )}
+                                                {/* Delivery Time Slot Badge */}
+                                                {o.deliveryMode === 'scheduled' && o.scheduledDeliveryTime ? (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
+                                                        📅 {o.scheduledDeliveryTime}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                                                        ⚡ Now
                                                     </span>
                                                 )}
                                             </div>
