@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Loader2, ChevronRight } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronRight, ShieldCheck } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem } from "@shared/schema";
 
@@ -101,7 +101,7 @@ export default function Electrician() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 px-2 sm:px-0">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6 gap-x-2 sm:gap-6 px-1 sm:px-0">
             {appliances?.map((appliance) => {
               // Fallback image logic
               const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
@@ -112,7 +112,7 @@ export default function Electrician() {
                   className="cursor-pointer group flex flex-col items-center text-center justify-start"
                   onClick={() => handleApplianceClick(appliance)}
                 >
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 mb-2 relative flex items-center justify-center">
+                  <div className="w-full h-20 sm:h-28 mb-1 relative flex items-center justify-center">
                     <img
                       src={imageUrl}
                       alt={appliance.name}
@@ -128,6 +128,21 @@ export default function Electrician() {
             })}
           </div>
         )}
+
+        {/* Attractive Footer Banner */}
+        <div className="mt-12 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 rounded-2xl p-6 text-center max-w-lg mx-auto shadow-sm">
+          <div className="flex justify-center mb-3">
+            <div className="bg-white p-2.5 rounded-full shadow-sm border border-amber-100">
+              <ShieldCheck className="h-6 w-6 text-amber-500" />
+            </div>
+          </div>
+          <h3 className="text-lg sm:text-xl font-bold text-amber-950 mb-1 tracking-tight">
+            No ordinary repairs.
+          </h3>
+          <p className="text-sm sm:text-base text-amber-800 font-medium">
+            Only certified elite professionals for your home.
+          </p>
+        </div>
 
         {/* Problems Dialog */}
         <Dialog open={!!selectedAppliance} onOpenChange={(open) => !open && setSelectedAppliance(null)}>
