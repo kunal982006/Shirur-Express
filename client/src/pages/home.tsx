@@ -235,10 +235,10 @@ export default function Home() {
 
       {/* 4. Unified Search Bar (Image Reference: Are you hungry) */}
       <section 
-        className="p-4 bg-white shadow-sm sticky z-30 transition-all"
-        style={{ top: 'calc(68px + env(safe-area-inset-top))' }}
+        className="px-4 py-2 bg-white shadow-sm sticky z-30 transition-all"
+        style={{ top: 'calc(56px + env(safe-area-inset-top))' }}
       >
-        <div className="max-w-7xl mx-auto flex gap-4">
+        <div className="max-w-7xl mx-auto flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
