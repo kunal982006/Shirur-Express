@@ -113,7 +113,7 @@ export default function Electrician() {
           </div>
         ) : (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6 gap-x-2 sm:gap-6 px-1 sm:px-0">
-            {appliances?.map((appliance) => {
+            {appliances?.filter(a => a.name !== "Others").map((appliance) => {
               // Fallback image logic
               const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
 
@@ -137,6 +137,32 @@ export default function Electrician() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 'Others' Custom Full-Width Highlight Banner */}
+        {appliances?.find(a => a.name === "Others") && (
+          <div 
+            className="mt-6 mx-2 sm:mx-0 bg-blue-50/50 border border-blue-100 rounded-2xl overflow-hidden shadow-sm flex relative cursor-pointer group hover:shadow-md transition-all h-32 sm:h-40"
+            onClick={() => handleApplianceClick(appliances.find(a => a.name === "Others")!)}
+          >
+            <div className="p-4 sm:p-6 z-10 w-[60%] sm:w-2/3 flex flex-col justify-center">
+              <h3 className="text-blue-950 font-bold text-base sm:text-2xl mb-1 leading-tight">Looking for something else?</h3>
+              <p className="text-blue-800/80 text-[10px] sm:text-sm font-medium leading-tight mb-2 sm:mb-3">
+                From wiring fixes to complex repairs, our experts handle it all.
+              </p>
+              <div className="bg-blue-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full inline-block self-start shadow-sm group-hover:bg-blue-700 transition-colors">
+                Explore All Services &rarr;
+              </div>
+            </div>
+            {/* The uploaded man image */}
+            <div className="w-[45%] absolute right-0 top-0 bottom-0 flex items-end justify-end pointer-events-none mix-blend-multiply overflow-visible">
+              <img 
+                src="/electrician-expert.png" 
+                alt="Expert Technician" 
+                className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom mix-blend-multiply drop-shadow-sm pr-2 sm:pr-4"
+              />
+            </div>
           </div>
         )}
 
