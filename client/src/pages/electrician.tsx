@@ -101,7 +101,7 @@ export default function Electrician() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-6 px-1 sm:px-0">
             {appliances?.map((appliance) => {
               // Fallback image logic
               const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
@@ -112,8 +112,8 @@ export default function Electrician() {
                   className="cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1 border-primary/10"
                   onClick={() => handleApplianceClick(appliance)}
                 >
-                  <CardContent className="p-4 flex flex-col items-center text-center h-full">
-                    <div className="w-full aspect-square mb-4 relative flex items-center justify-center p-2">
+                  <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center h-full justify-between">
+                    <div className="w-full aspect-square mb-1 sm:mb-4 relative flex items-center justify-center p-0.5 sm:p-2 bg-muted/5 rounded-md">
                       <img
                         src={imageUrl}
                         alt={appliance.name}
@@ -123,8 +123,10 @@ export default function Electrician() {
                         }}
                       />
                     </div>
-                    <h3 className="font-semibold text-lg">{appliance.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-2">View Issues</p>
+                    <div>
+                      <h3 className="font-semibold text-[10px] sm:text-lg leading-tight line-clamp-2">{appliance.name}</h3>
+                      <p className="text-[8px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-2">View</p>
+                    </div>
                   </CardContent>
                 </Card>
               );
