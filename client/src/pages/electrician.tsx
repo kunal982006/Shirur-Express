@@ -101,34 +101,29 @@ export default function Electrician() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-6 px-1 sm:px-0">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 px-2 sm:px-0">
             {appliances?.map((appliance) => {
               // Fallback image logic
               const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
 
               return (
-                <Card
+                <div
                   key={appliance.id}
-                  className="cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1 border-primary/10"
+                  className="cursor-pointer group flex flex-col items-center text-center justify-start"
                   onClick={() => handleApplianceClick(appliance)}
                 >
-                  <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center h-full justify-between">
-                    <div className="w-full aspect-square mb-1 sm:mb-4 relative flex items-center justify-center p-0.5 sm:p-2 bg-muted/5 rounded-md">
-                      <img
-                        src={imageUrl}
-                        alt={appliance.name}
-                        className="w-full h-full object-contain drop-shadow-sm transition-transform hover:scale-105"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://via.placeholder.com/150?text=" + appliance.name.substring(0, 2);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-[10px] sm:text-lg leading-tight line-clamp-2">{appliance.name}</h3>
-                      <p className="text-[8px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-2">View</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 mb-2 relative flex items-center justify-center">
+                    <img
+                      src={imageUrl}
+                      alt={appliance.name}
+                      className="w-full h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/150?text=" + appliance.name.substring(0, 2);
+                      }}
+                    />
+                  </div>
+                  <h3 className="font-semibold text-xs sm:text-base leading-tight line-clamp-2 text-foreground/90">{appliance.name}</h3>
+                </div>
               );
             })}
           </div>
