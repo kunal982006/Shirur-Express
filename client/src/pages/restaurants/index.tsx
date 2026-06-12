@@ -60,16 +60,16 @@ export default function RestaurantsIndex() {
                 {/* Inspiration Carousel */}
                 <CategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
 
-                <h2 className="font-bold text-xl mb-4 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
+                <h2 className="font-bold text-lg mb-3 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
 
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-64 rounded-xl bg-muted animate-pulse" />
+                            <div key={i} className="h-48 sm:h-64 rounded-xl bg-muted animate-pulse" />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                         {filteredRestaurants.map(restaurant => (
                             <RestaurantCard
                                 key={restaurant.id}

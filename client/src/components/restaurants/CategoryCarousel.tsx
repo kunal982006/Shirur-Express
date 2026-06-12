@@ -17,7 +17,7 @@ const categories: Category[] = [
 
 export function CategoryCarousel({ onSelect }: { onSelect: (id: string) => void }) {
     return (
-        <div className="py-5 bg-muted/20 -mx-4 px-4 mb-4">
+        <div className="py-5 bg-muted/20 -mx-4 px-4 mb-2">
             <h3 className="text-xl font-bold mb-4 text-foreground/90">Inspiration for your first order</h3>
             <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x">
                 {categories.map((cat) => (
