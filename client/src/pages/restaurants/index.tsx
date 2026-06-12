@@ -34,9 +34,9 @@ export default function RestaurantsIndex() {
     ) || [];
 
     return (
-        <div className="min-h-screen bg-background pb-20 pt-[calc(4rem+env(safe-area-inset-top))]">
+        <div className="min-h-screen bg-background pb-20">
             {/* New Zomato-like Header */}
-            <div className="sticky z-40 bg-background shadow-sm" style={{ top: 'calc(4rem + env(safe-area-inset-top))' }}>
+            <div className="sticky top-0 z-40 bg-background shadow-sm">
                 <div className="px-4 pt-4 pb-1 flex flex-col gap-3">
                     {/* Search Bar */}
                     <div className="relative">

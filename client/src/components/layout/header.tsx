@@ -88,7 +88,7 @@ export default function Header() {
       {/* Only show top header on non-home/admin pages */}
       {!hideTopHeader && (
         <header 
-          className="fixed top-0 left-0 right-0 z-50 bg-background border-b flex items-center px-4"
+          className="relative z-50 bg-background border-b flex items-center px-4"
           style={{ 
             paddingTop: 'env(safe-area-inset-top)',
             height: 'calc(4rem + env(safe-area-inset-top))'

@@ -9,9 +9,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Loader2, ChevronRight, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem } from "@shared/schema";
+
+const CUSTOMER_REVIEWS = [
+  { name: "Sachin Gawade (Fridge)", rating: 4.8, text: "Amcha fridge achanak band padla hota. Shirur Express varun technician book kela, khupach bhari service dili. Paisanchi kontihi fasavnuk nahi, ekdum vishwasu manus hota." },
+  { name: "Rahul Deshmukh (AC Repair)", rating: 5.0, text: "Booked an AC servicing yesterday. The technician was highly professional, cleaned everything properly without making a mess, and charged exactly what was shown in the app. Premium service!" },
+  { name: "Priya Verma (Water Filter)", rating: 4.5, text: "वाटर फिल्टर का पानी लीक हो रहा था। इनका टेक्निशियन टाइम पर आया और फटाफट फिक्स कर दिया। सर्विस एकदम प्रीमियम और टेंशन-फ्री थी।" },
+  { name: "Vikram Singh (Switchboard)", rating: 4.2, text: "Kitchen ka gas aur hall ke kuch switchboards repair karwaye. Bohot hi experienced electrician tha. Mujhe baar-baar market bhagna nahi pada, saara kaam ek baar me hi chaka-chak ho gaya." },
+  { name: "Anjali Thite (Washing Machine)", rating: 4.9, text: "वॉशिंग मशीन दुरुस्त करण्यासाठी बेस्ट ॲप आहे. टेक्निशियन वेळेवर आला आणि काम खूप परफेक्ट केलं. घरच्या घरी इतकी चांगली आणि प्रीमियम सर्विस मिळेल वाटलं नव्हतं." },
+  { name: "Amit Sharma (LED TV)", rating: 4.6, text: "LED TV ka display chal nahi raha tha. Shirur Express ke technician ne aakar bht acche se check kiya aur genuine part replace kiya. Kaam ekdum perfect aur saaf-suthra tha." },
+  { name: "Rohan Joshi (Microwave)", rating: 4.7, text: "Finally a reliable service in town. Fixed my double-door fridge and oven on the same day. No hidden charges. Highly recommended for premium home repairs." },
+  { name: "Mahendra Shinde (Wiring)", rating: 4.3, text: "Gharatil short circuit ani navin switchboard che kaam ekdum safe padhatine kele. Technician khup experienced hota. Shirur madhye ashi kamachi guarantee denari dusri service nahi." }
+];
 
 const IMAGE_MAPPING: Record<string, string> = {
   "Air Conditioner (AC)": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448848/shirur-express/electrician/ac.jpg",
@@ -130,18 +141,40 @@ export default function Electrician() {
         )}
 
         {/* Attractive Footer Banner */}
-        <div className="mt-12 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 rounded-2xl p-6 text-center max-w-lg mx-auto shadow-sm">
-          <div className="flex justify-center mb-3">
-            <div className="bg-white p-2.5 rounded-full shadow-sm border border-amber-100">
-              <ShieldCheck className="h-6 w-6 text-amber-500" />
-            </div>
+        <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 rounded-xl p-3 flex items-center gap-3 max-w-lg mx-auto shadow-sm">
+          <div className="bg-white p-2 rounded-full shadow-sm border border-amber-100 shrink-0">
+            <ShieldCheck className="h-5 w-5 text-amber-500" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-amber-950 mb-1 tracking-tight">
-            No ordinary repairs.
-          </h3>
-          <p className="text-sm sm:text-base text-amber-800 font-medium">
-            Only certified elite professionals for your home.
-          </p>
+          <div className="text-left">
+            <h3 className="text-sm font-bold text-amber-950 leading-tight">
+              No ordinary repairs.
+            </h3>
+            <p className="text-xs text-amber-800 font-medium leading-tight mt-0.5">
+              Only certified elite professionals for your home.
+            </p>
+          </div>
+        </div>
+
+        {/* Customer Reviews Section */}
+        <div className="mt-8 mb-8">
+          <h3 className="text-lg font-bold mb-4 px-2 text-foreground/90">What our customers say</h3>
+          <div className="flex flex-col gap-3 px-1">
+            {CUSTOMER_REVIEWS.map((review, i) => (
+              <Card key={i} className="border-primary/10 shadow-sm bg-card">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="font-semibold text-xs sm:text-sm text-foreground">{review.name}</div>
+                    <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold">
+                      {review.rating.toFixed(1)} <Star className="h-2.5 w-2.5 fill-green-700 dark:fill-green-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground italic leading-relaxed">
+                    "{review.text}"
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {/* Problems Dialog */}
