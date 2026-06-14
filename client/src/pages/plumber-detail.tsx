@@ -107,19 +107,21 @@ export default function PlumberDetail() {
                     {/* Problems This Plumber Can Handle OR Booking Form */}
 
                     {showBooking && selectedProblem ? (
-                        <Card className="mt-0 border-primary/20 shadow-md">
-                            <CardHeader>
-                                <div className="flex justify-between items-center mb-2">
-                                    <CardTitle>Book Service Slot</CardTitle>
-                                    <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
-                                        Change Problem
+                        <Card className="mt-0 border-none shadow-none sm:border-solid sm:border-border sm:shadow-sm">
+                            <CardHeader className="px-0 sm:px-6 pb-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle className="text-2xl font-bold">Book Slot</CardTitle>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            For: <span className="font-semibold text-foreground">{selectedProblem.name}</span>
+                                        </p>
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => setShowBooking(false)} className="h-8 text-xs">
+                                        Change
                                     </Button>
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                    Selected Issue: <span className="text-primary font-bold text-lg">{selectedProblem.name}</span>
-                                </p>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="px-0 sm:px-6">
                                 <BookingSlotForm
                                     providerId={providerId!}
                                     problemId={selectedProblem.id}

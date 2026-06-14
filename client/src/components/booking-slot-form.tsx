@@ -254,50 +254,37 @@ export default function BookingSlotForm({
 
   return (
     <div className="space-y-6">
-      <div className="bg-primary/10 p-4 rounded-lg">
-        <p className="text-sm font-medium">Selected Problem:</p>
-        <p className="text-lg font-semibold">{problemName}</p>
-      </div>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Booking Type Selection */}
-          <div className="grid grid-cols-2 gap-4">
-            <div
+          {/* Booking Type Selection (Sleek Segmented Control) */}
+          <div className="flex p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1">
+            <button
+              type="button"
               onClick={() => handleBookingTypeChange("instant")}
               className={cn(
-                "cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-accent/5",
+                "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
                 bookingType === "instant"
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-muted hover:border-primary/50"
+                  ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <div className={cn("p-2 rounded-full", bookingType === "instant" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                <Zap className="h-6 w-6" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-sm">Instant</p>
-                <p className="text-[10px] text-muted-foreground">Within 60 mins</p>
-              </div>
-            </div>
+              <Zap className={cn("h-4 w-4", bookingType === "instant" && "fill-primary/20")} /> 
+              Instant <span className="font-normal text-xs opacity-70 hidden sm:inline">(60m)</span>
+            </button>
 
-            <div
+            <button
+              type="button"
               onClick={() => handleBookingTypeChange("scheduled")}
               className={cn(
-                "cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-accent/5",
+                "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
                 bookingType === "scheduled"
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-muted hover:border-primary/50"
+                  ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <div className={cn("p-2 rounded-full", bookingType === "scheduled" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                <CalendarIconLucide className="h-6 w-6" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-sm">Book Slot</p>
-                <p className="text-[10px] text-muted-foreground">Schedule for later</p>
-              </div>
-            </div>
+              <CalendarIconLucide className="h-4 w-4" /> 
+              Schedule <span className="font-normal text-xs opacity-70 hidden sm:inline">(Later)</span>
+            </button>
           </div>
 
           {bookingType === "scheduled" && (
@@ -413,12 +400,12 @@ export default function BookingSlotForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex justify-between items-center mb-1">
-                  <FormLabel>Your Complete Address</FormLabel>
+                  <FormLabel className="text-foreground/80">Service Location</FormLabel>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="h-8 gap-2 text-primary"
+                    className="h-7 text-xs px-2 gap-1.5 text-primary hover:bg-primary/10"
                     onClick={handleDetectLocation}
                     disabled={isLocating}
                   >
@@ -427,20 +414,17 @@ export default function BookingSlotForm({
                     ) : (
                       <MapPin className="h-3 w-3" />
                     )}
-                    {isLocating ? "Detecting..." : "Use My Location"}
+                    {isLocating ? "Detecting..." : "Use GPS"}
                   </Button>
                 </div>
                 <FormControl>
                   <Textarea
-                    placeholder="Enter your full address or click 'Use My Location'..."
+                    placeholder="Enter your full address..."
                     {...field}
                     data-testid="input-address"
-                    className="resize-none"
+                    className="resize-none min-h-[80px]"
                   />
                 </FormControl>
-                <p className="text-xs text-muted-foreground mt-1">
-                  If location detection fails, please enter address manually.
-                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -452,10 +436,10 @@ export default function BookingSlotForm({
             name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Additional Notes (Optional)</FormLabel>
+                <FormLabel className="text-foreground/80">Additional Notes <span className="font-normal opacity-50">(Optional)</span></FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Any additional details about the problem..."
+                  <Input
+                    placeholder="Any specific instructions for the technician..."
                     {...field}
                     data-testid="input-notes"
                   />
@@ -471,29 +455,33 @@ export default function BookingSlotForm({
               name="paymentMethod"
               render={({ field }) => (
                   <FormItem className="space-y-3">
-                      <FormLabel>Payment Method</FormLabel>
+                      <FormLabel className="text-foreground/80">Payment Method</FormLabel>
                       <FormControl>
                           <RadioGroup
                               onValueChange={field.onChange}
                               defaultValue={field.value}
-                              className="flex flex-col space-y-1"
+                              className="grid grid-cols-2 gap-3"
                           >
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                      <RadioGroupItem value="online" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">
-                                      💳 Pay Online 
+                              <div className="flex items-center">
+                                  <RadioGroupItem value="online" id="pay-online" className="peer sr-only" />
+                                  <FormLabel
+                                      htmlFor="pay-online"
+                                      className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-muted bg-transparent p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
+                                  >
+                                      <span className="text-xl">💳</span>
+                                      <span className="font-medium text-sm">Online</span>
                                   </FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                      <RadioGroupItem value="cod" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">
-                                      💵 Cash on Delivery
+                              </div>
+                              <div className="flex items-center">
+                                  <RadioGroupItem value="cod" id="pay-cod" className="peer sr-only" />
+                                  <FormLabel
+                                      htmlFor="pay-cod"
+                                      className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-muted bg-transparent p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
+                                  >
+                                      <span className="text-xl">💵</span>
+                                      <span className="font-medium text-sm">Cash</span>
                                   </FormLabel>
-                              </FormItem>
+                              </div>
                           </RadioGroup>
                       </FormControl>
                       <FormMessage />
