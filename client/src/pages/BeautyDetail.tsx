@@ -389,7 +389,7 @@ export default function BeautyDetail() {
                     </CardContent>
                 </Card>
 
-                {/* FILTERING SECTION (Electrician Style Dropdowns) */}
+                {/* FILTERING SECTION (Zepto/Flipkart Style Tabs) */}
                 {mainCategories.length === 0 ? (
                     <Card className="mb-8 bg-amber-50 border-amber-200">
                         <CardContent className="p-8 text-center">
@@ -403,58 +403,45 @@ export default function BeautyDetail() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card className="mb-8">
-                        <CardContent className="p-6">
-                            <h3 className="text-xl font-semibold mb-4">Book a Service</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-4">Book a Service</h3>
+                        
+                        {/* 1. Main Categories (Scrollable row) */}
+                        <div className="flex overflow-x-auto pb-2 mb-4 gap-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            {mainCategories.map((catName) => (
+                                <button
+                                    key={catName}
+                                    onClick={() => handleMainCatChange(catName)}
+                                    className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm border ${
+                                        selectedMainCat === catName 
+                                            ? "bg-primary text-primary-foreground border-primary scale-105" 
+                                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                                    }`}
+                                >
+                                    {catName}
+                                </button>
+                            ))}
+                        </div>
 
-                                {/* 1. Main Category Dropdown (Hair, Nail, Skin) */}
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">Main Category</label>
-                                    <Select onValueChange={handleMainCatChange} value={selectedMainCat || ""}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Category (e.g., Hair Services)" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Object.keys(parlorMenu).map((catName) => (
-                                                <SelectItem key={catName} value={catName}>
-                                                    {catName}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* 2. Sub-Category Dropdown (Haircut & Styling, Treatments) */}
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">Sub Category</label>
-                                    <Select
-                                        onValueChange={handleSubCatChange}
-                                        value={selectedSubCat || ""}
-                                        disabled={!selectedMainCat}
+                        {/* 2. Sub Categories (Scrollable row) */}
+                        {subCategories.length > 0 && (
+                            <div className="flex overflow-x-auto pb-2 gap-4 border-b border-gray-200 mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                {subCategories.map((subCat: any) => (
+                                    <button
+                                        key={subCat.name}
+                                        onClick={() => handleSubCatChange(subCat.name)}
+                                        className={`whitespace-nowrap pb-2 text-sm font-medium transition-colors border-b-2 ${
+                                            selectedSubCat === subCat.name 
+                                                ? "border-primary text-primary" 
+                                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                        }`}
                                     >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={selectedMainCat ? "Select Sub Category" : "Select Main Category First"} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {subCategories.map((subCat: any) => (
-                                                <SelectItem key={subCat.name} value={subCat.name}>
-                                                    {subCat.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* 3. Empty Slot (Optional: Can be used for Gender/Price Filter) */}
-                                <div className="flex items-end">
-                                    <Button variant="secondary" className="w-full">
-                                        <ChevronDown className="h-4 w-4 mr-2" /> More Filters
-                                    </Button>
-                                </div>
+                                        {subCat.name}
+                                    </button>
+                                ))}
                             </div>
-                        </CardContent>
-                    </Card>
+                        )}
+                    </div>
                 )}
 
                 {/* SERVICE LISTING (Filtered Results) */}
