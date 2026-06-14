@@ -65,6 +65,32 @@ export default function MyBookings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Pay via Cash (COD) mutation
+  const payCodMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/pay-cod`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process COD payment');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Payment Confirmed",
+        description: "You have chosen to pay with cash. The service is now complete.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Could not process COD payment.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Cancel booking mutation (for customer)
   const cancelBookingMutation = useMutation({
     mutationFn: async (bookingId: string) => {
@@ -332,14 +358,33 @@ export default function MyBookings() {
                                     Total Bill: ₹{booking.invoice.totalAmount}
                                   </p>
                                 </div>
-                                <Button
-                                  className="w-full bg-orange-600 hover:bg-orange-700"
-                                  onClick={() => setLocation(`/pay/invoice/${booking.invoice!.id}`)}
-                                  data-testid="button-pay-now"
-                                >
-                                  <DollarSign className="mr-2 h-4 w-4" />
-                                  Pay Now - ₹{booking.invoice.totalAmount}
-                                </Button>
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <Button
+                                    className="w-full bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm"
+                                    onClick={() => setLocation(`/pay/invoice/${booking.invoice!.id}`)}
+                                    data-testid="button-pay-now"
+                                  >
+                                    <DollarSign className="mr-1 sm:mr-2 h-4 w-4" />
+                                    Pay Online
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    className="w-full text-xs sm:text-sm border-orange-200 text-orange-700 hover:bg-orange-100"
+                                    disabled={payCodMutation.isPending}
+                                    onClick={() => {
+                                      if(confirm("Are you sure you want to pay with cash? The technician will collect it.")) {
+                                        payCodMutation.mutate(booking.invoice!.id);
+                                      }
+                                    }}
+                                  >
+                                    {payCodMutation.isPending ? (
+                                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <span className="mr-1 sm:mr-2 text-lg leading-none">💵</span>
+                                    )}
+                                    Pay Cash
+                                  </Button>
+                                </div>
                               </div>
                             )}
                           </div>

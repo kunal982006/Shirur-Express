@@ -103,6 +103,41 @@ export default function InvoicePayment() {
     },
   });
 
+  const payCodMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/pay-cod`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process COD payment');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Payment Confirmed",
+        description: "You have chosen to pay with cash. The service is now complete.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices", invoiceId] });
+      setLocation("/my-bookings");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Could not process COD payment.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    },
+  });
+
+  const handleCodPayment = async () => {
+    if (confirm("Are you sure you want to pay with cash? The technician will collect it.")) {
+      setIsProcessing(true);
+      await payCodMutation.mutateAsync();
+    }
+  };
+
   const handlePayment = async () => {
     setIsProcessing(true);
 
@@ -334,6 +369,30 @@ export default function InvoicePayment() {
                   <>
                     <DollarSign className="mr-2 h-5 w-5" />
                     Pay Securely - ₹{Number(invoice.totalAmount).toFixed(2)}
+                  </>
+                )}
+              </Button>
+              <div className="relative my-4 flex items-center py-2">
+                 <div className="flex-grow border-t border-muted"></div>
+                 <span className="flex-shrink-0 mx-4 text-muted-foreground text-sm">OR</span>
+                 <div className="flex-grow border-t border-muted"></div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleCodPayment}
+                disabled={isProcessing}
+                className="w-full text-lg py-6 border-2"
+                data-testid="button-pay-cash"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2 text-xl">💵</span>
+                    Pay with Cash on Delivery
                   </>
                 )}
               </Button>

@@ -34,6 +34,7 @@ import {
   User,
   Plus,
   Minus,
+  DollarSign,
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -66,6 +67,70 @@ const services = [
 
 
 
+
+function PendingPaymentPopup() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const { data: bookings } = useQuery({
+    queryKey: ["/api/customer/my-bookings"],
+    queryFn: () => api.get("/customer/my-bookings").then(res => res.data),
+    enabled: !!user,
+  });
+
+  const pendingBooking = useMemo(() => {
+    if (!Array.isArray(bookings)) return null;
+    return bookings.find((b: any) => b.status === "pending_payment" && b.invoice);
+  }, [bookings]);
+
+  useEffect(() => {
+    if (pendingBooking) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  }, [pendingBooking]);
+
+  if (!pendingBooking) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-md bg-white border-orange-100 shadow-xl">
+        <div className="flex flex-col items-center text-center py-6 px-4">
+          <div className="h-16 w-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-5 animate-bounce shadow-sm">
+            <DollarSign className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Payment Due</h2>
+          <p className="text-gray-500 text-sm mb-6 max-w-sm">
+            Your technician has generated the final bill of <span className="font-bold text-gray-900 text-base">₹{pendingBooking.invoice.totalAmount}</span>. Please complete the payment.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+             <Button
+                className="w-full bg-orange-600 hover:bg-orange-700 h-12 shadow-sm text-sm"
+                onClick={() => {
+                   setIsOpen(false);
+                   navigate(`/pay/invoice/${pendingBooking.invoice.id}`);
+                }}
+             >
+                <DollarSign className="mr-2 h-4 w-4" /> Pay Online
+             </Button>
+             <Button
+                variant="outline"
+                className="w-full h-12 border-orange-200 text-orange-700 hover:bg-orange-100 text-sm font-medium"
+                onClick={() => {
+                   setIsOpen(false);
+                   navigate(`/my-bookings`);
+                }}
+             >
+                <span className="mr-2 text-lg leading-none">💵</span> Pay Cash
+             </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function Home() {
   const [, navigate] = useLocation();
@@ -157,6 +222,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
       <FloatingOtp />
+      <PendingPaymentPopup />
 
       {/* 1. Top Location Header (Zomato Style) */}
       <header 

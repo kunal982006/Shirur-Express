@@ -2058,6 +2058,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // (Customer) Invoice payment via Cash on Delivery
+  app.post("/api/invoices/:id/pay-cod", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const invoiceId = req.params.id;
+      // Mark invoice as paid with COD method
+      const updatedInvoice = await storage.verifyInvoicePayment(
+        invoiceId,
+        "COD",
+        "COD",
+        "COD"
+      );
+      res.json({ status: "success", invoice: updatedInvoice });
+    } catch (error: any) {
+      console.error("COD invoice payment error:", error);
+      res.status(500).json({ message: error.message || "Error processing COD payment" });
+    }
+  });
+
   // --- HELPER FUNCTION FOR ORDER NOTIFICATIONS ---
   async function sendOrderNotifications(updatedOrder: any, orderType: string, database_order_id: string) {
     try {
