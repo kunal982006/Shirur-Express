@@ -17,45 +17,30 @@ import {
 } from "@/components/ui/select";
 import api from "@/lib/api";
 
-// --- BEAUTY ENCYCLOPEDIA DATA REFERENCE (MOCK MENU) ---
-const NESTED_SERVICES = {
-    "Hair Services": [
-        {
-            name: "Haircut & Styling", subCategories: [
-                { name: "Haircuts & Basic Styling", items: [{ id: 'wcut', name: "Women's Haircut", price: 800, duration: 45, gender: 'Women' }] },
-                { name: "Hair Coloring", items: [{ id: 'fcolor', name: "Full Color", price: 3500, duration: 120, type: 'Coloring' }] },
-            ]
-        },
-        { name: "Hair Treatments", services: [{ id: 'keratin', name: "Keratin Treatment", price: 5500, duration: 180, gender: 'Unisex' }] },
-    ],
-    "Nail Services": [
-        { name: "Manicures", services: [{ id: 'cmani', name: "Classic Manicure", price: 600, duration: 40 }] },
-    ],
-    "Skincare Services": [
-        { name: "Facials", services: [{ id: 'basic', name: "Basic Cleansing Facial", price: 900, duration: 60 }] },
-        { name: "Hair Removal", services: [{ id: 'wax', name: "Waxing (Various Options)", price: 500, duration: 30, gender: 'Women' }] },
-    ],
+
+// --- SECTION NORMALIZATION (Prevents duplicate categories like "Skincare" vs "Skin Care") ---
+const SECTION_CANONICAL_MAP: Record<string, string> = {
+    "hair": "Hair",
+    "hair services": "Hair",
+    "skin care": "Skin Care",
+    "skincare": "Skin Care",
+    "skincare services": "Skin Care",
+    "skin": "Skin Care",
+    "makeover": "Makeover",
+    "makeup": "Makeover",
+    "make over": "Makeover",
+    "nail": "Makeover",
+    "bridal": "Makeover",
+    "other": "Other Services",
+    "other services": "Other Services",
 };
 
-const MAIN_CATEGORIES = []; // Placeholder, will be derived dynamically
+const normalizeSectionName = (raw: string): string => {
+    if (!raw) return "Other Services";
+    const key = raw.toLowerCase().trim();
+    return SECTION_CANONICAL_MAP[key] || raw;
+};
 
-// Mock Parlor List (Used to find the specific parlor)
-const mockBeautyParlors = [
-    {
-        id: "1",
-        name: "Glamour Beauty Lounge (Top Rated)",
-        description: "Expert services for hair, skin, and nails. Our priority is hygiene and quality.",
-        image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        rating: 4.7, reviews: 234, address: "Sector 22, Near Metro Station", distance: "1.2 km",
-    },
-    {
-        id: "2",
-        name: "Sparkle & Shine Studio",
-        description: "Modern salon with latest treatments.",
-        image: "https://images.unsplash.com/photo-1522335613345-cd4468f7f7c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        rating: 4.5, reviews: 150, address: "Sector 18, City Center", distance: "3.5 km",
-    }
-];
 
 // Helper component to display a single service item
 const ServiceItemCard = ({ parlorId, service, subCategoryName, cart, onAdd, onRemove }: {
@@ -134,7 +119,7 @@ export default function BeautyDetail() {
                 throw new Error("Parlor not found");
             }
 
-            // Transform beautyServices into NESTED_SERVICES format
+            // Transform beautyServices into nested category format
             const menuData: any = {};
 
             if (data.beautyServices && Array.isArray(data.beautyServices)) {
@@ -148,9 +133,9 @@ export default function BeautyDetail() {
                     const template = service.template || {};
 
                     // New Hierarchy: Section -> SubCategory -> Service
-                    // Default to 'Other' if section is missing (e.g. old data)
-                    const mainCat = service.section || "Other Services";
-                    const subCat = service.subCategory || "General Services";
+                    // Normalize section names to prevent duplicates (e.g. "Skincare" vs "Skin Care")
+                    const mainCat = normalizeSectionName(service.section || "Other Services");
+                    const subCat = (service.subCategory || "General Services").trim();
                     const name = service.name || template.name || "Unnamed Service";
                     const duration = service.duration || template.duration || 30;
                     const description = service.description || template.description;

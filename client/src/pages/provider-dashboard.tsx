@@ -1538,27 +1538,66 @@ const SpecializationsManager: React.FC<{
   );
 };
 
-// --- COMPONENT 4: BEAUTY SERVICE SELECTOR (Three-Level Hierarchy) ---
+// --- CANONICAL SECTION MAPPING (Prevents duplicate categories) ---
+const CANONICAL_SECTIONS = ["Hair", "Skin Care", "Makeover"] as const;
+type CanonicalSection = typeof CANONICAL_SECTIONS[number];
+
+const SECTION_ALIASES: Record<string, CanonicalSection> = {
+  "hair": "Hair",
+  "hair services": "Hair",
+  "skin care": "Skin Care",
+  "skincare": "Skin Care",
+  "skincare services": "Skin Care",
+  "skin": "Skin Care",
+  "makeover": "Makeover",
+  "makeup": "Makeover",
+  "make over": "Makeover",
+  "nail": "Makeover",
+  "bridal": "Makeover",
+};
+
+const SECTION_ICONS: Record<string, string> = {
+  "Hair": "💇‍♀️",
+  "Skin Care": "✨",
+  "Makeover": "💄",
+  "All": "📋",
+};
+
+const normalizeSection = (raw: string | null | undefined): CanonicalSection => {
+  if (!raw) return "Hair";
+  const key = raw.toLowerCase().trim();
+  return SECTION_ALIASES[key] || (CANONICAL_SECTIONS.includes(raw as CanonicalSection) ? raw as CanonicalSection : "Hair");
+};
+
+const SUBCAT_SUGGESTIONS: Record<CanonicalSection, string[]> = {
+  "Hair": ["Haircut", "Hairstyles", "Hair Treatment", "Hair Coloring", "Hair Spa"],
+  "Skin Care": ["Facials", "Hair Removal", "Waxing", "Threading", "Bleach", "Cleanup"],
+  "Makeover": ["Makeup", "Nail Art", "Bridal Packages", "Mehendi", "Saree Draping"],
+};
+
+// --- COMPONENT 4: BEAUTY SERVICE SELECTOR (Excel-like Spreadsheet) ---
 const BeautyServiceSelector: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const categorySlug = providerProfile.category.slug;
-  const [activeAccordion, setActiveAccordion] = useState<string | undefined>("Hair");
-  const [isAddingOpen, setIsAddingOpen] = useState(false);
 
-  // New Service Form State
-  const [newService, setNewService] = useState({
-    section: "Hair",
+  // Filter state
+  const [activeFilter, setActiveFilter] = useState<"All" | CanonicalSection>("All");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isAddingRow, setIsAddingRow] = useState(false);
+
+  // New row state
+  const [newRow, setNewRow] = useState({
+    section: "Hair" as CanonicalSection,
     subCategory: "",
     name: "",
     price: "",
     duration: "30",
-    imageUrl: "",
   });
 
-  // 1. Fetch Master Templates (As suggestions)
+  // Fetch Master Templates
   const { data: templates } = useQuery<ServiceTemplate[]>({
     queryKey: ["serviceTemplates", categorySlug],
     queryFn: async () => {
@@ -1567,50 +1606,28 @@ const BeautyServiceSelector: React.FC<{
     },
   });
 
-  // 2. Use Existing Services is the single source of truth for what is "Active"
-  // We need to merge templates into this list if they aren't already there?
-  // Actually, user wants full control. So we primarily render what's in `existingServices`.
-  // But to help them start, we can pre-fill from templates if existingServices is empty.
-
   const existingServices = providerProfile.beautyServices || [];
-
-  // State: List of all services (enabled/active ones)
-  // We need a local state to manage edits before saving
   const [servicesList, setServicesList] = useState<ServiceOffering[]>([]);
 
+  // Normalize existing services on load
   React.useEffect(() => {
-    // If we have existing services, use them but normalize the data (fill missing sections/subcats)
     if (existingServices.length > 0) {
-      const normalizedServices = existingServices.map(s => {
-        let section = s.section;
-        let subCategory = s.subCategory;
-
-        // Migrating old data if missing
-        if (!section || !subCategory) {
-          const sub = s.subCategory || "";
-          // Heuristic to fill section based on subCategory if exists
-          if (sub.includes("Hair") || sub.includes("Cut") || sub.includes("Bloom") || sub.includes("Curl")) section = "Hair";
-          else if (sub.includes("Facial") || sub.includes("Skin") || sub.includes("Wax") || sub.includes("Thread")) section = "Skin Care";
-          else if (sub.includes("Make") || sub.includes("Nail") || sub.includes("Bridal")) section = "Makeover";
-          else section = "Other";
-
-          if (!subCategory) subCategory = "General";
-        }
-
-        return { ...s, section: section || "Other", subCategory: subCategory || "General" };
-      });
-      setServicesList(normalizedServices);
+      const normalized = existingServices.map(s => ({
+        ...s,
+        section: normalizeSection(s.section || s.subCategory),
+        subCategory: s.subCategory || "General",
+      }));
+      setServicesList(normalized);
     } else if (templates && templates.length > 0) {
-      // Pre-fill from templates for first time users
       const prefilled = templates.map(t => ({
-        id: `temp-${t.id}`, // Temporary ID
+        id: `temp-${t.id}`,
         providerId: providerProfile.id,
         templateId: t.id,
         name: t.name,
-        section: t.categorySlug === 'beauty' ? 'Hair' : 'Other', // Fallback, we need a map
+        section: normalizeSection(t.categorySlug === 'beauty' ? 'Hair' : 'Other'),
         subCategory: t.subCategory || "General",
         price: t.defaultPrice,
-        duration: 30, // Default
+        duration: 30,
         imageUrl: t.imageUrl,
         isActive: false,
         description: null,
@@ -1620,28 +1637,23 @@ const BeautyServiceSelector: React.FC<{
       }));
       setServicesList(prefilled);
     }
-  }, [existingServices]); // Only run when existingServices loads
+  }, [existingServices]);
 
-  // Helper to group services into tree (No change needed, but safe to keep)
-  const groupedServices = React.useMemo(() => {
-    // ... (same as before) ...
-    const sections: Record<string, Record<string, ServiceOffering[]>> = {
-      "Hair": {},
-      "Skin Care": {},
-      "Makeover": {},
-      "Other": {}
-    };
+  // Filtered list based on active tab
+  const filteredServices = React.useMemo(() => {
+    if (activeFilter === "All") return servicesList;
+    return servicesList.filter(s => normalizeSection(s.section) === activeFilter);
+  }, [servicesList, activeFilter]);
 
+  // Section counts for filter tabs
+  const sectionCounts = React.useMemo(() => {
+    const counts: Record<string, number> = { "All": servicesList.length };
+    CANONICAL_SECTIONS.forEach(sec => { counts[sec] = 0; });
     servicesList.forEach(s => {
-      let section = s.section || "Other";
-      if (!['Hair', 'Skin Care', 'Makeover'].includes(section)) section = "Other";
-      const subCat = s.subCategory || "General";
-
-      if (!sections[section]) sections[section] = {};
-      if (!sections[section][subCat]) sections[section][subCat] = [];
-      sections[section][subCat].push(s);
+      const norm = normalizeSection(s.section);
+      counts[norm] = (counts[norm] || 0) + 1;
     });
-    return sections;
+    return counts;
   }, [servicesList]);
 
   // Handlers
@@ -1653,33 +1665,57 @@ const BeautyServiceSelector: React.FC<{
 
   const handleDeleteService = (id: string) => {
     setServicesList(prev => prev.filter(s => s.id !== id));
+    setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
   };
 
-  const handleAddService = () => {
-    if (!newService.name || !newService.price) {
-      toast({ title: "Incomplete", description: "Name and Price are required", variant: "destructive" });
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected service(s)?`)) return;
+    setServicesList(prev => prev.filter(s => !selectedIds.has(s.id)));
+    setSelectedIds(new Set());
+    toast({ title: "Deleted", description: `${selectedIds.size} services removed. Don't forget to Save.` });
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredServices.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredServices.map(s => s.id)));
+    }
+  };
+
+  const handleAddRow = () => {
+    if (!newRow.name || !newRow.price) {
+      toast({ title: "Incomplete", description: "Name and Price are required.", variant: "destructive" });
       return;
     }
-
     const newItem: any = {
       id: `new-${Date.now()}`,
       providerId: providerProfile.id,
-      templateId: null, // Custom
-      section: newService.section,
-      subCategory: newService.subCategory || "General",
-      name: newService.name,
-      price: newService.price,
-      duration: Number(newService.duration),
-      imageUrl: newService.imageUrl,
-      isActive: true, // Auto-active for new items
+      templateId: null,
+      section: newRow.section,
+      subCategory: newRow.subCategory || "General",
+      name: newRow.name,
+      price: newRow.price,
+      duration: Number(newRow.duration) || 30,
+      imageUrl: null,
+      isActive: true,
     };
-
     setServicesList(prev => [...prev, newItem]);
-    setIsAddingOpen(false);
-    setNewService({ ...newService, name: "", price: "", imageUrl: "" }); // Reset slightly
-    toast({ title: "Added", description: "Service added to list. Don't forget to Save." });
+    setNewRow({ section: newRow.section, subCategory: "", name: "", price: "", duration: "30" });
+    setIsAddingRow(false);
+    toast({ title: "✅ Added", description: `"${newRow.name}" added. Save to apply changes.` });
   };
 
+  // Image upload
   const [isUploading, setIsUploading] = useState(false);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -1687,32 +1723,19 @@ const BeautyServiceSelector: React.FC<{
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsUploading(true);
     const formData = new FormData();
     formData.append("images", file);
-
     try {
-      const res = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
       const url = res.data.urls[0];
-
-      if (activeUploadId === "new") {
-        setNewService(prev => ({ ...prev, imageUrl: url }));
-      } else if (activeUploadId) {
-        handleUpdateService(activeUploadId, "imageUrl", url);
-      }
-      toast({ title: "Image Uploaded", description: "Image successfully uploaded." });
+      if (activeUploadId) handleUpdateService(activeUploadId, "imageUrl", url);
+      toast({ title: "Image Uploaded" });
     } catch (error: any) {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Could not upload image.",
-        variant: "destructive",
-      });
+      toast({ title: "Upload Failed", description: error.message || "Could not upload.", variant: "destructive" });
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = ""; // Reset
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -1721,26 +1744,24 @@ const BeautyServiceSelector: React.FC<{
     fileInputRef.current?.click();
   };
 
+  // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // Ensure no nulls are sent
       const payload = servicesList.map(s => ({
         providerId: providerProfile.id,
         templateId: s.templateId || undefined,
-        name: s.name || "Unnamed Service", // Validation safety
-        section: s.section || "Other",     // Validation safety
-        subCategory: s.subCategory || "General", // Validation safety
+        name: s.name || "Unnamed Service",
+        section: normalizeSection(s.section),
+        subCategory: s.subCategory || "General",
         price: String(s.price),
         duration: s.duration || 30,
         imageUrl: s.imageUrl || undefined,
-        isActive: true, // We are sending the active list
+        isActive: true,
       }));
-
       return api.post("/provider/beauty-services/bulk", { services: payload });
     },
-
     onSuccess: () => {
-      toast({ title: "Saved", description: "Your service menu has been updated." });
+      toast({ title: "✅ Saved", description: "Your service menu has been updated." });
       queryClient.invalidateQueries({ queryKey: ["providerProfile", providerProfile.userId] });
     },
     onError: (error: any) => {
@@ -1750,261 +1771,273 @@ const BeautyServiceSelector: React.FC<{
 
   return (
     <Card className="w-full">
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handleImageUpload}
-      />
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Manage Services</CardTitle>
-          <CardDescription>Customize your service menu. Add, edit, or remove services.</CardDescription>
+      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+
+      {/* Header */}
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <CardTitle className="text-xl">📋 My Services</CardTitle>
+            <CardDescription>Manage your services like a spreadsheet. Edit inline, bulk-delete, and save.</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {selectedIds.size > 0 && (
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete ({selectedIds.size})
+              </Button>
+            )}
+            <Button size="sm" onClick={() => setIsAddingRow(true)} disabled={isAddingRow}>
+              <PlusCircle className="mr-1 h-3.5 w-3.5" /> Add Row
+            </Button>
+          </div>
         </div>
-        <Dialog open={isAddingOpen} onOpenChange={setIsAddingOpen}>
-          <DialogTrigger asChild>
-            <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Service</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Service</DialogTitle>
-              <DialogDescription>Add a custom service to your menu.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Section</Label>
-                  <select
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={newService.section}
-                    onChange={(e) => setNewService({ ...newService, section: e.target.value })}
-                  >
-                    <option value="Hair">Hair</option>
-                    <option value="Skin Care">Skin Care</option>
-                    <option value="Makeover">Makeover</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sub Category</Label>
-                  {/* Suggest Subcats based on Section */}
-                  <Input
-                    placeholder="e.g. Haircut, Facial"
-                    value={newService.subCategory}
-                    onChange={(e) => setNewService({ ...newService, subCategory: e.target.value })}
-                    list="subcat-suggestions"
-                  />
-                  <datalist id="subcat-suggestions">
-                    {newService.section === "Hair" && (
-                      <>
-                        <option value="Haircut" />
-                        <option value="Hairstyles" />
-                        <option value="Hair Treatment" />
-                      </>
-                    )}
-                    {newService.section === "Skin Care" && (
-                      <>
-                        <option value="Facials" />
-                        <option value="Hair Removal" />
-                      </>
-                    )}
-                    {newService.section === "Makeover" && (
-                      <>
-                        <option value="Makeup" />
-                        <option value="Nail Art" />
-                        <option value="Bridal Packages" />
-                      </>
-                    )}
-                  </datalist>
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label>Service Name (Item)</Label>
-                <Input
-                  placeholder="e.g. Layered Cut, Gold Facial"
-                  value={newService.name}
-                  onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Price (₹)</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={newService.price}
-                    onChange={(e) => setNewService({ ...newService, price: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Duration (mins)</Label>
-                  <Input
-                    type="number"
-                    placeholder="30"
-                    value={newService.duration}
-                    onChange={(e) => setNewService({ ...newService, duration: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Service Image</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newService.imageUrl}
-                    onChange={(e) => setNewService({ ...newService, imageUrl: e.target.value })}
-                    placeholder="Image URL..."
-                  />
-                  <div className="relative">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      disabled={isUploading}
-                      onClick={() => triggerUpload("new")}
-                    >
-                      {isUploading && activeUploadId === "new" ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddingOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddService}>Add Service</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Filter Tabs */}
+        <div className="flex gap-1.5 mt-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          {(["All", ...CANONICAL_SECTIONS] as const).map(sec => (
+            <button
+              key={sec}
+              onClick={() => setActiveFilter(sec as any)}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                activeFilter === sec
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:border-border"
+              }`}
+            >
+              {SECTION_ICONS[sec] || ""} {sec} ({sectionCounts[sec] || 0})
+            </button>
+          ))}
+        </div>
       </CardHeader>
 
-      <CardContent>
-        {servicesList.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-xl">
-            No services added yet. Click "Add Service" to start building your menu.
+      <CardContent className="px-0 sm:px-6">
+        {servicesList.length === 0 && !isAddingRow ? (
+          <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-xl mx-4 sm:mx-0">
+            <p className="text-lg font-medium mb-1">No services added yet</p>
+            <p className="text-sm">Click "Add Row" to start building your service menu.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse min-w-[700px]">
+              {/* Sticky Header */}
+              <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm">
+                <tr className="border-b border-border">
+                  <th className="w-10 px-2 py-2.5 text-center">
+                    <Checkbox
+                      checked={filteredServices.length > 0 && selectedIds.size === filteredServices.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </th>
+                  <th className="px-2 py-2.5 text-left font-semibold text-xs text-muted-foreground uppercase tracking-wider">Image</th>
+                  <th className="px-2 py-2.5 text-left font-semibold text-xs text-muted-foreground uppercase tracking-wider min-w-[160px]">Service Name</th>
+                  <th className="px-2 py-2.5 text-left font-semibold text-xs text-muted-foreground uppercase tracking-wider min-w-[110px]">Section</th>
+                  <th className="px-2 py-2.5 text-left font-semibold text-xs text-muted-foreground uppercase tracking-wider min-w-[110px]">Sub-Category</th>
+                  <th className="px-2 py-2.5 text-right font-semibold text-xs text-muted-foreground uppercase tracking-wider w-[90px]">Price (₹)</th>
+                  <th className="px-2 py-2.5 text-right font-semibold text-xs text-muted-foreground uppercase tracking-wider w-[80px]">Mins</th>
+                  <th className="px-2 py-2.5 text-center font-semibold text-xs text-muted-foreground uppercase tracking-wider w-[50px]">Del</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filteredServices.map((service, idx) => (
+                  <tr
+                    key={service.id}
+                    className={`group transition-colors ${
+                      selectedIds.has(service.id)
+                        ? "bg-primary/5"
+                        : idx % 2 === 0
+                          ? "bg-background"
+                          : "bg-muted/20"
+                    } hover:bg-primary/10`}
+                  >
+                    {/* Checkbox */}
+                    <td className="px-2 py-1.5 text-center">
+                      <Checkbox
+                        checked={selectedIds.has(service.id)}
+                        onCheckedChange={() => toggleSelect(service.id)}
+                        aria-label={`Select ${service.name}`}
+                      />
+                    </td>
+                    {/* Image thumbnail */}
+                    <td className="px-2 py-1.5">
+                      <button
+                        type="button"
+                        onClick={() => triggerUpload(service.id)}
+                        className="relative w-9 h-9 rounded-md border border-dashed border-border overflow-hidden flex items-center justify-center bg-muted/30 hover:border-primary hover:bg-primary/5 transition-colors group/img"
+                        title="Click to upload image"
+                      >
+                        {isUploading && activeUploadId === service.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                        ) : service.imageUrl ? (
+                          <>
+                            <img src={service.imageUrl} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                              <Upload className="h-3 w-3 text-white" />
+                            </div>
+                          </>
+                        ) : (
+                          <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </td>
+                    {/* Name */}
+                    <td className="px-2 py-1.5">
+                      <Input
+                        value={service.name || ""}
+                        onChange={(e) => handleUpdateService(service.id, "name", e.target.value)}
+                        className="h-8 text-sm font-medium border-transparent bg-transparent hover:border-border focus:border-primary focus:bg-background px-1.5"
+                        placeholder="Service name"
+                      />
+                    </td>
+                    {/* Section */}
+                    <td className="px-2 py-1.5">
+                      <select
+                        value={normalizeSection(service.section)}
+                        onChange={(e) => handleUpdateService(service.id, "section", e.target.value)}
+                        className="h-8 w-full rounded-md text-xs border-transparent bg-transparent hover:border-border focus:border-primary focus:bg-background px-1 cursor-pointer"
+                      >
+                        {CANONICAL_SECTIONS.map(s => (
+                          <option key={s} value={s}>{SECTION_ICONS[s]} {s}</option>
+                        ))}
+                      </select>
+                    </td>
+                    {/* SubCategory */}
+                    <td className="px-2 py-1.5">
+                      <Input
+                        value={service.subCategory || ""}
+                        onChange={(e) => handleUpdateService(service.id, "subCategory", e.target.value)}
+                        className="h-8 text-xs border-transparent bg-transparent hover:border-border focus:border-primary focus:bg-background px-1.5"
+                        placeholder="Sub-category"
+                        list={`subcat-${service.id}`}
+                      />
+                      <datalist id={`subcat-${service.id}`}>
+                        {(SUBCAT_SUGGESTIONS[normalizeSection(service.section)] || []).map(sc => (
+                          <option key={sc} value={sc} />
+                        ))}
+                      </datalist>
+                    </td>
+                    {/* Price */}
+                    <td className="px-2 py-1.5">
+                      <Input
+                        type="number"
+                        value={service.price || ""}
+                        onChange={(e) => handleUpdateService(service.id, "price", e.target.value)}
+                        className="h-8 text-sm text-right font-semibold border-transparent bg-transparent hover:border-border focus:border-primary focus:bg-background px-1.5 w-full"
+                        placeholder="0"
+                      />
+                    </td>
+                    {/* Duration */}
+                    <td className="px-2 py-1.5">
+                      <Input
+                        type="number"
+                        value={service.duration || ""}
+                        onChange={(e) => handleUpdateService(service.id, "duration", Number(e.target.value))}
+                        className="h-8 text-sm text-right border-transparent bg-transparent hover:border-border focus:border-primary focus:bg-background px-1.5 w-full"
+                        placeholder="30"
+                      />
+                    </td>
+                    {/* Delete */}
+                    <td className="px-2 py-1.5 text-center">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteService(service.id)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* Add New Row (inline) */}
+                {isAddingRow && (
+                  <tr className="bg-green-50/50 dark:bg-green-950/20 border-t-2 border-green-300 dark:border-green-800">
+                    <td className="px-2 py-2 text-center">
+                      <span className="text-green-600 text-xs font-bold">NEW</span>
+                    </td>
+                    <td className="px-2 py-2">
+                      <div className="w-9 h-9 rounded-md border border-dashed border-green-400 flex items-center justify-center bg-green-50 dark:bg-green-950/30">
+                        <PlusCircle className="h-3.5 w-3.5 text-green-500" />
+                      </div>
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        value={newRow.name}
+                        onChange={(e) => setNewRow({ ...newRow, name: e.target.value })}
+                        className="h-8 text-sm border-green-300 dark:border-green-700 focus:border-green-500 bg-white dark:bg-green-950/30 px-1.5"
+                        placeholder="Service name *"
+                        autoFocus
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <select
+                        value={newRow.section}
+                        onChange={(e) => setNewRow({ ...newRow, section: e.target.value as CanonicalSection })}
+                        className="h-8 w-full rounded-md text-xs border border-green-300 dark:border-green-700 bg-white dark:bg-green-950/30 px-1 cursor-pointer"
+                      >
+                        {CANONICAL_SECTIONS.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        value={newRow.subCategory}
+                        onChange={(e) => setNewRow({ ...newRow, subCategory: e.target.value })}
+                        className="h-8 text-xs border-green-300 dark:border-green-700 bg-white dark:bg-green-950/30 px-1.5"
+                        placeholder="Sub-category"
+                        list="new-subcat-suggestions"
+                      />
+                      <datalist id="new-subcat-suggestions">
+                        {(SUBCAT_SUGGESTIONS[newRow.section] || []).map(sc => (
+                          <option key={sc} value={sc} />
+                        ))}
+                      </datalist>
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        type="number"
+                        value={newRow.price}
+                        onChange={(e) => setNewRow({ ...newRow, price: e.target.value })}
+                        className="h-8 text-sm text-right font-semibold border-green-300 dark:border-green-700 bg-white dark:bg-green-950/30 px-1.5 w-full"
+                        placeholder="₹ *"
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        type="number"
+                        value={newRow.duration}
+                        onChange={(e) => setNewRow({ ...newRow, duration: e.target.value })}
+                        className="h-8 text-sm text-right border-green-300 dark:border-green-700 bg-white dark:bg-green-950/30 px-1.5 w-full"
+                        placeholder="30"
+                      />
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      <div className="flex gap-0.5">
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-100" onClick={handleAddRow}>
+                          <Check className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setIsAddingRow(false)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
-
-        <div className="space-y-6">
-          {Object.keys(groupedServices).map(section => {
-            const subCategories = groupedServices[section];
-            if (Object.keys(subCategories).length === 0) return null;
-
-            return (
-              <div key={section} className="border rounded-xl p-5 bg-card/50">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-primary">
-                  {section === "Hair" && "💇‍♀️"}
-                  {section === "Skin Care" && "✨"}
-                  {section === "Makeover" && "💄"}
-                  {section}
-                </h2>
-
-                <div className="space-y-6 pl-2">
-                  {Object.keys(subCategories).map(subCat => (
-                    <div key={subCat}>
-                      <h3 className="text-lg font-semibold mb-3 text-foreground/80 border-b inline-block pb-1">
-                        {subCat}
-                      </h3>
-                      <div className="grid grid-cols-1 gap-3">
-                        {subCategories[subCat].map((service) => (
-                          <div key={service.id} className="flex flex-col md:flex-row gap-4 p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                            {/* Inputs */}
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-                              {/* Name */}
-                              <div className="md:col-span-4">
-                                <Label className="text-xs text-muted-foreground md:hidden">Name</Label>
-                                <Input
-                                  value={service.name || ""}
-                                  onChange={(e) => handleUpdateService(service.id, "name", e.target.value)}
-                                  className="font-medium"
-                                  placeholder="Service Name"
-                                />
-                              </div>
-
-                              {/* Price */}
-                              <div className="md:col-span-2">
-                                <Label className="text-xs text-muted-foreground md:hidden">Price</Label>
-                                <div className="relative">
-                                  <span className="absolute left-2 top-2.5 text-xs">₹</span>
-                                  <Input
-                                    type="number"
-                                    value={service.price || 0}
-                                    onChange={(e) => handleUpdateService(service.id, "price", e.target.value)}
-                                    className="pl-5"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Duration */}
-                              <div className="md:col-span-2">
-                                <Label className="text-xs text-muted-foreground md:hidden">Mins</Label>
-                                <div className="relative">
-                                  <span className="absolute right-2 top-2.5 text-xs text-muted-foreground">min</span>
-                                  <Input
-                                    type="number"
-                                    value={service.duration || 0}
-                                    onChange={(e) => handleUpdateService(service.id, "duration", e.target.value)}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Image URL (Hidden or collapsed usually, but user wants edit) */}
-                              {/* Image URL (Hidden or collapsed usually, but user wants edit) */}
-                              <div className="md:col-span-4">
-                                <Label className="text-xs text-muted-foreground md:hidden">Image</Label>
-                                <div className="flex gap-2">
-                                  <Input
-                                    value={service.imageUrl || ""}
-                                    onChange={(e) => handleUpdateService(service.id, "imageUrl", e.target.value)}
-                                    placeholder="Image URL..."
-                                    className="text-xs text-muted-foreground"
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-9 w-9 flex-shrink-0"
-                                    disabled={isUploading}
-                                    onClick={() => triggerUpload(service.id)}
-                                  >
-                                    {isUploading && activeUploadId === service.id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Upload className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center justify-end">
-                              <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDeleteService(service.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
       </CardContent>
-      <CardFooter className="sticky bottom-0 bg-background/95 backdrop-blur py-4 border-t z-10 shadow-lg flex justify-between">
-        <p className="text-sm text-muted-foreground">
-          {servicesList.length} services configured
+
+      {/* Sticky Save Footer */}
+      <CardFooter className="sticky bottom-0 bg-background/95 backdrop-blur py-3 border-t z-10 shadow-lg flex items-center justify-between px-4 sm:px-6">
+        <p className="text-xs text-muted-foreground">
+          {servicesList.length} service{servicesList.length !== 1 ? "s" : ""} total
+          {activeFilter !== "All" && ` • ${filteredServices.length} shown`}
         </p>
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} size="lg">
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} size="default">
           {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Save All Changes
         </Button>
