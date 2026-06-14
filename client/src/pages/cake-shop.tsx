@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { CakeProduct, ServiceProvider } from "@shared/schema";
+import { CakeCategoryCarousel } from "@/components/cakes/CakeCategoryCarousel";
 
 function BakeryCard({ bakery, cakes, onClick }: { bakery: ServiceProvider; cakes: CakeProduct[]; onClick: () => void }) {
   const rating = bakery.rating ? parseFloat(bakery.rating.toString()).toFixed(1) : "New";
@@ -143,6 +144,8 @@ export default function CakeShop() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        
+        <CakeCategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
 
         <div>
           <h2 className="text-2xl font-black mb-6 text-foreground tracking-tight">Top Bakeries Near You</h2>

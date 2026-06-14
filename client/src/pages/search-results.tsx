@@ -152,7 +152,7 @@ export default function SearchResults() {
                             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                             placeholder="Search for food, services, grocery..."
                             className="pl-9 h-10 w-full bg-gray-100 border-none focus-visible:ring-1 focus-visible:ring-primary"
-                            autoFocus
+                            autoFocus={!initialTerm}
                         />
                         {/* Autocomplete Suggestions Dropdown */}
                         {isFocused && suggestions.length > 0 && (
