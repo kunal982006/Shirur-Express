@@ -91,19 +91,8 @@ export default function ElectricianDetail() {
   }
 
   return (
-    <div className="py-16 bg-background">
+    <div className="py-6 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          className="mb-6 flex items-center space-x-2"
-          onClick={() => setLocation("/electrician")}
-          data-testid="button-back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Technicians</span>
-        </Button>
-
         <div className="w-full max-w-3xl mx-auto">
           {/* Problems This Electrician Can Handle OR Booking Form */}
 
