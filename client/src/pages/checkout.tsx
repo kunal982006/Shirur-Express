@@ -456,12 +456,12 @@ export default function Checkout() {
 
 
   return (
-    <div className="min-h-screen bg-background py-16">
+    <div className="min-h-screen bg-background pt-4 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
           variant="ghost"
-          className="mb-6 flex items-center space-x-2"
+          className="mb-2 flex items-center space-x-2 h-8"
           onClick={() => setLocation("/street-food")} // TODO: Isko dynamic bana sakte ho
           data-testid="button-back"
           disabled={isPlacingOrder}
@@ -470,12 +470,12 @@ export default function Checkout() {
           <span>Back to Shopping</span>
         </Button>
 
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-2xl font-bold mb-3">Checkout</h1>
 
         {/* --- SERVICES CLOSED BANNER --- */}
         {servicesClosed && (
-          <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 border-2 border-red-300 dark:border-red-700 p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
+          <div className="mb-3 rounded-xl bg-red-50 dark:bg-red-950/40 border-2 border-red-300 dark:border-red-700 p-3 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
               <Ban className="h-6 w-6 text-red-500" />
             </div>
             <div>
@@ -488,19 +488,19 @@ export default function Checkout() {
         {/* --- YEH POORA FORM ME WRAP KIYA HAI --- */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
               {/* Left Column: Address + Cart */}
               <div>
                 {/* Location Status Card */}
-                <Card className="mb-8">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                <Card className="mb-3">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <MapPin className="h-5 w-5" />
                       <span>Delivery Location</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-2 p-3 pt-0">
                     {/* Toggle between GPS and Manual */}
                     <div className="flex gap-2 p-1 bg-muted rounded-lg">
                       <Button
@@ -588,14 +588,14 @@ export default function Checkout() {
                   </CardContent>
                 </Card>
 
-                <Card className="mb-8">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                <Card className="mb-3">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <Truck className="h-5 w-5" />
                       <span>Delivery Details</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-3 pt-0">
                     {/* --- YEH NAYA ADDRESS FORM FIELD HAI --- */}
                     <FormField
                       control={form.control}
@@ -620,14 +620,14 @@ export default function Checkout() {
                 </Card>
 
                 {/* Delivery Time Slot Card */}
-                <Card className="mb-8">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                <Card className="mb-3">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <Clock className="h-5 w-5" />
                       <span>Delivery Time</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-2 p-3 pt-0">
                     {/* Mode Toggle */}
                     <div className="flex gap-2 p-1 bg-muted rounded-lg">
                       <Button
@@ -738,14 +738,14 @@ export default function Checkout() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
+                <Card className="mb-3">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="flex items-center space-x-2 text-lg">
                       <ShoppingCart className="h-5 w-5" />
                       <span>Your Cart Items</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-2 p-3 pt-0">
                     {/* Items List */}
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                       {items.map((item) => (
@@ -799,11 +799,11 @@ export default function Checkout() {
 
               {/* Right Column: Price Summary & Pay Button */}
               <div>
-                <Card className="mb-4">
-                  <CardHeader>
-                    <CardTitle>Payment Method</CardTitle>
+                <Card className="mb-3">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-lg">Payment Method</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-3 pt-0">
                     <div className="flex gap-4">
                       <Button
                         type="button"
@@ -828,7 +828,7 @@ export default function Checkout() {
                     </div>
 
                     {paymentMethod === "cod" && (
-                      <div className="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg border border-orange-200 dark:border-orange-800 space-y-3 mt-4">
+                      <div className="bg-orange-50 dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800 space-y-2 mt-3">
                         <p className="text-sm text-orange-800 dark:text-orange-200 font-medium flex items-start gap-2">
                           <AlertCircle className="h-5 w-5 shrink-0" />
                           To prevent accidental orders, please confirm:
@@ -850,10 +850,10 @@ export default function Checkout() {
                 </Card>
 
                 <Card className="sticky top-24">
-                  <CardHeader>
-                    <CardTitle>Price Summary</CardTitle>
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-lg">Price Summary</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-1 p-3 pt-0">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
                       <span>₹{subtotal.toFixed(2)}</span>
@@ -887,7 +887,7 @@ export default function Checkout() {
                       </Alert>
                     </div>
                   )}
-                  <CardFooter>
+                  <CardFooter className="p-3 pt-0">
                     <Button
                       type="submit"
                       className="w-full"
