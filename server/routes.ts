@@ -3866,6 +3866,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/admin/bookings/:id/status — Admin updates any booking status
+  app.patch("/api/admin/bookings/:id/status", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ message: "Status is required." });
+      }
+
+      const [updatedBooking] = await db
+        .update(bookings)
+        .set({ status })
+        .where(eq(bookings.id, id))
+        .returning();
+
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found." });
+      }
+
+      console.log(`[Admin Update] Booking ${id} status updated to ${status} by admin.`);
+      res.json({ message: `Booking status updated to ${status}.`, booking: updatedBooking });
+    } catch (error: any) {
+      console.error("Admin update booking status error:", error);
+      res.status(500).json({ message: error.message || "Error updating booking status" });
+    }
+  });
+
   // POST /api/admin/orders/mark-all-delivered — Mark ALL non-delivered/non-cancelled orders as delivered
   app.post("/api/admin/orders/mark-all-delivered", isAdmin, async (req: AuthRequest, res: Response) => {
     try {

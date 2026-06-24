@@ -452,6 +452,26 @@ export default function AdminDashboard() {
         },
     });
 
+    const updateBookingStatusMutation = useMutation({
+        mutationFn: async ({ id, status }: { id: string; status: string }) => {
+            const res = await api.patch(`/admin/bookings/${id}/status`, { status });
+            return res.data;
+        },
+        onSuccess: (data: any) => {
+            const newStatus = data?.booking?.status || 'updated';
+            toast({ title: "✅ Status Updated", description: `Booking status changed to "${newStatus.replace(/_/g, ' ')}".` });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to update booking status.",
+                variant: "destructive",
+            });
+        },
+    });
+
     const broadcastMutation = useMutation({
         mutationFn: (data: { audience: string; title: string; message: string }) =>
             api.post("/admin/broadcast", data).then(r => r.data),
@@ -1238,122 +1258,163 @@ export default function AdminDashboard() {
                             {!filteredBookings || filteredBookings.length === 0 ? (
                                 <p className="text-center text-gray-600 py-12">No bookings found</p>
                             ) : filteredBookings.map(b => (
-                                <div key={b.id} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors group">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
-                                        b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
-                                        }`}>
-                                        {b.serviceType === 'electrician' ? <Zap className="h-5 w-5 text-yellow-400" /> :
-                                            b.serviceType === 'plumber' ? <Wrench className="h-5 w-5 text-blue-400" /> :
-                                                <Scissors className="h-5 w-5 text-pink-400" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-mono text-sm text-gray-400">#{b.id.slice(0, 10)}</span>
-                                            <span className="text-sm font-medium capitalize text-gray-100">{b.serviceType.replace("_", " ")}</span>
-                                            <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(b.status)}`}>
-                                                {(b.status || 'pending').replace(/_/g, ' ')}
-                                            </span>
-                                            {b.paymentMethod === 'cod' && (
-                                                <span className="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold uppercase tracking-wider">
-                                                    COD
-                                                </span>
-                                            )}
-                                            {b.paymentMethod === 'online' && (
-                                                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
-                                                    PAID Online
-                                                </span>
-                                            )}
+                                <div key={b.id} className="flex flex-col px-6 py-4 hover:bg-white/[0.02] transition-colors group">
+                                    <div className="flex items-start gap-4">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
+                                            b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
+                                            }`}>
+                                            {b.serviceType === 'electrician' ? <Zap className="h-5 w-5 text-yellow-400" /> :
+                                                b.serviceType === 'plumber' ? <Wrench className="h-5 w-5 text-blue-400" /> :
+                                                    <Scissors className="h-5 w-5 text-pink-400" />}
                                         </div>
-                                        {/* Customer Name & Phone */}
-                                        {b.user && (
-                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                                <span className="text-sm text-gray-300 font-medium">{b.user.username}</span>
-                                                {(b.user.phone || b.userPhone) && (
-                                                    <a
-                                                        href={`tel:${b.user.phone || b.userPhone}`}
-                                                        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 active:bg-green-500/35 transition-colors"
-                                                    >
-                                                        <Phone className="h-3 w-3" />
-                                                        {b.user.phone || b.userPhone}
-                                                    </a>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-mono text-sm text-gray-400">#{b.id.slice(0, 10)}</span>
+                                                <span className="text-sm font-medium capitalize text-gray-100">{b.serviceType.replace("_", " ")}</span>
+                                                <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${statusColor(b.status)}`}>
+                                                    {(b.status || 'pending').replace(/_/g, ' ')}
+                                                </span>
+                                                {b.paymentMethod === 'cod' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold uppercase tracking-wider">
+                                                        COD
+                                                    </span>
+                                                )}
+                                                {b.paymentMethod === 'online' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                                                        PAID Online
+                                                    </span>
                                                 )}
                                             </div>
-                                        )}
-                                        {!b.user && b.userPhone && (
-                                            <a
-                                                href={`tel:${b.userPhone}`}
-                                                className="inline-flex items-center gap-1.5 mt-1 text-sm text-green-400 font-medium hover:text-green-300 active:text-green-200 transition-colors"
-                                            >
-                                                <Phone className="h-3.5 w-3.5" />
-                                                {b.userPhone}
-                                            </a>
-                                        )}
-                                        {/* Service Name */}
-                                        {(b.serviceOffering?.name || b.problem?.name) && (
-                                            <p className="text-xs text-blue-400 mt-0.5">🔧 {b.serviceOffering?.name || b.problem?.name}</p>
-                                        )}
-                                        {/* Provider Name */}
-                                        {b.provider && <p className="text-xs text-purple-400 mt-0.5">🏪 {b.provider.businessName}</p>}
-                                        {/* Address */}
-                                        {b.userAddress && (
-                                            <a
-                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.userAddress)}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-start gap-1.5 mt-1 text-xs text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
-                                            >
-                                                <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
-                                                <span className="break-words leading-relaxed">{b.userAddress}</span>
-                                                <Navigation className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover/addr:opacity-100 transition-opacity" />
-                                            </a>
-                                        )}
-                                        {/* Notes */}
-                                        {b.notes && <p className="text-xs text-gray-600 mt-0.5 italic break-words">💬 {b.notes}</p>}
-                                    </div>
-                                    <div className="text-right shrink-0 flex items-center gap-3">
-                                        <div>
-                                            {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
-                                            {b.serviceOffering?.price && !b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.serviceOffering.price).toFixed(0)}</p>}
-                                            <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
-                                        </div>
-                                        {/* Cancel Booking Button — only for active bookings */}
-                                        {b.status && !['cancelled', 'completed'].includes(b.status) && (
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-9 w-9 text-red-500/60 hover:text-red-400 hover:bg-red-500/15 rounded-xl opacity-0 group-hover:opacity-100 transition-all"
-                                                        disabled={cancelBookingMutation.isPending}
-                                                        title="Cancel Booking"
-                                                    >
-                                                        {cancelBookingMutation.isPending ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            <XCircle className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
-                                                        <AlertDialogDescription className="text-gray-400">
-                                                            This will mark the booking as <span className="text-red-400 font-semibold">cancelled</span>. The service provider will no longer see it as an active booking. This cannot be undone.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Keep Booking</AlertDialogCancel>
-                                                        <AlertDialogAction
-                                                            onClick={() => cancelBookingMutation.mutate(b.id)}
-                                                            className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                            {/* Customer Name & Phone */}
+                                            {b.user && (
+                                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                    <span className="text-sm text-gray-300 font-medium">{b.user.username}</span>
+                                                    {(b.user.phone || b.userPhone) && (
+                                                        <a
+                                                            href={`tel:${b.user.phone || b.userPhone}`}
+                                                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 active:bg-green-500/35 transition-colors"
                                                         >
-                                                            Yes, Cancel Booking
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        )}
+                                                            <Phone className="h-3 w-3" />
+                                                            {b.user.phone || b.userPhone}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {!b.user && b.userPhone && (
+                                                <a
+                                                    href={`tel:${b.userPhone}`}
+                                                    className="inline-flex items-center gap-1.5 mt-1 text-sm text-green-400 font-medium hover:text-green-300 active:text-green-200 transition-colors"
+                                                >
+                                                    <Phone className="h-3.5 w-3.5" />
+                                                    {b.userPhone}
+                                                </a>
+                                            )}
+                                            {/* Service Name */}
+                                            {(b.serviceOffering?.name || b.problem?.name) && (
+                                                <p className="text-xs text-blue-400 mt-0.5">🔧 {b.serviceOffering?.name || b.problem?.name}</p>
+                                            )}
+                                            {/* Provider Name */}
+                                            {b.provider && <p className="text-xs text-purple-400 mt-0.5">🏪 {b.provider.businessName}</p>}
+                                            {/* Address */}
+                                            {b.userAddress && (
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.userAddress)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-start gap-1.5 mt-1 text-xs text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
+                                                >
+                                                    <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
+                                                    <span className="break-words leading-relaxed">{b.userAddress}</span>
+                                                    <Navigation className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover/addr:opacity-100 transition-opacity" />
+                                                </a>
+                                            )}
+                                            {/* Notes */}
+                                            {b.notes && <p className="text-xs text-gray-600 mt-0.5 italic break-words">💬 {b.notes}</p>}
+                                        </div>
+                                        <div className="text-right shrink-0 flex items-center gap-3">
+                                            <div>
+                                                {b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.estimatedCost).toFixed(0)}</p>}
+                                                {b.serviceOffering?.price && !b.estimatedCost && <p className="text-lg font-bold text-gray-100">₹{parseFloat(b.serviceOffering.price).toFixed(0)}</p>}
+                                                <p className="text-[11px] text-gray-500 mt-0.5">{timeAgo(b.createdAt)}</p>
+                                            </div>
+                                            {/* Cancel Booking Button — only for active bookings */}
+                                            {b.status && !['cancelled', 'completed'].includes(b.status) && (
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-9 w-9 text-red-500/60 hover:text-red-400 hover:bg-red-500/15 rounded-xl opacity-0 group-hover:opacity-100 transition-all"
+                                                            disabled={cancelBookingMutation.isPending}
+                                                            title="Cancel Booking"
+                                                        >
+                                                            {cancelBookingMutation.isPending ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <XCircle className="h-4 w-4" />
+                                                            )}
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
+                                                            <AlertDialogDescription className="text-gray-400">
+                                                                This will mark the booking as <span className="text-red-400 font-semibold">cancelled</span>. The service provider will no longer see it as an active booking. This cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0">Keep Booking</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => cancelBookingMutation.mutate(b.id)}
+                                                                className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                                            >
+                                                                Yes, Cancel Booking
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            )}
+                                        </div>
                                     </div>
+                                    
+                                    {/* ─── Admin Booking Status Controls ─── */}
+                                    {b.status && !['cancelled', 'completed'].includes(b.status) && (() => {
+                                        const statusFlow = ['pending', 'accepted', 'in_progress', 'completed'];
+                                        const currentIdx = statusFlow.indexOf(b.status || 'pending');
+                                        const nextStatuses = statusFlow.slice(Math.max(currentIdx + 1, 1)); // start from 'accepted' minimum
+
+                                        const statusButtons: { status: string; label: string; icon: React.ReactNode; color: string }[] = [
+                                            { status: 'accepted', label: 'Accept', icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'bg-blue-500/15 text-blue-400 border-blue-500/30 hover:bg-blue-500/25' },
+                                            { status: 'in_progress', label: 'Start Job', icon: <Wrench className="h-3.5 w-3.5" />, color: 'bg-violet-500/15 text-violet-400 border-violet-500/30 hover:bg-violet-500/25' },
+                                            { status: 'completed', label: 'Mark Completed', icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25' },
+                                        ];
+
+                                        const availableButtons = statusButtons.filter(sb => nextStatuses.includes(sb.status));
+
+                                        if (availableButtons.length === 0) return null;
+
+                                        return (
+                                            <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center justify-end gap-2">
+                                                {availableButtons.map((btn) => (
+                                                    <Button
+                                                        key={btn.status}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => updateBookingStatusMutation.mutate({ id: b.id, status: btn.status })}
+                                                        disabled={updateBookingStatusMutation.isPending}
+                                                        className={`border rounded-lg px-3 py-1.5 h-auto text-xs font-semibold gap-1.5 ${btn.color}`}
+                                                    >
+                                                        {updateBookingStatusMutation.isPending && updateBookingStatusMutation.variables?.id === b.id && updateBookingStatusMutation.variables?.status === btn.status ? (
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                        ) : (
+                                                            btn.icon
+                                                        )}
+                                                        {btn.label}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             ))}
                         </div>
