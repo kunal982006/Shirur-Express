@@ -291,21 +291,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/signup", async (req: Request, res: Response) => {
     try {
-      const { username, email, password, role, phone } = req.body;
-      if (!username || !email || !password || !role || !phone) {
-        return res.status(400).json({ message: "Username, email, password, role, and phone are required." });
+      const { email, password, phone, username: providedUsername } = req.body;
+      if (!email || !password || !phone) {
+        return res.status(400).json({ message: "Email, password, and phone are required." });
       }
-      const existingUser = await storage.getUserByUsername(username.toLowerCase());
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+      // Public signup always creates customer accounts
+      const role = "customer";
+
+      // Check if phone already exists
+      const existingPhone = await storage.getUserByPhone(phone);
+      if (existingPhone) {
+        return res.status(400).json({ message: "Phone number already registered" });
       }
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
         return res.status(400).json({ message: "Email already exists" });
       }
+
+      // Auto-generate username from phone number
+      const username = providedUsername?.toLowerCase() || `user_${phone}`;
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        // If auto-generated username conflicts, append random chars
+        const fallbackUsername = `user_${phone}_${Math.random().toString(36).slice(2, 6)}`;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await storage.createUser({
+          username: fallbackUsername,
+          email,
+          password: hashedPassword,
+          role: role || "customer",
+          phone,
+        });
+        req.session.userId = user.id;
+        req.session.userRole = user.role || 'customer';
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error after signup:", err);
+            return res.status(500).json({ message: "Signup successful, but session could not be established." });
+          }
+          const { password: _, ...userWithoutPassword } = user;
+          res.status(201).json({ user: userWithoutPassword, message: "Signed up and logged in successfully!" });
+        });
+        return;
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
-        username: username.toLowerCase(),
+        username,
         email,
         password: hashedPassword,
         role: role || "customer",
@@ -340,9 +372,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if input is a 10-digit phone number
       if (/^\d{10}$/.test(input)) {
         user = await storage.getUserByPhone(input);
-      } 
-      
-      // Fallback: Check if input is a username
+      }
+
+      // Check if input looks like an email
+      if (!user && input.includes('@')) {
+        user = await storage.getUserByEmail(input.toLowerCase());
+      }
+
+      // Fallback: Check if input is a username (for admin/legacy accounts)
       if (!user) {
         user = await storage.getUserByUsername(input.toLowerCase());
       }
@@ -3956,6 +3993,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Admin delete user error:", error);
       res.status(500).json({ message: "Failed to delete user. They may have active orders or bookings." });
+    }
+  });
+
+  // POST /api/admin/create-provider — Admin creates a provider account
+  app.post("/api/admin/create-provider", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { phone, email, password, businessName, categoryId, address } = req.body;
+
+      if (!phone || !email || !password || !businessName || !categoryId || !address) {
+        return res.status(400).json({ message: "All fields are required: phone, email, password, businessName, categoryId, address." });
+      }
+
+      // Check duplicates
+      const existingPhone = await storage.getUserByPhone(phone);
+      if (existingPhone) {
+        return res.status(400).json({ message: "Phone number already registered." });
+      }
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already registered." });
+      }
+
+      // Create user with role=provider
+      const username = `provider_${phone}`;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword,
+        role: "provider",
+        phone,
+      });
+
+      // Create service provider profile
+      const provider = await storage.createServiceProvider({
+        userId: user.id,
+        categoryId,
+        businessName,
+        address,
+        description: "",
+      } as any);
+
+      console.log(`[Admin] Created provider account: ${businessName} (${phone})`);
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json({
+        success: true,
+        message: `Provider account created for ${businessName}`,
+        user: userWithoutPassword,
+        provider,
+      });
+    } catch (error: any) {
+      console.error("Admin create provider error:", error);
+      res.status(500).json({ message: error.message || "Failed to create provider account." });
     }
   });
 

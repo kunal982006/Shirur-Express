@@ -8,7 +8,6 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Form,
   FormControl,
@@ -19,17 +18,13 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Network, User, Briefcase } from "lucide-react";
+import { Network } from "lucide-react";
 
 const signupSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be valid (10 digits)"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
-  role: z.enum(["customer", "provider"], {
-    required_error: "Please select a role",
-  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -45,19 +40,17 @@ export default function Signup() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      username: "",
       email: "",
       phone: "",
       password: "",
       confirmPassword: "",
-      role: "customer",
     },
   });
 
   const signupMutation = useMutation({
     mutationFn: (data: SignupFormValues) => {
-      const { confirmPassword, ...signupData } = data;
-      return apiRequest("POST", "/api/auth/signup", signupData);
+      const { confirmPassword, ...rest } = data;
+      return apiRequest("POST", "/api/auth/signup", { ...rest, role: "customer" });
     },
     onSuccess: async (response) => { // Isko 'async' banao
       if (!response.ok) {
@@ -68,19 +61,15 @@ export default function Signup() {
 
       toast({
         title: "Account Created!",
-        description: `Welcome to ServiceHub, ${data.user.username}!`,
+        description: `Welcome to Shirur Express! 🎉`,
       });
 
       // App ko force kar rahe hain ki pehle user ki details refresh kare.
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       await queryClient.refetchQueries({ queryKey: ['/api/auth/me'] });
 
-      // Ab jab app ko pata hai ki user logged in hai, tab redirect karo.
-      if (data.user.role === "provider") {
-        setLocation("/provider-onboarding");
-      } else {
-        setLocation("/");
-      }
+      // Redirect to home after signup
+      setLocation("/");
     },
     onError: (error: any) => {
       toast({
@@ -104,78 +93,13 @@ export default function Signup() {
           </div>
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            Join ServiceHub as a customer or service provider
+            Join Shirur Express to order food, groceries & services
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>I want to</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        <div>
-                          <RadioGroupItem
-                            value="customer"
-                            id="customer"
-                            className="peer sr-only"
-                          />
-                          <label
-                            htmlFor="customer"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            data-testid="role-customer"
-                          >
-                            <User className="mb-3 h-6 w-6" />
-                            <span className="text-sm font-medium">Find Services</span>
-                          </label>
-                        </div>
-                        <div>
-                          <RadioGroupItem
-                            value="provider"
-                            id="provider"
-                            className="peer sr-only"
-                          />
-                          <label
-                            htmlFor="provider"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                            data-testid="role-provider"
-                          >
-                            <Briefcase className="mb-3 h-6 w-6" />
-                            <span className="text-sm font-medium">Provide Services</span>
-                          </label>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Choose a username"
-                        {...field}
-                        data-testid="input-username"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}

@@ -21,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
-  username: z.string().min(1, { message: "Username or Phone Number is required." }),
+  username: z.string().min(1, { message: "Phone Number or Email is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
@@ -98,9 +98,9 @@ const Login: React.FC = () => {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username or Phone Number</FormLabel>
+                  <FormLabel>Phone Number or Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter username or 10-digit phone" autoComplete="off" {...field} />
+                    <Input placeholder="Enter 10-digit phone or email" autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -148,12 +148,26 @@ const Login: React.FC = () => {
             </Button>
           </form>
         </Form>
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
-            Sign Up
-          </Link>
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or</span>
+          </div>
         </div>
+        <Link href="/signup" className="block">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-14 text-base font-bold border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          >
+            🆕 New here? Create Account / Sign Up
+          </Button>
+        </Link>
+        <p className="text-center text-xs text-muted-foreground mt-1">
+          नवीन खाते तयार करा — Tap above to register
+        </p>
       </div>
     </div>
   );

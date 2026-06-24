@@ -430,6 +430,23 @@ export default function Checkout() {
         theme: {
           color: "#3399cc",
         },
+        // UPI-first display: Show UPI apps (Intent + QR) as the primary payment option
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay via UPI",
+                instruments: [
+                  { method: "upi", flows: ["intent", "qr"] }
+                ],
+              },
+            },
+            sequence: ["block.upi"],
+            preferences: {
+              show_default_blocks: true, // Still show Cards, Netbanking, etc. below UPI
+            },
+          },
+        },
         modal: {
           ondismiss: () => {
             toast({ title: "Payment Cancelled", description: "Your order was not placed.", variant: "destructive" });

@@ -61,6 +61,9 @@ import {
     Megaphone,
     ArrowUpDown,
     GripVertical,
+    UserPlus,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -269,6 +272,16 @@ export default function AdminDashboard() {
     const [broadcastMessage, setBroadcastMessage] = useState("");
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+    // Create Provider Form State
+    const [showCreateProvider, setShowCreateProvider] = useState(false);
+    const [cpPhone, setCpPhone] = useState("");
+    const [cpEmail, setCpEmail] = useState("");
+    const [cpPassword, setCpPassword] = useState("");
+    const [cpBusinessName, setCpBusinessName] = useState("");
+    const [cpCategoryId, setCpCategoryId] = useState("");
+    const [cpAddress, setCpAddress] = useState("");
+    const [cpShowPassword, setCpShowPassword] = useState(false);
+
     // Auth guard
     useEffect(() => {
         if (user && user.role !== 'admin') {
@@ -331,6 +344,12 @@ export default function AdminDashboard() {
     const { data: allUsers } = useQuery<AppUser[]>({
         queryKey: ["/api/admin/users"],
         queryFn: () => api.get("/admin/users").then(r => r.data),
+    });
+
+    // Service categories for provider creation
+    const { data: serviceCategories } = useQuery<any[]>({
+        queryKey: ["/api/service-categories"],
+        queryFn: () => api.get("/service-categories").then(r => r.data),
     });
 
     const deleteUserMutation = useMutation({
@@ -497,6 +516,23 @@ export default function AdminDashboard() {
             setLocation("/login");
         } catch (e) { }
     };
+
+    // Create Provider Mutation
+    const createProviderMutation = useMutation({
+        mutationFn: (data: any) => api.post("/admin/create-provider", data).then(r => r.data),
+        onSuccess: (data: any) => {
+            toast({ title: "✅ Provider Created", description: data.message || "Provider account created successfully!" });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/providers"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+            // Reset form
+            setCpPhone(""); setCpEmail(""); setCpPassword(""); setCpBusinessName(""); setCpCategoryId(""); setCpAddress("");
+            setShowCreateProvider(false);
+        },
+        onError: (error: any) => {
+            toast({ title: "❌ Failed", description: error?.response?.data?.message || error.message || "Could not create provider.", variant: "destructive" });
+        },
+    });
 
     // Order type breakdown
     const groceryCount = orders?.filter(o => o.orderType === 'grocery').length || 0;
@@ -1326,12 +1362,127 @@ export default function AdminDashboard() {
                 {/* ═══ PROVIDERS TAB ═══ */}
                 {activeTab === "providers" && (
                     <div className="max-w-5xl mx-auto space-y-4">
-                        <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center justify-between px-2">
                             <h3 className="font-semibold flex items-center gap-2 text-lg">
                                 <Store className="h-5 w-5 text-gray-400" /> All Providers
                             </h3>
-                            <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredProviders?.length || 0} results</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-500 px-3 py-1 bg-white/5 rounded-full">{filteredProviders?.length || 0} results</span>
+                                <Button
+                                    onClick={() => setShowCreateProvider(!showCreateProvider)}
+                                    className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-0 gap-2 rounded-xl px-4 py-2 h-auto text-sm font-semibold shadow-lg shadow-emerald-500/20"
+                                >
+                                    <UserPlus className="h-4 w-4" />
+                                    {showCreateProvider ? "Hide Form" : "Create Provider"}
+                                </Button>
+                            </div>
                         </div>
+
+                        {/* ─── Create Provider Form ─── */}
+                        {showCreateProvider && (
+                            <div className="rounded-2xl bg-[#111827] border border-emerald-500/20 p-6 space-y-5">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                                        <UserPlus className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-base font-bold">Create Provider Account</h4>
+                                        <p className="text-xs text-gray-500">This creates a login account + provider profile</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Phone Number *</label>
+                                        <Input
+                                            placeholder="9876543210"
+                                            value={cpPhone}
+                                            onChange={(e) => setCpPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                            maxLength={10}
+                                            inputMode="numeric"
+                                            className="bg-white/[0.03] border-white/10 text-white placeholder-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Email *</label>
+                                        <Input
+                                            type="email"
+                                            placeholder="provider@email.com"
+                                            value={cpEmail}
+                                            onChange={(e) => setCpEmail(e.target.value)}
+                                            className="bg-white/[0.03] border-white/10 text-white placeholder-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Password *</label>
+                                        <div className="relative">
+                                            <Input
+                                                type={cpShowPassword ? "text" : "password"}
+                                                placeholder="Set a password"
+                                                value={cpPassword}
+                                                onChange={(e) => setCpPassword(e.target.value)}
+                                                className="bg-white/[0.03] border-white/10 text-white placeholder-gray-600 pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setCpShowPassword(!cpShowPassword)}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                                            >
+                                                {cpShowPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Business Name *</label>
+                                        <Input
+                                            placeholder="e.g. Krishna Restaurant"
+                                            value={cpBusinessName}
+                                            onChange={(e) => setCpBusinessName(e.target.value)}
+                                            className="bg-white/[0.03] border-white/10 text-white placeholder-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Category *</label>
+                                        <Select value={cpCategoryId} onValueChange={setCpCategoryId}>
+                                            <SelectTrigger className="bg-white/[0.03] border-white/10 text-white">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-[#1a2035] border-white/10 text-white">
+                                                {serviceCategories?.map((cat: any) => (
+                                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">Address *</label>
+                                        <Input
+                                            placeholder="Business address"
+                                            value={cpAddress}
+                                            onChange={(e) => setCpAddress(e.target.value)}
+                                            className="bg-white/[0.03] border-white/10 text-white placeholder-gray-600"
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() => createProviderMutation.mutate({
+                                        phone: cpPhone,
+                                        email: cpEmail,
+                                        password: cpPassword,
+                                        businessName: cpBusinessName,
+                                        categoryId: cpCategoryId,
+                                        address: cpAddress,
+                                    })}
+                                    disabled={!cpPhone || !cpEmail || !cpPassword || !cpBusinessName || !cpCategoryId || !cpAddress || createProviderMutation.isPending}
+                                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-0 gap-2 rounded-xl px-6 py-2.5 h-auto text-sm font-semibold shadow-lg shadow-emerald-500/20"
+                                >
+                                    {createProviderMutation.isPending ? (
+                                        <><Loader2 className="h-4 w-4 animate-spin" /> Creating...</>
+                                    ) : (
+                                        <><UserPlus className="h-4 w-4" /> Create Provider Account</>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {!filteredProviders || filteredProviders.length === 0 ? (
                                 <p className="col-span-full text-center text-gray-600 py-12">No providers found</p>

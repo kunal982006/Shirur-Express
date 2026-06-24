@@ -58,7 +58,7 @@ app.use(
     cookie: {
       secure: app.get("env") === "production", // Render par ye TRUE hona chahiye, dev mein FALSE
       sameSite: app.get("env") === "production" ? "none" as const : "lax" as const, // "none" for cross-origin Capacitor requests
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAge: 90 * 24 * 60 * 60 * 1000 // 90 days — users stay logged in for a long time
     },
     store: new PgStore({
       pool,
@@ -67,7 +67,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "dev-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
-
+    rolling: true, // Refresh session expiry on every request — active users never get logged out
   })
 );
 

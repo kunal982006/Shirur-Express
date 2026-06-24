@@ -81,6 +81,8 @@
 		<string>indusmobile</string>
 		<string>whatsapp</string>
 		<string>kotakbank</string>
+		<string>gpay</string>
+		<string>upi</string>
 	</array>
 </dict>
 </plist>

@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize Razorpay WebView SDK for UPI Intents
         try {
-            razorpayInstance = Razorpay(this, "rzp_live_SRufGg7nCYe4l4")
+            razorpayInstance = Razorpay(this, "rzp_live_T1RpMaRRbOqLuO")
             razorpayInstance?.setWebView(webView)
         } catch (e: Exception) {
             Log.e("RazorpayInit", "Failed to initialize Razorpay WebView SDK", e)
@@ -382,6 +382,42 @@ class MainActivity : AppCompatActivity() {
                     return false // Let WebView handle it
                 }
                 
+                // Allow Razorpay checkout/API URLs to load inside WebView
+                if (url.contains("razorpay.com")) {
+                    return false // Let WebView handle Razorpay URLs
+                }
+
+                // Handle UPI deep links (Razorpay UPI Intent flow)
+                if (url.startsWith("upi://")) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "No UPI app found to handle: $url", e)
+                        Toast.makeText(this@MainActivity, "No UPI app found on this device", Toast.LENGTH_SHORT).show()
+                    }
+                    return true
+                }
+
+                // Handle intent:// scheme URLs (used by some payment flows)
+                if (url.startsWith("intent://")) {
+                    try {
+                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        if (intent.resolveActivity(packageManager) != null) {
+                            startActivity(intent)
+                        } else {
+                            // Try fallback URL if available
+                            val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                            if (!fallbackUrl.isNullOrEmpty()) {
+                                view?.loadUrl(fallbackUrl)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "Failed to handle intent URL: $url", e)
+                    }
+                    return true
+                }
+
                 // Handle external URLs (open in browser)
                 if (url.startsWith("http://") || url.startsWith("https://")) {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
