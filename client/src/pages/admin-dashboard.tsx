@@ -358,8 +358,9 @@ export default function AdminDashboard() {
             return res.data;
         },
         onSuccess: () => {
-            toast({ title: "Success", description: "User deleted successfully." });
+            toast({ title: "Success", description: "User/Provider deleted successfully." });
             queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/providers"] });
         },
         onError: (error: any) => {
             toast({
@@ -1506,11 +1507,34 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-right shrink-0">
-                                            <p className="text-sm font-medium text-gray-200 flex items-center justify-end gap-1">
-                                                <Star className="h-3 w-3 text-yellow-500 fill-current" /> {p.rating ? parseFloat(p.rating).toFixed(1) : "New"}
-                                            </p>
-                                            <p className="text-[10px] text-gray-500 mt-0.5">{p.reviewCount || 0} reviews</p>
+                                        <div className="text-right shrink-0 flex items-center gap-3">
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-200 flex items-center justify-end gap-1">
+                                                    <Star className="h-3 w-3 text-yellow-500 fill-current" /> {p.rating ? parseFloat(p.rating).toFixed(1) : "New"}
+                                                </p>
+                                                <p className="text-[10px] text-gray-500 mt-0.5">{p.reviewCount || 0} reviews</p>
+                                            </div>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-red-500/70 hover:text-red-400 hover:bg-red-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 xl:translate-x-2 group-hover:translate-x-0">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="bg-[#111827] border-white/10 text-white">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription className="text-gray-400">
+                                                            This action cannot be undone. This will permanently delete the provider profile and their login account entirely.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 mt-2 sm:mt-0">Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => deleteUserMutation.mutate(p.userId)} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                                                            Delete Provider
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </div>
                                     </div>
                                     <div className="bg-black/20 p-3 rounded-xl min-w-0 border border-white/[0.02]">

@@ -248,8 +248,8 @@ export default function BeautyDetail() {
                 <p className="text-xs text-gray-400 mt-2">
                     Parlor ID: {parlorId || "Not provided"}
                 </p>
-                <Button onClick={() => setLocation("/beauty")} className="mt-4">
-                    Go Back to Listing
+                <Button onClick={() => setLocation("/")} className="mt-4">
+                    Go Back to Home
                 </Button>
             </div>
         );
@@ -297,8 +297,8 @@ export default function BeautyDetail() {
         return (
             <div className="text-center py-20">
                 <p className="text-muted-foreground">Something went wrong. Please try again.</p>
-                <Button onClick={() => setLocation("/beauty")} className="mt-4">
-                    Go Back to Listing
+                <Button onClick={() => setLocation("/")} className="mt-4">
+                    Go Back to Home
                 </Button>
             </div>
         );
@@ -312,11 +312,11 @@ export default function BeautyDetail() {
                 <Button
                     variant="ghost"
                     className="mb-6 flex items-center space-x-2"
-                    onClick={() => setLocation("/beauty")}
+                    onClick={() => setLocation("/")}
                     data-testid="button-back"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    <span>Back to Parlor List</span>
+                    <span>Back to Home</span>
                 </Button>
 
                 {/* Parlor Banner/Detail Header */}
