@@ -279,7 +279,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Created Street Food Order:", order); // DEBUG LOG
 
       // Ringing system for Street Food Admin and Main Admin
-      await sendOrderNotifications(order, 'street_food', order.id);
+      if (orderData.paymentMethod === 'cod') {
+        await sendOrderNotifications(order, 'street_food', order.id);
+      }
 
       res.status(201).json(order);
     } catch (error: any) {
