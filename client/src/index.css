@@ -294,3 +294,9 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: auto;
 }
+/* Razorpay iOS Safe Area Fix */
+.razorpay-container {
+  top: env(safe-area-inset-top, 0px) !important;
+  height: calc(100% - env(safe-area-inset-top, 0px)) !important;
+}
+

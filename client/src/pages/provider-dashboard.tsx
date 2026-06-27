@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
+import { QuickImageUpload } from "@/components/forms/QuickImageUpload";
 import { OffersManager } from "@/components/offers/OffersManager";
 import PermissionBanner from "@/components/PermissionBanner";
 import {
@@ -480,15 +481,19 @@ const MenuItemsManager: React.FC<{
                   {filteredItems.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-muted rounded-md" />
-                        )}
+                        <QuickImageUpload 
+                          itemId={item.id} 
+                          categorySlug={providerCategorySlug || ''} 
+                          currentImage={item.imageUrl} 
+                          onUploadSuccess={() => {
+                            if (isGrocery) {
+                              queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+                              queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+                            } else {
+                              refetchMenuItems();
+                            }
+                          }} 
+                        />
                       </TableCell>
                       <TableCell className="font-medium">
                         <div>{item.name}</div>

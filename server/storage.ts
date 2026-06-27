@@ -58,7 +58,7 @@ import {
   type InsertDeliveryPartner,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzle-orm";
+import { eq, ne, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzle-orm";
 // NAYE IMPORTS
 import { sendPushNotification } from "./firebase";
 import { razorpayInstance } from "./razorpay-client";
@@ -1113,7 +1113,7 @@ export class DatabaseStorage implements IStorage {
 
   async getGroceryOrdersByProvider(providerId: string): Promise<any[]> {
     const orders = await db.query.groceryOrders.findMany({
-      where: eq(groceryOrders.providerId, providerId),
+      where: and(eq(groceryOrders.providerId, providerId), ne(groceryOrders.status, 'payment_pending')),
       with: { user: true },
       orderBy: (groceryOrders, { desc }) => [desc(groceryOrders.createdAt)],
     });
@@ -1564,7 +1564,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllStreetFoodOrders(): Promise<StreetFoodOrder[]> {
-    const orders = await db.select().from(streetFoodOrders).orderBy(desc(streetFoodOrders.createdAt));
+    const orders = await db.select().from(streetFoodOrders).where(ne(streetFoodOrders.status, 'payment_pending')).orderBy(desc(streetFoodOrders.createdAt));
     return orders;
   }
 
@@ -1640,7 +1640,7 @@ export class DatabaseStorage implements IStorage {
 
   async getRestaurantOrders(providerId: string): Promise<RestaurantOrder[]> {
     return db.query.restaurantOrders.findMany({
-      where: eq(restaurantOrders.providerId, providerId),
+      where: and(eq(restaurantOrders.providerId, providerId), ne(restaurantOrders.status, 'payment_pending')),
       with: { user: true, rider: true },
       orderBy: [desc(restaurantOrders.createdAt)],
     });
@@ -1673,7 +1673,7 @@ export class DatabaseStorage implements IStorage {
 
   async getRestaurantOrdersByProviderId(providerId: string): Promise<RestaurantOrder[]> {
     return db.query.restaurantOrders.findMany({
-      where: eq(restaurantOrders.providerId, providerId),
+      where: and(eq(restaurantOrders.providerId, providerId), ne(restaurantOrders.status, 'payment_pending')),
       with: { user: true },
       orderBy: [desc(restaurantOrders.createdAt)],
     }) as any;

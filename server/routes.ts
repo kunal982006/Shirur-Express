@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
+import { eq, ne, and, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -248,7 +248,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: `Minimum order amount is ₹${GROCERY_MIN_ORDER}. Your order total is ₹${effectiveTotal.toFixed(2)}.` });
       }
 
-      const order = await storage.createGroceryOrder({ ...orderData, userId });
+      // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
+      const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
+      const order = await storage.createGroceryOrder({ ...orderData, userId, status: initialStatus } as any);
       
       if (orderData.paymentMethod === 'cod') {
         await sendOrderNotifications(order, 'grocery', order.id);
@@ -275,7 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Assign a static runner ID for MVP (e.g., "runner-1")
       const orderWithRunner = { ...orderData, runnerId: "runner-1" };
 
-      const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId });
+      // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
+      const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
+      const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId, status: initialStatus } as any);
       console.log("Created Street Food Order:", order); // DEBUG LOG
 
       // Ringing system for Street Food Admin and Main Admin
@@ -2458,6 +2462,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- CANCEL PAYMENT_PENDING ORDER (when user dismisses Razorpay popup) ---
+  app.post("/api/payment/cancel-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, orderType } = req.body;
+      if (!orderId || !orderType) {
+        return res.status(400).json({ message: "orderId and orderType required" });
+      }
+
+      // Only cancel orders that are still in payment_pending status
+      if (orderType === 'street_food') {
+        const order = await storage.getStreetFoodOrder(orderId);
+        if (order && order.status === 'payment_pending') {
+          await storage.updateStreetFoodOrderStatus(orderId, "cancelled");
+          console.log(`[Payment Cancel] Street food order ${orderId} cancelled (payment dismissed)`);
+        }
+      } else if (orderType === 'restaurant') {
+        const order = await storage.getRestaurantOrder(orderId);
+        if (order && order.status === 'payment_pending') {
+          await storage.updateRestaurantOrderStatus(orderId, "cancelled");
+          console.log(`[Payment Cancel] Restaurant order ${orderId} cancelled (payment dismissed)`);
+        }
+      } else {
+        const order = await storage.getGroceryOrder(orderId);
+        if (order && order.status === 'payment_pending') {
+          await storage.updateGroceryOrderStatus(orderId, "cancelled");
+          console.log(`[Payment Cancel] Grocery order ${orderId} cancelled (payment dismissed)`);
+        }
+      }
+
+      res.json({ status: "cancelled" });
+    } catch (error: any) {
+      console.error("Cancel payment order error:", error);
+      res.status(500).json({ message: error.message || "Error cancelling order" });
+    }
+  });
+
   // --- RESTAURANT ORDERS ROUTES ---
 
   app.post("/api/restaurant/orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
@@ -2474,7 +2514,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Or if we want to auto-assign, we can do it here.
       // Let's keep it simple: created with status 'pending', no rider yet.
 
-      const order = await storage.createRestaurantOrder({ ...orderData, userId });
+      // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
+      const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
+      const order = await storage.createRestaurantOrder({ ...orderData, userId, status: initialStatus } as any);
       console.log("Created Restaurant Order:", order);
 
       if (orderData.paymentMethod === 'cod') {
@@ -3538,6 +3580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(users, eq(groceryOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(groceryOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .where(ne(groceryOrders.status, 'payment_pending'))
         .orderBy(desc(groceryOrders.createdAt)).limit(100),
         
         db.select({
@@ -3560,6 +3603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(users, eq(streetFoodOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(streetFoodOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .where(ne(streetFoodOrders.status, 'payment_pending'))
         .orderBy(desc(streetFoodOrders.createdAt)).limit(100),
         
         db.select({
@@ -3582,6 +3626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(users, eq(restaurantOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(restaurantOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .where(ne(restaurantOrders.status, 'payment_pending'))
         .orderBy(desc(restaurantOrders.createdAt)).limit(100),
       ]);
 

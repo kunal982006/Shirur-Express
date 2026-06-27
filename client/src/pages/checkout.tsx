@@ -448,7 +448,16 @@ export default function Checkout() {
           },
         },
         modal: {
-          ondismiss: () => {
+          ondismiss: async () => {
+            // Cancel the payment_pending order since user dismissed payment
+            try {
+              await api.post("/payment/cancel-order", {
+                orderId: databaseOrderId,
+                orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
+              });
+            } catch (cancelErr) {
+              console.error("Failed to cancel abandoned order:", cancelErr);
+            }
             toast({ title: "Payment Cancelled", description: "Your order was not placed.", variant: "destructive" });
             setIsPlacingOrder(false);
           },
