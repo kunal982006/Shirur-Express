@@ -220,13 +220,17 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 pb-16 relative overflow-hidden">
+      {/* Colorful Background Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-400/30 to-purple-500/30 blur-[80px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-5%] w-[400px] h-[400px] rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-500/20 blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full bg-gradient-to-r from-rose-400/20 to-orange-400/20 blur-[80px] animate-pulse pointer-events-none" style={{ transform: 'translate(-50%, -50%)', animationDelay: '4s' }} />
       <FloatingOtp />
       <PendingPaymentPopup />
 
       {/* 1. Top Location Header (Zomato Style) */}
       <header 
-        className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm"
+        className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/50 shadow-sm"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center justify-between p-2 sm:p-3 max-w-7xl mx-auto gap-1 sm:gap-4 overflow-hidden">
@@ -299,19 +303,21 @@ export default function Home() {
         </div>
       </header>
 
+
+
       {/* 4. Unified Search Bar (Image Reference: Are you hungry) */}
       <section 
-        className="px-4 py-2 bg-white shadow-sm sticky z-30 transition-all"
+        className="px-4 py-3 bg-white/60 backdrop-blur-xl shadow-sm sticky z-30 transition-all border-b border-white/40"
         style={{ top: 'calc(56px + env(safe-area-inset-top))' }}
       >
         <div className="max-w-7xl mx-auto flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-colors" />
             <Input
               ref={inputRef}
               type="text"
               placeholder="Search for Services or Products (Electrician, Cake, Rental...)"
-              className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
+              className="w-full pl-10 pr-4 py-2 h-12 rounded-lg border border-gray-200/80 bg-white/90 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
               value={selectedService}
               onChange={handleInputChange}
               onFocus={() => setIsFocused(true)}
@@ -352,7 +358,7 @@ export default function Home() {
       </section>
 
       {/* Offers Carousel (Amazon/Zepto Style) */}
-      <section className="px-4 py-3 bg-white">
+      <section className="px-4 py-3 bg-transparent relative z-10">
         <div className="max-w-7xl mx-auto flex justify-center">
           <div className="w-full max-w-2xl">
             <OffersCarousel />
@@ -361,7 +367,7 @@ export default function Home() {
       </section>
 
       {/* 3. Services Section (Image Reference: What's on Your Mind? - Categories) */}
-      <section id="services" className="py-4 bg-background">
+      <section id="services" className="py-4 bg-transparent relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Header jaisa Food UI mein tha */}
@@ -373,117 +379,21 @@ export default function Home() {
           {/* Service Card Grid (Minimal) */}
           <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-4 md:gap-6 overflow-x-auto pb-2 scrollbar-hide">
             {/* Ab yahan hum services array ko map karenge, jaisa Food UI mein gol buttons the */}
-            {services.slice(0, 8).map((service) => ( // Top 8 services dikhao
+            {services.slice(0, 8).map((service) => (
               <div 
                 key={service.slug} 
-                className="flex flex-col items-center min-w-[70px] cursor-pointer"
-                onClick={() => {
-                  navigate(`/${service.slug}`);
-                }}
+                className="flex flex-col items-center min-w-[70px] cursor-pointer group"
+                onClick={() => navigate(`/${service.slug}`)}
               >
-                {/* ServiceCard ki jagah, chota icon button banao */}
-                <div className="p-3 md:p-5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg hover:border-primary/30 transition-all">
-                  <service.icon className="h-6 w-6 md:h-10 md:w-10 lg:h-14 lg:w-14 text-primary" />
+                <div className="bg-white rounded-full shadow-sm border border-gray-100 group-hover:shadow-md transition-shadow group-hover:border-primary/20 flex items-center justify-center h-16 w-16 md:h-20 md:w-20">
+                  <service.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" strokeWidth={1.5} />
                 </div>
-                <span className="text-xs md:text-sm text-center mt-1.5 font-medium text-gray-600 truncate max-w-full">{service.name}</span>
+                <span className="text-xs md:text-sm text-center mt-2 font-bold text-gray-700 group-hover:text-primary transition-colors truncate max-w-full">{service.name}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
-
-      {/* 5. Jijamata Eats & Other Streets */}
-      <HorizontalScrollList
-        title="Jijamata Eats & Other Streets"
-        items={popularData?.streetFood || []}
-        isLoading={isPopularLoading}
-        onSeeAll={() => navigate("/street-food")}
-        renderItem={(item: any) => (
-          <div className="cursor-pointer group">
-            <div 
-              className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100"
-              onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
-            >
-              <img
-                src={item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
-                alt={item.name}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-gray-800 flex items-center gap-1 shadow-sm">
-                <span className="text-yellow-600">★</span> 4.5
-              </div>
-              {item.isVeg && (
-                <div className="absolute bottom-2 left-2 bg-green-600/90 backdrop-blur-md p-1 rounded-full shadow-sm">
-                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                </div>
-              )}
-            </div>
-            <div 
-              className="flex flex-col mt-1.5"
-              onClick={() => navigate(`/street-food?item=${item.id}`)}
-            >
-              <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-              <p className="text-xs text-gray-500 truncate">{item.description || " Delicious street food"}</p>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
-                {items.find((i: any) => i.id === item.id) ? (
-                  <div className="flex items-center gap-2 bg-white rounded-md shadow-sm border p-0.5" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateQuantity(item.id, -1);
-                      }}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-4 text-center text-sm font-semibold">
-                      {items.find((i: any) => i.id === item.id)?.quantity || 0}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateQuantity(item.id, 1);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    size="sm"
-                    className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addItem({
-                        id: item.id,
-                        name: item.name,
-                        price: Number(item.price),
-                        imageUrl: item.imageUrl,
-                        providerId: item.providerId,
-                        itemType: 'street_food'
-                      });
-                      toast({
-                        title: "Added to Cart",
-                        description: `${item.name} added to your cart.`
-                      });
-                    }}
-                  >
-                    Add
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      />
 
       {/* 5.5. Popular Restaurant Food Section (New Request) */}
       <HorizontalScrollList
@@ -563,6 +473,99 @@ export default function Home() {
                         imageUrl: item.imageUrl,
                         providerId: item.providerId,
                         itemType: 'restaurant'
+                      });
+                      toast({
+                        title: "Added to Cart",
+                        description: `${item.name} added to your cart.`
+                      });
+                    }}
+                  >
+                    Add
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      />
+
+      {/* 5. Jijamata Eats & Other Streets */}
+      <HorizontalScrollList
+        title="Jijamata Eats & Other Streets"
+        items={popularData?.streetFood || []}
+        isLoading={isPopularLoading}
+        onSeeAll={() => navigate("/street-food")}
+        renderItem={(item: any) => (
+          <div className="cursor-pointer group">
+            <div 
+              className="relative h-32 md:h-40 w-full rounded-2xl overflow-hidden mb-2 bg-gray-100"
+              onClick={() => setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3")}
+            >
+              <img
+                src={item.imageUrl || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"}
+                alt={item.name}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-gray-800 flex items-center gap-1 shadow-sm">
+                <span className="text-yellow-600">★</span> 4.5
+              </div>
+              {item.isVeg && (
+                <div className="absolute bottom-2 left-2 bg-green-600/90 backdrop-blur-md p-1 rounded-full shadow-sm">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                </div>
+              )}
+            </div>
+            <div 
+              className="flex flex-col mt-1.5"
+              onClick={() => navigate(`/street-food?item=${item.id}`)}
+            >
+              <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+              <p className="text-xs text-gray-500 truncate">{item.description || " Delicious street food"}</p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-sm font-bold text-gray-900">₹{item.price}</span>
+                {items.find((i: any) => i.id === item.id) ? (
+                  <div className="flex items-center gap-2 bg-white rounded-md shadow-sm border p-0.5" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, -1);
+                      }}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-4 text-center text-sm font-semibold">
+                      {items.find((i: any) => i.id === item.id)?.quantity || 0}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(item.id, 1);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-8 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-medium shadow-sm transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem({
+                        id: item.id,
+                        name: item.name,
+                        price: Number(item.price),
+                        imageUrl: item.imageUrl,
+                        providerId: item.providerId,
+                        itemType: 'street_food'
                       });
                       toast({
                         title: "Added to Cart",

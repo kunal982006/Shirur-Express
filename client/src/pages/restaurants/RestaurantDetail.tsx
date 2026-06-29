@@ -141,32 +141,34 @@ export default function RestaurantDetail() {
                 </div>
             </div>
             
-            {/* Restaurant Hero Banner */}
-            <div className="relative h-48 md:h-72 w-full bg-muted overflow-hidden">
-                {restaurant.profileImageUrl ? (
-                    <img 
-                        src={restaurant.profileImageUrl} 
-                        alt={restaurant.businessName} 
-                        className="w-full h-full object-cover"
-                        onClick={() => setSelectedImage(restaurant.profileImageUrl)}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                        <UtensilsCrossed className="h-16 w-16 text-gray-400 opacity-20" />
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <h1 className="text-3xl font-extrabold drop-shadow-lg">{restaurant.businessName}</h1>
-                    <div className="flex items-center gap-2 mt-1 drop-shadow-md">
-                        <Badge variant="secondary" className="bg-white/90 text-primary font-bold">
-                            {restaurant.rating || "4.2"} ★
-                        </Badge>
-                        <span className="text-sm font-medium">{restaurant.specializations?.join(", ")}</span>
+            {/* Conditionally hide Restaurant Hero Banner for bakeries/cake shops as requested */}
+            {!(restaurant.specializations?.some(s => s.toLowerCase().includes('cake') || s.toLowerCase().includes('bakery'))) && (
+                <div className="relative h-48 md:h-72 w-full bg-muted overflow-hidden">
+                    {restaurant.profileImageUrl ? (
+                        <img 
+                            src={restaurant.profileImageUrl} 
+                            alt={restaurant.businessName} 
+                            className="w-full h-full object-cover"
+                            onClick={() => setSelectedImage(restaurant.profileImageUrl)}
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                            <UtensilsCrossed className="h-16 w-16 text-gray-400 opacity-20" />
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                        <h1 className="text-3xl font-extrabold drop-shadow-lg">{restaurant.businessName}</h1>
+                        <div className="flex items-center gap-2 mt-1 drop-shadow-md">
+                            <Badge variant="secondary" className="bg-white/90 text-primary font-bold">
+                                {restaurant.rating || "4.2"} ★
+                            </Badge>
+                            <span className="text-sm font-medium">{restaurant.specializations?.join(", ")}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
+            )}
+            
             <div className="max-w-5xl mx-auto">
                 {/* Restaurant Basic Info (Additional details) */}
                 <div className="p-4 space-y-4">

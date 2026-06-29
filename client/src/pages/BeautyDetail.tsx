@@ -319,60 +319,7 @@ export default function BeautyDetail() {
                     <span>Back to Home</span>
                 </Button>
 
-                {/* Parlor Banner/Detail Header */}
-                <Card className="mb-8 p-0 overflow-hidden">
-                    {parlorDetail.image ? (
-                        <img src={parlorDetail.image} alt={parlorDetail.name} className="w-full h-48 object-cover" />
-                    ) : (
-                        <div className="w-full h-48 bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
-                            <span className="text-white text-4xl font-bold">{parlorDetail.name?.charAt(0) || "B"}</span>
-                        </div>
-                    )}
-                    <CardContent className="p-6">
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1 mr-4">
-                                <h2 className="text-2xl md:text-3xl font-bold mb-2">{parlorDetail.name}</h2>
-
-                                {/* Collapsible Description */}
-                                {parlorDetail.description && (
-                                    <div className="mt-2">
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            {isDescExpanded
-                                                ? parlorDetail.description
-                                                : parlorDetail.description.length > 100
-                                                    ? `${parlorDetail.description.slice(0, 100)}...`
-                                                    : parlorDetail.description
-                                            }
-                                        </p>
-                                        {parlorDetail.description.length > 100 && (
-                                            <button
-                                                onClick={() => setIsDescExpanded(!isDescExpanded)}
-                                                className="text-sm text-primary font-medium mt-1 flex items-center gap-1 hover:underline focus:outline-none"
-                                            >
-                                                {isDescExpanded ? (
-                                                    <>Read Less <ChevronDown className="h-4 w-4 rotate-180 transition-transform" /></>
-                                                ) : (
-                                                    <>Read More <ChevronDown className="h-4 w-4 transition-transform" /></>
-                                                )}
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                            <Badge variant="default" className="text-base flex items-center px-3 py-1 shrink-0">
-                                <Star className="h-4 w-4 fill-current mr-1" /> {Number(parlorDetail.rating || 0).toFixed(2)}
-                            </Badge>
-                        </div>
-                        <div className="flex items-center space-x-4 mt-3 text-sm text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                                <MapPin className="h-4 w-4" />
-                                <span>{parlorDetail.address}</span>
-                            </div>
-                            <span>•</span>
-                            <span>{parlorDetail.distance}</span>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Removed Parlor Banner as requested */}
 
                 {/* FILTERING SECTION (Zepto/Flipkart Style Tabs) */}
                 {mainCategories.length === 0 ? (

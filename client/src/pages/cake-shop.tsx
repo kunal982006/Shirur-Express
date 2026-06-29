@@ -1,84 +1,64 @@
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, CakeSlice, Star, Loader2, Clock } from "lucide-react";
+import { ArrowLeft, CakeSlice, Loader2, Plus, Minus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
-import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
-import { CakeProduct, ServiceProvider } from "@shared/schema";
+import { CakeProduct } from "@shared/schema";
 import { CakeCategoryCarousel } from "@/components/cakes/CakeCategoryCarousel";
+import { useCartStore } from "@/hooks/use-cart-store";
 
-function BakeryCard({ bakery, cakes, onClick }: { bakery: ServiceProvider; cakes: CakeProduct[]; onClick: () => void }) {
-  const rating = bakery.rating ? parseFloat(bakery.rating.toString()).toFixed(1) : "New";
-  const specializations = bakery.specializations || [];
-
-  const [emblaRef] = useEmblaCarousel(
-    { loop: true, align: "center", dragFree: true },
-    [Autoplay({ delay: 2000, stopOnInteraction: false, stopOnMouseEnter: true })]
-  );
-
-  const displayImages = cakes.length > 0 ? cakes.map(c => c.imageUrl).filter(Boolean) : [bakery.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"];
-  if (displayImages.length === 0) displayImages.push("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60");
-
+function CakeCard({ cake, onAdd, quantity, onUpdateQuantity }: { cake: CakeProduct, onAdd: () => void, quantity: number, onUpdateQuantity: (q: number) => void }) {
   return (
-    <Card
-      className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 border-none shadow-sm group bg-card"
-      onClick={onClick}
-    >
-      <div className="relative h-56 w-full overflow-hidden rounded-t-xl bg-muted" ref={emblaRef}>
-        <div className="flex h-full">
-          {displayImages.map((img, i) => (
-            <div className="flex-[0_0_100%] h-full relative" key={i}>
-              <img
-                src={img!}
-                alt={bakery.businessName}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-            </div>
-          ))}
-        </div>
-
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold shadow-sm z-10 text-black">
-          30-40 min
-        </div>
-        {bakery.isAvailable === false && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-            <span className="text-white font-bold text-lg border border-white px-4 py-2 rounded shadow-lg backdrop-blur-sm">Currently Closed</span>
+    <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-none shadow-sm bg-card">
+      <div className="relative h-48 w-full bg-muted">
+        <img 
+          src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"} 
+          alt={cake.name} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+        />
+        {cake.isAvailable === false && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <span className="text-white font-bold px-3 py-1 border border-white rounded shadow-sm backdrop-blur-sm">Sold Out</span>
           </div>
         )}
       </div>
-
       <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="font-bold text-lg truncate pr-2 text-foreground group-hover:text-primary transition-colors">{bakery.businessName}</h3>
-          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-white text-xs font-bold ${Number(rating) >= 4.0 ? 'bg-green-600' : 'bg-green-500'}`}>
-            <span>{rating}</span>
-            <Star className="h-3 w-3 fill-white" />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-          <p className="truncate w-2/3 text-pink-600 font-medium">{specializations.slice(0, 2).join(", ") || "Cakes & Desserts"}</p>
-          <p>₹200 for two</p>
-        </div>
-
-        <div className="border-t border-dashed border-muted-foreground/30 pt-3 flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded flex items-center gap-1 font-medium">
-            <Clock className="h-3 w-3" />
-            <span>Freshly baked</span>
-          </div>
-          <span className="truncate max-w-[150px]">{bakery.address}</span>
+        <h3 className="font-bold text-lg truncate text-foreground group-hover:text-primary transition-colors">{cake.name}</h3>
+        <p className="text-xs text-muted-foreground truncate mb-2">{cake.description || "Delicious fresh cake from Shirur Express"}</p>
+        <div className="flex items-center justify-between mt-4">
+          <span className="font-extrabold text-lg">₹{cake.price}</span>
+          
+          {cake.isAvailable !== false && (
+            quantity > 0 ? (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-1 shadow-sm">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-green-700 hover:bg-green-100 rounded" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity - 1); }}>
+                        <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-bold w-4 text-center text-green-800">{quantity}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-green-700 hover:bg-green-100 rounded" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity + 1); }}>
+                        <Plus className="h-4 w-4" />
+                    </Button>
+                </div>
+            ) : (
+                <Button 
+                    variant="outline" 
+                    className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 uppercase text-xs font-bold px-6 py-1 h-9 shadow-sm"
+                    onClick={(e) => { e.stopPropagation(); onAdd(); }}
+                >
+                    Add
+                </Button>
+            )
+          )}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export default function CakeShop() {
   const [, setLocation] = useLocation();
+  const { addItem, items, updateQuantity } = useCartStore();
 
   const { data: cakes, isLoading } = useQuery<CakeProduct[]>({
     queryKey: ["/api/cakes"],
@@ -89,16 +69,7 @@ export default function CakeShop() {
     },
   });
 
-  const { data: bakeries, isLoading: isLoadingBakeries } = useQuery<ServiceProvider[]>({
-    queryKey: ["/api/bakeries"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/bakeries`);
-      if (!res.ok) throw new Error("Failed to fetch bakeries");
-      return res.json();
-    },
-  });
-
-  if (isLoading || isLoadingBakeries) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -125,8 +96,26 @@ export default function CakeShop() {
     );
   }
 
-  // Filter out cakes that might not have imagery just in case (optional, but good for UI)
-  const validCakes = cakes.filter(c => c.imageUrl);
+  const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
+
+  const handleAdd = (cake: CakeProduct) => {
+    addItem({
+      id: cake.id,
+      name: cake.name,
+      price: parseFloat(cake.price.toString()),
+      imageUrl: cake.imageUrl || undefined,
+      providerId: cake.providerId,
+      itemType: 'restaurant', // Using restaurant type to share the cart flow
+    });
+  };
+
+  const handleUpdateQuantity = (cakeId: string, quantity: number) => {
+    if (quantity === 0) {
+      updateQuantity(cakeId, 0);
+    } else {
+      updateQuantity(cakeId, quantity);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -137,7 +126,7 @@ export default function CakeShop() {
             <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="-ml-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-extrabold tracking-tight">Cakes & Desserts</h1>
+            <h1 className="text-xl font-extrabold tracking-tight">Shirur Express Cakes</h1>
           </div>
         </div>
       </div>
@@ -148,28 +137,39 @@ export default function CakeShop() {
         <CakeCategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
 
         <div>
-          <h2 className="text-2xl font-black mb-6 text-foreground tracking-tight">Top Bakeries Near You</h2>
+          <h2 className="text-2xl font-black mb-6 text-foreground tracking-tight">Freshly Baked & Ready</h2>
 
-          {bakeries && bakeries.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {bakeries.map((bakery) => {
-                const bakeryCakes = cakes ? cakes.filter(c => c.providerId === bakery.id) : [];
-                return (
-                  <BakeryCard
-                    key={bakery.id}
-                    bakery={bakery}
-                    cakes={bakeryCakes}
-                    onClick={() => setLocation(`/restaurants/${bakery.id}`)}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-muted-foreground">No bakeries found.</div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {cakes.map((cake) => (
+              <CakeCard
+                key={cake.id}
+                cake={cake}
+                onAdd={() => handleAdd(cake)}
+                quantity={getQuantity(cake.id)}
+                onUpdateQuantity={(q) => handleUpdateQuantity(cake.id, q)}
+              />
+            ))}
+          </div>
         </div>
 
       </div>
+
+      {/* Floating Cart Button */}
+      {items.length > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-8 md:bottom-8 md:w-96">
+            <Link href="/checkout">
+                <Button className="w-full h-14 rounded-xl shadow-2xl bg-green-600 hover:bg-green-700 text-white flex justify-between items-center px-4 animate-in slide-in-from-bottom-5">
+                    <div className="flex flex-col items-start">
+                        <span className="text-xs font-medium uppercase tracking-wider">{items.length} ITEMS</span>
+                        <span className="font-bold text-lg">₹{items.reduce((a, b) => a + b.price * b.quantity, 0)} plus taxes</span>
+                    </div>
+                    <span className="font-bold flex items-center gap-2">
+                        View Cart <ArrowLeft className="h-4 w-4 rotate-180" />
+                    </span>
+                </Button>
+            </Link>
+        </div>
+      )}
     </div>
   );
 }

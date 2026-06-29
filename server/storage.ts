@@ -2423,10 +2423,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPopularStreetFood(): Promise<StreetFoodItem[]> {
-    return db.select()
+    // 1. Get all popular + available street food items
+    const items = await db.select()
       .from(streetFoodItems)
-      .where(and(eq(streetFoodItems.isPopular, true), eq(streetFoodItems.isAvailable, true)))
-      .orderBy(sql`CASE WHEN ${streetFoodItems.popularOrder} = 0 THEN 9999 ELSE ${streetFoodItems.popularOrder} END ASC`);
+      .where(and(eq(streetFoodItems.isPopular, true), eq(streetFoodItems.isAvailable, true)));
+
+    if (items.length === 0) return [];
+
+    // 2. Count how many times each item was ordered from delivered/completed orders
+    const orderCounts = await db.execute(sql`
+      SELECT item->>'productId' AS product_id, SUM((item->>'quantity')::int) AS total_ordered
+      FROM street_food_orders, jsonb_array_elements(items) AS item
+      WHERE status IN ('delivered', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'out_for_delivery')
+      GROUP BY item->>'productId'
+    `);
+
+    // Build a map of productId -> totalOrdered
+    const countMap = new Map<string, number>();
+    for (const row of orderCounts.rows) {
+      countMap.set(row.product_id as string, Number(row.total_ordered));
+    }
+
+    // 3. Sort items: most ordered first, then by popularOrder as fallback
+    items.sort((a, b) => {
+      const countA = countMap.get(a.id) || 0;
+      const countB = countMap.get(b.id) || 0;
+      if (countB !== countA) return countB - countA; // Most ordered first
+      // Fallback to popularOrder
+      const orderA = a.popularOrder === 0 ? 9999 : (a.popularOrder || 9999);
+      const orderB = b.popularOrder === 0 ? 9999 : (b.popularOrder || 9999);
+      return orderA - orderB;
+    });
+
+    return items;
   }
 
   async getPopularStreetFoodProviders(): Promise<ServiceProvider[]> {
@@ -2850,7 +2879,8 @@ export class DatabaseStorage implements IStorage {
     };
   }
   async getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]> {
-    return db.query.restaurantMenuItems.findMany({
+    // 1. Get all popular + available restaurant menu items with their provider
+    const items = await db.query.restaurantMenuItems.findMany({
       where: and(
         eq(restaurantMenuItems.isPopular, true),
         eq(restaurantMenuItems.isAvailable, true)
@@ -2858,8 +2888,36 @@ export class DatabaseStorage implements IStorage {
       with: {
         provider: true
       },
-      orderBy: [sql`CASE WHEN ${restaurantMenuItems.popularOrder} = 0 THEN 9999 ELSE ${restaurantMenuItems.popularOrder} END ASC`]
-    }) as any;
+    }) as any as (RestaurantMenuItem & { provider: ServiceProvider })[];
+
+    if (items.length === 0) return [];
+
+    // 2. Count how many times each menu item was ordered from delivered/completed orders
+    const orderCounts = await db.execute(sql`
+      SELECT item->>'menuItemId' AS menu_item_id, SUM((item->>'quantity')::int) AS total_ordered
+      FROM restaurant_orders, jsonb_array_elements(items) AS item
+      WHERE status IN ('delivered', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'out_for_delivery')
+      GROUP BY item->>'menuItemId'
+    `);
+
+    // Build a map of menuItemId -> totalOrdered
+    const countMap = new Map<string, number>();
+    for (const row of orderCounts.rows) {
+      countMap.set(row.menu_item_id as string, Number(row.total_ordered));
+    }
+
+    // 3. Sort items: most ordered first, then by popularOrder as fallback
+    items.sort((a, b) => {
+      const countA = countMap.get(a.id) || 0;
+      const countB = countMap.get(b.id) || 0;
+      if (countB !== countA) return countB - countA; // Most ordered first
+      // Fallback to popularOrder
+      const orderA = a.popularOrder === 0 ? 9999 : (a.popularOrder || 9999);
+      const orderB = b.popularOrder === 0 ? 9999 : (b.popularOrder || 9999);
+      return orderA - orderB;
+    });
+
+    return items;
   }
 
   // --- DISPLAY ORDER MANAGEMENT ---
