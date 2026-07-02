@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -43,54 +44,62 @@ const normalizeSectionName = (raw: string): string => {
 
 
 // Helper component to display a single service item
-const ServiceItemCard = ({ parlorId, service, subCategoryName, cart, onAdd, onRemove }: {
+const ServiceItemCard = ({ parlorId, service, subCategoryName, cart, onAdd, onRemove, index }: {
     parlorId: string,
     service: any,
     subCategoryName: string,
     cart: Record<string, any>,
     onAdd: (service: any) => void,
-    onRemove: (serviceId: string) => void
+    onRemove: (serviceId: string) => void,
+    index?: number
 }) => {
     const isInCart = !!cart[service.id];
     const isWomenOnly = service.gender === 'Women' && subCategoryName.includes('Hair Removal');
 
     return (
-        <Card className="flex items-center p-3 gap-3 hover:shadow-md transition-shadow">
-            {/* Service Image */}
-            {service.imageUrl ? (
-                <img
-                    src={service.imageUrl}
-                    alt={service.name}
-                    className="w-16 h-16 rounded-lg object-cover shrink-0"
-                />
-            ) : (
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center shrink-0">
-                    <span className="text-xl">✨</span>
-                </div>
-            )}
-            {/* Service Details */}
-            <div className="flex-1 min-w-0">
-                <p className="font-semibold text-base text-primary truncate">{service.name}</p>
-                <p className="text-xs text-muted-foreground flex items-center mt-1">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {service.duration || 'Varies'} {service.duration !== 'Multi-day' && service.duration !== 'Full Day' && 'mins'}
-                    {isWomenOnly && <Badge variant="destructive" className="ml-2 h-4 px-1">Women Only</Badge>}
-                </p>
-            </div>
-            {/* Price & Action */}
-            <div className="flex items-center space-x-3 shrink-0">
-                <p className="font-bold text-lg">₹{service.price}</p>
-                {isInCart ? (
-                    <Button size="sm" variant="destructive" onClick={() => onRemove(service.id)}>
-                        Remove
-                    </Button>
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: (index || 0) * 0.05 }}
+            whileHover={{ y: -2 }}
+        >
+            <Card className={`flex items-center p-4 gap-4 transition-all duration-300 ${isInCart ? 'border-pink-300 bg-pink-50/50 shadow-md shadow-pink-100/50' : 'border-pink-100/50 bg-white/70 backdrop-blur-md shadow-sm hover:shadow-lg hover:shadow-pink-100/50'}`}>
+                {/* Service Image */}
+                {service.imageUrl ? (
+                    <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="w-20 h-20 rounded-xl object-cover shrink-0 shadow-sm"
+                    />
                 ) : (
-                    <Button size="sm" onClick={() => onAdd(service)}>
-                        Add
-                    </Button>
+                    <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center shrink-0 border border-pink-50 shadow-inner">
+                        <span className="text-2xl">✨</span>
+                    </div>
                 )}
-            </div>
-        </Card>
+                {/* Service Details */}
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold text-[1.05rem] text-slate-800 truncate tracking-tight">{service.name}</p>
+                    <p className="text-sm text-slate-500 flex items-center mt-1.5 font-medium">
+                        <Clock className="h-3.5 w-3.5 mr-1 text-pink-400" />
+                        {service.duration || 'Varies'} {service.duration !== 'Multi-day' && service.duration !== 'Full Day' && 'mins'}
+                        {isWomenOnly && <Badge variant="secondary" className="ml-2 h-5 px-2 bg-rose-100 text-rose-700 hover:bg-rose-200 border-none font-medium">Women Only</Badge>}
+                    </p>
+                </div>
+                {/* Price & Action */}
+                <div className="flex flex-col sm:flex-row sm:items-center items-end gap-3 shrink-0">
+                    <p className="font-bold text-lg text-slate-800">₹{service.price}</p>
+                    {isInCart ? (
+                        <Button size="sm" variant="outline" className="border-pink-300 text-pink-600 hover:bg-pink-50 hover:text-pink-700 rounded-full px-5 transition-all" onClick={() => onRemove(service.id)}>
+                            Remove
+                        </Button>
+                    ) : (
+                        <Button size="sm" className="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white rounded-full shadow-md shadow-pink-200 px-6 transition-all hover:shadow-lg hover:scale-105" onClick={() => onAdd(service)}>
+                            Add
+                        </Button>
+                    )}
+                </div>
+            </Card>
+        </motion.div>
     );
 };
 
@@ -305,18 +314,22 @@ export default function BeautyDetail() {
     }
 
     return (
-        <div className="py-8 md:py-12 bg-gray-50 min-h-screen pb-24">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-8 md:py-12 bg-gradient-to-br from-rose-50 via-white to-pink-50 min-h-screen pb-28 selection:bg-pink-200 selection:text-pink-900">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+                {/* Decorative background blurs */}
+                <div className="absolute top-0 left-0 w-64 h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 pointer-events-none"></div>
+                <div className="absolute top-40 right-0 w-64 h-64 bg-rose-300 rounded-full mix-blend-multiply filter blur-[80px] opacity-20 pointer-events-none"></div>
 
                 {/* Header and Back Button */}
                 <Button
                     variant="ghost"
-                    className="mb-6 flex items-center space-x-2"
+                    className="mb-8 flex items-center space-x-2 text-slate-600 hover:text-slate-900 hover:bg-white/50 backdrop-blur-sm rounded-full px-4 transition-all"
                     onClick={() => setLocation("/")}
                     data-testid="button-back"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    <span>Back to Home</span>
+                    <span className="font-medium">Back to Home</span>
                 </Button>
 
                 {/* Removed Parlor Banner as requested */}
@@ -339,15 +352,15 @@ export default function BeautyDetail() {
                         <h3 className="text-xl font-semibold mb-4">Book a Service</h3>
                         
                         {/* 1. Main Categories (Scrollable row) */}
-                        <div className="flex overflow-x-auto pb-2 mb-4 gap-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <div className="flex overflow-x-auto pb-3 mb-5 gap-3 snap-x" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             {mainCategories.map((catName) => (
                                 <button
                                     key={catName}
                                     onClick={() => handleMainCatChange(catName)}
-                                    className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm border ${
+                                    className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold transition-all border snap-start ${
                                         selectedMainCat === catName 
-                                            ? "bg-primary text-primary-foreground border-primary scale-105" 
-                                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                                            ? "bg-gradient-to-r from-pink-500 to-rose-400 text-white border-transparent shadow-lg shadow-pink-200 scale-105" 
+                                            : "bg-white/80 backdrop-blur-md text-slate-600 border-pink-100 hover:bg-white hover:text-slate-900 hover:border-pink-200 hover:shadow-md"
                                     }`}
                                 >
                                     {catName}
@@ -357,18 +370,21 @@ export default function BeautyDetail() {
 
                         {/* 2. Sub Categories (Scrollable row) */}
                         {subCategories.length > 0 && (
-                            <div className="flex overflow-x-auto pb-2 gap-4 border-b border-gray-200 mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            <div className="flex overflow-x-auto pb-1 gap-6 border-b border-pink-100 mb-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 {subCategories.map((subCat: any) => (
                                     <button
                                         key={subCat.name}
                                         onClick={() => handleSubCatChange(subCat.name)}
-                                        className={`whitespace-nowrap pb-2 text-sm font-medium transition-colors border-b-2 ${
+                                        className={`whitespace-nowrap pb-3 text-[0.95rem] font-semibold transition-all border-b-2 relative ${
                                             selectedSubCat === subCat.name 
-                                                ? "border-primary text-primary" 
-                                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                                ? "border-pink-500 text-pink-600" 
+                                                : "border-transparent text-slate-500 hover:text-slate-800 hover:border-pink-200"
                                         }`}
                                     >
                                         {subCat.name}
+                                        {selectedSubCat === subCat.name && (
+                                            <motion.div layoutId="activeSubCat" className="absolute -bottom-[2px] left-0 right-0 h-[2px] bg-gradient-to-r from-pink-500 to-rose-400" />
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -387,9 +403,9 @@ export default function BeautyDetail() {
                             <Card><CardContent className="p-6 text-center text-muted-foreground">No services found in this sub-category. Please try a different selection.</CardContent></Card>
                         ) : finalServices.length === 0 && !selectedSubCat ? (
                             // Show initial prompt when no filter is selected
-                            <Card><CardContent className="p-6 text-center text-muted-foreground">Please use the dropdowns above to browse the specific services offered by the parlor.</CardContent></Card>
+                            <Card className="bg-white/60 backdrop-blur-md border-pink-100 shadow-sm"><CardContent className="p-8 text-center text-slate-500 font-medium">Please use the tabs above to browse the specific services offered by the parlor.</CardContent></Card>
                         ) : (
-                            finalServices.map((service: any) => (
+                            finalServices.map((service: any, index: number) => (
                                 <ServiceItemCard
                                     key={service.id}
                                     parlorId={parlorId}
@@ -398,6 +414,7 @@ export default function BeautyDetail() {
                                     cart={cart}
                                     onAdd={addToCart}
                                     onRemove={removeFromCart}
+                                    index={index}
                                 />
                             ))
                         )}
@@ -413,19 +430,26 @@ export default function BeautyDetail() {
             </div>
 
             {/* Floating Checkout Bar */}
-            {cartItemCount > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
-                    <div className="max-w-7xl mx-auto flex justify-between items-center">
-                        <div>
-                            <p className="font-bold text-lg">{cartItemCount} Items Selected</p>
-                            <p className="text-sm text-muted-foreground">Total: ₹{cartTotal}</p>
+            <AnimatePresence>
+                {cartItemCount > 0 && (
+                    <motion.div 
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-pink-100 p-4 shadow-[0_-10px_40px_-15px_rgba(236,72,153,0.2)] z-50"
+                    >
+                        <div className="max-w-7xl mx-auto flex justify-between items-center">
+                            <div>
+                                <p className="font-bold text-lg text-slate-800 tracking-tight">{cartItemCount} {cartItemCount === 1 ? 'Service' : 'Services'} Selected</p>
+                                <p className="text-sm font-medium text-pink-600">Total: ₹{cartTotal}</p>
+                            </div>
+                            <Button onClick={handleCheckout} size="lg" className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-8 shadow-md hover:shadow-lg transition-all hover:scale-105 font-semibold tracking-wide">
+                                Proceed to Checkout
+                            </Button>
                         </div>
-                        <Button onClick={handleCheckout} size="lg">
-                            Proceed to Checkout
-                        </Button>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

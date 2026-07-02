@@ -104,10 +104,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="com.razorpay:customui-core:3.10.8@aar"
-      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\jars\classes.jar"
-      resolved="com.razorpay:customui-core:3.10.8"
-      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8"
+      name="com.razorpay:customui-core:3.10.13@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\jars\classes.jar"
+      resolved="com.razorpay:customui-core:3.10.13"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -1112,10 +1112,10 @@
       jars="C:\Users\Sai\.gradle\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.15.0\38c8485a652f808c8c149150da4e5c2b0bd17f9a\error_prone_annotations-2.15.0.jar"
       resolved="com.google.errorprone:error_prone_annotations:2.15.0"/>
   <library
-      name="com.razorpay:core:1.0.11@aar"
-      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\jars\classes.jar"
-      resolved="com.razorpay:core:1.0.11"
-      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11"
+      name="com.razorpay:core:1.0.16@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\jars\classes.jar"
+      resolved="com.razorpay:core:1.0.16"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

@@ -373,7 +373,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/raw_rzp_config_customui.json.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/raw/rzp_config_customui.json"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/raw/rzp_config_customui.json"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/animator_design_fab_hide_motion_spec.xml.flat",
@@ -413,7 +413,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xhdpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-xhdpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-xhdpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-mdpi-v4_abc_btn_switch_to_on_mtrl_00001.9.png.flat",
@@ -641,7 +641,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxhdpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-xxhdpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-xxhdpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_abc_list_selector_background_transition_holo_dark.xml.flat",
@@ -1089,11 +1089,11 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxxhdpi-v4_razorpay_card.9.png.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable-xxxhdpi-v4/razorpay_card.9.png"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable-xxxhdpi-v4/razorpay_card.9.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxhdpi-v4_rzp_name_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-xxhdpi-v4/rzp_name_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-xxhdpi-v4/rzp_name_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_mtrl_dropdown_arrow.xml.flat",
@@ -1105,7 +1105,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-anydpi-v24_rzp_logo.xml.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-anydpi-v24/rzp_logo.xml"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-anydpi-v24/rzp_logo.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_efab_ripple_color_selector.xml.flat",
@@ -1153,7 +1153,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_upi_intent_activity_selector.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/layout/upi_intent_activity_selector.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/layout/upi_intent_activity_selector.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_material_slider_inactive_track_color.xml.flat",
@@ -1249,7 +1249,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxhdpi-v4_razorpay_card.9.png.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable-xxhdpi-v4/razorpay_card.9.png"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable-xxhdpi-v4/razorpay_card.9.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_slider_inactive_track_color_legacy.xml.flat",
@@ -1285,7 +1285,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_upi_base.png.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable/upi_base.png"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable/upi_base.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/mipmap-xhdpi_ic_launcher_round.webp.flat",
@@ -1293,7 +1293,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-hdpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-hdpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-hdpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xhdpi-v4_common_google_signin_btn_text_dark_normal_background.9.png.flat",
@@ -1317,7 +1317,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/raw_otpelf.js.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/raw/otpelf.js"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/raw/otpelf.js"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_abc_switch_thumb_material.xml.flat",
@@ -1445,7 +1445,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_apps_display_list_element.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/layout/apps_display_list_element.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/layout/apps_display_list_element.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_navigation_item_ripple_color.xml.flat",
@@ -1913,7 +1913,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-mdpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-mdpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-mdpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_slider_inactive_track_color.xml.flat",
@@ -2093,7 +2093,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_button_style.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable/button_style.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable/button_style.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxhdpi-v4_ic_call_answer_video.png.flat",
@@ -2429,7 +2429,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_rzp_loader.xml.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/layout/rzp_loader.xml"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/layout/rzp_loader.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_navigation_bar_item_with_indicator_label_tint.xml.flat",
@@ -2657,7 +2657,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_rzp_loader_circle.xml.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable/rzp_loader_circle.xml"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable/rzp_loader_circle.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-mdpi-v4_abc_tab_indicator_mtrl_alpha.9.png.flat",
@@ -2681,7 +2681,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_abc_vector_test.xml.flat",
-        "source": "com.shirurexpress.app-appcompat-resources-1.6.1-30:/drawable/abc_vector_test.xml"
+        "source": "com.shirurexpress.app-appcompat-resources-1.6.1-31:/drawable/abc_vector_test.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_navigation_item_background_color.xml.flat",
@@ -2717,7 +2717,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_styles.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable/styles.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable/styles.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-hdpi-v4_abc_btn_switch_to_on_mtrl_00012.9.png.flat",
@@ -3013,7 +3013,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_apps_display_grid_element.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/layout/apps_display_grid_element.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/layout/apps_display_grid_element.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_m3_navigation_rail_item_with_indicator_icon_tint.xml.flat",
@@ -3057,7 +3057,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xhdpi-v4_razorpay_card.9.png.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable-xhdpi-v4/razorpay_card.9.png"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable-xhdpi-v4/razorpay_card.9.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_mtrl_checkbox_button_icon_unchecked_checked.xml.flat",
@@ -3065,7 +3065,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-hdpi-v4_razorpay_card.9.png.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/drawable-hdpi-v4/razorpay_card.9.png"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/drawable-hdpi-v4/razorpay_card.9.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable_ic_launcher_background.xml.flat",
@@ -3145,7 +3145,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_app_display_list_heading_tv.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/layout/app_display_list_heading_tv.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/layout/app_display_list_heading_tv.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-mdpi-v4_notification_bg_normal.9.png.flat",
@@ -3201,7 +3201,7 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_upi_intent_no_apps_found.xml.flat",
-        "source": "com.shirurexpress.app-customui-core-3.10.8-6:/layout/upi_intent_no_apps_found.xml"
+        "source": "com.shirurexpress.app-customui-core-3.10.13-14:/layout/upi_intent_no_apps_found.xml"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/layout_activity_splash.xml.flat",
@@ -3425,11 +3425,11 @@
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-xxxhdpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-xxxhdpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-xxxhdpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/drawable-ldpi-v4_rzp_logo.png.flat",
-        "source": "com.shirurexpress.app-core-1.0.11-32:/drawable-ldpi-v4/rzp_logo.png"
+        "source": "com.shirurexpress.app-core-1.0.16-30:/drawable-ldpi-v4/rzp_logo.png"
     },
     {
         "merged": "com.shirurexpress.app-release-52:/color_mtrl_btn_text_color_selector.xml.flat",

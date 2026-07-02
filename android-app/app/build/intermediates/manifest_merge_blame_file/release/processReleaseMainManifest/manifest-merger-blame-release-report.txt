@@ -105,11 +105,11 @@
 54        </intent>
 55
 56        <package android:name="my.com.tngdigital.ewallet" />
-56-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:11:9-61
-56-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:11:18-58
+56-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:11:9-61
+56-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:11:18-58
 57
 58        <intent>
-58-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:13:9-19:18
+58-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:13:9-19:18
 59            <action android:name="android.intent.action.VIEW" />
 59-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:13-65
 59-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:21-62
@@ -121,7 +121,7 @@
 63-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:19-39
 64        </intent>
 65        <intent>
-65-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:20:9-29:18
+65-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:20:9-29:18
 66            <action android:name="android.intent.action.VIEW" />
 66-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:13-65
 66-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:21-62
@@ -139,16 +139,16 @@
 73-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:19-39
 74        </intent>
 75        <intent>
-75-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:30:9-32:18
+75-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:30:9-32:18
 76            <action android:name="android.intent.action.MAIN" />
 76-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:66:17-69
 76-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:66:25-66
 77        </intent>
 78        <intent>
-78-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:33:9-37:18
+78-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:33:9-37:18
 79            <action android:name="android.intent.action.SEND" />
-79-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:34:13-65
-79-->[com.razorpay:customui-core:3.10.8] C:\Users\Sai\.gradle\caches\8.13\transforms\1eba213021cdc173ea6dc6a26962b9f7\transformed\customui-core-3.10.8\AndroidManifest.xml:34:21-62
+79-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:34:13-65
+79-->[com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:34:21-62
 80
 81            <data android:mimeType="*/*" />
 81-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:13-42
@@ -188,8 +188,8 @@
 100-->[androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:26:5-97
 100-->[androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:26:22-94
 101    <uses-permission android:name="android.permission.READ_BASIC_PHONE_STATE" />
-101-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:10:5-81
-101-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:10:22-78
+101-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:10:5-81
+101-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:10:22-78
 102
 103    <application
 103-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-114:19
@@ -610,15 +610,15 @@
 331        </receiver>
 332
 333        <activity
-333-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:13:9-27:20
+333-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:13:9-27:20
 334            android:name="com.razorpay.DeeplinkActivity"
-334-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:14:13-57
+334-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:14:13-57
 335            android:exported="true"
-335-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:15:13-36
+335-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:15:13-36
 336            android:theme="@style/CheckoutTheme" >
-336-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:16:13-49
+336-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:16:13-49
 337            <intent-filter>
-337-->[com.razorpay:core:1.0.11] C:\Users\Sai\.gradle\caches\8.13\transforms\9cba338190515e927a982105e520193d\transformed\core-1.0.11\AndroidManifest.xml:17:13-26:29
+337-->[com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:17:13-26:29
 338                <action android:name="android.intent.action.VIEW" />
 338-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:13-65
 338-->C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:43:21-62

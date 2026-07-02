@@ -114,7 +114,8 @@
       "in.gokiwi.kiwitpap",
       "com.fss.indus",
       "com.paypointz.wallet",
-      "in.irisbyyes.app"
+      "in.irisbyyes.app",
+      "com.whatsapp"
     ],
     "upiAppsPreferredOrder": [
       "com.google.android.apps.nbu.paisa.user",
@@ -123,6 +124,7 @@
       "net.one97.paytm"
     ],
     "shortcodes": {
+      "com.whatsapp": "whatsapp",
       "com.google.android.apps.nbu.paisa.user": "google_pay",
       "in.org.npci.upiapp": "bhim",
       "com.phonepe.app": "phonepe",
@@ -191,6 +193,7 @@
       "in.irisbyyes.app": "yesbank-iris"
     },
     "intentAppCodes": {
+      "com.whatsapp": "whatsapp",
       "com.google.android.apps.nbu.paisa.user": "google_pay",
       "in.org.npci.upiapp": "bhim",
       "com.phonepe.app": "phonepe",

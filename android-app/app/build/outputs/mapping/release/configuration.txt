@@ -299,6 +299,44 @@
 # The proguard configuration file for the following section is C:\Users\Sai\.gradle\caches\8.13\transforms\8eecd9a04d532812ea23c00b0a13b3f5\transformed\customui-3.9.22\proguard.txt
 
 # End of content from C:\Users\Sai\.gradle\caches\8.13\transforms\8eecd9a04d532812ea23c00b0a13b3f5\transformed\customui-3.9.22\proguard.txt
+# The proguard configuration file for the following section is C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\proguard.txt
+# Consumer rules — automatically applied to merchant apps that include this SDK.
+# Merchants do not need to add any Razorpay ProGuard rules manually.
+
+# Razorpay public API — do not modify
+-keep class com.razorpay.Razorpay {*;}
+-keep class com.razorpay.PaymentResultListener {*;}
+-keep class com.razorpay.PaymentResultWithDataListener {*;}
+-keep class com.razorpay.PaymentData {*;}
+-keep class com.razorpay.ExternalWalletListener {*;}
+-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
+-keepattributes JavascriptInterface
+-keepattributes *Annotation*
+-dontwarn com.razorpay.**
+# Consumer rules bundled into the checkout fat AAR.
+# This is a fail-safe so merchant app shrinking does not rename or strip
+# Razorpay SDK classes that are packaged inside the published artifact.
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+-keepattributes JavascriptInterface
+-keepattributes *Annotation*
+
+-dontwarn com.razorpay.**
+-keep class com.razorpay.** {*;}
+# Force R8 to keep Razorpay's internal R resource classes
+-keep class com.razorpay.**.R$* { *; }
+
+# Keep all other core Razorpay SDK classes intact
+-dontwarn com.razorpay.**
+-optimizations !method/inlining/*
+
+-keepclasseswithmembers class * {
+  public void onPayment*(...);
+}
+
+# End of content from C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\proguard.txt
 # The proguard configuration file for the following section is C:\Users\Sai\.gradle\caches\8.13\transforms\15dd19559c2769581978b00ed3e9daea\transformed\play-services-base-18.1.0\proguard.txt
 # b/35135904 Ensure that proguard will not strip the mResultGuardian.
 -keepclassmembers class com.google.android.gms.common.api.internal.BasePendingResult {
