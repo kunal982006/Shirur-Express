@@ -605,6 +605,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/rental-properties", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const propertyData = insertRentalPropertySchema.parse(req.body);
+      const property = await storage.createRentalProperty({ ...propertyData, ownerId: userId });
+      res.status(201).json(property);
+    } catch (error: any) {
+      console.error("Create rental property error:", error);
+      res.status(400).json({ message: error.message || "Error creating rental property" });
+    }
+  });
+
+  app.get("/api/rental-properties/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const property = await storage.getRentalProperty(id);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      res.json(property);
+    } catch (error: any) {
+      console.error("Get rental property error:", error);
+      res.status(500).json({ message: error.message || "Error fetching property" });
+    }
+  });
+
   app.delete("/api/rental-properties/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
