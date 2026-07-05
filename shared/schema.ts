@@ -537,6 +537,13 @@ export const restaurantMenuItemsRelations = relations(restaurantMenuItems, ({ on
   }),
 }));
 
+export const rentalPropertiesRelations = relations(rentalProperties, ({ one }) => ({
+  owner: one(users, {
+    fields: [rentalProperties.ownerId],
+    references: [users.id],
+  }),
+}));
+
 
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
