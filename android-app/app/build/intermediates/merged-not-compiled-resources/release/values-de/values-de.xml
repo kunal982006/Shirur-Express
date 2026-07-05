@@ -46,6 +46,29 @@
     <string name="character_counter_content_description">Eingegebene Zeichen: %1$d von %2$d</string>
     <string name="character_counter_overflowed_content_description">Zeichenbeschränkung überschritten: %1$d/%2$d</string>
     <string name="clear_text_end_icon_content_description">Text löschen</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Gehe zu &lt;b>facebook.com/device&lt;/b> und gib den oben angezeigten Code ein.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Unerwarteter Fehler beim Herunterladen eines Bildes.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">WebView-Anmeldung erfordert INTERNET-Berechtigung</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">AndroidOffensichtlicher Fehler</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Gefällt dir</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Gefällt mir</string>
+    <string gender="unknown" name="com_facebook_loading">Wird geladen ...</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Abbrechen</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Melde dich an</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Weiter mit Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Mit Facebook anmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Abmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Abmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Angemeldet als: %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Mit Facebook angemeldet</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Senden</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Teilen</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Öffne die Facebook-App auf deinem Mobilgerät, um dich mit deinem Konto zu verbinden und nach Benachrichtigungen zu suchen.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">- ODER -</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Das bist du nicht?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Weiter als %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Anmeldung bestätigen</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Du bestimmst, welche Informationen du mit Apps teilen möchtest.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Aktivieren</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s funktioniert erst nach der Aktivierung der Google Play-Dienste.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Google Play-Dienste aktivieren</string>

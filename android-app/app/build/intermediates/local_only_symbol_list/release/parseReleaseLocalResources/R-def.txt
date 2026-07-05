@@ -40,6 +40,9 @@ mipmap ic_launcher_foreground
 mipmap ic_launcher_round
 string app_name
 string default_notification_channel_id
+string facebook_app_id
+string facebook_client_token
+string fb_login_protocol_scheme
 string gcm_defaultSenderId
 string google_api_key
 string google_app_id

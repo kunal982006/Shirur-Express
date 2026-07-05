@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeReleaseResources-49:/values-mn/values-mn.xml",
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-55:/values-mn/values-mn.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\15dd19559c2769581978b00ed3e9daea\\transformed\\play-services-base-18.1.0\\res\\values-mn\\values.xml",

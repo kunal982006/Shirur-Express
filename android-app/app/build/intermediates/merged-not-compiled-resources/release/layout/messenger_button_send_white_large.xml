@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (c) Meta Platforms, Inc. and affiliates.
+    All rights reserved.
+
+    This source code is licensed under the license found in the
+    LICENSE file in the root directory of this source tree.
+-->
+
+<FrameLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/messenger_send_button"
+  style="@style/MessengerButton.White.Large"
+  >
+  <TextView
+    android:text="@string/messenger_send_button_text"
+    style="@style/MessengerButtonText.White.Large"
+    />
+</FrameLayout>

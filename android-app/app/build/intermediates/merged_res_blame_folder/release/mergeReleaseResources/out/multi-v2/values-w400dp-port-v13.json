@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.shirurexpress.app-mergeReleaseResources-49:/values-w400dp-port-v13/values-w400dp-port-v13.xml",
+            "outputFile": "com.shirurexpress.app-mergeReleaseResources-55:/values-w400dp-port-v13/values-w400dp-port-v13.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sai\\.gradle\\caches\\8.13\\transforms\\4a4aa80cd28625dfe69277051b2e9e51\\transformed\\material-1.12.0\\res\\values-w400dp-port-v13\\values-w400dp-port-v13.xml",

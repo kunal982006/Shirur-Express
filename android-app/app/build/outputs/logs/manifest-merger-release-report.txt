@@ -11,15 +11,20 @@ INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\Andro
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:105:13-62
 manifest
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-116:12
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:2:1-9:12
 MERGED from [androidx.databinding:viewbinding:8.13.2] C:\Users\Sai\.gradle\caches\8.13\transforms\300d12c91360e84039d3ed01312ba38e\transformed\viewbinding-8.13.2\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\9a6d63606f50bd423612c0353688c55e\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.facebook.android:facebook-android-sdk:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-login:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-gamingservices:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-share:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:9:1-44:12
 MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\537c78cefc6b5426493e664678631c4a\transformed\appcompat-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\b766177ea326a5457456e7200c42f632\transformed\viewpager2-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:2:1-9:12
@@ -48,9 +53,16 @@ MERGED from [androidx.privacysandbox.ads:ads-adservices-java:1.0.0-beta05] C:\Us
 MERGED from [androidx.privacysandbox.ads:ads-adservices:1.0.0-beta05] C:\Users\Sai\.gradle\caches\8.13\transforms\b1662689dd45dde371b6f90bc3805aca\transformed\ads-adservices-1.0.0-beta05\AndroidManifest.xml:17:1-28:12
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\Sai\.gradle\caches\8.13\transforms\6caa41666f542ca02aaeacbadf0fa4b7\transformed\savedstate-ktx-1.2.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2878c1dd5d6a3b0d580c9ac0374d02fa\transformed\webkit-1.9.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\dd6afdd9fa10129db2c08c31d771c8a9\transformed\legacy-support-v4-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.browser:browser:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb7cdd1092344db03a1fb89e20b50602\transformed\browser-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\0b96ce33160a9c580a3f9074e0980ca3\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c09345366faac70662d700c73e0dcace\transformed\swiperefreshlayout-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\1c2d6aa6144ebfa25378fcf2239f025c\transformed\emoji2-views-helper-1.2.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:17:1-35:12
+MERGED from [com.facebook.android:facebook-applinks:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-messenger:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\AndroidManifest.xml:9:1-19:12
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:9:1-50:12
+MERGED from [com.facebook.android:facebook-bolts:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\AndroidManifest.xml:9:1-19:12
 MERGED from [androidx.core:core-ktx:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\975e87ee50565d6d70e7f3b2996a4327\transformed\core-ktx-1.13.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] C:\Users\Sai\.gradle\caches\8.13\transforms\20dd7d45e3e03ec626d2c769e2ef3b3d\transformed\drawerlayout-1.1.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\47420e6d99ab5df71d66588719343a26\transformed\coordinatorlayout-1.1.0\AndroidManifest.xml:17:1-24:12
@@ -63,7 +75,10 @@ MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\Sai\.gr
 MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\e89ad0e7fe5afeea73db93a14a00f395\transformed\legacy-support-core-utils-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\71ffd0f9faa2f1c4b5d54d6ffa2e41ef\transformed\loader-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\3b36859b2e85490646401cfa6b594768\transformed\recyclerview-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d198928d2ce32321bba9e4fee8b9c512\transformed\slidingpanelayout-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.customview:customview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2741c21c26a14d6abfcd39dea7b9921a\transformed\customview-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media:media:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb78246bfa37552481b4922653fc1390\transformed\media-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\5ccd4a0136f9a225029660e509aa1952\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2] C:\Users\Sai\.gradle\caches\8.13\transforms\d37550af6c2e33bfd384ee1c8e51c010\transformed\lifecycle-viewmodel-ktx-2.6.2\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.2] C:\Users\Sai\.gradle\caches\8.13\transforms\23adb8eb42621bb0f3b7c016f98c283d\transformed\lifecycle-viewmodel-2.6.2\AndroidManifest.xml:17:1-22:12
@@ -102,6 +117,7 @@ MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\User
 MERGED from [androidx.print:print:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\7ee9583fb465694e5b697f3b648e2fbb\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\ebe5374fdc3ce745f3761b18a6d993bf\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:2:1-30:12
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:2:1-13:12
 	package
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:versionName
@@ -226,6 +242,8 @@ MERGED from [com.google.android.gms:play-services-measurement-api:21.5.0] C:\Use
 MERGED from [com.google.android.gms:play-services-measurement-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\79e04a38b3398126b3523c46526aaa3d\transformed\play-services-measurement-api-21.5.0\AndroidManifest.xml:25:5-79
 MERGED from [com.google.android.gms:play-services-measurement-impl:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f21c50ad64771171f81ebc4dd2dd1241\transformed\play-services-measurement-impl-21.5.0\AndroidManifest.xml:27:5-79
 MERGED from [com.google.android.gms:play-services-measurement-impl:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f21c50ad64771171f81ebc4dd2dd1241\transformed\play-services-measurement-impl-21.5.0\AndroidManifest.xml:27:5-79
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:16:5-79
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:16:5-79
 MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8cf73bb33478c54bb450f43bcb0aa692\transformed\play-services-ads-identifier-18.0.0\AndroidManifest.xml:23:5-79
 MERGED from [com.google.android.gms:play-services-ads-identifier:18.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\8cf73bb33478c54bb450f43bcb0aa692\transformed\play-services-ads-identifier-18.0.0\AndroidManifest.xml:23:5-79
 MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\93c977d0a427e7f908144be83aff1b71\transformed\play-services-measurement-sdk-api-21.5.0\AndroidManifest.xml:26:5-79
@@ -234,6 +252,8 @@ MERGED from [com.google.android.gms:play-services-measurement-sdk-api:21.5.0] C:
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:29:22-76
 queries
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:32:5-46:15
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:17:5-19:15
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:17:5-19:15
 MERGED from [com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:10:5-38:15
 MERGED from [com.razorpay:customui-core:3.10.13] C:\Users\Sai\.gradle\caches\8.13\transforms\3d6eb3bc6bece02a84d6e1c99d8d6e7f\transformed\customui-core-3.10.13\AndroidManifest.xml:10:5-38:15
 package#com.google.android.apps.nbu.paisa.user
@@ -285,14 +305,24 @@ ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidM
 	android:scheme
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:19-39
 application
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-114:19
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-114:19
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-128:19
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-128:19
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
+MERGED from [com.facebook.android:facebook-android-sdk:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-android-sdk:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-login:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-login:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-gamingservices:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-gamingservices:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-share:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-share:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:21:5-42:19
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:21:5-42:19
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.gms:play-services-location:21.0.1] C:\Users\Sai\.gradle\caches\8.13\transforms\496c21efb7bd37731d99198d0ce1db93\transformed\play-services-location-21.0.1\AndroidManifest.xml:7:5-20
 MERGED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:28:5-64:19
@@ -327,6 +357,14 @@ MERGED from [androidx.privacysandbox.ads:ads-adservices:1.0.0-beta05] C:\Users\S
 MERGED from [androidx.privacysandbox.ads:ads-adservices:1.0.0-beta05] C:\Users\Sai\.gradle\caches\8.13\transforms\b1662689dd45dde371b6f90bc3805aca\transformed\ads-adservices-1.0.0-beta05\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:23:5-33:19
+MERGED from [com.facebook.android:facebook-applinks:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-applinks:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-messenger:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-messenger:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:18:5-48:19
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:18:5-48:19
+MERGED from [com.facebook.android:facebook-bolts:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\AndroidManifest.xml:16:5-17:19
+MERGED from [com.facebook.android:facebook-bolts:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\AndroidManifest.xml:16:5-17:19
 MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\a3edcd5616063b71c3c0be0e016146d6\transformed\play-services-stats-17.0.2\AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.gms:play-services-stats:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\a3edcd5616063b71c3c0be0e016146d6\transformed\play-services-stats-17.0.2\AndroidManifest.xml:7:5-20
 MERGED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:28:5-89
@@ -357,6 +395,8 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Sai\.gradle\caches
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Sai\.gradle\caches\8.13\transforms\6dbd9f0032c66acf000ca3fee8d9338f\transformed\startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 MERGED from [com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:12:5-28:19
 MERGED from [com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:12:5-28:19
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:11:5-20
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:11:5-20
 	android:extractNativeLibs
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:appComponentFactory
@@ -445,6 +485,26 @@ action#com.google.firebase.MESSAGING_EVENT
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:99:17-78
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:99:25-75
+meta-data#com.facebook.sdk.ApplicationId
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:115:9-117:55
+	android:value
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:117:13-52
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:116:13-58
+meta-data#com.facebook.sdk.ClientToken
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:118:9-120:61
+	android:value
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:120:13-58
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:119:13-56
+provider#com.facebook.FacebookContentProvider
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:123:9-126:39
+	android:authorities
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:125:13-98
+	android:exported
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:126:13-36
+	android:name
+		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:124:13-64
 meta-data#android.support.FILE_PROVIDER_PATHS
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:109:13-111:54
 	android:resource
@@ -465,6 +525,16 @@ MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gra
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Sai\.gradle\caches\8.13\transforms\33664e0cf9c3a77965c6ce753ecee742\transformed\constraintlayout-2.1.4\AndroidManifest.xml:5:5-7:41
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\9a6d63606f50bd423612c0353688c55e\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\9a6d63606f50bd423612c0353688c55e\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
+MERGED from [com.facebook.android:facebook-android-sdk:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-android-sdk:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-login:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-login:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-gamingservices:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-gamingservices:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-share:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-share:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:13:5-15:41
+MERGED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:13:5-15:41
 MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\537c78cefc6b5426493e664678631c4a\transformed\appcompat-1.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\Sai\.gradle\caches\8.13\transforms\537c78cefc6b5426493e664678631c4a\transformed\appcompat-1.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\b766177ea326a5457456e7200c42f632\transformed\viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
@@ -521,12 +591,26 @@ MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\Sai\.gradle\cach
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] C:\Users\Sai\.gradle\caches\8.13\transforms\6caa41666f542ca02aaeacbadf0fa4b7\transformed\savedstate-ktx-1.2.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2878c1dd5d6a3b0d580c9ac0374d02fa\transformed\webkit-1.9.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.webkit:webkit:1.9.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2878c1dd5d6a3b0d580c9ac0374d02fa\transformed\webkit-1.9.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\dd6afdd9fa10129db2c08c31d771c8a9\transformed\legacy-support-v4-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\dd6afdd9fa10129db2c08c31d771c8a9\transformed\legacy-support-v4-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.browser:browser:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb7cdd1092344db03a1fb89e20b50602\transformed\browser-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.browser:browser:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb7cdd1092344db03a1fb89e20b50602\transformed\browser-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\0b96ce33160a9c580a3f9074e0980ca3\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\0b96ce33160a9c580a3f9074e0980ca3\transformed\legacy-support-core-ui-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c09345366faac70662d700c73e0dcace\transformed\swiperefreshlayout-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c09345366faac70662d700c73e0dcace\transformed\swiperefreshlayout-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\1c2d6aa6144ebfa25378fcf2239f025c\transformed\emoji2-views-helper-1.2.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.emoji2:emoji2-views-helper:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\1c2d6aa6144ebfa25378fcf2239f025c\transformed\emoji2-views-helper-1.2.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:21:5-44
 MERGED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:21:5-44
+MERGED from [com.facebook.android:facebook-applinks:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-applinks:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-messenger:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-messenger:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-bolts:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\AndroidManifest.xml:12:5-14:41
+MERGED from [com.facebook.android:facebook-bolts:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\AndroidManifest.xml:12:5-14:41
 MERGED from [androidx.core:core-ktx:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\975e87ee50565d6d70e7f3b2996a4327\transformed\core-ktx-1.13.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.core:core-ktx:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\975e87ee50565d6d70e7f3b2996a4327\transformed\core-ktx-1.13.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.drawerlayout:drawerlayout:1.1.1] C:\Users\Sai\.gradle\caches\8.13\transforms\20dd7d45e3e03ec626d2c769e2ef3b3d\transformed\drawerlayout-1.1.1\AndroidManifest.xml:20:5-22:41
@@ -551,8 +635,14 @@ MERGED from [androidx.loader:loader:1.0.0] C:\Users\Sai\.gradle\caches\8.13\tran
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\71ffd0f9faa2f1c4b5d54d6ffa2e41ef\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\3b36859b2e85490646401cfa6b594768\transformed\recyclerview-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.recyclerview:recyclerview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\3b36859b2e85490646401cfa6b594768\transformed\recyclerview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d198928d2ce32321bba9e4fee8b9c512\transformed\slidingpanelayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\d198928d2ce32321bba9e4fee8b9c512\transformed\slidingpanelayout-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.customview:customview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2741c21c26a14d6abfcd39dea7b9921a\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.customview:customview:1.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\2741c21c26a14d6abfcd39dea7b9921a\transformed\customview-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.media:media:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb78246bfa37552481b4922653fc1390\transformed\media-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\fb78246bfa37552481b4922653fc1390\transformed\media-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\5ccd4a0136f9a225029660e509aa1952\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] C:\Users\Sai\.gradle\caches\8.13\transforms\5ccd4a0136f9a225029660e509aa1952\transformed\asynclayoutinflater-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2] C:\Users\Sai\.gradle\caches\8.13\transforms\d37550af6c2e33bfd384ee1c8e51c010\transformed\lifecycle-viewmodel-ktx-2.6.2\AndroidManifest.xml:20:5-44
@@ -629,10 +719,40 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\ebe5374fdc3ce745f3761b18a6d993bf\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:5:5-44
 MERGED from [com.razorpay:core:1.0.16] C:\Users\Sai\.gradle\caches\8.13\transforms\97e7bad34ee31aba01c47ab0bd3aa74d\transformed\core-1.0.16\AndroidManifest.xml:5:5-44
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:5:5-7:41
 	android:targetSdkVersion
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml
+package#com.facebook.katana
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:18:9-55
+	android:name
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:18:18-52
+activity#com.facebook.FacebookActivity
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:22:9-25:66
+	android:configChanges
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:24:13-96
+	android:theme
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:25:13-63
+	android:name
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:23:13-57
+activity#com.facebook.CustomTabMainActivity
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:26:9-71
+	android:name
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:26:19-68
+activity#com.facebook.CustomTabActivity
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:27:9-41:20
+	tools:node
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:30:13-31
+	android:exported
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:29:13-36
+	android:name
+		ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:28:13-58
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:cct.${applicationId}+data:scheme:fbconnect
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:31:13-40:29
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:cct.com.shirurexpress.app+data:scheme:fbconnect
+ADDED from [com.facebook.android:facebook-common:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\AndroidManifest.xml:31:13-40:29
 uses-permission#com.google.android.c2dm.permission.RECEIVE
 ADDED from [com.google.firebase:firebase-messaging:23.4.0] C:\Users\Sai\.gradle\caches\8.13\transforms\abece04114a3c11cfcf608d038e7040e\transformed\firebase-messaging-23.4.0\AndroidManifest.xml:26:5-82
 MERGED from [com.google.android.gms:play-services-cloud-messaging:17.1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\74f1115ae3f7f5bc74aebc404225498f\transformed\play-services-cloud-messaging-17.1.0\AndroidManifest.xml:11:5-82
@@ -817,6 +937,8 @@ uses-permission#com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_S
 ADDED from [com.google.android.gms:play-services-measurement:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\3c950057c41fc1c83d557ae98834d9f8\transformed\play-services-measurement-21.5.0\AndroidManifest.xml:26:5-110
 MERGED from [com.google.android.gms:play-services-measurement-impl:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f21c50ad64771171f81ebc4dd2dd1241\transformed\play-services-measurement-impl-21.5.0\AndroidManifest.xml:26:5-110
 MERGED from [com.google.android.gms:play-services-measurement-impl:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f21c50ad64771171f81ebc4dd2dd1241\transformed\play-services-measurement-impl-21.5.0\AndroidManifest.xml:26:5-110
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:9:5-110
+MERGED from [com.android.installreferrer:installreferrer:1.0] C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\AndroidManifest.xml:9:5-110
 	android:name
 		ADDED from [com.google.android.gms:play-services-measurement:21.5.0] C:\Users\Sai\.gradle\caches\8.13\transforms\3c950057c41fc1c83d557ae98834d9f8\transformed\play-services-measurement-21.5.0\AndroidManifest.xml:26:22-107
 receiver#com.google.android.gms.measurement.AppMeasurementReceiver
@@ -873,6 +995,38 @@ ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\trans
 		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
 	android:name
 		ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\Sai\.gradle\caches\8.13\transforms\001e9c6c40677606c5dbdd8a3b077b4d\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+provider#com.facebook.internal.FacebookInitProvider
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:29:9-32:40
+	android:authorities
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:31:13-72
+	android:exported
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:32:13-37
+	android:name
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:30:13-70
+receiver#com.facebook.CurrentAccessTokenExpirationBroadcastReceiver
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:34:9-40:20
+	android:exported
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:36:13-37
+	android:name
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:35:13-86
+intent-filter#action:name:com.facebook.sdk.ACTION_CURRENT_ACCESS_TOKEN_CHANGED
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:37:13-39:29
+action#com.facebook.sdk.ACTION_CURRENT_ACCESS_TOKEN_CHANGED
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:38:17-95
+	android:name
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:38:25-92
+receiver#com.facebook.AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:41:9-47:20
+	android:exported
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:43:13-37
+	android:name
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:42:13-118
+intent-filter#action:name:com.facebook.sdk.ACTION_CURRENT_AUTHENTICATION_TOKEN_CHANGED
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:44:13-46:29
+action#com.facebook.sdk.ACTION_CURRENT_AUTHENTICATION_TOKEN_CHANGED
+ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:45:17-103
+	android:name
+		ADDED from [com.facebook.android:facebook-core:17.0.2] C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\AndroidManifest.xml:45:25-100
 permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.0] C:\Users\Sai\.gradle\caches\8.13\transforms\f92830208c762be3d3ed52295432f36a\transformed\core-1.13.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
