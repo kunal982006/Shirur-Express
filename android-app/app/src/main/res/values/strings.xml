@@ -3,4 +3,8 @@
     <string name="app_name">Shirur Express</string>
     <string name="default_notification_channel_id">fcm_default_channel</string>
     <string name="incoming_order_channel_id">incoming_orders_channel_v2</string>
+    <!-- Facebook SDK Configuration (Replace with your actual values from developers.facebook.com) -->
+    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
+    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
 </resources>

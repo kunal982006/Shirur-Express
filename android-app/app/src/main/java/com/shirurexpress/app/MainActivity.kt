@@ -35,6 +35,9 @@ import com.google.android.gms.tasks.Task
 import java.io.File
 import com.razorpay.Razorpay
 import androidx.activity.enableEdgeToEdge
+import com.facebook.FacebookSdk
+import com.facebook.appevents.AppEventsLogger
+import android.os.Bundle as AndroidBundle
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +48,9 @@ class MainActivity : AppCompatActivity() {
     
     // Razorpay WebView SDK for UPI Intent
     private var razorpayInstance: Razorpay? = null
+    
+    // Facebook SDK App Events Logger
+    private lateinit var fbLogger: AppEventsLogger
 
     // File upload callback for WebView file chooser
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -143,6 +149,16 @@ class MainActivity : AppCompatActivity() {
             razorpayInstance?.setWebView(webView)
         } catch (e: Exception) {
             Log.e("RazorpayInit", "Failed to initialize Razorpay WebView SDK", e)
+        }
+
+        // Initialize Facebook SDK for Meta Ads
+        try {
+            FacebookSdk.sdkInitialize(applicationContext)
+            AppEventsLogger.activateApp(application)
+            fbLogger = AppEventsLogger.newLogger(this)
+            Log.d("FacebookSDK", "Facebook SDK initialized successfully")
+        } catch (e: Exception) {
+            Log.e("FacebookSDK", "Failed to initialize Facebook SDK", e)
         }
 
         // Setup back button handling
@@ -559,6 +575,60 @@ class MainActivity : AppCompatActivity() {
 
         @android.webkit.JavascriptInterface
         fun areAllPermissionsGranted(): Boolean = isNotificationPermissionGranted() && isBatteryOptimizationDisabled() && isFullScreenIntentGranted()
+
+        // --- Facebook SDK Event Bridge ---
+        // Allows WebView to forward pixel events to native Facebook SDK
+
+        @android.webkit.JavascriptInterface
+        fun logFacebookEvent(eventName: String, paramsJson: String) {
+            try {
+                val params = AndroidBundle()
+                val jsonObj = org.json.JSONObject(paramsJson)
+                val keys = jsonObj.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val value = jsonObj.get(key)
+                    when (value) {
+                        is String -> params.putString(key, value)
+                        is Int -> params.putInt(key, value)
+                        is Double -> params.putDouble(key, value)
+                        is Boolean -> params.putBoolean(key, value)
+                        else -> params.putString(key, value.toString())
+                    }
+                }
+                if (::fbLogger.isInitialized) {
+                    fbLogger.logEvent(eventName, params)
+                    Log.d("FacebookSDK", "Event logged: $eventName")
+                }
+            } catch (e: Exception) {
+                Log.e("FacebookSDK", "Failed to log event: $eventName", e)
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun logFacebookPurchase(amount: Double, currency: String, paramsJson: String) {
+            try {
+                val params = AndroidBundle()
+                val jsonObj = org.json.JSONObject(paramsJson)
+                val keys = jsonObj.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val value = jsonObj.get(key)
+                    when (value) {
+                        is String -> params.putString(key, value)
+                        is Int -> params.putInt(key, value)
+                        is Double -> params.putDouble(key, value)
+                        else -> params.putString(key, value.toString())
+                    }
+                }
+                if (::fbLogger.isInitialized) {
+                    fbLogger.logPurchase(java.math.BigDecimal(amount), java.util.Currency.getInstance(currency), params)
+                    Log.d("FacebookSDK", "Purchase logged: $amount $currency")
+                }
+            } catch (e: Exception) {
+                Log.e("FacebookSDK", "Failed to log purchase", e)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

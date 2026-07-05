@@ -20,6 +20,7 @@ import api from "@/lib/api"; // API client
 import { useAuth } from "@/hooks/use-auth"; // User details ke liye
 import { calculateDistance, calculateDeliveryFee } from "@/lib/location";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 // --- IMPORTS KHATAM ---
 
 // Delivery Address ke liye Schema
@@ -168,6 +169,19 @@ export default function Checkout() {
       setLocation('/street-food'); // Ya grocery, jahan se user aaya
     }
   }, [items.length, setLocation, isPlacingOrder]);
+
+  // Track InitiateCheckout for Meta Ads
+  useEffect(() => {
+    if (items.length > 0) {
+      trackEvent(FacebookStandardEvent.InitiateCheckout, {
+        content_ids: items.map(item => String(item.id)),
+        content_type: 'product',
+        num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+        value: getTotalPrice(),
+        currency: 'INR',
+      });
+    }
+  }, []); // Only fire once on mount
 
   // Get User Location
   const getUserLocation = () => {
@@ -368,6 +382,14 @@ export default function Checkout() {
           title: "✅ Order Placed!",
           description: "Your Cash on Delivery order has been successfully placed.",
         });
+        // Track Purchase for Meta Ads (COD)
+        trackEvent(FacebookStandardEvent.Purchase, {
+          content_ids: items.map(item => String(item.id)),
+          content_type: 'product',
+          num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+          value: total,
+          currency: 'INR',
+        });
         clearCart();
         setLocation("/order-success");
         return;
@@ -406,6 +428,14 @@ export default function Checkout() {
               toast({
                 title: "✅ Order Placed!",
                 description: "Your payment was successful.",
+              });
+              // Track Purchase for Meta Ads (Online Payment)
+              trackEvent(FacebookStandardEvent.Purchase, {
+                content_ids: items.map(item => String(item.id)),
+                content_type: 'product',
+                num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+                value: total,
+                currency: 'INR',
               });
               clearCart();
               setLocation("/order-success"); // Success page par bhejo

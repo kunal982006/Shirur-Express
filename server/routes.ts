@@ -49,6 +49,7 @@ import { z } from "zod";
 
 import { sendPushNotification } from "./firebase";
 import { importGmartProducts } from "./import-gmart-products";
+import { trackLead, trackPurchase, isConversionsApiConfigured } from "./facebook-conversions";
 
 // ===== PERFORMANCE: In-memory cache for read-heavy public endpoints =====
 const apiCache = new Map<string, { data: any; expiry: number }>();
@@ -337,6 +338,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           const { password: _, ...userWithoutPassword } = user;
           res.status(201).json({ user: userWithoutPassword, message: "Signed up and logged in successfully!" });
+
+          // Track Lead event server-side for Meta Ads
+          trackLead({
+            email: user.email || undefined,
+            phone: user.phone || undefined,
+            externalId: user.id,
+            clientIpAddress: req.ip,
+            clientUserAgent: req.headers['user-agent'],
+          }).catch(() => {}); // Fire and forget
         });
         return;
       }
@@ -2296,6 +2306,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         res.json({ status: "success", order: updatedOrder });
+
+        // Track Purchase event server-side for Meta Ads (fire and forget)
+        try {
+          const orderUser = await storage.getUser(req.session?.userId || '');
+          const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
+          const itemIds = orderItems.map((i: any) => String(i.productId || i.menuItemId || i.id || ''));
+          const totalAmount = parseFloat(updatedOrder?.totalAmount || updatedOrder?.total || '0');
+          
+          trackPurchase({
+            email: orderUser?.email || undefined,
+            phone: orderUser?.phone || undefined,
+            externalId: orderUser?.id,
+            clientIpAddress: req.ip,
+            clientUserAgent: req.headers['user-agent'],
+          }, database_order_id, totalAmount, itemIds).catch(() => {});
+        } catch (fbErr) {
+          console.error('[FacebookConversions] Purchase tracking failed:', fbErr);
+        }
 
         // --- PUSH NOTIFICATION (RINGING) — Only after payment is verified! ---
         try {

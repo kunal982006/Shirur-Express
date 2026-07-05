@@ -4,7 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
@@ -57,6 +58,20 @@ const PageLoader = () => (
     <Loader2 className="h-8 w-8 text-primary animate-spin" />
   </div>
 );
+
+/**
+ * Track page views on route changes for Meta Pixel.
+ * Uses wouter's useLocation to detect navigation.
+ */
+function FacebookPixelTracker() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    trackPageView();
+  }, [location]);
+
+  return null;
+}
 
 function RouterComponent() {
   return (
@@ -118,11 +133,17 @@ function RouterComponent() {
 }
 
 function App() {
+  // Initialize Meta Pixel once on app mount
+  useEffect(() => {
+    initFacebookPixel();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider> {/* Correctly using AuthProvider */}
         <LocationProvider>
           <TooltipProvider>
+            <FacebookPixelTracker />
             <div className="min-h-screen bg-background text-foreground flex flex-col">
               <Header />
               <main className="flex-1 pb-16 md:pb-0">

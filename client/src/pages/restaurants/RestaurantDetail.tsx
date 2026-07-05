@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"; // Import Separator
 import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { useCartStore } from "@/hooks/use-cart-store";
+import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 import type { RestaurantMenuItem, ServiceProvider } from "@shared/schema";
 
 // Helper components for placeholder tabs
@@ -81,6 +82,18 @@ export default function RestaurantDetail() {
 
     const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
 
+    // Track ViewContent for Meta Ads when restaurant loads
+    useEffect(() => {
+      if (restaurant) {
+        trackEvent(FacebookStandardEvent.ViewContent, {
+          content_name: restaurant.businessName,
+          content_ids: [String(restaurant.id)],
+          content_type: 'restaurant',
+          content_category: 'restaurant',
+        });
+      }
+    }, [restaurant]);
+
     const handleAdd = (item: RestaurantMenuItem) => {
         // Prevent adding items if restaurant is closed
         if (restaurant.isAvailable === false) {
@@ -93,6 +106,14 @@ export default function RestaurantDetail() {
             imageUrl: item.imageUrl || undefined,
             providerId: restaurant.id,
             itemType: 'restaurant',
+        });
+        // Track AddToCart for Meta Ads
+        trackEvent(FacebookStandardEvent.AddToCart, {
+            content_name: item.name,
+            content_ids: [String(item.id)],
+            content_type: 'product',
+            value: parseFloat(item.price.toString()),
+            currency: 'INR',
         });
     };
 

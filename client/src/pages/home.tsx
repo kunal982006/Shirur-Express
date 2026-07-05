@@ -52,6 +52,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { OffersCarousel } from "@/components/offers-carousel";
 import { useCartStore } from "@/hooks/use-cart-store"; // ADDED
+import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel"; // Facebook Pixel
 
 // NOTE: Yeh static data tumhari original file se hai.
 const services = [
@@ -215,6 +216,11 @@ export default function Home() {
   const handleSearch = () => {
     // Navigation to a generic search results page
     if (selectedService) {
+      // Track Search event for Meta Ads
+      trackEvent(FacebookStandardEvent.Search, {
+        search_string: selectedService,
+        content_category: 'services',
+      });
       navigate(`/search?term=${encodeURIComponent(selectedService)}`);
     }
   };
@@ -474,6 +480,14 @@ export default function Home() {
                         providerId: item.providerId,
                         itemType: 'restaurant'
                       });
+                      // Track AddToCart for Meta Ads
+                      trackEvent(FacebookStandardEvent.AddToCart, {
+                        content_name: item.name,
+                        content_ids: [String(item.id)],
+                        content_type: 'product',
+                        value: Number(item.price),
+                        currency: 'INR',
+                      });
                       toast({
                         title: "Added to Cart",
                         description: `${item.name} added to your cart.`
@@ -566,6 +580,14 @@ export default function Home() {
                         imageUrl: item.imageUrl,
                         providerId: item.providerId,
                         itemType: 'street_food'
+                      });
+                      // Track AddToCart for Meta Ads
+                      trackEvent(FacebookStandardEvent.AddToCart, {
+                        content_name: item.name,
+                        content_ids: [String(item.id)],
+                        content_type: 'product',
+                        value: Number(item.price),
+                        currency: 'INR',
                       });
                       toast({
                         title: "Added to Cart",
