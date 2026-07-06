@@ -39,6 +39,71 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="com.facebook.android:facebook-android-sdk:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-android-sdk:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\e413095a19e7308290dec14cfa6c3c87\transformed\facebook-android-sdk-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-login:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-login:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\fcaf2649af0bfcb3f83c9ebe77432523\transformed\facebook-login-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-gamingservices:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-gamingservices:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\e578f597a27fc9dcdf37e2e2c23adb8b\transformed\facebook-gamingservices-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-share:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-share:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\054596b2a02f7c08288caf9ad4f02297\transformed\facebook-share-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-common:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-common:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\66aadb8af823ca331f5158de1cc4c798\transformed\facebook-common-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.appcompat:appcompat:1.6.1@aar"
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\537c78cefc6b5426493e664678631c4a\transformed\appcompat-1.6.1\jars\classes.jar"
       resolved="androidx.appcompat:appcompat:1.6.1"
@@ -325,6 +390,45 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="androidx.legacy:legacy-support-v4:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\dd6afdd9fa10129db2c08c31d771c8a9\transformed\legacy-support-v4-1.0.0\jars\classes.jar"
+      resolved="androidx.legacy:legacy-support-v4:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\dd6afdd9fa10129db2c08c31d771c8a9\transformed\legacy-support-v4-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.browser:browser:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\fb7cdd1092344db03a1fb89e20b50602\transformed\browser-1.0.0\jars\classes.jar"
+      resolved="androidx.browser:browser:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\fb7cdd1092344db03a1fb89e20b50602\transformed\browser-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.legacy:legacy-support-core-ui:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\0b96ce33160a9c580a3f9074e0980ca3\transformed\legacy-support-core-ui-1.0.0\jars\classes.jar"
+      resolved="androidx.legacy:legacy-support-core-ui:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\0b96ce33160a9c580a3f9074e0980ca3\transformed\legacy-support-core-ui-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.swiperefreshlayout:swiperefreshlayout:1.1.0@aar"
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\c09345366faac70662d700c73e0dcace\transformed\swiperefreshlayout-1.1.0\jars\classes.jar"
       resolved="androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
@@ -455,6 +559,19 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="androidx.slidingpanelayout:slidingpanelayout:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\d198928d2ce32321bba9e4fee8b9c512\transformed\slidingpanelayout-1.0.0\jars\classes.jar"
+      resolved="androidx.slidingpanelayout:slidingpanelayout:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\d198928d2ce32321bba9e4fee8b9c512\transformed\slidingpanelayout-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.customview:customview:1.1.0@aar"
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\2741c21c26a14d6abfcd39dea7b9921a\transformed\customview-1.1.0\jars\classes.jar"
       resolved="androidx.customview:customview:1.1.0"
@@ -520,6 +637,45 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="com.facebook.android:facebook-applinks:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-applinks:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\923923ae2ecd68db14efc1187ce01a00\transformed\facebook-applinks-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-messenger:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-messenger:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\b20576f2fb357e85f6bfd52929fbe362\transformed\facebook-messenger-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-core:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-core:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\5948303084fd84601c38e06788526185\transformed\facebook-core-17.0.2"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.legacy:legacy-support-core-utils:1.0.0@aar"
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\e89ad0e7fe5afeea73db93a14a00f395\transformed\legacy-support-core-utils-1.0.0\jars\classes.jar"
       resolved="androidx.legacy:legacy-support-core-utils:1.0.0"
@@ -537,6 +693,32 @@
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\71ffd0f9faa2f1c4b5d54d6ffa2e41ef\transformed\loader-1.0.0\jars\classes.jar"
       resolved="androidx.loader:loader:1.0.0"
       folder="C:\Users\Sai\.gradle\caches\8.13\transforms\71ffd0f9faa2f1c4b5d54d6ffa2e41ef\transformed\loader-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.media:media:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\fb78246bfa37552481b4922653fc1390\transformed\media-1.0.0\jars\classes.jar"
+      resolved="androidx.media:media:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\fb78246bfa37552481b4922653fc1390\transformed\media-1.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.asynclayoutinflater:asynclayoutinflater:1.0.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\5ccd4a0136f9a225029660e509aa1952\transformed\asynclayoutinflater-1.0.0\jars\classes.jar"
+      resolved="androidx.asynclayoutinflater:asynclayoutinflater:1.0.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\5ccd4a0136f9a225029660e509aa1952\transformed\asynclayoutinflater-1.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -800,6 +982,19 @@
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\3f8cdb226e5850c481e8702029599cf2\transformed\activity-ktx-1.9.0\jars\classes.jar"
       resolved="androidx.activity:activity-ktx:1.9.0"
       folder="C:\Users\Sai\.gradle\caches\8.13\transforms\3f8cdb226e5850c481e8702029599cf2\transformed\activity-ktx-1.9.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.facebook.android:facebook-bolts:17.0.2@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2\jars\classes.jar"
+      resolved="com.facebook.android:facebook-bolts:17.0.2"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\12c056743471d42d1423d631e210daed\transformed\facebook-bolts-17.0.2"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -1148,6 +1343,27 @@
       name="javax.inject:javax.inject:1@jar"
       jars="C:\Users\Sai\.gradle\caches\modules-2\files-2.1\javax.inject\javax.inject\1\6975da39a7040257bd51d21a231b76c915872d38\javax.inject-1.jar"
       resolved="javax.inject:javax.inject:1"/>
+  <library
+      name="com.android.installreferrer:installreferrer:1.0@aar"
+      jars="C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0\jars\classes.jar"
+      resolved="com.android.installreferrer:installreferrer:1.0"
+      folder="C:\Users\Sai\.gradle\caches\8.13\transforms\c819237932d7494f7b473cee5cee78bf\transformed\installreferrer-1.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.zxing:core:3.3.3@jar"
+      jars="C:\Users\Sai\.gradle\caches\modules-2\files-2.1\com.google.zxing\core\3.3.3\b640badcc97f18867c4dfd249ef8d20ec0204c07\core-3.3.3.jar"
+      resolved="com.google.zxing:core:3.3.3"/>
+  <library
+      name="com.google.code.gson:gson:2.8.8@jar"
+      jars="C:\Users\Sai\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.8.8\431fc3cbc0ff81abdbfde070062741089c3ba874\gson-2.8.8.jar"
+      resolved="com.google.code.gson:gson:2.8.8"/>
   <library
       name="androidx.emoji2:emoji2-views-helper:1.2.0@aar"
       jars="C:\Users\Sai\.gradle\caches\8.13\transforms\1c2d6aa6144ebfa25378fcf2239f025c\transformed\emoji2-views-helper-1.2.0\jars\classes.jar"

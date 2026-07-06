@@ -68,6 +68,19 @@ export default function RestaurantDetail() {
         enabled: !!id
     });
 
+    // Track ViewContent for Meta Ads when restaurant loads
+    // MUST be before any early returns to comply with React hooks rules
+    useEffect(() => {
+      if (restaurant) {
+        trackEvent(FacebookStandardEvent.ViewContent, {
+          content_name: restaurant.businessName,
+          content_ids: [String(restaurant.id)],
+          content_type: 'restaurant',
+          content_category: 'restaurant',
+        });
+      }
+    }, [restaurant]);
+
     if (loadingRest || !restaurant) {
         return (
             <div className="min-h-screen animate-pulse bg-background">
@@ -81,18 +94,6 @@ export default function RestaurantDetail() {
     }
 
     const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
-
-    // Track ViewContent for Meta Ads when restaurant loads
-    useEffect(() => {
-      if (restaurant) {
-        trackEvent(FacebookStandardEvent.ViewContent, {
-          content_name: restaurant.businessName,
-          content_ids: [String(restaurant.id)],
-          content_type: 'restaurant',
-          content_category: 'restaurant',
-        });
-      }
-    }, [restaurant]);
 
     const handleAdd = (item: RestaurantMenuItem) => {
         // Prevent adding items if restaurant is closed
