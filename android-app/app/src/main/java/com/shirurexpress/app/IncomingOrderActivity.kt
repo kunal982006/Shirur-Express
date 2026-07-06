@@ -43,23 +43,28 @@ class IncomingOrderActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_incoming_order)
 
-        // Parse data
-        val customerName = intent.getStringExtra("customerName") ?: "Unknown User"
+        // Parse data from notification
+        val customerName = intent.getStringExtra("customerName") ?: "New Customer"
         val amount = intent.getStringExtra("amount") ?: "0"
-        val pickup = intent.getStringExtra("pickupAddress") ?: ""
         val drop = intent.getStringExtra("dropAddress") ?: ""
-        val orderId = intent.getStringExtra("orderId")
-
-        findViewById<TextView>(R.id.customerNameText).text = customerName
-        findViewById<TextView>(R.id.amountText).text = "₹$amount"
-        findViewById<TextView>(R.id.pickupText).text = "Pickup: $pickup"
-        findViewById<TextView>(R.id.dropText).text = "Drop: $drop"
-
+        val itemsSummary = intent.getStringExtra("itemsSummary") ?: ""
         val navigateTo = intent.getStringExtra("navigateTo")
 
-        // Setup "Order Confirmed" button — opens dashboard directly
-        findViewById<Button>(R.id.btnConfirm).setOnClickListener {
-            confirmOrder(orderId, navigateTo)
+        // Populate UI
+        findViewById<TextView>(R.id.customerNameText).text = customerName
+        findViewById<TextView>(R.id.amountText).text = "₹$amount"
+        findViewById<TextView>(R.id.dropText).text = if (drop.isNotEmpty()) "📍 $drop" else ""
+        
+        val itemsText = findViewById<TextView>(R.id.itemsSummaryText)
+        if (itemsSummary.isNotEmpty()) {
+            itemsText.text = "🛒 $itemsSummary"
+        } else {
+            itemsText.text = ""
+        }
+
+        // "View Order" button — navigates to the correct dashboard
+        findViewById<Button>(R.id.btnViewOrder).setOnClickListener {
+            viewOrder(navigateTo)
         }
 
         // Start Ringing
@@ -87,13 +92,18 @@ class IncomingOrderActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmOrder(orderId: String?, navigateTo: String?) {
+    private fun viewOrder(navigateTo: String?) {
         stopRingtone()
 
-        val path = navigateTo ?: "/provider/orders/$orderId"
-        val fullUrl = if (path.startsWith("http")) path else "https://shirur-express.onrender.com$path"
+        // Use the navigateTo path from the notification (set by server)
+        // - Provider accounts get "/provider/dashboard"
+        // - Admin accounts get "/admin"
+        // - Delivery partners get "/delivery-partner/dashboard"
+        // Fallback to "/provider/dashboard" if not specified
+        val path = navigateTo ?: "/provider/dashboard"
+        val fullUrl = "https://shirur-express.onrender.com$path"
 
-        // Open Main Activity (WebView) deep linked to the order
+        // Open Main Activity (WebView) deep linked to the dashboard
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             data = Uri.parse(fullUrl)
