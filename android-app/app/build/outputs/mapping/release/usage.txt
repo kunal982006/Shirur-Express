@@ -12449,12 +12449,8 @@ com.facebook.FacebookAuthorizationException
 com.facebook.FacebookBroadcastReceiver
 com.facebook.FacebookButtonBase
 com.facebook.FacebookCallback
-com.facebook.FacebookContentProvider$Companion:
-    public final java.lang.String getAttachmentUrl(java.lang.String,java.util.UUID,java.lang.String)
-com.facebook.FacebookContentProvider:
-    private static final java.lang.String ATTACHMENT_URL_BASE
-    private static final java.lang.String INVALID_FILE_NAME
-    public static final java.lang.String getAttachmentUrl(java.lang.String,java.util.UUID,java.lang.String)
+com.facebook.FacebookContentProvider$Companion
+com.facebook.FacebookContentProvider
 com.facebook.FacebookDialog
 com.facebook.FacebookDialogException:
     public final int getErrorCode()
@@ -14512,17 +14508,7 @@ com.facebook.internal.Logger:
     public final void setPriority(int)
 com.facebook.internal.Mutable
 com.facebook.internal.NativeAppCallAttachmentStore$Attachment
-com.facebook.internal.NativeAppCallAttachmentStore:
-    public static final java.lang.String ATTACHMENTS_DIR_NAME
-    public static final void addAttachments(java.util.Collection)
-    public static final void cleanupAllAttachments()
-    public static final void cleanupAttachmentsForCall(java.util.UUID)
-    public static final com.facebook.internal.NativeAppCallAttachmentStore$Attachment createAttachment(java.util.UUID,android.graphics.Bitmap)
-    public static final com.facebook.internal.NativeAppCallAttachmentStore$Attachment createAttachment(java.util.UUID,android.net.Uri)
-    public static final java.io.File ensureAttachmentsDirectoryExists()
-    public static final synchronized java.io.File getAttachmentsDirectory()
-    private final void processAttachmentBitmap(android.graphics.Bitmap,java.io.File)
-    private final void processAttachmentFile(android.net.Uri,boolean,java.io.File)
+com.facebook.internal.NativeAppCallAttachmentStore
 com.facebook.internal.NativeProtocol$ProtocolVersionQueryResult:
     public static final com.facebook.internal.NativeProtocol$ProtocolVersionQueryResult create(com.facebook.internal.NativeProtocol$NativeAppInfo,int)
     public static final com.facebook.internal.NativeProtocol$ProtocolVersionQueryResult createEmpty()
@@ -44380,11 +44366,6 @@ com.facebook.FacebookActivity:
     static void <clinit>()
     public static androidx.fragment.app.Fragment getCurrentFragment()
     public static androidx.fragment.app.Fragment getFragment()
-com.facebook.FacebookContentProvider$Companion
-com.facebook.FacebookContentProvider:
-    public static final com.facebook.FacebookContentProvider$Companion Companion
-    public static final java.lang.String TAG
-    static void <clinit>()
 com.facebook.FacebookDialogException$Companion
 com.facebook.FacebookDialogException:
     public static final com.facebook.FacebookDialogException$Companion Companion
@@ -45179,7 +45160,6 @@ com.facebook.internal.Logger:
     public static varargs void append$1()
     public final void log()
     public static void logString()
-com.facebook.internal.NativeAppCallAttachmentStore
 com.facebook.internal.NativeProtocol$EffectTestAppInfo:
     public final java.lang.Void getLoginActivity()
 com.facebook.internal.NativeProtocol$MessengerAppInfo:

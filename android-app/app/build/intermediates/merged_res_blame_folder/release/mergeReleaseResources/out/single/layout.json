@@ -4,11 +4,15 @@
         "source": "com.shirurexpress.app-main-59:/layout/activity_incoming_order.xml"
     },
     {
-        "merged": "com.shirurexpress.app-mergeReleaseResources-56:/layout/activity_splash.xml",
-        "source": "com.shirurexpress.app-main-59:/layout/activity_splash.xml"
+        "merged": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-mergeReleaseResources-56:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-main-59:\\layout\\activity_main.xml"
     },
     {
-        "merged": "com.shirurexpress.app-mergeReleaseResources-56:/layout/activity_main.xml",
-        "source": "com.shirurexpress.app-main-59:/layout/activity_main.xml"
+        "merged": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-mergeReleaseResources-56:\\layout\\activity_incoming_order.xml",
+        "source": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-main-59:\\layout\\activity_incoming_order.xml"
+    },
+    {
+        "merged": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-mergeReleaseResources-56:\\layout\\activity_splash.xml",
+        "source": "C:\\Users\\Sai\\.gradle\\daemon\\8.13\\com.shirurexpress.app-main-59:\\layout\\activity_splash.xml"
     }
 ]

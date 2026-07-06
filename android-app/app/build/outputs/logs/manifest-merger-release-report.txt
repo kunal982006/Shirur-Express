@@ -11,10 +11,10 @@ INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\Andro
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:105:13-62
 manifest
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-130:12
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-124:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-124:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-124:12
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:2:1-124:12
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:2:1-9:12
 MERGED from [androidx.databinding:viewbinding:8.13.2] C:\Users\Sai\.gradle\caches\8.13\transforms\300d12c91360e84039d3ed01312ba38e\transformed\viewbinding-8.13.2\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:17:1-24:12
@@ -305,8 +305,8 @@ ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidM
 	android:scheme
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:44:19-39
 application
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-128:19
-INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-128:19
+ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-122:19
+INJECTED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:48:5-122:19
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [tez-client-api-0.9.4.aar] C:\Users\Sai\.gradle\caches\8.13\transforms\19f8a647dc1627a95755ca5cab829e6f\transformed\tez-client-api-0.9.4\AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.material:material:1.12.0] C:\Users\Sai\.gradle\caches\8.13\transforms\4a4aa80cd28625dfe69277051b2e9e51\transformed\material-1.12.0\AndroidManifest.xml:22:5-20
@@ -497,14 +497,6 @@ ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidM
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:120:13-58
 	android:name
 		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:119:13-56
-provider#com.facebook.FacebookContentProvider
-ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:123:9-126:39
-	android:authorities
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:125:13-98
-	android:exported
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:126:13-36
-	android:name
-		ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:124:13-64
 meta-data#android.support.FILE_PROVIDER_PATHS
 ADDED from C:\Users\Sai\Desktop\Shirur-Express\android-app\app\src\main\AndroidManifest.xml:109:13-111:54
 	android:resource

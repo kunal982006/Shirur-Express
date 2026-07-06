@@ -3418,7 +3418,7 @@ id browser_actions_menu_item_icon
 id browser_actions_menu_item_text
 id browser_actions_menu_items
 id browser_actions_menu_view
-id btnConfirm
+id btnViewOrder
 id btn_go_back
 id button
 id buttonPanel
@@ -3588,6 +3588,7 @@ id invisible
 id inward
 id italic
 id item_touch_helper_previous_elevation
+id itemsSummaryText
 id iv_rzp_name_logo
 id jumpToEnd
 id jumpToStart
@@ -3723,7 +3724,6 @@ id path
 id pathRelative
 id peekHeight
 id percent
-id pickupText
 id pin
 id position
 id postLayout

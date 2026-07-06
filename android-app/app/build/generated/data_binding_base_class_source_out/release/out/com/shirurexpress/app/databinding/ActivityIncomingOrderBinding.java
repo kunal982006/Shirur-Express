@@ -24,7 +24,7 @@ public final class ActivityIncomingOrderBinding implements ViewBinding {
   public final TextView amountText;
 
   @NonNull
-  public final Button btnConfirm;
+  public final Button btnViewOrder;
 
   @NonNull
   public final TextView customerNameText;
@@ -33,17 +33,17 @@ public final class ActivityIncomingOrderBinding implements ViewBinding {
   public final TextView dropText;
 
   @NonNull
-  public final TextView pickupText;
+  public final TextView itemsSummaryText;
 
   private ActivityIncomingOrderBinding(@NonNull LinearLayout rootView, @NonNull TextView amountText,
-      @NonNull Button btnConfirm, @NonNull TextView customerNameText, @NonNull TextView dropText,
-      @NonNull TextView pickupText) {
+      @NonNull Button btnViewOrder, @NonNull TextView customerNameText, @NonNull TextView dropText,
+      @NonNull TextView itemsSummaryText) {
     this.rootView = rootView;
     this.amountText = amountText;
-    this.btnConfirm = btnConfirm;
+    this.btnViewOrder = btnViewOrder;
     this.customerNameText = customerNameText;
     this.dropText = dropText;
-    this.pickupText = pickupText;
+    this.itemsSummaryText = itemsSummaryText;
   }
 
   @Override
@@ -79,9 +79,9 @@ public final class ActivityIncomingOrderBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.btnConfirm;
-      Button btnConfirm = ViewBindings.findChildViewById(rootView, id);
-      if (btnConfirm == null) {
+      id = R.id.btnViewOrder;
+      Button btnViewOrder = ViewBindings.findChildViewById(rootView, id);
+      if (btnViewOrder == null) {
         break missingId;
       }
 
@@ -97,14 +97,14 @@ public final class ActivityIncomingOrderBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.pickupText;
-      TextView pickupText = ViewBindings.findChildViewById(rootView, id);
-      if (pickupText == null) {
+      id = R.id.itemsSummaryText;
+      TextView itemsSummaryText = ViewBindings.findChildViewById(rootView, id);
+      if (itemsSummaryText == null) {
         break missingId;
       }
 
-      return new ActivityIncomingOrderBinding((LinearLayout) rootView, amountText, btnConfirm,
-          customerNameText, dropText, pickupText);
+      return new ActivityIncomingOrderBinding((LinearLayout) rootView, amountText, btnViewOrder,
+          customerNameText, dropText, itemsSummaryText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -19,11 +19,11 @@ drawable ic_launcher_foreground
 drawable ic_no_internet
 drawable splash_background
 id amountText
-id btnConfirm
+id btnViewOrder
 id customerNameText
 id dropText
 id errorView
-id pickupText
+id itemsSummaryText
 id progressBar
 id retryButton
 id splashAppName
