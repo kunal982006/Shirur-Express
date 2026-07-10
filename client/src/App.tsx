@@ -51,6 +51,7 @@ import OfferDetailsPage from "@/pages/offer-details";
 import NotificationsPage from "@/pages/notifications";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SearchResults from "@/pages/search-results";
+import CafeOfJoyMenu from "@/pages/cafe-of-joy-menu";
 
 // Fallback loader if ever needed again
 const PageLoader = () => (
@@ -124,6 +125,9 @@ function RouterComponent() {
 
         {/* Offer Details Route */}
         <Route path="/offer/:id" component={OfferDetailsPage} />
+
+        {/* QR Menu Card Routes (link-only, no in-app buttons) */}
+        <Route path="/menu/cafe-of-joy" component={CafeOfJoyMenu} />
 
         {/* Fallback for 404 */}
         <Route component={NotFound} />
