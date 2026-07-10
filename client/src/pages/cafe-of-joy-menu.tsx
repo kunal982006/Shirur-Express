@@ -270,7 +270,7 @@ function MenuItemCard({ item, onImageClick }: { item: RestaurantMenuItem; onImag
                     </div>
                     <div className="min-w-0">
                         <h4 className="font-bold text-sm text-gray-900 leading-tight">{item.name}</h4>
-                        <p className="text-base font-semibold text-amber-800 mt-0.5">₹{item.price}</p>
+                        <p className="text-base font-semibold text-amber-800 mt-0.5">₹{Math.round(Number(item.price) / 1.1)}</p>
                     </div>
                 </div>
                 {item.description && (
