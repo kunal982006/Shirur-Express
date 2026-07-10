@@ -342,6 +342,24 @@ export const appSettings = pgTable("app_settings", {
 });
 
 // =========================================
+// QR WALK-IN ORDERS TABLE (No login required)
+// =========================================
+
+export const qrOrders = pgTable("qr_orders", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  providerId: varchar("provider_id").notNull(),
+  tokenNumber: integer("token_number").notNull(), // Daily sequential token (resets each day)
+  customerName: text("customer_name"), // Optional guest name
+  customerPhone: text("customer_phone"), // Optional phone for notification
+  tableNumber: text("table_number"), // Optional table number
+  items: jsonb("items").$type<Array<{ menuItemId: string; name: string; quantity: number; price: number }>>(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").default("pending"), // pending, preparing, ready, completed, cancelled
+  notes: text("notes"), // Special instructions
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// =========================================
 // 5. ZOD SCHEMAS (Defined after tables)
 // =========================================
 
@@ -454,6 +472,24 @@ export const insertAdminPromotionalOfferSchema = createInsertSchema(adminPromoti
 });
 export type AdminPromotionalOffer = typeof adminPromotionalOffers.$inferSelect;
 export type InsertAdminPromotionalOffer = z.infer<typeof insertAdminPromotionalOfferSchema>;
+
+// QR Walk-in Orders schema and types
+export const insertQrOrderSchema = z.object({
+  providerId: z.string(),
+  customerName: z.string().optional(),
+  customerPhone: z.string().optional(),
+  tableNumber: z.string().optional(),
+  items: z.array(z.object({
+    menuItemId: z.string(),
+    name: z.string(),
+    quantity: z.number(),
+    price: z.number(),
+  })),
+  totalAmount: z.string(),
+  notes: z.string().optional(),
+});
+export type QrOrder = typeof qrOrders.$inferSelect;
+export type InsertQrOrder = z.infer<typeof insertQrOrderSchema>;
 
 // =========================================
 // 6. RELATIONS (STRICTLY AT THE BOTTOM)
@@ -668,6 +704,13 @@ export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) =
 export const providerOffersRelations = relations(providerOffers, ({ one }) => ({
   provider: one(serviceProviders, {
     fields: [providerOffers.providerId],
+    references: [serviceProviders.id],
+  }),
+}));
+
+export const qrOrdersRelations = relations(qrOrders, ({ one }) => ({
+  provider: one(serviceProviders, {
+    fields: [qrOrders.providerId],
     references: [serviceProviders.id],
   }),
 }));

@@ -115,7 +115,7 @@ async function seedSwadHotel() {
                 email: "hotelswad@example.com",
                 password: password,
                 role: "provider",
-                displayName: "Hotel Swad"
+                // displayName: "Hotel Swad"
             }).returning();
             userId = newUser[0].id;
             console.log(`Created user: ${newUser[0].username} (ID: ${userId})`);
@@ -141,10 +141,10 @@ async function seedSwadHotel() {
                 userId: userId,
                 categoryId: restaurantCategory.id,
                 businessName: "Hotel Swad",
-                contactNumber: "1234567890",
+                // contactNumber: "1234567890",
                 address: "Shirur",
                 description: "Authentic Veg and Non-Veg Thali & Starters",
-                isOpen: true,
+                isAvailable: true,
                 rating: "0.00"
             }).returning();
             providerId = newProvider[0].id;

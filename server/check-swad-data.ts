@@ -9,7 +9,7 @@ async function checkSwad() {
     const usersList = await db.query.users.findMany({
         where: ilike(users.username, "%Swad%"),
     });
-    console.log("Users found:", usersList.map(u => ({ id: u.id, username: u.username, displayName: u.displayName })));
+    console.log("Users found:", usersList.map(u => ({ id: u.id, username: u.username, displayName: u.username })));
 
     const providersList = await db.query.serviceProviders.findMany({
         where: ilike(serviceProviders.businessName, "%Swad%"),

@@ -56,6 +56,10 @@ import {
   deliveryPartners,
   type DeliveryPartner,
   type InsertDeliveryPartner,
+  // QR WALK-IN ORDERS
+  qrOrders,
+  type QrOrder,
+  type InsertQrOrder,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ne, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzle-orm";
@@ -343,6 +347,13 @@ export interface IStorage {
   // DISPLAY ORDER MANAGEMENT
   getProviderDisplayOrder(categorySlug: string): Promise<ServiceProvider[]>;
   bulkUpdateDisplayOrder(updates: { id: string; displayOrder: number }[]): Promise<void>;
+
+  // QR WALK-IN ORDERS
+  createQrOrder(order: InsertQrOrder & { tokenNumber: number }): Promise<QrOrder>;
+  getQrOrder(id: string): Promise<QrOrder | undefined>;
+  getQrOrdersByProvider(providerId: string): Promise<QrOrder[]>;
+  updateQrOrderStatus(id: string, status: string): Promise<QrOrder>;
+  getTodayQrOrderCount(providerId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1324,6 +1335,7 @@ export class DatabaseStorage implements IStorage {
       isAvailable: cake.isAvailable !== false,
       cuisine: "Bakery",
       isPopular: cake.isPopular || false,
+      popularOrder: null,
     }));
 
     const merged = [...restaurantItems, ...mappedCakes];
@@ -2949,6 +2961,51 @@ export class DatabaseStorage implements IStorage {
           .where(eq(serviceProviders.id, update.id));
       }
     });
+  }
+
+  // =========================================
+  // QR WALK-IN ORDERS
+  // =========================================
+
+  async createQrOrder(order: InsertQrOrder & { tokenNumber: number }): Promise<QrOrder> {
+    const [newOrder] = await db.insert(qrOrders).values(order).returning();
+    return newOrder;
+  }
+
+  async getQrOrder(id: string): Promise<QrOrder | undefined> {
+    return db.query.qrOrders.findFirst({
+      where: eq(qrOrders.id, id),
+      with: { provider: true },
+    });
+  }
+
+  async getQrOrdersByProvider(providerId: string): Promise<QrOrder[]> {
+    return db.query.qrOrders.findMany({
+      where: eq(qrOrders.providerId, providerId),
+      orderBy: [desc(qrOrders.createdAt)],
+    });
+  }
+
+  async updateQrOrderStatus(id: string, status: string): Promise<QrOrder> {
+    const [updated] = await db.update(qrOrders)
+      .set({ status })
+      .where(eq(qrOrders.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getTodayQrOrderCount(providerId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(qrOrders)
+      .where(
+        and(
+          eq(qrOrders.providerId, providerId),
+          gte(qrOrders.createdAt, today)
+        )
+      );
+    return Number(result[0]?.count || 0);
   }
 }
 

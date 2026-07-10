@@ -43,7 +43,7 @@ async function forceCreate() {
                 email: "elitecafe@example.com", // Added dummy email
                 password: "elitecafe@987pass",
                 role: "provider",
-                displayName: "Elite Cafe"
+                // displayName: "Elite Cafe"
             }).returning();
             userId = newUser[0].id;
             console.log(`Created user: ${newUser[0].username} (ID: ${userId})`);
@@ -82,10 +82,10 @@ async function forceCreate() {
                 userId: userId,
                 categoryId: restaurantCategory.id,
                 businessName: "Elite cafe",
-                contactNumber: "1234567890",
+                // contactNumber: "1234567890",
                 address: "Shirur",
                 description: "Elite Juice & Snacks",
-                isOpen: true,
+                isAvailable: true,
                 rating: "0.00"
             }).returning();
             console.log(`Created provider: ${newProvider[0].businessName} (ID: ${newProvider[0].id})`);

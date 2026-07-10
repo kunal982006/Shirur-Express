@@ -40,6 +40,9 @@ import {
   appSettings, // PLATFORM TOGGLE
   adminPromotionalOffers, // ADMIN PROMOS
   insertAdminPromotionalOfferSchema, // ADMIN PROMOS
+  insertQrOrderSchema, // QR WALK-IN ORDERS
+  qrOrders, // QR WALK-IN ORDERS
+  type User,
 } from "@shared/schema";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
@@ -83,7 +86,7 @@ async function notifyAdmin(payload: {
     } else if (adminUser.fcmToken) {
       allTokens.push(adminUser.fcmToken);
     }
-    const uniqueTokens = [...new Set(allTokens)];
+    const uniqueTokens = Array.from(new Set(allTokens));
     if (uniqueTokens.length === 0) return;
 
     console.log(`[FCM Admin] Sending notification to main_branch (${uniqueTokens.length} device(s))`);
@@ -476,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteUser(userId);
 
       // Log the user out since they no longer exist
-      req.logout((err) => {
+      (req as any).logout((err: any) => {
         if (err) {
           console.error("Logout error during account deletion:", err);
           // Even if passport fails to log out the memory session, the DB data is gone. 
@@ -856,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 2. Fallback: Try Index-based deletion
       if (!deleted && typeof index === 'number' && index >= 0 && index < existingGallery.length) {
         console.log(`[GalleryDelete] URL match failed. Falling back to Index: ${index}`);
-        updatedGallery = existingGallery.filter((_, i) => i !== index);
+        updatedGallery = existingGallery.filter((_: any, i: number) => i !== index);
         deleted = true;
       }
 
@@ -1691,7 +1694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               allTokens.push(provider.user.fcmToken);
             }
 
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             console.log(`[FCM Ringing] Sending to ${uniqueTokens.length} device(s)`);
 
             // Fetch customer details for richer notification
@@ -2172,10 +2175,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else if (sfAdmin.fcmToken) {
             allTokens.push(sfAdmin.fcmToken);
           }
-          const uniqueTokens = [...new Set(allTokens)];
+          const uniqueTokens = Array.from(new Set(allTokens));
           const sfItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
           const sfItemsSummary = sfItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (sfItems.length > 3 ? ` +${sfItems.length - 3} more` : '');
-          const sfAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+          const sfAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
           const orderUserId = updatedOrder?.userId;
           let sfCustomer;
           let sfPhone = 'N/A';
@@ -2214,10 +2217,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else if (provider.user.fcmToken) {
               allTokens.push(provider.user.fcmToken);
             }
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
             const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
-            const orderAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+            const orderAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
             
             const orderUserId = updatedOrder?.userId;
             let orderCustomer;
@@ -2262,7 +2265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const prov = await storage.getServiceProvider(updatedOrder.providerId);
         adminProviderName = prov?.businessName || 'Unknown';
       }
-      const adminAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+      const adminAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
       const adminItems = Array.isArray(updatedOrder?.items)
         ? updatedOrder.items.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (updatedOrder.items.length > 3 ? ` +${updatedOrder.items.length - 3} more` : '')
         : '';
@@ -2312,7 +2315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const orderUser = await storage.getUser(req.session?.userId || '');
           const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
           const itemIds = orderItems.map((i: any) => String(i.productId || i.menuItemId || i.id || ''));
-          const totalAmount = parseFloat(updatedOrder?.totalAmount || updatedOrder?.total || '0');
+          const totalAmount = parseFloat((updatedOrder as any)?.totalAmount || (updatedOrder as any)?.total || '0');
           
           trackPurchase({
             email: orderUser?.email || undefined,
@@ -2341,11 +2344,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } else if (sfAdmin.fcmToken) {
                 allTokens.push(sfAdmin.fcmToken);
               }
-              const uniqueTokens = [...new Set(allTokens)];
+              const uniqueTokens = Array.from(new Set(allTokens));
               // Build items summary for street food
               const sfItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
               const sfItemsSummary = sfItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (sfItems.length > 3 ? ` +${sfItems.length - 3} more` : '');
-              const sfAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+              const sfAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
               const sfCustomer = await storage.getUser(updatedOrder?.userId);
               const sfPhone = sfCustomer?.phone || 'N/A';
 
@@ -2381,13 +2384,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 } else if (provider.user.fcmToken) {
                   allTokens.push(provider.user.fcmToken);
                 }
-                const uniqueTokens = [...new Set(allTokens)];
+                const uniqueTokens = Array.from(new Set(allTokens));
                 console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
 
                 // Build items summary for restaurant/grocery
                 const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
                 const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
-                const orderAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+                const orderAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
                 const orderCustomer = await storage.getUser(updatedOrder?.userId);
                 const orderPhone = orderCustomer?.phone || 'N/A';
 
@@ -2428,7 +2431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const prov = await storage.getServiceProvider(updatedOrder.providerId);
             adminProviderName = prov?.businessName || 'Unknown';
           }
-          const adminAmount = updatedOrder?.totalAmount?.toString() || updatedOrder?.total?.toString() || 'Check App';
+          const adminAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
           const adminItems = Array.isArray(updatedOrder?.items)
             ? updatedOrder.items.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (updatedOrder.items.length > 3 ? ` +${updatedOrder.items.length - 3} more` : '')
             : '';
@@ -2668,17 +2671,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else if (rider.fcmToken) {
               allTokens.push(rider.fcmToken);
             }
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             for (const token of uniqueTokens) {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `🌮 ${providerName} is Preparing!`,
-                body: `Street Food Order #${id.slice(0, 8)} • ₹${updatedOrder.totalAmount} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Street Food Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: updatedOrder.id,
                   orderType: 'street_food',
                   customerName: 'Customer',
-                  amount: String(updatedOrder.totalAmount || '0'),
+                  amount: String((updatedOrder as any).totalAmount || '0'),
                   pickupAddress: provider?.address || 'Check App',
                   dropAddress: updatedOrder.deliveryAddress || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
@@ -2882,7 +2885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Find provider IDs from cakeProducts
       const cakes = await db.select({ providerId: cakeProducts.providerId }).from(cakeProducts);
-      const cakeProviderIds = [...new Set(cakes.map(c => c.providerId))];
+      const cakeProviderIds = Array.from(new Set(cakes.map(c => c.providerId)));
 
       // Also find cake-shop category providers (even without products)
       const cakeCategory = await db.query.serviceCategories.findFirst({
@@ -2898,7 +2901,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Merge both sets
-      const allProviderIds = [...new Set([...cakeProviderIds, ...categoryProviderIds])];
+      const allProviderIds = Array.from(new Set([...cakeProviderIds, ...categoryProviderIds]));
 
       if (allProviderIds.length === 0) {
         return res.json([]);
@@ -3054,17 +3057,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else if (rider.fcmToken) {
               allTokens.push(rider.fcmToken);
             }
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             for (const token of uniqueTokens) {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `🍳 ${providerName} is Preparing!`,
-                body: `Order #${orderId.slice(0, 8)} • ₹${order.totalAmount} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Order #${orderId.slice(0, 8)} • ₹${(order as any).totalAmount} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: order.id,
                   orderType: 'restaurant',
                   customerName: 'Customer',
-                  amount: String(order.totalAmount || '0'),
+                  amount: String((order as any).totalAmount || '0'),
                   pickupAddress: provider?.address || 'Check App',
                   dropAddress: order.deliveryAddress || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
@@ -3131,7 +3134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else if (rider.fcmToken) {
               allTokens.push(rider.fcmToken);
             }
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             for (const token of uniqueTokens) {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
@@ -3378,6 +3381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =========================================
   app.get("/api/update-street-food-images", async (req: Request, res: Response) => {
     try {
+      const { updateStreetFoodImagesDirectly } = await import("./update_images");
       const result = await updateStreetFoodImagesDirectly();
       res.json(result);
     } catch (error: any) {
@@ -3913,17 +3917,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else if (rider.fcmToken) {
               allTokens.push(rider.fcmToken);
             }
-            const uniqueTokens = [...new Set(allTokens)];
+            const uniqueTokens = Array.from(new Set(allTokens));
             for (const token of uniqueTokens) {
               await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `${orderLabel} ${providerName} is Preparing!`,
-                body: `Order #${id.slice(0, 8)} • ₹${updatedOrder.totalAmount || updatedOrder.total || '0'} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: updatedOrder.id,
                   orderType: type,
                   customerName: 'Customer',
-                  amount: String(updatedOrder.totalAmount || updatedOrder.total || '0'),
+                  amount: String((updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'),
                   pickupAddress: providerAddress,
                   dropAddress: updatedOrder.deliveryAddress || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
@@ -4066,7 +4070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = await db.select().from(serviceCategories);
       const catMap = Object.fromEntries(categories.map(c => [c.id, c.name]));
 
-      const enriched = allProviders.map(p => ({
+      const enriched = allProviders.map((p: any) => ({
         ...p,
         categoryName: catMap[p.categoryId] || p.categoryId,
       }));
@@ -4270,7 +4274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Remove duplicates
-      fcmTokens = [...new Set(fcmTokens)];
+      fcmTokens = Array.from(new Set(fcmTokens));
 
       if (fcmTokens.length === 0) {
         return res.json({ sent: 0, total: 0, message: "No users with FCM tokens found for this audience." });
@@ -4824,6 +4828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const [newOffer] = await db.insert(providerOffers).values({
         ...data,
+        expiryDate: new Date(data.expiryDate),
         providerId: id,
       }).returning();
       
@@ -4890,7 +4895,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(streetFoodItems)
         .where(eq(streetFoodItems.providerId, id));
       
-      const categories = [...new Set(items.map(i => i.category).filter(Boolean))];
+      const categories = Array.from(new Set(items.map(i => i.category).filter(Boolean)));
       res.json(categories);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch categories" });
@@ -4991,6 +4996,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("⚠️ Admin seed error:", e.message);
     }
   })();
+
+  // =========================================
+  // QR WALK-IN ORDERS (No auth required for customers)
+  // =========================================
+
+  // Create a QR walk-in order (no login needed)
+  app.post("/api/qr-orders", async (req: Request, res: Response) => {
+    try {
+      // Platform kill switch
+      if (!servicesEnabled) {
+        return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
+      }
+
+      const orderData = insertQrOrderSchema.parse(req.body);
+
+      // Generate daily token number
+      const todayCount = await storage.getTodayQrOrderCount(orderData.providerId);
+      const tokenNumber = todayCount + 1;
+
+      const order = await storage.createQrOrder({
+        ...orderData,
+        tokenNumber,
+      });
+
+      console.log(`[QR Order] Token #${String(tokenNumber).padStart(3, '0')} created for provider ${orderData.providerId}`);
+
+      // Send push notification to provider
+      try {
+        const provider = await storage.getServiceProvider(orderData.providerId);
+        if (provider && provider.user) {
+          const allTokens: string[] = [];
+          if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+            allTokens.push(...provider.user.fcmTokens);
+          } else if (provider.user.fcmToken) {
+            allTokens.push(provider.user.fcmToken);
+          }
+          const uniqueTokens = Array.from(new Set(allTokens));
+          const orderItems = Array.isArray(order.items) ? order.items : [];
+          const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
+
+          for (const deviceToken of uniqueTokens) {
+            await sendPushNotification(deviceToken, {
+              type: 'ORDER_REQUEST',
+              title: `🪑 Walk-in Order — Token #${String(tokenNumber).padStart(3, '0')} • ₹${(order as any).totalAmount}`,
+              body: `${orderData.customerName ? `👤 ${orderData.customerName}` : '👤 Walk-in'}${orderData.tableNumber ? ` • 🪑 Table ${orderData.tableNumber}` : ''} • 🛒 ${itemsSummary || 'New order'}`,
+              data: {
+                orderId: order.id,
+                orderType: 'qr_walkin',
+                customerName: orderData.customerName || 'Walk-in Customer',
+                customerPhone: orderData.customerPhone || 'N/A',
+                amount: (order as any).totalAmount?.toString() || '0',
+                itemsSummary: itemsSummary || 'Walk-in order',
+                tokenNumber: String(tokenNumber),
+                navigateTo: '/provider/dashboard'
+              }
+            });
+          }
+          console.log(`[FCM] QR Order notification sent to ${provider.businessName}`);
+        }
+      } catch (fcmError) {
+        console.error('[FCM Error] QR Order notification failed (non-critical):', fcmError);
+      }
+
+      // Also notify admin
+      try {
+        const prov = await storage.getServiceProvider(orderData.providerId);
+        await notifyAdmin({
+          title: `🪑 Walk-in Order — Token #${String(tokenNumber).padStart(3, '0')} • ₹${(order as any).totalAmount}`,
+          body: `Provider: ${prov?.businessName || 'Unknown'} • ${orderData.customerName || 'Walk-in'}${orderData.tableNumber ? ` • Table ${orderData.tableNumber}` : ''}`,
+          data: {
+            orderId: order.id,
+            orderType: 'qr_walkin',
+            tokenNumber: String(tokenNumber),
+          }
+        });
+      } catch (adminErr) {
+        console.error('[Admin Notify Error] QR order admin notification failed:', adminErr);
+      }
+
+      res.status(201).json(order);
+    } catch (error: any) {
+      console.error("Create QR order error:", error);
+      res.status(400).json({ message: error.message || "Error creating walk-in order" });
+    }
+  });
+
+  // Get QR order status (no auth — for customer confirmation screen)
+  app.get("/api/qr-orders/:id", async (req: Request, res: Response) => {
+    try {
+      const order = await storage.getQrOrder(req.params.id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error: any) {
+      console.error("Get QR order error:", error);
+      res.status(500).json({ message: error.message || "Error fetching order" });
+    }
+  });
+
+  // Provider: Get all QR orders
+  app.get("/api/provider/qr-orders", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const orders = await storage.getQrOrdersByProvider(providerId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get provider QR orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching QR orders" });
+    }
+  });
+
+  // Provider: Update QR order status
+  app.patch("/api/provider/qr-orders/:id/status", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { id } = req.params;
+      const { status } = req.body;
+
+      // Verify order belongs to this provider
+      const order = await storage.getQrOrder(id);
+      if (!order || order.providerId !== providerId) {
+        return res.status(404).json({ message: "Order not found or access denied" });
+      }
+
+      const updatedOrder = await storage.updateQrOrderStatus(id, status);
+      res.json(updatedOrder);
+    } catch (error: any) {
+      console.error("Update QR order status error:", error);
+      res.status(500).json({ message: error.message || "Error updating order status" });
+    }
+  });
 
   return httpServer;
 }

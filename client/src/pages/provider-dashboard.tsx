@@ -18,6 +18,7 @@ import type {
   RentalProperty,
   GroceryOrder,
   StreetFoodOrder,
+  QrOrder,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -2287,6 +2288,239 @@ const GroceryOrderCard: React.FC<{
     </Card>
   );
 };
+// --- COMPONENT: QR WALK-IN ORDERS MANAGER (OFFLINE CUSTOMERS) ---
+const QrOrdersManager: React.FC<{
+  providerProfile: ProviderProfileWithCategory;
+}> = ({ providerProfile }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch QR orders (poll every 8 seconds)
+  const { data: qrOrders, isLoading } = useQuery<QrOrder[]>({
+    queryKey: ["providerQrOrders", providerProfile.id],
+    queryFn: async () => {
+      const res = await api.get("/provider/qr-orders");
+      return res.data;
+    },
+    refetchInterval: 8000,
+  });
+
+  // Update status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
+      api.patch(`/provider/qr-orders/${orderId}/status`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["providerQrOrders"] });
+      toast({ title: "Order status updated!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update status", variant: "destructive" });
+    },
+  });
+
+  const allOrders = qrOrders || [];
+  const pendingOrders = allOrders.filter(o => o.status === "pending");
+  const activeOrders = allOrders.filter(o => ["preparing", "ready"].includes(o.status || ""));
+  const historyOrders = allOrders.filter(o => ["completed", "cancelled"].includes(o.status || ""));
+
+  // Today's orders only
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayOrders = allOrders.filter(o => new Date(o.createdAt || "") >= today);
+  const todayPending = todayOrders.filter(o => o.status === "pending");
+  const todayActive = todayOrders.filter(o => ["preparing", "ready"].includes(o.status || ""));
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const getNextAction = (status: string) => {
+    switch (status) {
+      case "pending": return { label: "Start Preparing", nextStatus: "preparing", color: "bg-blue-600 hover:bg-blue-700" };
+      case "preparing": return { label: "Mark Ready", nextStatus: "ready", color: "bg-orange-500 hover:bg-orange-600" };
+      case "ready": return { label: "Complete", nextStatus: "completed", color: "bg-green-600 hover:bg-green-700" };
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="bg-amber-50 border-amber-200">
+          <CardContent className="py-4 text-center">
+            <p className="text-2xl font-bold text-amber-800">{todayPending.length}</p>
+            <p className="text-xs text-amber-600 font-medium">Pending</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="py-4 text-center">
+            <p className="text-2xl font-bold text-blue-800">{todayActive.length}</p>
+            <p className="text-xs text-blue-600 font-medium">Active</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="py-4 text-center">
+            <p className="text-2xl font-bold text-green-800">{todayOrders.length}</p>
+            <p className="text-xs text-green-600 font-medium">Today Total</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="pending">
+        <TabsList>
+          <TabsTrigger value="pending">
+            Pending ({pendingOrders.length})
+          </TabsTrigger>
+          <TabsTrigger value="active">Active ({activeOrders.length})</TabsTrigger>
+          <TabsTrigger value="history">History ({historyOrders.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending" className="mt-4 space-y-3">
+          {pendingOrders.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <ShoppingBag className="h-12 w-12 opacity-20 mx-auto mb-3" />
+              <p className="font-medium">No pending walk-in orders</p>
+              <p className="text-sm">New QR scan orders will appear here</p>
+            </div>
+          ) : (
+            pendingOrders.map(order => (
+              <QrOrderCard
+                key={order.id}
+                order={order}
+                action={getNextAction(order.status || "pending")}
+                onStatusChange={(id, status) => updateStatusMutation.mutate({ orderId: id, status })}
+                isPending={updateStatusMutation.isPending}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="active" className="mt-4 space-y-3">
+          {activeOrders.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="font-medium">No active orders</p>
+            </div>
+          ) : (
+            activeOrders.map(order => (
+              <QrOrderCard
+                key={order.id}
+                order={order}
+                action={getNextAction(order.status || "")}
+                onStatusChange={(id, status) => updateStatusMutation.mutate({ orderId: id, status })}
+                isPending={updateStatusMutation.isPending}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4 space-y-3">
+          {historyOrders.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="font-medium">No order history yet</p>
+            </div>
+          ) : (
+            historyOrders.slice(0, 50).map(order => (
+              <QrOrderCard key={order.id} order={order} isHistory />
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+// --- QR ORDER CARD ---
+const QrOrderCard: React.FC<{
+  order: QrOrder;
+  action?: { label: string; nextStatus: string; color: string } | null;
+  onStatusChange?: (id: string, status: string) => void;
+  isPending?: boolean;
+  isHistory?: boolean;
+}> = ({ order, action, onStatusChange, isPending, isHistory }) => {
+  const tokenStr = String(order.tokenNumber).padStart(3, '0');
+  const statusColors: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-800",
+    preparing: "bg-blue-100 text-blue-800",
+    ready: "bg-green-100 text-green-800 animate-pulse",
+    completed: "bg-gray-100 text-gray-600",
+    cancelled: "bg-red-100 text-red-700",
+  };
+
+  return (
+    <Card className={`shadow-md ${order.status === 'pending' ? 'border-l-4 border-amber-500' : order.status === 'ready' ? 'border-l-4 border-green-500' : ''}`}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-100 text-amber-800 font-black text-lg px-3 py-1 rounded-lg">
+              #{tokenStr}
+            </div>
+            <div>
+              <CardTitle className="text-base">
+                {order.customerName || "Walk-in Customer"}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {new Date(order.createdAt || new Date()).toLocaleTimeString()}
+                {order.tableNumber && ` • Table ${order.tableNumber}`}
+                {order.customerPhone && ` • ${order.customerPhone}`}
+              </CardDescription>
+            </div>
+          </div>
+          <Badge className={statusColors[order.status || "pending"] || statusColors.pending}>
+            {(order.status || "pending").toUpperCase().replace(/_/g, " ")}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="bg-muted/50 p-3 rounded-md mb-2">
+          {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+            <div key={idx} className="flex justify-between text-sm mb-1">
+              <span>{item.quantity} x {item.name}</span>
+              <span className="font-medium">₹{item.price * item.quantity}</span>
+            </div>
+          ))}
+          <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+            <span>Total</span>
+            <span>₹{order.totalAmount}</span>
+          </div>
+        </div>
+        {order.notes && (
+          <p className="text-xs text-muted-foreground italic bg-yellow-50 p-2 rounded">
+            📝 {order.notes}
+          </p>
+        )}
+      </CardContent>
+      {!isHistory && action && onStatusChange && (
+        <CardFooter className="flex justify-between items-center pt-2">
+          {order.status !== "cancelled" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              onClick={() => onStatusChange(order.id, "cancelled")}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            className={`${action.color} text-white`}
+            size="sm"
+            onClick={() => onStatusChange(order.id, action.nextStatus)}
+            disabled={isPending}
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            {action.label}
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
+  );
+};
 
 // --- COMPONENT 5: RESTAURANT ORDERS MANAGER (NEW) ---
 const RestaurantOrdersManager: React.FC<{
@@ -3340,6 +3574,7 @@ const ProviderDashboard: React.FC = () => {
 
     if (type === "restaurant") {
       tabs.unshift({ value: "menu", label: "Menu Management" });
+      tabs.unshift({ value: "offline-customers", label: "Offline Customers" });
       tabs.unshift({ value: "live-orders", label: "Live Orders" });
     }
 
@@ -3443,6 +3678,12 @@ const ProviderDashboard: React.FC = () => {
         <TabsContent value="live-orders" className="mt-6">
           {type === "restaurant" ? (
             <RestaurantOrdersManager providerProfile={providerProfile} />
+          ) : null}
+        </TabsContent>
+
+        <TabsContent value="offline-customers" className="mt-6">
+          {type === "restaurant" ? (
+            <QrOrdersManager providerProfile={providerProfile} />
           ) : null}
         </TabsContent>
 

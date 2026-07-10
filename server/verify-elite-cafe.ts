@@ -28,11 +28,10 @@ async function verifyEliteCafe() {
             const newProvider = await db.insert(serviceProviders).values({
                 userId: user.id,
                 businessName: "Elite cafe",
-                serviceCategory: "cafe",
-                contactNumber: "1234567890", // Placeholder
+                categoryId: "cafe",
                 address: "Shirur", // Placeholder
                 description: "Elite Juice & Snacks",
-                isOpen: true
+                isAvailable: true
             }).returning();
             console.log(`Created provider: ${newProvider[0].businessName} (ID: ${newProvider[0].id})`);
         }
@@ -42,9 +41,9 @@ async function verifyEliteCafe() {
         // Create user
         const newUser = await db.insert(users).values({
             username: "Elite cafe",
+            email: "elitecafe@shirurexpress.com",
             password: "elitecafe@987pass",
             role: "provider",
-            displayName: "Elite Cafe"
         }).returning();
         console.log(`Created user: ${newUser[0].username} (ID: ${newUser[0].id})`);
 
@@ -52,11 +51,10 @@ async function verifyEliteCafe() {
         const newProvider = await db.insert(serviceProviders).values({
             userId: newUser[0].id,
             businessName: "Elite cafe",
-            serviceCategory: "cafe",
-            contactNumber: "1234567890",
+            categoryId: "cafe",
             address: "Shirur",
             description: "Elite Juice & Snacks",
-            isOpen: true
+            isAvailable: true
         }).returning();
         console.log(`Created provider: ${newProvider[0].businessName} (ID: ${newProvider[0].id})`);
     }

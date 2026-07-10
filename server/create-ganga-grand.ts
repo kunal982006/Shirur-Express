@@ -263,7 +263,7 @@ async function runGangaPipeline() {
     } else {
         console.log("Creating provider Ganga Grand Restaurant...");
         const newProvider = await db.insert(serviceProviders).values({
-            userId, categoryId: restaurantCategory.id, businessName: "Ganga Grand Restaurant", address: "Shivaji Chowk, Shirur", isOpen: true, isVerified: true, profileImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600"
+            userId, categoryId: restaurantCategory.id, businessName: "Ganga Grand Restaurant", address: "Shivaji Chowk, Shirur", isAvailable: true, isVerified: true, profileImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600"
         }).returning();
         providerId = newProvider[0].id;
     }
