@@ -28,11 +28,11 @@ export default function Plumber() {
   const [, setLocation] = useLocation();
   const [selectedAppliance, setSelectedAppliance] = useState<ServiceProblem | null>(null);
 
-  // 1. Get the Plumber Provider (single provider like electrician)
+  // 1. Get the Plumber Provider (merged with electrician account)
   const { data: providers, isLoading: providersLoading } = useQuery<ServiceProvider[]>({
-    queryKey: ["service-providers", "plumber"],
+    queryKey: ["service-providers", "electrician"],
     queryFn: () =>
-      apiRequest("GET", "/api/service-providers?category=plumber")
+      apiRequest("GET", "/api/service-providers?category=electrician")
         .then(res => res.json()),
   });
 
