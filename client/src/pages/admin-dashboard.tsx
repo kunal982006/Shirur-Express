@@ -49,6 +49,7 @@ import {
     Signal,
     Crown,
     Star, // ADDED
+    Home,
     Utensils,
     Trash2,
     Image as ImageIcon,
