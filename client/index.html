@@ -186,7 +186,8 @@
 
       // Handle controller change (new SW activated)
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('New service worker activated');
+        console.log('New service worker activated. Reloading page...');
+        window.location.reload();
       });
     }
 
