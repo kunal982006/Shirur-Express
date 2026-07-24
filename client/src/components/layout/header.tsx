@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Truck, LayoutDashboard, Settings, User as UserIcon, LogOut, Package, Search, Phone, CheckCircle, Clock, ChefHat, Home } from "lucide-react";
+import { Truck, LayoutDashboard, Settings, User as UserIcon, LogOut, Package, Search, Phone, CheckCircle, Clock, ChefHat, Home, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -323,7 +323,7 @@ export default function Header() {
             className="flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent"
             onClick={() => setLocation("/login")}
           >
-            <User className="h-5 w-5" />
+            <UserIcon className="h-5 w-5" />
             <span className="text-[10px] font-medium">Login</span>
           </Button>
         )}
