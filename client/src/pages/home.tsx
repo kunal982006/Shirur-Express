@@ -156,7 +156,7 @@ export default function Home() {
   const { data: adminProviders } = useQuery<any[]>({
     queryKey: ["service-providers", "electrician"],
     queryFn: () =>
-      api.get("/api/service-providers?category=electrician")
+      api.get("/service-providers?category=electrician")
         .then(res => res.data),
   });
 
@@ -198,7 +198,7 @@ export default function Home() {
     const timer = setTimeout(async () => {
       if (selectedService.length > 2) {
         try {
-          const res = await api.get(`/api/search/suggestions?q=${encodeURIComponent(selectedService)}`);
+          const res = await api.get(`/search/suggestions?q=${encodeURIComponent(selectedService)}`);
           // New format: { suggestions: string[], didYouMean: string | null }
           const data = res.data;
           const suggestionsArray = Array.isArray(data?.suggestions) 
@@ -496,7 +496,7 @@ export default function Home() {
                 <img 
                   src="/phone-repair-expert.png" 
                   alt="Phone Repair Expert" 
-                  className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom drop-shadow-md pr-1 sm:pr-3"
+                  className="h-full w-full object-contain object-right-bottom mix-blend-multiply transition-transform group-hover:scale-105 origin-bottom drop-shadow-md pr-1 sm:pr-3"
                 />
               </div>
             </div>
