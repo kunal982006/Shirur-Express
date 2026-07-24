@@ -24,6 +24,12 @@ type ElectricianProviderDetail = ServiceProvider & {
   category: ServiceCategory;
 };
 
+// Phone Hub service IDs
+const PHONE_HUB_IDS = ["screen-guard", "phone-repair", "buy-phone", "sell-phone"];
+const PHONE_HUB_TIME_SLOTS = [
+  "06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM"
+];
+const PHONE_HUB_INSTANT_HOURS = { from: 18, to: 22 }; // 6 PM to 10 PM
 export default function ElectricianDetail() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/electrician/:id");
@@ -112,15 +118,24 @@ export default function ElectricianDetail() {
                 </div>
               </CardHeader>
               <CardContent className="px-0 sm:px-6">
-                <BookingSlotForm
-                  providerId={providerId!}
-                  problemId={selectedProblem.id}
-                  problemName={selectedProblem.name}
-                  serviceType="electrician"
-                  onSuccess={() => {
-                    // Maybe redirect or show success
-                  }}
-                />
+                {(() => {
+                  const isPhoneHub = PHONE_HUB_IDS.includes(selectedProblem.id);
+                  return (
+                    <BookingSlotForm
+                      providerId={providerId!}
+                      problemId={selectedProblem.id}
+                      problemName={selectedProblem.name}
+                      serviceType={isPhoneHub ? "phone-hub" : "electrician"}
+                      onSuccess={() => {
+                        // Maybe redirect or show success
+                      }}
+                      {...(isPhoneHub ? {
+                        availableTimeSlots: PHONE_HUB_TIME_SLOTS,
+                        instantHours: PHONE_HUB_INSTANT_HOURS,
+                      } : {})}
+                    />
+                  );
+                })()}
               </CardContent>
             </Card>
           ) : (

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star, Smartphone, Shield, Wrench, RefreshCw, ShoppingBag } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProvider, ServiceProblem } from "@shared/schema";
 
@@ -34,9 +34,17 @@ const IMAGE_MAPPING: Record<string, string> = {
   "Others": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448851/shirur-express/electrician/others.jpg"
 };
 
+const PHONE_HUB_CATEGORIES = [
+  { id: "screen-guard", name: "Screen Guard", icon: Shield, description: "Screen guard installation at ₹70 only" },
+  { id: "phone-repair", name: "Phone Repair", icon: Wrench, description: "Expert phone repair at best prices" },
+  { id: "buy-phone", name: "Buy Phone", icon: ShoppingBag, description: "Buy quality phones at best deals" },
+  { id: "sell-phone", name: "Sell Phone", icon: RefreshCw, description: "Sell your old phone for best price" },
+];
+
 export default function Electrician() {
   const [, setLocation] = useLocation();
   const [selectedAppliance, setSelectedAppliance] = useState<ServiceProblem | null>(null);
+  const [showPhoneHub, setShowPhoneHub] = useState(false);
 
   // 1. Get the "Admin" Electrician Provider
   const { data: providers, isLoading: providersLoading } = useQuery<ServiceProvider[]>({
@@ -166,6 +174,84 @@ export default function Electrician() {
           </div>
         )}
 
+        {/* EXPRESS PHONE HUB Banner */}
+        <div className="mt-6 mx-2 sm:mx-0 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all cursor-pointer group relative"
+          onClick={() => setShowPhoneHub(true)}
+          style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 40%, #a7f3d0 100%)' }}
+        >
+          {/* Decorative floating shapes */}
+          <div className="absolute top-2 left-3 w-8 h-8 rounded-full bg-emerald-300/20 blur-sm animate-pulse" />
+          <div className="absolute bottom-4 left-1/3 w-6 h-6 rounded-full bg-teal-200/30 blur-sm" />
+          
+          <div className="flex relative min-h-[280px] sm:min-h-[300px]">
+            {/* Left: Content */}
+            <div className="p-4 sm:p-6 z-10 w-[58%] sm:w-[55%] flex flex-col justify-center">
+              {/* Title Badge */}
+              <div className="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-[10px] sm:text-xs font-extrabold px-3 py-1 sm:px-4 sm:py-1.5 rounded-full self-start mb-3 shadow-sm tracking-wide uppercase">
+                <Smartphone className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                Express Phone Hub
+              </div>
+              
+              {/* Service 1: Screen Guard */}
+              <div className="flex items-start gap-1.5 mb-2.5">
+                <div className="mt-0.5 shrink-0 bg-white/70 rounded-full p-1 shadow-sm">
+                  <Shield className="h-3 w-3 text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-emerald-950 font-bold text-[11px] sm:text-sm leading-tight block">Screen Guard</span>
+                  <span className="text-emerald-800/80 text-[9px] sm:text-xs leading-tight block">
+                    Bas <span className="font-extrabold text-emerald-700">₹70</span> mein screen guard + free doorstep installation!
+                    <span className="text-emerald-600/60 text-[8px] sm:text-[10px]"> (Market ₹100)</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Service 2: Phone Repair */}
+              <div className="flex items-start gap-1.5 mb-2.5">
+                <div className="mt-0.5 shrink-0 bg-white/70 rounded-full p-1 shadow-sm">
+                  <Wrench className="h-3 w-3 text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-emerald-950 font-bold text-[11px] sm:text-sm leading-tight block">Phone Repair</span>
+                  <span className="text-emerald-800/80 text-[9px] sm:text-xs leading-tight block">
+                    Market se saste mein expert phone repair!
+                  </span>
+                </div>
+              </div>
+
+              {/* Service 3: Buy / Sell */}
+              <div className="flex items-start gap-1.5 mb-3">
+                <div className="mt-0.5 shrink-0 bg-white/70 rounded-full p-1 shadow-sm">
+                  <RefreshCw className="h-3 w-3 text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-emerald-950 font-bold text-[11px] sm:text-sm leading-tight block">Buy / Sell</span>
+                  <span className="text-emerald-800/80 text-[9px] sm:text-xs leading-tight block">
+                    Purana phone kharido ya becho—best deals guarantee!
+                  </span>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="bg-emerald-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full inline-block self-start shadow-sm group-hover:bg-emerald-700 transition-colors">
+                View Now &rarr;
+              </div>
+            </div>
+
+            {/* Right: Phone Repair Expert Image */}
+            <div className="w-[42%] sm:w-[45%] absolute right-0 top-0 bottom-0 flex items-end justify-end pointer-events-none overflow-visible">
+              <img 
+                src="/phone-repair-expert.png" 
+                alt="Phone Repair Expert" 
+                className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom drop-shadow-md pr-1 sm:pr-3"
+              />
+            </div>
+          </div>
+
+          {/* Bottom decorative border */}
+          <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />
+        </div>
+
         {/* Attractive Footer Banner */}
         <div className="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 rounded-xl p-3 flex items-center gap-3 max-w-lg mx-auto shadow-sm">
           <div className="bg-white p-2 rounded-full shadow-sm border border-amber-100 shrink-0">
@@ -231,6 +317,42 @@ export default function Electrician() {
                   </Button>
                 ))
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Phone Hub Categories Dialog */}
+        <Dialog open={showPhoneHub} onOpenChange={setShowPhoneHub}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-emerald-600" />
+                Express Phone Hub
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground -mt-1">Select a service to book</p>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {PHONE_HUB_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-md transition-all group/card text-center"
+                    onClick={() => {
+                      setShowPhoneHub(false);
+                      if (adminProviderId) {
+                        setLocation(`/electrician/${adminProviderId}?problemId=${cat.id}&problemName=${encodeURIComponent(cat.name)}`);
+                      }
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 group-hover/card:bg-emerald-200 flex items-center justify-center transition-colors">
+                      <Icon className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <span className="font-semibold text-sm text-emerald-950">{cat.name}</span>
+                    <span className="text-[10px] text-emerald-700/70 leading-tight">{cat.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </DialogContent>
         </Dialog>

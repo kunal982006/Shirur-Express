@@ -67,6 +67,10 @@ interface BookingSlotFormProps {
   problemName: string;
   serviceType: string;
   onSuccess?: () => void;
+  /** Override default time slots (e.g. for Phone Hub: 6 PM–10 PM only) */
+  availableTimeSlots?: string[];
+  /** If set, instant booking is only available during these hours (24h format) */
+  instantHours?: { from: number; to: number };
 }
 
 export default function BookingSlotForm({
@@ -75,7 +79,17 @@ export default function BookingSlotForm({
   problemName,
   serviceType,
   onSuccess,
+  availableTimeSlots,
+  instantHours,
 }: BookingSlotFormProps) {
+  // Determine which time slots to show
+  const effectiveTimeSlots = availableTimeSlots || timeSlots;
+
+  // Check if instant booking is currently available
+  const currentHour = new Date().getHours();
+  const isInstantAvailable = instantHours
+    ? (currentHour >= instantHours.from && currentHour < instantHours.to)
+    : true;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
@@ -260,16 +274,25 @@ export default function BookingSlotForm({
           <div className="flex p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1">
             <button
               type="button"
-              onClick={() => handleBookingTypeChange("instant")}
+              onClick={() => isInstantAvailable && handleBookingTypeChange("instant")}
+              disabled={!isInstantAvailable}
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
+                "flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
+                !isInstantAvailable && "opacity-50 cursor-not-allowed",
                 bookingType === "instant"
                   ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <Zap className={cn("h-4 w-4", bookingType === "instant" && "fill-primary/20")} /> 
-              Instant <span className="font-normal text-xs opacity-70 hidden sm:inline">(60m)</span>
+              <div className="flex items-center gap-2">
+                <Zap className={cn("h-4 w-4", bookingType === "instant" && "fill-primary/20")} /> 
+                Instant <span className="font-normal text-xs opacity-70 hidden sm:inline">(60m)</span>
+              </div>
+              {!isInstantAvailable && instantHours && (
+                <span className="text-[9px] sm:text-[10px] text-orange-600 font-medium leading-tight">
+                  Available {instantHours.from > 12 ? instantHours.from - 12 : instantHours.from}PM – {instantHours.to > 12 ? instantHours.to - 12 : instantHours.to}PM
+                </span>
+              )}
             </button>
 
             <button
@@ -350,7 +373,7 @@ export default function BookingSlotForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {timeSlots.map((slot) => (
+                          {effectiveTimeSlots.map((slot) => (
                             <SelectItem key={slot} value={slot}>
                               {slot}
                             </SelectItem>
