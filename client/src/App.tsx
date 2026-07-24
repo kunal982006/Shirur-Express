@@ -44,6 +44,8 @@ import RiderDashboard from "@/pages/rider-dashboard";
 import PropertySearch from "@/pages/property-search";
 import PropertyDetail from "@/pages/property-detail";
 import PropertyListingForm from "@/pages/property-listing-form";
+import MyProperties from "@/pages/my-properties";
+import EditPropertyForm from "@/pages/edit-property";
 import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
 import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
 import OrderTracking from "@/pages/order-tracking";
@@ -95,6 +97,8 @@ function RouterComponent() {
         <Route path="/rental" component={PropertySearch} />
         <Route path="/properties/:id" component={PropertyDetail} />
         <Route path="/list-property" component={PropertyListingForm} />
+        <Route path="/my-properties" component={MyProperties} />
+        <Route path="/edit-property/:id" component={EditPropertyForm} />
         <Route path="/street-food" component={StreetFood} />
         <Route path="/street-food/:vendorId" component={StreetFoodDetail} />
         <Route path="/restaurants/:id" component={RestaurantDetail} />

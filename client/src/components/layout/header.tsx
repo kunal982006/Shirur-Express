@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, Settings, LogOut, Package, User, LayoutDashboard, Truck, ArrowLeft } from "lucide-react";
+import { Truck, LayoutDashboard, Settings, User as UserIcon, LogOut, Package, Search, Phone, CheckCircle, Clock, ChefHat, Home } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -200,6 +200,10 @@ export default function Header() {
                     <DropdownMenuItem onClick={() => setLocation("/my-bookings")}>
                       <Package className="mr-2 h-4 w-4" />
                       <span>My Bookings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/my-properties")}>
+                      <Home className="mr-2 h-4 w-4" />
+                      <span>My Properties</span>
                     </DropdownMenuItem>
                     {/* Desktop Dropdown: Dashboard link based on user type */}
                     {isDeliveryPartner && (

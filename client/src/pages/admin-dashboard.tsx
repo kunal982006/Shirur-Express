@@ -80,6 +80,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import AdminStreetFood from "@/components/admin/admin-street-food";
+import AdminProperties from "@/components/admin/admin-properties";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -254,7 +255,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order">(
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -602,6 +603,7 @@ export default function AdminDashboard() {
         { id: "users", label: "Users", icon: Users },
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
+        { id: "properties", label: "Properties", icon: Home },
         { id: "street_food", label: "Street Food", icon: Sandwich },
         { id: "promotions", label: "Promotions", icon: Megaphone },
         { id: "display_order", label: "Display Order", icon: ArrowUpDown },
@@ -1881,6 +1883,11 @@ export default function AdminDashboard() {
                 {/* ═══ PROMOTIONS TAB ═══ */}
                 {activeTab === "promotions" && (
                      <AdminPromotions />
+                )}
+
+                {/* ═══ PROPERTIES TAB ═══ */}
+                {activeTab === "properties" && (
+                     <AdminProperties />
                 )}
 
                 {/* ═══ DISPLAY ORDER TAB ═══ */}

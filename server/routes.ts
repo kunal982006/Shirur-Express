@@ -597,6 +597,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/user/rental-properties", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      // Using the same backend method as provider since it just filters by ownerId
+      const properties = await storage.getProviderRentalProperties(userId);
+      res.json(properties);
+    } catch (error: any) {
+      console.error("Get user rental properties error:", error);
+      res.status(500).json({ message: error.message || "Error fetching rental properties" });
+    }
+  });
+
   app.get("/api/rental-properties", async (req: Request, res: Response) => {
     try {
       const { propertyType, listingType, minRent, maxRent, bedrooms, locality } = req.query;
@@ -649,11 +661,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const userId = req.userId!;
       const property = await storage.getRentalProperty(id);
+      const user = await storage.getUser(userId);
 
       if (!property) {
         return res.status(404).json({ message: "Property not found" });
       }
-      if (property.ownerId !== userId) {
+      if (property.ownerId !== userId && user?.role !== 'admin') {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -671,11 +684,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId!;
       const updates = req.body;
       const property = await storage.getRentalProperty(id);
+      const user = await storage.getUser(userId);
 
       if (!property) {
         return res.status(404).json({ message: "Property not found" });
       }
-      if (property.ownerId !== userId) {
+      if (property.ownerId !== userId && user?.role !== 'admin') {
         return res.status(403).json({ message: "Access denied" });
       }
 

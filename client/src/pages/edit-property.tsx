@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertRentalPropertySchema, type InsertRentalProperty } from "@shared/schema";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
+import { useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -36,12 +37,19 @@ const AMENITIES_LIST = [
     "Security", "Lift", "Club House", "Park", "Gas Pipeline"
 ];
 
-export default function PropertyListingForm() {
+export default function EditPropertyForm() {
     const [location, setLocation] = useLocation();
+    const [, params] = useRoute("/edit-property/:id");
+    const propertyId = params?.id;
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [uploading, setUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
+
+    const { data: existingProperty, isLoading } = useQuery({
+        queryKey: [`/api/rental-properties/${propertyId}`],
+        enabled: !!propertyId,
+    });
 
     const form = useForm<InsertRentalProperty>({
         resolver: zodResolver(insertRentalPropertySchema),
@@ -67,16 +75,46 @@ export default function PropertyListingForm() {
         },
     });
 
-    const createMutation = useMutation({
+    useEffect(() => {
+        if (existingProperty) {
+            form.reset({
+                title: existingProperty.title,
+                listingType: existingProperty.listingType,
+                description: existingProperty.description || "",
+                propertyType: existingProperty.propertyType,
+                rent: existingProperty.rent?.toString() || "0",
+                deposit: existingProperty.deposit?.toString() || "0",
+                area: existingProperty.area || 0,
+                bedrooms: existingProperty.bedrooms || 1,
+                bathrooms: existingProperty.bathrooms || 1,
+                furnishing: existingProperty.furnishing || "Unfurnished",
+                address: existingProperty.address,
+                locality: existingProperty.locality || "",
+                amenities: existingProperty.amenities || [],
+                images: existingProperty.images || [],
+                status: existingProperty.status || "available",
+                ownerNote: existingProperty.ownerNote || "",
+                contactPhone: existingProperty.contactPhone || "",
+                contactEmail: existingProperty.contactEmail || "",
+            });
+            if (existingProperty.images) {
+                setImageUrls(existingProperty.images);
+            }
+        }
+    }, [existingProperty, form]);
+
+    const updateMutation = useMutation({
         mutationFn: async (data: InsertRentalProperty) => {
-            const res = await apiRequest("POST", "/api/rental-properties", data);
+            const res = await apiRequest("PATCH", `/api/rental-properties/${propertyId}`, data);
             return res.json();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["/api/rental-properties"] });
+            queryClient.invalidateQueries({ queryKey: ["myProperties"] });
+            queryClient.invalidateQueries({ queryKey: [`/api/rental-properties/${propertyId}`] });
             toast({
                 title: "Success",
-                description: "Property listed successfully!",
+                description: "Property updated successfully!",
             });
             setLocation("/my-properties");
         },
@@ -160,14 +198,18 @@ export default function PropertyListingForm() {
             bathrooms: Number(data.bathrooms),
             images: imageUrls,
         };
-        createMutation.mutate(formattedData);
+        updateMutation.mutate(formattedData);
     };
+
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Loader2 className="animate-spin h-8 w-8" /></div>;
+    }
 
     return (
         <div className="container mx-auto p-4 max-w-3xl">
             <Card>
                 <CardHeader>
-                    <CardTitle>List Your Property</CardTitle>
+                    <CardTitle>Edit Your Property</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -500,14 +542,14 @@ export default function PropertyListingForm() {
                                 )}
                             </div>
 
-                            <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                                {createMutation.isPending ? (
+                            <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
+                                {updateMutation.isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Listing Property...
+                                        Saving Changes...
                                     </>
                                 ) : (
-                                    "List Property"
+                                    "Save Changes"
                                 )}
                             </Button>
                         </form>
@@ -517,3 +559,4 @@ export default function PropertyListingForm() {
         </div>
     );
 }
+
