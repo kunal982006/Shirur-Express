@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertRentalPropertySchema, type InsertRentalProperty } from "@shared/schema";
 import { useLocation, useRoute } from "wouter";
 import { useEffect } from "react";
