@@ -43,20 +43,22 @@ export default function AdminPhoneListings() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { data: listings = [], isLoading } = useQuery<any[]>({
+  const { data: rawListings, isLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/phone-listings", statusFilter],
     queryFn: async () => {
       const url = statusFilter === "all" 
-        ? "/api/admin/phone-listings" 
-        : `/api/admin/phone-listings?status=${statusFilter}`;
+        ? "/admin/phone-listings" 
+        : `/admin/phone-listings?status=${statusFilter}`;
       const res = await api.get(url);
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
+  const listings = Array.isArray(rawListings) ? rawListings : [];
+
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      const res = await api.patch(`/api/admin/phone-listings/${id}`, updates);
+      const res = await api.patch(`/admin/phone-listings/${id}`, updates);
       return res.data;
     },
     onSuccess: () => {
@@ -74,7 +76,7 @@ export default function AdminPhoneListings() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.delete(`/api/admin/phone-listings/${id}`);
+      const res = await api.delete(`/admin/phone-listings/${id}`);
       return res.data;
     },
     onSuccess: () => {
@@ -145,8 +147,8 @@ export default function AdminPhoneListings() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
-                          {listing.images && listing.images.length > 0 ? (
-                            <img src={listing.images[0]} alt="Phone" className="w-full h-full object-cover" />
+                          {listing.images && (Array.isArray(listing.images) ? listing.images.length > 0 : JSON.parse(listing.images).length > 0) ? (
+                            <img src={Array.isArray(listing.images) ? listing.images[0] : JSON.parse(listing.images)[0]} alt="Phone" className="w-full h-full object-cover" />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-gray-400" />
                           )}
@@ -250,13 +252,17 @@ function ActionDialog({ listing, onUpdate }: { listing: any, onUpdate: (updates:
           <div className="space-y-3">
             <Label>Uploaded Photos</Label>
             <div className="grid grid-cols-2 gap-2">
-              {listing.images?.map((img: string, i: number) => (
+              {Array.isArray(listing.images) ? listing.images.map((img: string, i: number) => (
+                <a key={i} href={img} target="_blank" rel="noopener noreferrer">
+                  <img src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
+                </a>
+              )) : (typeof listing.images === 'string' ? JSON.parse(listing.images) : []).map((img: string, i: number) => (
                 <a key={i} href={img} target="_blank" rel="noopener noreferrer">
                   <img src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
                 </a>
               ))}
             </div>
-            {!listing.images?.length && <div className="p-4 bg-gray-50 rounded-md text-sm text-gray-500 text-center">No images uploaded</div>}
+            {(!listing.images || listing.images.length === 0) && <div className="p-4 bg-gray-50 rounded-md text-sm text-gray-500 text-center">No images uploaded</div>}
             
             <div className="pt-4 border-t mt-4">
               <Label>Seller Information</Label>

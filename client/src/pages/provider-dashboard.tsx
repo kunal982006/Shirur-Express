@@ -42,6 +42,7 @@ import {
   ShoppingBag,
   MapPin,
 } from "lucide-react";
+import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import { Input } from "@/components/ui/input";
 import MenuItemForm from "@/components/forms/MenuItemForm";
 import { QuickImageUpload } from "@/components/forms/QuickImageUpload";
@@ -3587,6 +3588,11 @@ const ProviderDashboard: React.FC = () => {
       tabs.push({ value: "offers", label: "Offers" });
     }
 
+    // Electrician / Phone Hub provider gets Phone Listings management tab
+    if (providerProfile.category?.slug === "electrician" || providerProfile.category?.name?.toLowerCase().includes("electrician")) {
+      tabs.push({ value: "phone-listings", label: "Phone Listings" });
+    }
+
     return tabs;
   };
 
@@ -3701,6 +3707,10 @@ const ProviderDashboard: React.FC = () => {
 
         <TabsContent value="offers" className="mt-6">
           <OffersManager providerId={providerProfile.id} categorySlug={providerProfile.category?.slug || ''} />
+        </TabsContent>
+
+        <TabsContent value="phone-listings" className="mt-6">
+          <AdminPhoneListings />
         </TabsContent>
 
 

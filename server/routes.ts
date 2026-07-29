@@ -5058,27 +5058,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ADMIN: Get all phone listings (all statuses)
+  // Helper to check if user is admin or electrician provider (Phone Hub operator)
+  const canManagePhoneListings = async (userId: string) => {
+    const user = await storage.getUser(userId);
+    if (!user) return false;
+    if (user.role === "admin") return true;
+
+    const provider = await storage.getProviderByUserId(userId);
+    if (provider && provider.categoryId) {
+      const category = await db.query.serviceCategories.findFirst({
+        where: eq(serviceCategories.id, provider.categoryId)
+      });
+      if (category && (category.slug === "electrician" || category.name.toLowerCase().includes("electrician"))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // ADMIN & ELECTRICIAN: Get all phone listings (all statuses)
   app.get("/api/admin/phone-listings", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      const authorized = await canManagePhoneListings(userId);
+      if (!authorized) return res.status(403).json({ message: "Not authorized to manage phone listings" });
       
       const status = req.query.status as string | undefined;
       const listings = await storage.getPhoneListings(status);
-      res.json(listings);
+      res.json(Array.isArray(listings) ? listings : []);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
 
-  // ADMIN: Update phone listing (approve/reject/set price)
+  // ADMIN & ELECTRICIAN: Update phone listing (approve/reject/set price)
   app.patch("/api/admin/phone-listings/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      const authorized = await canManagePhoneListings(userId);
+      if (!authorized) return res.status(403).json({ message: "Not authorized to manage phone listings" });
       
       const { status, adminPrice, adminNote } = req.body;
       const updates: any = {};
@@ -5116,12 +5134,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ADMIN: Delete any phone listing
+  // ADMIN & ELECTRICIAN: Delete any phone listing
   app.delete("/api/admin/phone-listings/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      const authorized = await canManagePhoneListings(userId);
+      if (!authorized) return res.status(403).json({ message: "Not authorized to manage phone listings" });
       
       await storage.deletePhoneListing(req.params.id);
       res.json({ message: "Listing deleted" });

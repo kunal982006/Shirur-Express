@@ -43,6 +43,7 @@ import {
     Clock,
     Truck,
     LogOut,
+    Smartphone,
     ChevronRight,
     ChevronDown,
     ChevronUp,

@@ -1,5 +1,5 @@
 // Shirur Express Service Worker - Enhanced for PWABuilder v3
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE_NAME = `shirur-express-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `shirur-express-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `shirur-express-images-${CACHE_VERSION}`;
@@ -78,6 +78,21 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Skip Vite dev server and source modules in development
+    if (
+        url.hostname === 'localhost' ||
+        url.hostname === '127.0.0.1' ||
+        url.pathname.includes('/@fs/') ||
+        url.pathname.includes('/@vite/') ||
+        url.pathname.includes('/src/') ||
+        url.pathname.endsWith('.ts') ||
+        url.pathname.endsWith('.tsx') ||
+        url.search.includes('import') ||
+        url.pathname.includes('hot-update')
+    ) {
+        return;
+    }
+
     // Handle share target
     if (url.pathname === '/share') {
         event.respondWith(handleShareTarget(url));
@@ -119,9 +134,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Static assets - Cache first
+    // Static JS/CSS assets - Network first so code updates take effect immediately
     if (url.pathname.match(/\.(js|css|woff|woff2|ttf|eot)$/)) {
-        event.respondWith(cacheFirst(request, STATIC_CACHE_NAME));
+        event.respondWith(networkFirst(request));
         return;
     }
 

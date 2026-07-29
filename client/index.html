@@ -143,6 +143,15 @@
             registration.update();
           }, 60000); // Every minute
 
+          // Auto-activate updates and reload on controller change
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
+
           // Handle updates
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -150,14 +159,8 @@
 
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New version available
-                console.log('New version available! Refresh to update.');
-
-                // Optional: Show update notification to user
-                if (window.confirm('New version available! Refresh to update?')) {
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  window.location.reload();
-                }
+                console.log('New version available! Auto-updating...');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
           });

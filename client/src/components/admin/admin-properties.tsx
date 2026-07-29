@@ -84,8 +84,8 @@ export default function AdminProperties() {
                     <p className="text-xs text-gray-500 mt-1">Owner ID: {property.ownerId.slice(0, 8)}...</p>
                   </div>
                   <div className="flex justify-end gap-2 mt-4 sm:mt-0">
-                    <Button variant="outline" size="sm" asChild className="bg-transparent border-white/10 text-gray-300 hover:bg-white/10 hover:text-white">
-                      <Link href={`/edit-property/${property.id}`}><Edit className="h-4 w-4 mr-1" /> Edit</Link>
+                    <Button variant="outline" size="sm" className="bg-transparent border-white/10 text-gray-300 hover:bg-white/10 hover:text-white" onClick={() => window.location.href = `/edit-property/${property.id}`}>
+                      <Edit className="h-4 w-4 mr-1" /> Edit
                     </Button>
                     <Button 
                       variant="destructive" 
