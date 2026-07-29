@@ -42,6 +42,8 @@ import {
   insertAdminPromotionalOfferSchema, // ADMIN PROMOS
   insertQrOrderSchema, // QR WALK-IN ORDERS
   qrOrders, // QR WALK-IN ORDERS
+  insertPhoneListingSchema, // PHONE LISTINGS
+  phoneListings, // PHONE LISTINGS
   type User,
 } from "@shared/schema";
 
@@ -4958,6 +4960,173 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Toggle platform status error:", error);
       res.status(500).json({ message: error.message || "Error toggling platform status" });
+    }
+  });
+
+  // =========================================
+  // PHONE LISTINGS API (Phone Hub Buy/Sell)
+  // =========================================
+
+  // PUBLIC: Get all approved phone listings (for Buy Phone catalog)
+  app.get("/api/phone-listings/approved", async (req: Request, res: Response) => {
+    try {
+      const listings = await storage.getApprovedPhoneListings();
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // CUSTOMER: Submit a phone for sale
+  app.post("/api/phone-listings", isLoggedIn, upload.array("images", 5), async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      
+      // Upload images to Cloudinary
+      const imageUrls: string[] = [];
+      if (req.files && Array.isArray(req.files)) {
+        for (const file of req.files) {
+          const url = await uploadToCloudinary(file.buffer, "shirur-express/phone-listings");
+          imageUrls.push(url);
+        }
+      }
+
+      // Parse body and add images
+      const listingData = {
+        ...req.body,
+        images: imageUrls.length > 0 ? imageUrls : JSON.parse(req.body.images || "[]"),
+      };
+
+      const parsed = insertPhoneListingSchema.safeParse(listingData);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+      }
+
+      const listing = await storage.createPhoneListing({
+        ...parsed.data,
+        sellerId: userId,
+      });
+
+      // Notify admin about new sell request
+      notifyAdmin({
+        title: "📱 New Phone Sell Request",
+        body: `${parsed.data.sellerName} wants to sell ${parsed.data.brand} ${parsed.data.model}`,
+      });
+
+      res.status(201).json(listing);
+    } catch (error: any) {
+      console.error("Create phone listing error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // CUSTOMER: Get my phone listings
+  app.get("/api/phone-listings/my", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const listings = await storage.getUserPhoneListings(userId);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // CUSTOMER: Delete own pending listing
+  app.delete("/api/phone-listings/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const listing = await storage.getPhoneListing(req.params.id);
+      if (!listing) return res.status(404).json({ message: "Listing not found" });
+      if (listing.sellerId !== userId) return res.status(403).json({ message: "Not authorized" });
+      if (listing.status !== "pending") return res.status(400).json({ message: "Can only delete pending listings" });
+      
+      await storage.deletePhoneListing(req.params.id);
+      res.json({ message: "Listing deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // PUBLIC: Get single phone listing details
+  app.get("/api/phone-listings/:id", async (req: Request, res: Response) => {
+    try {
+      const listing = await storage.getPhoneListing(req.params.id);
+      if (!listing) return res.status(404).json({ message: "Listing not found" });
+      res.json(listing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ADMIN: Get all phone listings (all statuses)
+  app.get("/api/admin/phone-listings", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      
+      const status = req.query.status as string | undefined;
+      const listings = await storage.getPhoneListings(status);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ADMIN: Update phone listing (approve/reject/set price)
+  app.patch("/api/admin/phone-listings/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      
+      const { status, adminPrice, adminNote } = req.body;
+      const updates: any = {};
+      if (status) updates.status = status;
+      if (adminPrice !== undefined) updates.adminPrice = adminPrice;
+      if (adminNote !== undefined) updates.adminNote = adminNote;
+      
+      const updated = await storage.updatePhoneListing(req.params.id, updates);
+      if (!updated) return res.status(404).json({ message: "Listing not found" });
+
+      // Notify seller about status change
+      const listing = await storage.getPhoneListing(req.params.id);
+      if (listing?.seller) {
+        const tokens = listing.seller.fcmTokens || (listing.seller.fcmToken ? [listing.seller.fcmToken] : []);
+        if (tokens.length > 0) {
+          const statusMsg = status === "approved" 
+            ? `Your ${listing.brand} ${listing.model} has been approved! Price: ₹${adminPrice}`
+            : status === "rejected"
+            ? `Your ${listing.brand} ${listing.model} listing was rejected. ${adminNote || ""}`
+            : `Your ${listing.brand} ${listing.model} status updated to: ${status}`;
+          
+          for (const token of tokens) {
+            await sendPushNotification(token, {
+              title: "📱 Phone Listing Update",
+              body: statusMsg,
+            }).catch(() => {});
+          }
+        }
+      }
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Update phone listing error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ADMIN: Delete any phone listing
+  app.delete("/api/admin/phone-listings/:id", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== "admin") return res.status(403).json({ message: "Admin only" });
+      
+      await storage.deletePhoneListing(req.params.id);
+      res.json({ message: "Listing deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 

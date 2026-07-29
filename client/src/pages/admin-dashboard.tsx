@@ -48,7 +48,7 @@ import {
     ChevronUp,
     Signal,
     Crown,
-    Star, // ADDED
+    Star,
     Home,
     Utensils,
     Trash2,
@@ -65,6 +65,7 @@ import {
     UserPlus,
     Eye,
     EyeOff,
+    Smartphone,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -82,6 +83,7 @@ import {
 
 import AdminStreetFood from "@/components/admin/admin-street-food";
 import AdminProperties from "@/components/admin/admin-properties";
+import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -256,7 +258,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties">(
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -605,6 +607,7 @@ export default function AdminDashboard() {
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
         { id: "properties", label: "Properties", icon: Home },
+        { id: "phone_listings", label: "Phone Listings", icon: Smartphone },
         { id: "street_food", label: "Street Food", icon: Sandwich },
         { id: "promotions", label: "Promotions", icon: Megaphone },
         { id: "display_order", label: "Display Order", icon: ArrowUpDown },
@@ -1889,6 +1892,11 @@ export default function AdminDashboard() {
                 {/* ═══ PROPERTIES TAB ═══ */}
                 {activeTab === "properties" && (
                      <AdminProperties />
+                )}
+
+                {/* ═══ PHONE LISTINGS TAB ═══ */}
+                {activeTab === "phone_listings" && (
+                     <AdminPhoneListings />
                 )}
 
                 {/* ═══ DISPLAY ORDER TAB ═══ */}

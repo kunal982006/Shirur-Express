@@ -360,6 +360,33 @@ export const qrOrders = pgTable("qr_orders", {
 });
 
 // =========================================
+// PHONE LISTINGS TABLE (Phone Hub Buy/Sell)
+// =========================================
+
+export const phoneListings = pgTable("phone_listings", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  sellerId: varchar("seller_id").notNull(), // User who submitted
+  brand: text("brand").notNull(),
+  model: text("model").notNull(),
+  storage: text("storage"),
+  ram: text("ram"),
+  color: text("color"),
+  condition: text("condition").notNull(), // excellent, good, fair, poor
+  age: text("age"),
+  description: text("description"),
+  images: jsonb("images").$type<string[]>(),
+  sellerPhone: text("seller_phone").notNull(),
+  sellerName: text("seller_name").notNull(),
+  sellerAddress: text("seller_address"),
+  // Admin-controlled fields
+  status: text("status").default("pending"), // pending, approved, rejected, sold
+  adminPrice: decimal("admin_price", { precision: 10, scale: 2 }),
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// =========================================
 // 5. ZOD SCHEMAS (Defined after tables)
 // =========================================
 
@@ -442,6 +469,24 @@ export const insertDeliveryPartnerSchema = createInsertSchema(deliveryPartners).
   vehicleType: true, vehicleNumber: true, licenseNumber: true, profileImageUrl: true,
 });
 export type InsertDeliveryPartner = z.infer<typeof insertDeliveryPartnerSchema>;
+
+// Phone Listings schema and types
+export const insertPhoneListingSchema = z.object({
+  brand: z.string().min(1, "Brand is required"),
+  model: z.string().min(1, "Model is required"),
+  storage: z.string().optional(),
+  ram: z.string().optional(),
+  color: z.string().optional(),
+  condition: z.enum(["excellent", "good", "fair", "poor"]),
+  age: z.string().optional(),
+  description: z.string().optional(),
+  images: z.array(z.string()).min(1, "At least one image is required"),
+  sellerPhone: z.string().min(1, "Phone number is required"),
+  sellerName: z.string().min(1, "Name is required"),
+  sellerAddress: z.string().optional(),
+});
+export type PhoneListing = typeof phoneListings.$inferSelect;
+export type InsertPhoneListing = z.infer<typeof insertPhoneListingSchema>;
 
 // Provider Offers schema and types
 export const insertProviderOfferSchema = z.object({
@@ -714,3 +759,14 @@ export const qrOrdersRelations = relations(qrOrders, ({ one }) => ({
     references: [serviceProviders.id],
   }),
 }));
+
+// =========================================
+// PHONE LISTINGS RELATIONS
+// =========================================
+
+export const phoneListingsRelations = relations(phoneListings, ({ one }) => ({
+  seller: one(users, {
+    fields: [phoneListings.sellerId],
+    references: [users.id],
+  }),
+}));

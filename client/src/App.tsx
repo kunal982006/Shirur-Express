@@ -54,6 +54,8 @@ import NotificationsPage from "@/pages/notifications";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SearchResults from "@/pages/search-results";
 import CafeOfJoyMenu from "@/pages/cafe-of-joy-menu";
+import BuyPhone from "@/pages/buy-phone";
+import SellPhone from "@/pages/sell-phone";
 
 // Fallback loader if ever needed again
 const PageLoader = () => (
@@ -109,6 +111,11 @@ function RouterComponent() {
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/order-success" component={OrderSuccess} />
         <Route path="/notifications" component={NotificationsPage} />
+        
+        {/* Phone Hub Buy/Sell */}
+        <Route path="/buy-phone" component={BuyPhone} />
+        <Route path="/sell-phone" component={SellPhone} />
+        
         <Route path="/admin" component={AdminDashboard} />
 
         <Route path="/provider/dashboard" component={ProviderDashboard} />

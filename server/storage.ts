@@ -60,6 +60,10 @@ import {
   qrOrders,
   type QrOrder,
   type InsertQrOrder,
+  // PHONE LISTINGS
+  phoneListings,
+  type PhoneListing,
+  type InsertPhoneListing,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ne, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzle-orm";
@@ -354,6 +358,15 @@ export interface IStorage {
   getQrOrdersByProvider(providerId: string): Promise<QrOrder[]>;
   updateQrOrderStatus(id: string, status: string): Promise<QrOrder>;
   getTodayQrOrderCount(providerId: string): Promise<number>;
+
+  // PHONE LISTINGS (Phone Hub Buy/Sell)
+  createPhoneListing(listing: InsertPhoneListing & { sellerId: string }): Promise<PhoneListing>;
+  getPhoneListing(id: string): Promise<(PhoneListing & { seller: User }) | undefined>;
+  getPhoneListings(status?: string): Promise<(PhoneListing & { seller: User })[]>;
+  getApprovedPhoneListings(): Promise<PhoneListing[]>;
+  getUserPhoneListings(userId: string): Promise<PhoneListing[]>;
+  updatePhoneListing(id: string, updates: Partial<PhoneListing>): Promise<PhoneListing | undefined>;
+  deletePhoneListing(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3006,6 +3019,57 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return Number(result[0]?.count || 0);
+  }
+
+  // =========================================
+  // PHONE LISTINGS (Phone Hub Buy/Sell)
+  // =========================================
+
+  async createPhoneListing(listing: InsertPhoneListing & { sellerId: string }): Promise<PhoneListing> {
+    const [newListing] = await db.insert(phoneListings).values(listing).returning();
+    return newListing;
+  }
+
+  async getPhoneListing(id: string): Promise<(PhoneListing & { seller: User }) | undefined> {
+    return db.query.phoneListings.findFirst({
+      where: eq(phoneListings.id, id),
+      with: { seller: true },
+    }) as any;
+  }
+
+  async getPhoneListings(status?: string): Promise<(PhoneListing & { seller: User })[]> {
+    const conditions = status ? [eq(phoneListings.status, status)] : [];
+    return db.query.phoneListings.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      with: { seller: true },
+      orderBy: [desc(phoneListings.createdAt)],
+    }) as any;
+  }
+
+  async getApprovedPhoneListings(): Promise<PhoneListing[]> {
+    return db.query.phoneListings.findMany({
+      where: eq(phoneListings.status, "approved"),
+      orderBy: [desc(phoneListings.createdAt)],
+    });
+  }
+
+  async getUserPhoneListings(userId: string): Promise<PhoneListing[]> {
+    return db.query.phoneListings.findMany({
+      where: eq(phoneListings.sellerId, userId),
+      orderBy: [desc(phoneListings.createdAt)],
+    });
+  }
+
+  async updatePhoneListing(id: string, updates: Partial<PhoneListing>): Promise<PhoneListing | undefined> {
+    const [updated] = await db.update(phoneListings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(phoneListings.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePhoneListing(id: string): Promise<void> {
+    await db.delete(phoneListings).where(eq(phoneListings.id, id));
   }
 }
 

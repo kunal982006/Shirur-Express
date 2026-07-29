@@ -854,7 +854,11 @@ export default function Home() {
                   className="flex flex-col items-center gap-2 p-4 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-md transition-all group/card text-center"
                   onClick={() => {
                     setShowPhoneHub(false);
-                    if (adminProviderId) {
+                    if (cat.id === "buy-phone") {
+                      navigate("/buy-phone");
+                    } else if (cat.id === "sell-phone") {
+                      navigate("/sell-phone");
+                    } else if (adminProviderId) {
                       navigate(`/electrician/${adminProviderId}?problemId=${cat.id}&problemName=${encodeURIComponent(cat.name)}`);
                     }
                   }}
