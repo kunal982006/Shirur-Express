@@ -14,8 +14,8 @@ import { Loader2 } from "lucide-react";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import Electrician from "@/pages/electrician";
-import ElectricianDetail from "@/pages/electrician-detail";
-import PlumberDetail from "@/pages/plumber-detail";
+import ElectricianBook from "@/pages/electrician-detail";
+import PlumberBook from "@/pages/plumber-detail";
 import Plumber from "@/pages/plumber";
 import Beauty from "@/pages/beauty";
 import BeautyDetail from "@/pages/BeautyDetail";
@@ -84,9 +84,9 @@ function RouterComponent() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/search" component={SearchResults} /> {/* NAYA ROUTE */}
-        <Route path="/electrician/:id" component={ElectricianDetail} />
+        <Route path="/electrician/book" component={ElectricianBook} />
         <Route path="/electrician" component={Electrician} />
-        <Route path="/plumber/:id" component={PlumberDetail} />
+        <Route path="/plumber/book" component={PlumberBook} />
         <Route path="/plumber" component={Plumber} />
 
         {/* Beauty Services Routes - More specific routes first */}

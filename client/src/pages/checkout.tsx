@@ -391,7 +391,8 @@ export default function Checkout() {
           currency: 'INR',
         });
         clearCart();
-        setLocation("/order-success");
+        const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
+        setLocation(`/order-success?type=${orderTypeQuery}`);
         return;
       }
 
@@ -438,7 +439,8 @@ export default function Checkout() {
                 currency: 'INR',
               });
               clearCart();
-              setLocation("/order-success"); // Success page par bhejo
+              const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
+              setLocation(`/order-success?type=${orderTypeQuery}`); // Success page par bhejo
             } else {
               throw new Error("Payment verification failed");
             }

@@ -21,6 +21,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Network } from "lucide-react";
 
 const signupSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be valid (10 digits)"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -40,6 +41,7 @@ export default function Signup() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      name: "",
       email: "",
       phone: "",
       password: "",
@@ -49,8 +51,8 @@ export default function Signup() {
 
   const signupMutation = useMutation({
     mutationFn: (data: SignupFormValues) => {
-      const { confirmPassword, ...rest } = data;
-      return apiRequest("POST", "/api/auth/signup", { ...rest, role: "customer" });
+      const { confirmPassword, name, ...rest } = data;
+      return apiRequest("POST", "/api/auth/signup", { ...rest, username: name, role: "customer" });
     },
     onSuccess: async (response) => { // Isko 'async' banao
       if (!response.ok) {
@@ -100,6 +102,23 @@ export default function Signup() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your full name"
+                        {...field}
+                        data-testid="input-name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

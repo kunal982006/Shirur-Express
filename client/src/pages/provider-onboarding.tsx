@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProviderOnboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -89,6 +90,7 @@ export default function ProviderOnboarding() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
         title: "Profile Created!",
         description: "Your service provider profile is now active.",
@@ -169,7 +171,7 @@ export default function ProviderOnboarding() {
                         </FormControl>
                         <SelectContent>
                           {categories
-                            ?.filter((c: any) => c.slug !== 'grocery')
+                            ?.filter((c: any) => ['electrician', 'plumber', 'restaurant', 'restaurants'].includes(c.slug?.toLowerCase()))
                             .map((category: any) => (
                               <SelectItem key={category.id} value={category.id}>
                                 {category.name}

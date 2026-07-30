@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft, Loader2, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import type { ServiceProvider, ServiceProblem } from "@shared/schema";
+import type { ServiceProblem } from "@shared/schema";
 
 const IMAGE_MAPPING: Record<string, string> = {
   "Tap & Mixer": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448864/shirur-express/plumber/tap.jpg",
@@ -28,22 +28,7 @@ export default function Plumber() {
   const [, setLocation] = useLocation();
   const [selectedAppliance, setSelectedAppliance] = useState<ServiceProblem | null>(null);
 
-  // 1. Get the Plumber Provider (merged with electrician account)
-  const { data: providers, isLoading: providersLoading } = useQuery<ServiceProvider[]>({
-    queryKey: ["service-providers", "electrician"],
-    queryFn: () =>
-      apiRequest("GET", "/api/service-providers?category=electrician")
-        .then(res => res.json()),
-  });
-
-  // Prioritize verified and available providers
-  const adminProviderId = providers?.sort((a, b) => {
-    if (a.isVerified && !b.isVerified) return -1;
-    if (!a.isVerified && b.isVerified) return 1;
-    if (a.isAvailable && !b.isAvailable) return -1;
-    if (!a.isAvailable && b.isAvailable) return 1;
-    return 0;
-  })?.[0]?.id;
+  // 1. No need to fetch providers anymore — admin will assign after booking
 
   // 2. Get appliance/item categories (Parent Problems)
   const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
@@ -67,15 +52,11 @@ export default function Plumber() {
   };
 
   const handleProblemClick = (problem: ServiceProblem) => {
-    if (!adminProviderId) {
-      console.error("No plumber provider found!");
-      return;
-    }
-    // Navigate to detail page with pre-selected problem
-    setLocation(`/plumber/${adminProviderId}?problemId=${problem.id}&problemName=${encodeURIComponent(problem.name)}`);
+    // Navigate to booking page with problem info — no providerId needed
+    setLocation(`/plumber/book?problemId=${problem.id}&problemName=${encodeURIComponent(problem.name)}`);
   };
 
-  const isLoading = providersLoading || appliancesLoading;
+  const isLoading = appliancesLoading;
 
   return (
     <div className="py-8 bg-background min-h-screen">

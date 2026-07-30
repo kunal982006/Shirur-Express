@@ -310,26 +310,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Public signup always creates customer accounts
       const role = "customer";
 
-      // Check if phone already exists
-      const existingPhone = await storage.getUserByPhone(phone);
-      if (existingPhone) {
-        return res.status(400).json({ message: "Phone number already registered" });
-      }
-      const existingEmail = await storage.getUserByEmail(email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already exists" });
+      // Check if phone already has 5 accounts (allow up to 5 per phone)
+      const phoneCount = await storage.countUsersByPhone(phone);
+      if (phoneCount >= 5) {
+        return res.status(400).json({ message: "This phone number already has 5 accounts. Cannot create more." });
       }
 
-      // Auto-generate username from phone number
-      const username = providedUsername?.toLowerCase() || `user_${phone}`;
+      // Check if email already has 5 accounts (allow up to 5 per email)
+      const emailCount = await storage.countUsersByEmail(email);
+      if (emailCount >= 5) {
+        return res.status(400).json({ message: "This email already has 5 accounts. Cannot create more." });
+      }
+
+      // If email already exists in DB, create a suffixed version to satisfy unique constraint
+      let finalEmail = email;
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        // Find next available suffix: user@email.com -> user+2@email.com, user+3@email.com, etc.
+        const baseEmail = email.replace(/\+\d+@/, '@'); // normalize
+        const [localPart, domain] = baseEmail.split('@');
+        for (let i = 2; i <= 6; i++) {
+          const candidateEmail = `${localPart}+${i}@${domain}`;
+          const taken = await storage.getUserByEmail(candidateEmail);
+          if (!taken) {
+            finalEmail = candidateEmail;
+            break;
+          }
+        }
+      }
+
+      // Auto-generate username from provided name or phone number
+      const baseUsername = providedUsername || `user_${phone}`;
+      const username = phoneCount > 0 ? `${baseUsername}_${Math.random().toString(36).slice(2, 6)}` : baseUsername;
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        // If auto-generated username conflicts, append random chars
-        const fallbackUsername = `user_${phone}_${Math.random().toString(36).slice(2, 6)}`;
+        // If username conflicts, append random chars (keep the real name)
+        const fallbackUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await storage.createUser({
           username: fallbackUsername,
-          email,
+          email: finalEmail,
           password: hashedPassword,
           role: role || "customer",
           phone,
@@ -359,7 +379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
         username,
-        email,
+        email: finalEmail,
         password: hashedPassword,
         role: role || "customer",
         phone,
@@ -558,7 +578,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const providerData = insertServiceProviderSchema.parse(req.body);
       const { categoryId } = req.body;
       const provider = await storage.createServiceProvider({ ...providerData, userId, categoryId });
-      res.status(201).json(provider);
+      
+      // Update user role to provider so they can access the dashboard
+      await storage.updateUser(userId, { role: "provider" });
+      req.session.userRole = "provider";
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error updating role to provider:", err);
+          return res.status(500).json({ message: "Profile created, but failed to update session." });
+        }
+        res.status(201).json(provider);
+      });
     } catch (error: any) {
       console.error("Create provider profile error:", error);
       res.status(400).json({ message: error.message || "Error creating provider profile" });
@@ -1692,8 +1722,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const booking = await storage.createBooking({ ...bookingData, userId });
 
       // --- PUSH NOTIFICATION (RINGING) via Firebase FCM ---
-      // This is the PRIMARY notification method for alerting providers about new bookings
-      // Twilio SMS is NOT used for ringing - only for OTP and status updates to customers
+      // For electrician/plumber: booking is unassigned (no providerId), admin will assign later
+      // For other services: booking has providerId, notify the provider directly
       if (booking.providerId) {
         try {
           // Fetch provider to get FCM token
@@ -1752,7 +1782,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("[FCM Ringing Error]", fcmError?.message || fcmError);
         }
       } else {
-        console.log(`[FCM Ringing] Skipping - no providerId assigned to booking`);
+        // Unassigned booking (electrician/plumber) — admin will assign via dashboard
+        console.log(`[FCM Ringing] Skipping provider notification - unassigned booking (admin will assign). Service: ${booking.serviceType}`);
       }
       // --- END FIREBASE FCM RINGING ---
 
@@ -1996,38 +2027,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // (Provider) Job done, OTP generate karna (status = 'awaiting_otp')
-  app.post("/api/bookings/:id/generate-otp", isProvider, async (req: CustomRequest, res: Response) => {
+  // (Provider) Job done, mark as done (status = 'awaiting_billing' or 'pending_payment')
+  app.post("/api/bookings/:id/mark-done", isProvider, async (req: CustomRequest, res: Response) => {
     try {
       const providerId = req.provider!.id;
       const { id: bookingId } = req.params;
 
-      const { otp, userPhone } = await storage.generateOtpForBooking(bookingId, providerId);
-
-      res.json({ message: `OTP ${otp} customer ke phone ${userPhone} par bhej diya gaya hai.` });
-    } catch (error: any) {
-      console.error("Generate OTP error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      res.status(500).json({ message: error.message || "Error generating OTP" });
-    }
-  });
-
-  // (Provider) OTP Verify karna (status = 'awaiting_billing')
-  app.post("/api/bookings/:id/verify-otp", isProvider, async (req: CustomRequest, res: Response) => {
-    try {
-      const providerId = req.provider!.id;
-      const { id: bookingId } = req.params;
-      const { otp } = z.object({ otp: z.string().length(6) }).parse(req.body);
-
-      const updatedBooking = await storage.verifyBookingOtp(bookingId, providerId, otp);
+      const updatedBooking = await storage.markBookingJobDone(bookingId, providerId);
 
       const message = updatedBooking.status === 'pending_payment'
-        ? "OTP verified! Invoice created automatically. Customer can now pay."
-        : "OTP verified successfully! Ab aap bill bana sakte hain.";
+        ? "Job marked done! Invoice created automatically. Customer can now pay."
+        : "Job marked done successfully! Ab aap bill bana sakte hain.";
 
       res.json({ message, booking: updatedBooking });
     } catch (error: any) {
-      console.error("Verify OTP error:", error);
-      res.status(400).json({ message: error.message || "Error verifying OTP" });
+      console.error("Mark done error:", error);
+      res.status(400).json({ message: error.message || "Error marking job done" });
     }
   });
 
@@ -4015,6 +4030,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/admin/service-providers-by-category — Get all providers for a specific category (for job assignment)
+  app.get("/api/admin/service-providers-by-category", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { slug } = req.query;
+      if (!slug || typeof slug !== 'string') {
+        return res.status(400).json({ message: "Category slug is required (e.g., ?slug=electrician)" });
+      }
+
+      // Find the category by slug
+      const category = await db.query.serviceCategories.findFirst({
+        where: eq(serviceCategories.slug, slug),
+      });
+
+      if (!category) {
+        return res.status(404).json({ message: `Category '${slug}' not found.` });
+      }
+
+      // Get all providers for this category
+      const providers = await db.query.serviceProviders.findMany({
+        where: eq(serviceProviders.categoryId, category.id),
+        with: {
+          user: true,
+        },
+      });
+
+      // Return cleaned-up provider list for admin UI
+      const result = providers.map(p => ({
+        id: p.id,
+        businessName: p.businessName,
+        isAvailable: p.isAvailable,
+        isVerified: p.isVerified,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        address: p.address,
+        phone: p.user?.phone || null,
+        username: p.user?.username || null,
+        experience: p.experience,
+        profileImageUrl: p.profileImageUrl,
+      }));
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Admin service-providers-by-category error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // PATCH /api/admin/bookings/:id/assign — Admin assigns a provider to an unassigned booking
+  app.patch("/api/admin/bookings/:id/assign", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { providerId } = req.body;
+
+      if (!providerId) {
+        return res.status(400).json({ message: "providerId is required." });
+      }
+
+      // Verify the provider exists
+      const provider = await storage.getServiceProvider(providerId);
+      if (!provider) {
+        return res.status(404).json({ message: "Provider not found." });
+      }
+
+      // Update the booking with the assigned provider
+      const [updatedBooking] = await db
+        .update(bookings)
+        .set({ providerId, status: 'pending' })
+        .where(eq(bookings.id, id))
+        .returning();
+
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found." });
+      }
+
+      console.log(`[Admin Assign] Booking ${id} assigned to provider ${provider.businessName} (${providerId})`);
+
+      // Send FCM push notification to the assigned provider
+      try {
+        if (provider.user) {
+          const allTokens: string[] = [];
+          if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
+            allTokens.push(...provider.user.fcmTokens);
+          } else if (provider.user.fcmToken) {
+            allTokens.push(provider.user.fcmToken);
+          }
+          const uniqueTokens = Array.from(new Set(allTokens));
+
+          // Fetch customer info for notification
+          const bookingCustomer = await storage.getUser(updatedBooking.userId);
+          const customerPhone = updatedBooking.userPhone || bookingCustomer?.phone || 'N/A';
+          const customerName = bookingCustomer?.username || 'Customer';
+
+          for (const deviceToken of uniqueTokens) {
+            await sendPushNotification(deviceToken, {
+              type: 'ORDER_REQUEST',
+              title: `🔔 New ${updatedBooking.serviceType} Job Assigned!`,
+              body: `📞 ${customerPhone} • 📍 ${updatedBooking.userAddress || 'Check App'}`,
+              data: {
+                orderId: updatedBooking.id,
+                orderType: 'service',
+                customerName,
+                customerPhone,
+                amount: updatedBooking.estimatedCost || 'Check App',
+                itemsSummary: `${updatedBooking.serviceType} service - assigned by admin`,
+                dropAddress: updatedBooking.userAddress || 'Check App',
+                navigateTo: '/provider/dashboard',
+              },
+            });
+          }
+
+          if (uniqueTokens.length > 0) {
+            console.log(`[FCM Assign] Sent job notification to ${provider.businessName} (${uniqueTokens.length} device(s))`);
+          }
+        }
+      } catch (fcmError: any) {
+        console.error('[FCM Assign Error]', fcmError?.message || fcmError);
+      }
+
+      res.json({ message: `Booking assigned to ${provider.businessName}.`, booking: updatedBooking });
+    } catch (error: any) {
+      console.error("Admin assign booking error:", error);
+      res.status(500).json({ message: error.message || "Error assigning booking" });
+    }
+  });
+
   // POST /api/admin/orders/mark-all-delivered — Mark ALL non-delivered/non-cancelled orders as delivered
   app.post("/api/admin/orders/mark-all-delivered", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
@@ -4154,22 +4294,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "All fields are required: phone, email, password, businessName, categoryId, address." });
       }
 
-      // Check duplicates
-      const existingPhone = await storage.getUserByPhone(phone);
-      if (existingPhone) {
-        return res.status(400).json({ message: "Phone number already registered." });
+      // Check if phone already has 5 accounts (allow up to 5 per phone)
+      const phoneCount = await storage.countUsersByPhone(phone);
+      if (phoneCount >= 5) {
+        return res.status(400).json({ message: "This phone number already has 5 accounts. Cannot create more." });
       }
+
+      // Check if email already has 5 accounts (allow up to 5 per email)
+      const emailCount = await storage.countUsersByEmail(email);
+      if (emailCount >= 5) {
+        return res.status(400).json({ message: "This email already has 5 accounts. Cannot create more." });
+      }
+
+      // If email already exists in DB, create a suffixed version to satisfy unique constraint
+      let finalEmail = email;
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
-        return res.status(400).json({ message: "Email already registered." });
+        const baseEmail = email.replace(/\+\d+@/, '@');
+        const [localPart, domain] = baseEmail.split('@');
+        for (let i = 2; i <= 6; i++) {
+          const candidateEmail = `${localPart}+${i}@${domain}`;
+          const taken = await storage.getUserByEmail(candidateEmail);
+          if (!taken) {
+            finalEmail = candidateEmail;
+            break;
+          }
+        }
       }
 
       // Create user with role=provider
-      const username = `provider_${phone}`;
+      const username = phoneCount > 0 ? `provider_${phone}_${Math.random().toString(36).slice(2, 6)}` : `provider_${phone}`;
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
         username,
-        email,
+        email: finalEmail,
         password: hashedPassword,
         role: "provider",
         phone,

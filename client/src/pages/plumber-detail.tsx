@@ -1,37 +1,22 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useRoute } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import BookingSlotForm from "@/components/booking-slot-form";
 import {
     ArrowLeft,
-    MapPin,
-    Star,
-    Briefcase,
-    CheckCircle2,
-    Clock,
     Loader2
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import type { ServiceProvider, ServiceProblem, User, ServiceCategory } from "@shared/schema";
+import type { ServiceProblem } from "@shared/schema";
 
-type PlumberProviderDetail = ServiceProvider & {
-    user: User;
-    category: ServiceCategory;
-};
-
-export default function PlumberDetail() {
+export default function PlumberBook() {
     const [, setLocation] = useLocation();
-    const [, params] = useRoute("/plumber/:id");
     const [selectedProblem, setSelectedProblem] = useState<{ id: string; name: string } | null>(null);
     const [showBooking, setShowBooking] = useState(false);
 
-    const providerId = params?.id;
-
-    // Auto-select problem if present in URL
+    // Auto-select problem if present in URL query params
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
         const preSelectedProblemId = searchParams.get("problemId");
@@ -43,22 +28,12 @@ export default function PlumberDetail() {
         }
     }, []); // Run once on mount
 
-    // Get plumber details
-    const { data: provider, isLoading } = useQuery<PlumberProviderDetail>({
-        queryKey: ["service-provider-detail", providerId],
-        queryFn: () =>
-            apiRequest("GET", `/api/service-providers/${providerId}`)
-                .then(res => res.json()),
-        enabled: !!providerId,
-    });
-
     // Get all appliances (parent problems)
     const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
         queryKey: ["service-problems", "plumber"],
         queryFn: () =>
             apiRequest("GET", "/api/service-problems?category=plumber")
                 .then(res => res.json()),
-        enabled: !!provider,
     });
 
     const handleProblemSelect = (problemId: string, problemName: string) => {
@@ -66,34 +41,11 @@ export default function PlumberDetail() {
         setShowBooking(true);
     };
 
-    if (isLoading) {
-        return (
-            <div className="py-16 bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
-                    <p className="text-muted-foreground mt-2">Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!provider) {
-        return (
-            <div className="py-16 bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <p className="text-center text-muted-foreground">
-                        Plumber not found
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="py-6 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="w-full max-w-3xl mx-auto">
-                    {/* Problems This Plumber Can Handle OR Booking Form */}
+                    {/* Booking Form or Problem Selection */}
 
                     {showBooking && selectedProblem ? (
                         <Card className="mt-0 border-none shadow-none sm:border-solid sm:border-border sm:shadow-sm">
@@ -112,7 +64,6 @@ export default function PlumberDetail() {
                             </CardHeader>
                             <CardContent className="px-0 sm:px-6">
                                 <BookingSlotForm
-                                    providerId={providerId!}
                                     problemId={selectedProblem.id}
                                     problemName={selectedProblem.name}
                                     serviceType="plumber"
@@ -125,10 +76,22 @@ export default function PlumberDetail() {
                     ) : (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Plumbing Problems I Can Fix</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                    Select a problem to book a service slot
-                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setLocation("/plumber")}
+                                    >
+                                        <ArrowLeft className="h-4 w-4" />
+                                    </Button>
+                                    <div>
+                                        <CardTitle>Select Your Problem</CardTitle>
+                                        <p className="text-sm text-muted-foreground">
+                                            Choose a problem to book a service slot
+                                        </p>
+                                    </div>
+                                </div>
                             </CardHeader>
                             <CardContent className="max-h-[400px] overflow-y-auto space-y-4">
                                 {appliancesLoading ? (
@@ -169,7 +132,7 @@ function ApplianceProblems({
     selectedProblemId: string;
     onProblemSelect: (problemId: string, problemName: string) => void;
 }) {
-    // Child problems fetch karo
+    // Child problems fetch
     const { data: problems, isLoading } = useQuery<ServiceProblem[]>({
         queryKey: [
             "service-problems",

@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -62,6 +63,12 @@ type BookingWithDetails = {
 export default function MyBookings() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Read the default tab from the URL query params
+  const searchParams = new URLSearchParams(window.location.search);
+  const defaultTab = searchParams.get("tab") || "orders";
+  const [activeTab, setActiveTab] = React.useState(defaultTab);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -256,7 +263,7 @@ export default function MyBookings() {
           </p>
         </div>
 
-        <Tabs defaultValue="orders" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 max-w-[500px] mb-8">
             <TabsTrigger value="orders">Food Orders</TabsTrigger>
             <TabsTrigger value="grocery">Grocery</TabsTrigger>
@@ -318,23 +325,7 @@ export default function MyBookings() {
                               </div>
                             )}
 
-                            {/* OTP Display for awaiting_otp status */}
-                            {booking.status === "awaiting_otp" && booking.serviceOtp && (
-                              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg text-center">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                  <Key className="h-5 w-5 text-yellow-700 dark:text-yellow-300" />
-                                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                                    Share this OTP with the technician
-                                  </p>
-                                </div>
-                                <p className="text-3xl font-bold tracking-[0.3em] text-yellow-800 dark:text-yellow-100">
-                                  {booking.serviceOtp}
-                                </p>
-                                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
-                                  The technician will enter this to confirm service completion
-                                </p>
-                              </div>
-                            )}
+
 
                             {/* Status-specific messages */}
                             {booking.status === "pending_payment" && booking.invoice && (

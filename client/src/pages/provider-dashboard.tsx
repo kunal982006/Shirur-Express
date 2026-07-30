@@ -1048,40 +1048,24 @@ const ProviderBookingActions: React.FC<{
   const queryClient = useQueryClient();
 
   // --- Saare mutations (API calls) ---
-  const generateOtpMutation = useMutation({
+  const markDoneMutation = useMutation({
     mutationFn: (bookingId: string) =>
-      api.post(`/bookings/${bookingId}/generate-otp`),
-    onSuccess: () => {
+      api.post(`/bookings/${bookingId}/mark-done`),
+    onSuccess: (response: any) => {
       toast({
-        title: "OTP Sent",
-        description: "OTP has been sent to the customer's phone.",
+        title: "Job Marked Done!",
+        description: response.data?.message || "Please create the final bill for the customer.",
       });
       queryClient.invalidateQueries({ queryKey: ["providerBookings"] });
+      // If not auto-invoiced, open bill modal
+      if (response.data?.booking?.status === 'awaiting_billing') {
+        setIsBillOpen(true);
+      }
     },
     onError: (error: any) => {
       toast({
-        title: "OTP Error",
-        description: error.response?.data?.message || "Failed to send OTP.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationFn: (data: { bookingId: string, otp: string }) =>
-      api.post(`/bookings/${data.bookingId}/verify-otp`, { otp: data.otp }),
-    onSuccess: () => {
-      toast({
-        title: "OTP Verified!",
-        description: "Please create the final bill for the customer.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["providerBookings"] });
-      setIsBillOpen(true); // OTP Sahi hone par bill modal kholo
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Invalid OTP",
-        description: error.response?.data?.message || "That OTP is incorrect.",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to mark job as done.",
         variant: "destructive",
       });
     },
@@ -1114,12 +1098,7 @@ const ProviderBookingActions: React.FC<{
     updateBookingStatusMutation.mutate({ bookingId: booking.id, action: "start-job" });
   };
   const handleJobDone = () => {
-    generateOtpMutation.mutate(booking.id);
-  };
-  const handleVerifyOtp = () => {
-    if (otp.length === 6) {
-      verifyOtpMutation.mutate({ bookingId: booking.id, otp });
-    }
+    markDoneMutation.mutate(booking.id);
   };
   const handleBillSubmit = (data: BillFormData) => {
     createInvoiceMutation.mutate(data);
@@ -1185,74 +1164,15 @@ const ProviderBookingActions: React.FC<{
       <Button
         onClick={handleJobDone}
         className="bg-green-600 hover:bg-green-700"
-        disabled={generateOtpMutation.isPending}
+        disabled={markDoneMutation.isPending}
       >
-        {generateOtpMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
-        Job Done (Get OTP)
+        {markDoneMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ClipboardCheck className="mr-2 h-4 w-4" />}
+        Job Done
       </Button>
     );
   }
 
-  if (booking.status === "awaiting_otp") {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="bg-green-600 hover:bg-green-700">
-            <ClipboardCheck className="mr-2 h-4 w-4" /> Verify OTP
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Verify Service OTP</DialogTitle>
-            <DialogDescription>
-              Please ask the customer ({booking.user.username}) for the 6-digit
-              OTP sent to their phone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center py-4">
-            <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={handleVerifyOtp}
-              disabled={otp.length !== 6 || verifyOtpMutation.isPending}
-            >
-              {verifyOtpMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Verify
-            </Button>
-          </DialogFooter>
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => generateOtpMutation.mutate(booking.id)}
-              disabled={generateOtpMutation.isPending}
-              className="text-muted-foreground"
-            >
-              {generateOtpMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Sending...
-                </>
-              ) : (
-                "Resend OTP"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+
 
   if (booking.status === "awaiting_billing") {
     return (

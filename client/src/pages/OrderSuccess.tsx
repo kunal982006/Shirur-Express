@@ -4,6 +4,9 @@ import { CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 
 export default function OrderSuccess() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const type = searchParams.get("type") || "orders";
+
   return (
     <div className="max-w-2xl mx-auto py-16 px-4 text-center">
       <Card>
@@ -17,7 +20,7 @@ export default function OrderSuccess() {
             <Link href="/">
               <Button>Go to Homepage</Button>
             </Link>
-            <Link href="/my-bookings">
+            <Link href={`/my-bookings?tab=${type}`}>
               <Button variant="outline">Track Your Order</Button>
             </Link>
           </div>

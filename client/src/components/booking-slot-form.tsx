@@ -62,7 +62,7 @@ const bookingSchema = z.object({
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
 interface BookingSlotFormProps {
-  providerId: string;
+  providerId?: string; // Optional — for electrician/plumber, admin assigns after booking
   problemId: string;
   problemName: string;
   serviceType: string;
@@ -102,8 +102,9 @@ export default function BookingSlotForm({
       userPhone: user?.phone || "",
       userAddress: "",
       notes: "",
-      bookingType: "scheduled", // Default to scheduled
-      scheduledDate: undefined,
+      bookingType: serviceType === "phone-hub" ? "instant" : "scheduled", // Default to instant for phone-hub
+      scheduledDate: serviceType === "phone-hub" ? new Date() : undefined,
+      preferredTimeSlot: serviceType === "phone-hub" ? "INSTANT" : "",
       paymentMethod: "cod",
     },
   });
@@ -200,9 +201,8 @@ export default function BookingSlotForm({
 
       const scheduledAtISO = combinedDateTime.toISOString();
 
-      const bookingData = {
+      const bookingData: any = {
         userId: user?.id || "",
-        providerId, // <-- Yeh jaa raha hai, bilkul sahi
         serviceType: serviceType,
         problemId,
         scheduledAt: scheduledAtISO,
@@ -212,6 +212,11 @@ export default function BookingSlotForm({
         notes: data.notes,
         paymentMethod: data.paymentMethod,
       };
+
+      // Only include providerId if one was given (for services where admin assigns, this is omitted)
+      if (providerId) {
+        bookingData.providerId = providerId;
+      }
 
       const response = await apiRequest("POST", "/api/bookings", bookingData);
 
@@ -239,8 +244,8 @@ export default function BookingSlotForm({
       form.reset();
       onSuccess?.();
 
-      // User ko 'My Bookings' page par bhejo
-      setLocation("/my-bookings");
+      // User ko 'My Bookings' page par bhejo with correct tab
+      setLocation("/my-bookings?tab=services");
     },
     // ----- FIX KHATAM -----
 
@@ -270,47 +275,54 @@ export default function BookingSlotForm({
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Booking Type Selection (Sleek Segmented Control) */}
-          <div className="flex p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1">
-            <button
-              type="button"
-              onClick={() => isInstantAvailable && handleBookingTypeChange("instant")}
-              disabled={!isInstantAvailable}
-              className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
-                !isInstantAvailable && "opacity-50 cursor-not-allowed",
-                bookingType === "instant"
-                  ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <Zap className={cn("h-4 w-4", bookingType === "instant" && "fill-primary/20")} /> 
-                Instant <span className="font-normal text-xs opacity-70 hidden sm:inline">(60m)</span>
-              </div>
-              {!isInstantAvailable && instantHours && (
-                <span className="text-[9px] sm:text-[10px] text-orange-600 font-medium leading-tight">
-                  Available {instantHours.from > 12 ? instantHours.from - 12 : instantHours.from}PM – {instantHours.to > 12 ? instantHours.to - 12 : instantHours.to}PM
-                </span>
-              )}
-            </button>
+          {/* Booking Type Selection - Visual Tabs */}
+          {serviceType !== "phone-hub" ? (
+            <div className="flex bg-muted/30 p-1 rounded-xl mb-6">
+              <button
+                type="button"
+                onClick={() => isInstantAvailable && handleBookingTypeChange("instant")}
+                disabled={!isInstantAvailable}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
+                  !isInstantAvailable && "opacity-50 cursor-not-allowed",
+                  bookingType === "instant"
+                    ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className={cn("h-4 w-4", bookingType === "instant" && "fill-primary/20")} /> 
+                  Instant <span className="font-normal text-xs opacity-70 hidden sm:inline">(60m)</span>
+                </div>
+                {!isInstantAvailable && instantHours && (
+                  <span className="text-[9px] sm:text-[10px] text-orange-600 font-medium leading-tight">
+                    Available {instantHours.from > 12 ? instantHours.from - 12 : instantHours.from}PM – {instantHours.to > 12 ? instantHours.to - 12 : instantHours.to}PM
+                  </span>
+                )}
+              </button>
+  
+              <button
+                type="button"
+                onClick={() => handleBookingTypeChange("scheduled")}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
+                  bookingType === "scheduled"
+                    ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <CalendarIconLucide className="h-4 w-4" /> 
+                Schedule <span className="font-normal text-xs opacity-70 hidden sm:inline">(Later)</span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-emerald-50 text-emerald-800 p-3 rounded-lg text-sm font-medium text-center mb-6 border border-emerald-100 flex items-center justify-center gap-2">
+              <Clock className="h-4 w-4" />
+              Service will available from 6pm to 10 pm
+            </div>
+          )}
 
-            <button
-              type="button"
-              onClick={() => handleBookingTypeChange("scheduled")}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all duration-200",
-                bookingType === "scheduled"
-                  ? "bg-background shadow-sm text-primary ring-1 ring-border/50"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <CalendarIconLucide className="h-4 w-4" /> 
-              Schedule <span className="font-normal text-xs opacity-70 hidden sm:inline">(Later)</span>
-            </button>
-          </div>
-
-          {bookingType === "scheduled" && (
+          {bookingType === "scheduled" && serviceType !== "phone-hub" && (
             <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date Selection */}
@@ -388,7 +400,7 @@ export default function BookingSlotForm({
             </div>
           )}
 
-          {bookingType === "instant" && (
+          {bookingType === "instant" && serviceType !== "phone-hub" && (
             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md flex items-start gap-3 animate-in fade-in duration-300">
               <Zap className="h-5 w-5 text-blue-600 mt-0.5" />
               <div className="text-sm">

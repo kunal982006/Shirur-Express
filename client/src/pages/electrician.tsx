@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import type { ServiceProvider, ServiceProblem } from "@shared/schema";
+import type { ServiceProblem } from "@shared/schema";
 
 const CUSTOMER_REVIEWS = [
   { name: "Sachin Gawade (Fridge)", rating: 4.8, text: "Amcha fridge achanak band padla hota. Shirur Express varun technician book kela, khupach bhari service dili. Paisanchi kontihi fasavnuk nahi, ekdum vishwasu manus hota." },
@@ -38,21 +38,8 @@ export default function Electrician() {
   const [, setLocation] = useLocation();
   const [selectedAppliance, setSelectedAppliance] = useState<ServiceProblem | null>(null);
 
-  // 1. Get the "Admin" Electrician Provider
-  const { data: providers, isLoading: providersLoading } = useQuery<ServiceProvider[]>({
-    queryKey: ["service-providers", "electrician"],
-    queryFn: () =>
-      apiRequest("GET", "/api/service-providers?category=electrician")
-        .then(res => res.json()),
-  });
-
-  const adminProviderId = providers?.sort((a, b) => {
-    if (a.isVerified && !b.isVerified) return -1;
-    if (!a.isVerified && b.isVerified) return 1;
-    if (a.isAvailable && !b.isAvailable) return -1;
-    if (!a.isAvailable && b.isAvailable) return 1;
-    return 0;
-  })?.[0]?.id;
+  // 1. Get appliance categories (Parent Problems) — no need to fetch providers anymore
+  // Admin will assign provider after booking is created
 
   // 2. Get appliance categories (Parent Problems)
   const { data: appliances, isLoading: appliancesLoading } = useQuery<ServiceProblem[]>({
@@ -76,16 +63,11 @@ export default function Electrician() {
   };
 
   const handleProblemClick = (problem: ServiceProblem) => {
-    if (!adminProviderId) {
-      console.error("No electrician provider found!");
-      return;
-    }
-    // Navigate to detail page with pre-selected problem
-    // passing problem info in query params
-    setLocation(`/electrician/${adminProviderId}?problemId=${problem.id}&problemName=${encodeURIComponent(problem.name)}`);
+    // Navigate to booking page with problem info — no providerId needed
+    setLocation(`/electrician/book?problemId=${problem.id}&problemName=${encodeURIComponent(problem.name)}`);
   };
 
-  const isLoading = providersLoading || appliancesLoading;
+  const isLoading = appliancesLoading;
 
   return (
     <div className="py-8 bg-background min-h-screen">

@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api"; // ADDED
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list"; // ADDED
-import { FloatingOtp } from "@/components/floating-otp"; // ADDED
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,8 @@ import {
   Smartphone,
   Shield,
   RefreshCw,
-  ShoppingBag
+  ShoppingBag,
+  Briefcase
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -259,7 +260,7 @@ export default function Home() {
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-r from-blue-400/30 to-purple-500/30 blur-[80px] animate-pulse pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-5%] w-[400px] h-[400px] rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-500/20 blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
       <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full bg-gradient-to-r from-rose-400/20 to-orange-400/20 blur-[80px] animate-pulse pointer-events-none" style={{ transform: 'translate(-50%, -50%)', animationDelay: '4s' }} />
-      <FloatingOtp />
+
       <PendingPaymentPopup />
 
       {/* 1. Top Location Header (Zomato Style) */}
@@ -307,10 +308,26 @@ export default function Home() {
                     <Package className="mr-2 h-4 w-4" />
                     <span>My Bookings</span>
                   </DropdownMenuItem>
-                  {user.role === 'provider' && (
+                  <DropdownMenuItem onClick={() => navigate("/my-properties")}>
+                    <HomeIcon className="mr-2 h-4 w-4" />
+                    <span>My Properties</span>
+                  </DropdownMenuItem>
+                  {user.role !== 'admin' && user.role !== 'provider' && user.username !== 'streetfood_admin' && (
+                    <DropdownMenuItem onClick={() => navigate("/provider-onboarding")}>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      <span>Become a Provider</span>
+                    </DropdownMenuItem>
+                  )}
+                  {(user.role === 'provider' || user.username === 'streetfood_admin') && (
                     <DropdownMenuItem onClick={() => navigate("/provider/dashboard")}>
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Provider Dashboard</span>
+                      <span>{user.username === 'streetfood_admin' ? 'Orders Dashboard' : 'Provider Dashboard'}</span>
+                    </DropdownMenuItem>
+                  )}
+                  {user.role === 'admin' && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")} className="text-red-500 font-medium">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>{user.username === 'streetfood_admin' ? 'Vendor Manager' : 'Admin Panel'}</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
@@ -318,7 +335,7 @@ export default function Home() {
                     <span>Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-600 focus:bg-red-50">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
@@ -858,8 +875,8 @@ export default function Home() {
                       navigate("/buy-phone");
                     } else if (cat.id === "sell-phone") {
                       navigate("/sell-phone");
-                    } else if (adminProviderId) {
-                      navigate(`/electrician/${adminProviderId}?problemId=${cat.id}&problemName=${encodeURIComponent(cat.name)}`);
+                    } else {
+                      navigate(`/electrician/book?problemId=${cat.id}&problemName=${encodeURIComponent(cat.name)}`);
                     }
                   }}
                 >

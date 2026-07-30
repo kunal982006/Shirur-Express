@@ -76,6 +76,8 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  countUsersByPhone(phone: string): Promise<number>;
+  countUsersByEmail(email: string): Promise<number>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<InsertUser>): Promise<User>;
   deleteUser(id: string): Promise<void>;
@@ -182,14 +184,9 @@ export interface IStorage {
   ): Promise<(Booking & { user: User; invoice?: Invoice })[]>; // Updated
 
   // --- NAYE BOOKING FUNCTIONS ---
-  generateOtpForBooking(
+  markBookingJobDone(
     bookingId: string,
     providerId: string,
-  ): Promise<{ otp: string; userPhone: string }>;
-  verifyBookingOtp(
-    bookingId: string,
-    providerId: string,
-    otp: string,
   ): Promise<Booking>;
   createInvoiceForBooking(data: InsertInvoice): Promise<Invoice>;
 
@@ -397,6 +394,23 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     return db.query.users.findFirst({ where: eq(users.email, email) });
+  }
+
+  async countUsersByPhone(phone: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.phone, phone));
+    return Number(result[0]?.count || 0);
+  }
+
+  async countUsersByEmail(email: string): Promise<number> {
+    // Count exact match + any suffixed variants (e.g. user@email.com, user+2@email.com, etc.)
+    const baseEmail = email.replace(/\+\d+@/, '@'); // Normalize to base email
+    const result = await db.select({ count: sql<number>`count(*)` }).from(users).where(
+      or(
+        eq(users.email, baseEmail),
+        sql`${users.email} LIKE ${baseEmail.replace('@', '+%@')}`
+      )
+    );
+    return Number(result[0]?.count || 0);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -737,64 +751,11 @@ export class DatabaseStorage implements IStorage {
   // --- NAYE FUNCTIONS ELECTRICIAN FLOW KE LIYE ---
 
   /**
-   * Job complete hone par OTP generate karta hai aur customer ko bhejta hai
+   * Job complete hone par booking ko awaiting_billing ya pending_payment me mark karta hai
    */
-  async generateOtpForBooking(
+  async markBookingJobDone(
     bookingId: string,
     providerId: string,
-  ): Promise<{ otp: string; userPhone: string }> {
-    const booking = await this.getBooking(bookingId);
-    console.log("Booking mila:", booking);
-    if (!booking || booking.providerId !== providerId) {
-      throw new Error("Booking not found or access denied");
-    }
-    if (booking.status !== "in_progress" && booking.status !== "awaiting_otp") {
-      throw new Error(
-        `Cannot generate OTP for booking with status: ${booking.status}`,
-      );
-    }
-    if (!booking.userPhone) {
-      throw new Error("Customer phone number is not available to send OTP");
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minute expiry
-
-    await db
-      .update(bookings)
-      .set({
-        serviceOtp: otp,
-        serviceOtpExpiresAt: otpExpiresAt,
-        status: "awaiting_otp",
-      })
-      .where(eq(bookings.id, bookingId));
-
-    // Customer ko in-app OTP dikhao + Firebase push notification bhejo
-    // (No Twilio SMS — OTP is shown in customer's My Bookings page)
-    try {
-      const customerUser = await this.getUser(booking.userId);
-      if (customerUser?.fcmToken) {
-        await sendPushNotification(customerUser.fcmToken, {
-          type: 'ORDER_UPDATE',
-          title: '🔐 Service OTP Generated',
-          body: `Your service verification OTP is: ${otp}. Share it with the technician to confirm service completion.`,
-          data: { bookingId, otp, action: 'SERVICE_OTP' },
-        });
-      }
-    } catch (pushError) {
-      console.warn('[OTP] Firebase push notification failed (non-critical):', pushError);
-    }
-
-    return { otp, userPhone: booking.userPhone };
-  }
-
-  /**
-   * Provider dwara enter kiye gaye OTP ko verify karta hai
-   */
-  async verifyBookingOtp(
-    bookingId: string,
-    providerId: string,
-    otp: string,
   ): Promise<Booking> {
     const booking = await db.query.bookings.findFirst({
       where: and(
@@ -806,21 +767,10 @@ export class DatabaseStorage implements IStorage {
     if (!booking) {
       throw new Error("Booking not found or access denied");
     }
-    if (booking.status !== "awaiting_otp") {
-      throw new Error("Booking is not awaiting OTP verification");
-    }
-    if (booking.serviceOtp !== otp) {
-      throw new Error("Invalid OTP");
-    }
-    if (
-      !booking.serviceOtpExpiresAt ||
-      new Date() > new Date(booking.serviceOtpExpiresAt)
-    ) {
-      throw new Error("OTP has expired");
+    if (booking.status !== "in_progress") {
+      throw new Error("Booking is not in progress");
     }
 
-    // OTP Sahi hai!
-    // Check if we can auto-create invoice based on estimatedCost
     if (booking.estimatedCost) {
       console.log(`[Auto-Invoice] Creating invoice for booking ${bookingId} with amount ${booking.estimatedCost}`);
 
@@ -834,16 +784,12 @@ export class DatabaseStorage implements IStorage {
         totalAmount: booking.estimatedCost,
       };
 
-      // 1. Invoice create karo
       const [newInvoice] = await db.insert(invoices).values(invoiceData).returning();
 
-      // 2. Booking ko update karo (status: pending_payment)
       const [updatedBooking] = await db
         .update(bookings)
         .set({
           status: "pending_payment",
-          serviceOtp: null,
-          serviceOtpExpiresAt: null,
           invoiceId: newInvoice.id,
         })
         .where(eq(bookings.id, bookingId))
@@ -851,13 +797,10 @@ export class DatabaseStorage implements IStorage {
 
       return updatedBooking;
     } else {
-      // No estimated cost, fall back to manual billing (status: awaiting_billing)
       const [updatedBooking] = await db
         .update(bookings)
         .set({
           status: "awaiting_billing",
-          serviceOtp: null, // OTP use ho gaya, clear kar do
-          serviceOtpExpiresAt: null,
         })
         .where(eq(bookings.id, bookingId))
         .returning();
