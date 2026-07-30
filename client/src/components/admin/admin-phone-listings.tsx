@@ -262,7 +262,7 @@ function ActionDialog({ listing, onUpdate }: { listing: any, onUpdate: (updates:
                 </a>
               ))}
             </div>
-            {(!listing.images || listing.images.length === 0) && <div className="p-4 bg-gray-50 rounded-md text-sm text-gray-500 text-center">No images uploaded</div>}
+            {(!listing.images || listing.images.length === 0) && <div className="p-4 bg-muted rounded-md text-sm text-muted-foreground text-center">No images uploaded</div>}
             
             <div className="pt-4 border-t mt-4">
               <Label>Seller Information</Label>
@@ -278,7 +278,7 @@ function ActionDialog({ listing, onUpdate }: { listing: any, onUpdate: (updates:
           <div className="space-y-4">
             <div>
               <Label>Phone Details</Label>
-              <div className="text-sm bg-gray-50 p-3 rounded-md mt-2 space-y-1">
+              <div className="text-sm bg-muted p-3 rounded-md mt-2 space-y-1">
                 <p><span className="font-medium">Brand/Model:</span> {listing.brand} {listing.model}</p>
                 <p><span className="font-medium">Specs:</span> {listing.storage} / {listing.ram} / {listing.color}</p>
                 <p><span className="font-medium">Condition:</span> {listing.condition}</p>
