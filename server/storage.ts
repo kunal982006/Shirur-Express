@@ -927,6 +927,42 @@ export class DatabaseStorage implements IStorage {
     return updatedInvoice;
   }
 
+  /**
+   * Invoice ko COD (Cash on Delivery) ke through pay karta hai.
+   * Yeh verifyInvoicePayment se alag hai kyunki COD me razorpayOrderId nahi hota.
+   */
+  async payInvoiceByCod(invoiceId: string): Promise<Invoice> {
+    const invoice = await this.getInvoice(invoiceId);
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+    if (invoice.paymentStatus === "completed") {
+      throw new Error("This invoice has already been paid");
+    }
+
+    // 1. Invoice update karo - sirf ID se match karo, razorpayOrderId ki zaroorat nahi
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({
+        paymentStatus: "completed",
+        razorpayPaymentId: "COD",
+      })
+      .where(eq(invoices.id, invoiceId))
+      .returning();
+
+    if (!updatedInvoice) {
+      throw new Error("Failed to update invoice");
+    }
+
+    // 2. Booking ko 'completed' mark karo
+    await db
+      .update(bookings)
+      .set({ status: "completed" })
+      .where(eq(bookings.id, updatedInvoice.bookingId));
+
+    return updatedInvoice;
+  }
+
   // --- BAAKI FUNCTIONS (Grocery, Rental, etc. No Change) ---
 
   async createGroceryOrder(

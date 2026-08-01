@@ -2175,13 +2175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/invoices/:id/pay-cod", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const invoiceId = req.params.id;
-      // Mark invoice as paid with COD method
-      const updatedInvoice = await storage.verifyInvoicePayment(
-        invoiceId,
-        "COD",
-        "COD",
-        "COD"
-      );
+      // Use dedicated COD method that doesn't require razorpayOrderId
+      const updatedInvoice = await storage.payInvoiceByCod(invoiceId);
       res.json({ status: "success", invoice: updatedInvoice });
     } catch (error: any) {
       console.error("COD invoice payment error:", error);
