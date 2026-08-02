@@ -16,11 +16,12 @@ cloudinary.config({
 });
 
 // Yeh function file buffer lega aur usko Cloudinary par upload karega
-export const uploadToCloudinary = (fileBuffer: Buffer): Promise<string> => {
+export const uploadToCloudinary = (fileBuffer: Buffer, folder?: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'image',
+        ...(folder ? { folder } : {}),
         // Hum har photo ko optimize kar rahe hain taaki space bache
         transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto:good' }],
       },

@@ -1591,10 +1591,10 @@ export default function AdminDashboard() {
                                 <DialogHeader>
                                     <DialogTitle className="flex items-center gap-2">
                                         <UserPlus className="h-5 w-5 text-emerald-400" />
-                                        Assign {assignServiceType.charAt(0).toUpperCase() + assignServiceType.slice(1)} Provider
+                                        Assign Service Provider
                                     </DialogTitle>
                                     <p className="text-sm text-gray-400 mt-1">
-                                        Select a registered {assignServiceType} to assign this job to.
+                                        Select any electrician or plumber to assign this {assignServiceType} job to.
                                     </p>
                                 </DialogHeader>
                                 <div className="space-y-3 mt-4">
@@ -1604,7 +1604,7 @@ export default function AdminDashboard() {
                                         </div>
                                     ) : !Array.isArray(assignableProviders) || assignableProviders.length === 0 ? (
                                         <div className="text-center py-8">
-                                            <p className="text-gray-500">No registered {assignServiceType}s found.</p>
+                                            <p className="text-gray-500">No registered electricians or plumbers found.</p>
                                             <p className="text-xs text-gray-600 mt-1">Create one from the Providers tab.</p>
                                         </div>
                                     ) : (
@@ -1614,8 +1614,17 @@ export default function AdminDashboard() {
                                                 className="flex items-center justify-between gap-3 p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
                                             >
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <span className="font-medium text-sm text-gray-100">{prov.businessName}</span>
+                                                        {prov.categorySlug && (
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                                                                prov.categorySlug === 'electrician'
+                                                                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                                                    : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                                            }`}>
+                                                                {prov.categorySlug === 'electrician' ? '⚡ Electrician' : '🔧 Plumber'}
+                                                            </span>
+                                                        )}
                                                         {prov.isVerified && (
                                                             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                                                         )}

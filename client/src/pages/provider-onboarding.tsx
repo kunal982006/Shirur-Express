@@ -32,10 +32,10 @@ const profileSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
   categoryId: z.string().min(1, "Please select a service category"),
   description: z.string().optional(),
-  experience: z.string().transform(Number),
+  experience: z.string().min(1, "Experience is required"),
   address: z.string().min(5, "Address is required"),
-  latitude: z.string().optional().transform((val) => val ? Number(val) : undefined),
-  longitude: z.string().optional().transform((val) => val ? Number(val) : undefined),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
   specializations: z.string().optional(),
 });
 
@@ -81,6 +81,9 @@ export default function ProviderOnboarding() {
     mutationFn: async (data: ProfileFormValues) => {
       const profileData = {
         ...data,
+        experience: Number(data.experience || 0),
+        latitude: data.latitude ? Number(data.latitude) : undefined,
+        longitude: data.longitude ? Number(data.longitude) : undefined,
         specializations: data.specializations
           ? data.specializations.split(',').map(s => s.trim()).filter(Boolean)
           : [],

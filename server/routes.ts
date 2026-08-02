@@ -76,7 +76,7 @@ function getCachedOrFetch<T>(key: string, ttlMs: number, fetcher: () => Promise<
 async function notifyAdmin(payload: {
   title: string;
   body: string;
-  data: Record<string, string>;
+  data?: Record<string, string>;
 }) {
   try {
     const adminUser = await storage.getUserByUsername('main_branch');
@@ -4025,32 +4025,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/admin/service-providers-by-category — Get all providers for a specific category (for job assignment)
+  // GET /api/admin/service-providers-by-category — Get all providers from electrician & plumber categories (for cross-domain job assignment)
   app.get("/api/admin/service-providers-by-category", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
-      const { slug } = req.query;
-      if (!slug || typeof slug !== 'string') {
-        return res.status(400).json({ message: "Category slug is required (e.g., ?slug=electrician)" });
-      }
-
-      // Find the category by slug
-      const category = await db.query.serviceCategories.findFirst({
-        where: eq(serviceCategories.slug, slug),
+      // Find ALL assignable categories (electrician + plumber) regardless of which slug was requested
+      const assignableCategories = await db.query.serviceCategories.findMany({
+        where: inArray(serviceCategories.slug, ['electrician', 'plumber']),
       });
 
-      if (!category) {
-        return res.status(404).json({ message: `Category '${slug}' not found.` });
+      if (assignableCategories.length === 0) {
+        return res.status(404).json({ message: "No assignable service categories found." });
       }
 
-      // Get all providers for this category
+      const categoryIds = assignableCategories.map(c => c.id);
+
+      // Get all providers from ALL assignable categories (electrician + plumber)
       const providers = await db.query.serviceProviders.findMany({
-        where: eq(serviceProviders.categoryId, category.id),
+        where: inArray(serviceProviders.categoryId, categoryIds),
         with: {
           user: true,
+          category: true,
         },
       });
 
-      // Return cleaned-up provider list for admin UI
+      // Return cleaned-up provider list with category info for admin UI
       const result = providers.map(p => ({
         id: p.id,
         businessName: p.businessName,
@@ -4063,6 +4061,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: p.user?.username || null,
         experience: p.experience,
         profileImageUrl: p.profileImageUrl,
+        categoryName: (p as any).category?.name || null,
+        categorySlug: (p as any).category?.slug || null,
       }));
 
       res.json(result);
@@ -5164,6 +5164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       notifyAdmin({
         title: "📱 New Phone Sell Request",
         body: `${parsed.data.sellerName} wants to sell ${parsed.data.brand} ${parsed.data.model}`,
+        data: { listingId: String(listing.id) },
       });
 
       res.status(201).json(listing);
@@ -5273,6 +5274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           for (const token of tokens) {
             await sendPushNotification(token, {
+              type: "ORDER_UPDATE",
               title: "📱 Phone Listing Update",
               body: statusMsg,
             }).catch(() => {});
