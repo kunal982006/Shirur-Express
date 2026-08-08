@@ -131,6 +131,17 @@ export default function RestaurantDetail() {
         return acc;
     }, {} as Record<string, RestaurantMenuItem[]>);
 
+    const isCafeOfJoy = restaurant?.businessName.toLowerCase().includes('cafe of joy');
+    const sortedCategoryEntries = Object.entries(groupedItems).sort(([catA], [catB]) => {
+        if (isCafeOfJoy) {
+            const isPastaA = catA.toLowerCase().includes('pasta');
+            const isPastaB = catB.toLowerCase().includes('pasta');
+            if (isPastaA && !isPastaB) return -1;
+            if (!isPastaA && isPastaB) return 1;
+        }
+        return 0;
+    });
+
     const isRestaurantClosed = restaurant.isAvailable === false;
 
     return (
@@ -241,9 +252,9 @@ export default function RestaurantDetail() {
                         <div className="flex relative">
                             {/* Sidebar Categories (Desktop) / Sticky Header (Mobile - simplified here) */}
                             <div className="w-1/4 hidden md:block sticky top-28 h-[calc(100vh-8rem)] overflow-y-auto border-r p-2">
-                                {Object.keys(groupedItems).map(cat => (
+                                {sortedCategoryEntries.map(([cat, catItems]) => (
                                     <a key={cat} href={`#cat-${cat}`} className="block py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-r-full transition-colors">
-                                        {cat} ({groupedItems[cat].length})
+                                        {cat} ({catItems.length})
                                     </a>
                                 ))}
                             </div>
@@ -263,7 +274,7 @@ export default function RestaurantDetail() {
                                     </div>
                                 </div>
 
-                                {Object.keys(groupedItems).length === 0 ? (
+                                {sortedCategoryEntries.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                                             <Search className="h-8 w-8 opacity-50" />
@@ -271,7 +282,7 @@ export default function RestaurantDetail() {
                                         <p>No menu items found.</p>
                                     </div>
                                 ) : (
-                                    Object.entries(groupedItems).map(([category, catItems]) => (
+                                    sortedCategoryEntries.map(([category, catItems]) => (
                                         <div key={category} id={`cat-${category}`} className="scroll-mt-32">
                                             <div className="flex items-center justify-between px-4 py-6">
                                                 <h3 className="font-extrabold text-lg">{category}</h3>
