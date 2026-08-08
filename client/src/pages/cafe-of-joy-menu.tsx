@@ -361,6 +361,15 @@ export default function CafeOfJoyMenu() {
         return acc;
     }, {} as Record<string, RestaurantMenuItem[]>);
 
+    const sortedCategoryEntries = Object.entries(groupedItems).sort(([catA], [catB]) => {
+        const isPastaA = catA.toLowerCase().includes('pasta');
+        const isPastaB = catB.toLowerCase().includes('pasta');
+        if (isPastaA && !isPastaB) return -1;
+        if (!isPastaA && isPastaB) return 1;
+        return 0;
+    });
+
+
     // ========================================
     // RENDER: MENU WITH CART
     // ========================================
@@ -426,25 +435,25 @@ export default function CafeOfJoyMenu() {
                 </div>
 
                 {/* Category pills */}
-                {Object.keys(groupedItems).length > 1 && (
+                {sortedCategoryEntries.length > 1 && (
                     <div className="flex overflow-x-auto gap-2 mb-5 pb-1 scrollbar-hide">
-                        {Object.keys(groupedItems).map(cat => (
+                        {sortedCategoryEntries.map(([cat, catItems]) => (
                             <a key={cat} href={`#qr-cat-${cat.replace(/\s+/g, '-')}`}
                                className="whitespace-nowrap px-3 py-1 text-xs font-semibold rounded-full bg-white border border-amber-200 text-amber-800 hover:bg-amber-100 transition-colors shadow-sm">
-                                {cat} ({groupedItems[cat].length})
+                                {cat} ({catItems.length})
                             </a>
                         ))}
                     </div>
                 )}
 
                 {/* Menu Items */}
-                {Object.keys(groupedItems).length === 0 ? (
+                {sortedCategoryEntries.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <Search className="h-12 w-12 text-amber-200 mb-3" />
                         <p className="text-amber-700 font-medium">No dishes found.</p>
                     </div>
                 ) : (
-                    Object.entries(groupedItems).map(([category, catItems]) => (
+                    sortedCategoryEntries.map(([category, catItems]) => (
                         <div key={category} id={`qr-cat-${category.replace(/\s+/g, '-')}`} className="mb-6 scroll-mt-20">
                             <div className="flex items-center gap-2 mb-2">
                                 <h3 className="font-extrabold text-base text-amber-900">{category}</h3>
