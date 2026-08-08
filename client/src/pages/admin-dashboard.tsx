@@ -1297,10 +1297,21 @@ export default function AdminDashboard() {
 
                         {/* ─── UNASSIGNED BOOKINGS SECTION ─── */}
                         {(() => {
-                            // Only electrician & plumber bookings can be unassigned — other services always show in main list
-                            const serviceTypesWithAssignment = ['electrician', 'plumber'];
-                            const unassignedBookings = filteredBookings?.filter(b => !b.provider && serviceTypesWithAssignment.includes(b.serviceType)) || [];
-                            const assignedBookings = filteredBookings?.filter(b => !!b.provider || !serviceTypesWithAssignment.includes(b.serviceType)) || [];
+                            // Only electrician & plumber & phone-hub bookings can be unassigned — other services always show in main list
+                            const serviceTypesWithAssignment = ['electrician', 'plumber', 'phone-hub'];
+                            const terminalStatuses = ['cancelled', 'completed', 'declined'];
+                            
+                            const unassignedBookings = filteredBookings?.filter(b => 
+                                !b.provider && 
+                                serviceTypesWithAssignment.includes(b.serviceType) && 
+                                !terminalStatuses.includes(b.status || '')
+                            ) || [];
+                            
+                            const assignedBookings = filteredBookings?.filter(b => 
+                                !!b.provider || 
+                                !serviceTypesWithAssignment.includes(b.serviceType) || 
+                                terminalStatuses.includes(b.status || '')
+                            ) || [];
 
                             return (
                                 <>
@@ -1322,10 +1333,12 @@ export default function AdminDashboard() {
                                                         <div className="flex items-start gap-4">
                                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                                                 b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
-                                                                b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
+                                                                b.serviceType === 'plumber' ? 'bg-blue-500/15' : 
+                                                                b.serviceType === 'phone-hub' ? 'bg-purple-500/15' : 'bg-pink-500/15'
                                                             }`}>
                                                                 {b.serviceType === 'electrician' ? <Zap className="h-5 w-5 text-yellow-400" /> :
                                                                     b.serviceType === 'plumber' ? <Wrench className="h-5 w-5 text-blue-400" /> :
+                                                                    b.serviceType === 'phone-hub' ? <Smartphone className="h-5 w-5 text-purple-400" /> :
                                                                         <Scissors className="h-5 w-5 text-pink-400" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
@@ -1408,10 +1421,12 @@ export default function AdminDashboard() {
                                                 <div key={b.id} className="flex flex-col px-6 py-4 hover:bg-white/[0.02] transition-colors group">
                                                     <div className="flex items-start gap-4">
                                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${b.serviceType === 'electrician' ? 'bg-yellow-500/15' :
-                                                            b.serviceType === 'plumber' ? 'bg-blue-500/15' : 'bg-pink-500/15'
+                                                            b.serviceType === 'plumber' ? 'bg-blue-500/15' : 
+                                                            b.serviceType === 'phone-hub' ? 'bg-purple-500/15' : 'bg-pink-500/15'
                                                             }`}>
                                                             {b.serviceType === 'electrician' ? <Zap className="h-5 w-5 text-yellow-400" /> :
                                                                 b.serviceType === 'plumber' ? <Wrench className="h-5 w-5 text-blue-400" /> :
+                                                                b.serviceType === 'phone-hub' ? <Smartphone className="h-5 w-5 text-purple-400" /> :
                                                                     <Scissors className="h-5 w-5 text-pink-400" />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
