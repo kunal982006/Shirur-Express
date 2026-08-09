@@ -444,7 +444,7 @@ export default function MyBookings() {
                         <div>
                           <CardTitle className="text-lg mb-2 flex items-center gap-2">
                             <UtensilsCrossed className="h-5 w-5 text-orange-500" />
-                            Restaurant Order
+                            {order.orderCategory === 'streetfood' ? 'Street Food Order' : 'Restaurant Order'}
                           </CardTitle>
                           <p className="text-sm text-muted-foreground">
                             Order #{order.id.slice(0, 8)} • {format(new Date(order.createdAt || new Date()), "PPP p")}

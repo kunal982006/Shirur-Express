@@ -308,7 +308,7 @@ export interface IStorage {
   getRiderOrders(riderId: string): Promise<RestaurantOrder[]>;
   getAvailableGroceryOrdersForRider(): Promise<GroceryOrder[]>;
   getRiderGroceryOrders(riderId: string): Promise<GroceryOrder[]>;
-  getRestaurantOrdersByUserId(userId: string): Promise<RestaurantOrder[]>;
+  getRestaurantOrdersByUserId(userId: string): Promise<any[]>;
   getRestaurantOrdersByProviderId(providerId: string): Promise<RestaurantOrder[]>;
   updateProviderOrderStatus(orderId: string, providerId: string, status: string): Promise<RestaurantOrder>;
   acceptOrderAsRider(orderId: string, riderId: string): Promise<RestaurantOrder>;
@@ -1667,12 +1667,27 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getRestaurantOrdersByUserId(userId: string): Promise<RestaurantOrder[]> {
-    return db.query.restaurantOrders.findMany({
+  async getRestaurantOrdersByUserId(userId: string): Promise<any[]> {
+    const rOrders = await db.query.restaurantOrders.findMany({
       where: eq(restaurantOrders.userId, userId),
       with: { provider: true },
-      orderBy: [desc(restaurantOrders.createdAt)],
-    }) as any;
+    });
+
+    const sOrders = await db.query.streetFoodOrders.findMany({
+      where: eq(streetFoodOrders.userId, userId),
+      with: { provider: true },
+    });
+
+    const combined = [
+      ...rOrders.map(o => ({ ...o, orderCategory: 'restaurant' })),
+      ...sOrders.map(o => ({ ...o, orderCategory: 'streetfood' }))
+    ];
+
+    return combined.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
   }
 
   async getRestaurantOrdersByProviderId(providerId: string): Promise<RestaurantOrder[]> {
@@ -1921,7 +1936,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOrderTrackingInfo(orderId: string, userId: string): Promise<any> {
-    const order = await db.query.restaurantOrders.findFirst({
+    let order: any = await db.query.restaurantOrders.findFirst({
       where: and(
         eq(restaurantOrders.id, orderId),
         eq(restaurantOrders.userId, userId)
@@ -1931,6 +1946,32 @@ export class DatabaseStorage implements IStorage {
         rider: true,
       },
     });
+
+    if (!order) {
+      order = await db.query.streetFoodOrders.findFirst({
+        where: and(
+          eq(streetFoodOrders.id, orderId),
+          eq(streetFoodOrders.userId, userId)
+        ),
+        with: {
+          provider: true,
+          rider: true,
+        },
+      });
+    }
+
+    if (!order) {
+      order = await db.query.groceryOrders.findFirst({
+        where: and(
+          eq(groceryOrders.id, orderId),
+          eq(groceryOrders.userId, userId)
+        ),
+        with: {
+          provider: true,
+          rider: true,
+        },
+      });
+    }
 
     if (!order) {
       throw new Error("Order not found");
@@ -1956,7 +1997,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  private getStatusTimeline(order: RestaurantOrder) {
+  private getStatusTimeline(order: any) {
     const statuses = [
       { key: 'pending', label: 'Order Placed', completed: true, time: order.createdAt },
       { key: 'accepted', label: 'Order Accepted', completed: ['accepted', 'preparing', 'ready_for_pickup', 'assigned', 'out_for_delivery', 'delivered'].includes(order.status || ''), time: null },
