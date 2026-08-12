@@ -416,12 +416,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (input.includes('@')) {
         // Find all accounts with this base email (handles user@gmail.com and user+2@gmail.com)
         const baseEmail = input.toLowerCase().replace(/\+\d+@/, '@');
-        matchedUsers = await db.select().from(users).where(
-          or(
+        matchedUsers = await db.query.users.findMany({
+          where: or(
             eq(users.email, baseEmail),
-            sql`${users.email} LIKE ${baseEmail.replace('@', '+%@')}`
+            ilike(users.email, baseEmail.replace('@', '+%@'))
           )
-        );
+        });
       } else {
         // Fallback: Check if input is a username (for admin/legacy accounts)
         const u = await storage.getUserByUsername(input.toLowerCase());
