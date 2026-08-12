@@ -408,31 +408,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const input = username.trim();
-      let user;
+      let matchedUsers: User[] = [];
 
       // Check if input is a 10-digit phone number
       if (/^\d{10}$/.test(input)) {
-        user = await storage.getUserByPhone(input);
+        matchedUsers = await db.query.users.findMany({ where: eq(users.phone, input) });
+      } else if (input.includes('@')) {
+        // Find all accounts with this base email (handles user@gmail.com and user+2@gmail.com)
+        const baseEmail = input.toLowerCase().replace(/\+\d+@/, '@');
+        matchedUsers = await db.select().from(users).where(
+          or(
+            eq(users.email, baseEmail),
+            sql`${users.email} LIKE ${baseEmail.replace('@', '+%@')}`
+          )
+        );
+      } else {
+        // Fallback: Check if input is a username (for admin/legacy accounts)
+        const u = await storage.getUserByUsername(input.toLowerCase());
+        if (u) matchedUsers = [u];
       }
 
-      // Check if input looks like an email
-      if (!user && input.includes('@')) {
-        user = await storage.getUserByEmail(input.toLowerCase());
-      }
-
-      // Fallback: Check if input is a username (for admin/legacy accounts)
-      if (!user) {
-        user = await storage.getUserByUsername(input.toLowerCase());
-      }
-
-      if (!user) {
+      if (matchedUsers.length === 0) {
         await bcrypt.compare("dummyPassword", "$2b$10$abcdefghijklmnopqrstuv");
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
+
+      let validUser = null;
+      for (const u of matchedUsers) {
+        const validPassword = await bcrypt.compare(password, u.password);
+        if (validPassword) {
+          validUser = u;
+          break;
+        }
+      }
+
+      if (!validUser) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+
+      const user = validUser;
 
       // Check for delivery partner profile
       const deliveryPartner = await storage.getDeliveryPartnerByUserId(user.id);
