@@ -483,10 +483,10 @@ const MenuItemsManager: React.FC<{
                   {filteredItems.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <QuickImageUpload 
-                          itemId={item.id} 
-                          categorySlug={providerCategorySlug || ''} 
-                          currentImage={item.imageUrl} 
+                        <QuickImageUpload
+                          itemId={item.id}
+                          categorySlug={providerCategorySlug || ''}
+                          currentImage={item.imageUrl}
                           onUploadSuccess={() => {
                             if (isGrocery) {
                               queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
@@ -494,7 +494,7 @@ const MenuItemsManager: React.FC<{
                             } else {
                               refetchMenuItems();
                             }
-                          }} 
+                          }}
                         />
                       </TableCell>
                       <TableCell className="font-medium">
@@ -1725,11 +1725,10 @@ const BeautyServiceSelector: React.FC<{
             <button
               key={sec}
               onClick={() => setActiveFilter(sec as any)}
-              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                activeFilter === sec
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${activeFilter === sec
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
                   : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:border-border"
-              }`}
+                }`}
             >
               {SECTION_ICONS[sec] || ""} {sec} ({sectionCounts[sec] || 0})
             </button>
@@ -1769,13 +1768,12 @@ const BeautyServiceSelector: React.FC<{
                 {filteredServices.map((service, idx) => (
                   <tr
                     key={service.id}
-                    className={`group transition-colors ${
-                      selectedIds.has(service.id)
+                    className={`group transition-colors ${selectedIds.has(service.id)
                         ? "bg-primary/5"
                         : idx % 2 === 0
                           ? "bg-background"
                           : "bg-muted/20"
-                    } hover:bg-primary/10`}
+                      } hover:bg-primary/10`}
                   >
                     {/* Checkbox */}
                     <td className="px-2 py-1.5 text-center">
@@ -2128,12 +2126,12 @@ const GroceryOrderCard: React.FC<{
               )}
             </CardTitle>
             <div className="flex flex-col text-sm text-foreground/80">
-               <span className="font-semibold flex items-center gap-1">
-                 <User className="h-3 w-3" /> {order.user?.username || "Customer"}
-               </span>
-               <span className="flex items-center gap-1 text-muted-foreground">
-                 <Phone className="h-3 w-3" /> {order.user?.phone || "No phone"}
-               </span>
+              <span className="font-semibold flex items-center gap-1">
+                <User className="h-3 w-3" /> {order.user?.username || "Customer"}
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Phone className="h-3 w-3" /> {order.user?.phone || "No phone"}
+              </span>
             </div>
           </div>
           <Badge variant={isPending ? "destructive" : "outline"}>
@@ -2150,21 +2148,21 @@ const GroceryOrderCard: React.FC<{
             {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
               <div key={idx} className="flex items-center gap-3 p-3">
                 <div className="h-12 w-12 rounded-md bg-white border flex-shrink-0 overflow-hidden shadow-sm">
-                   {item.imageUrl ? (
-                     <img src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" />
-                   ) : (
-                     <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground">
-                       <ShoppingBag className="h-6 w-6 opacity-20" />
-                     </div>
-                   )}
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground">
+                      <ShoppingBag className="h-6 w-6 opacity-20" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                   <p className="font-medium text-sm truncate">{item.name || item.productId}</p>
-                   <p className="text-xs text-muted-foreground">₹{item.price} per unit</p>
+                  <p className="font-medium text-sm truncate">{item.name || item.productId}</p>
+                  <p className="text-xs text-muted-foreground">₹{item.price} per unit</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                   <p className="text-sm font-bold">x{item.quantity}</p>
-                   <p className="text-xs font-semibold text-primary">₹{item.price * item.quantity}</p>
+                  <p className="text-sm font-bold">x{item.quantity}</p>
+                  <p className="text-xs font-semibold text-primary">₹{item.price * item.quantity}</p>
                 </div>
               </div>
             ))}
@@ -2863,7 +2861,7 @@ const ProfileSettingsManager: React.FC<{
 
   // Delete Gallery Image Mutation
   const deleteGalleryImageMutation = useMutation({
-    mutationFn: ({ imageUrl, index }: { imageUrl: string, index?: number }) => 
+    mutationFn: ({ imageUrl, index }: { imageUrl: string, index?: number }) =>
       api.post("/provider/profile/gallery/delete", { imageUrl, index }),
     onSuccess: (response) => {
       const updated = response.data.profile;
@@ -2918,7 +2916,7 @@ const ProfileSettingsManager: React.FC<{
                     <span className="text-sm font-medium">No Image Set</span>
                   </div>
                 )}
-                
+
                 {/* Hover overlay instruction */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                   <span className="text-white font-medium drop-shadow-md">Select a new image below</span>
@@ -2994,45 +2992,45 @@ const ProfileSettingsManager: React.FC<{
             Photo Gallery
           </CardTitle>
           <CardDescription>
-            Upload supplementary photos here (like shop interior, previous work, or specific generic items). 
-            <br/><span className="font-semibold text-amber-600 dark:text-amber-400 text-xs">Note: Your display banner above is always prioritized over these gallery photos.</span>
+            Upload supplementary photos here (like shop interior, previous work, or specific generic items).
+            <br /><span className="font-semibold text-amber-600 dark:text-amber-400 text-xs">Note: Your display banner above is always prioritized over these gallery photos.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          
+
           {/* Upload Input */}
           <div className="p-6 mb-6 border-2 border-dashed border-primary/20 rounded-xl bg-primary/5 transition-colors hover:bg-primary/10 duration-200">
             <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-               <div className="flex-1 space-y-2 w-full">
-                  <Label htmlFor="gallery-upload" className="text-sm font-semibold flex items-center gap-2">
-                    <PlusCircle className="w-4 h-4" /> Add Multiple Photos (Max 5)
-                  </Label>
-                  <Input
-                    id="gallery-upload"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleGalleryFileChange}
-                    disabled={galleryUploadMutation.isPending}
-                    className="cursor-pointer file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-4 file:py-1 file:font-semibold hover:file:bg-primary/90 transition-all h-12 pt-3"
-                  />
-                  {galleryFiles && (
-                    <p className="text-xs text-green-600 font-medium">{galleryFiles.length} file(s) selected for upload</p>
-                  )}
-               </div>
-               <Button
-                  onClick={handleGalleryUpload}
-                  disabled={!galleryFiles || galleryUploadMutation.isPending}
-                  size="lg"
-                  className="w-full md:w-auto shadow-md"
-                >
-                  {galleryUploadMutation.isPending ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  ) : (
-                    <Save className="mr-2 h-5 w-5" />
-                  )}
-                  Upload to Gallery
-                </Button>
+              <div className="flex-1 space-y-2 w-full">
+                <Label htmlFor="gallery-upload" className="text-sm font-semibold flex items-center gap-2">
+                  <PlusCircle className="w-4 h-4" /> Add Multiple Photos (Max 5)
+                </Label>
+                <Input
+                  id="gallery-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryFileChange}
+                  disabled={galleryUploadMutation.isPending}
+                  className="cursor-pointer file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-4 file:py-1 file:font-semibold hover:file:bg-primary/90 transition-all h-12 pt-3"
+                />
+                {galleryFiles && (
+                  <p className="text-xs text-green-600 font-medium">{galleryFiles.length} file(s) selected for upload</p>
+                )}
+              </div>
+              <Button
+                onClick={handleGalleryUpload}
+                disabled={!galleryFiles || galleryUploadMutation.isPending}
+                size="lg"
+                className="w-full md:w-auto shadow-md"
+              >
+                {galleryUploadMutation.isPending ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-5 w-5" />
+                )}
+                Upload to Gallery
+              </Button>
             </div>
           </div>
 
@@ -3070,7 +3068,7 @@ const ProfileSettingsManager: React.FC<{
                     <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                       Photo {index + 1}
                     </div>
-                    
+
                     <button
                       className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0"
                       onClick={() => {
@@ -3081,7 +3079,7 @@ const ProfileSettingsManager: React.FC<{
                       disabled={deleteGalleryImageMutation.isPending}
                     >
                       {deleteGalleryImageMutation.isPending ? (
-                         <Loader2 className="w-3 h-3 animate-spin" />
+                        <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
                         <Trash2 className="w-3 h-3" />
                       )}
@@ -3246,7 +3244,7 @@ const StreetFoodOrderCard: React.FC<{
               <span>•</span>
               <span className="font-semibold text-foreground">{order.user?.username || "Guest"}</span>
               <span>•</span>
-               <Badge variant="secondary">{order.provider?.businessName || "Vendor"}</Badge>
+              <Badge variant="secondary">{order.provider?.businessName || "Vendor"}</Badge>
             </CardDescription>
           </div>
           <Badge variant={isPending ? "destructive" : "outline"}>
