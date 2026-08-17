@@ -95,7 +95,7 @@ export default function Electrician() {
           </div>
         ) : (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6 gap-x-2 sm:gap-6 px-1 sm:px-0">
-            {appliances?.filter(a => a.name !== "Others").map((appliance) => {
+            {appliances?.filter(a => a.name !== "Others" && a.name !== "Welding & Fabrication").map((appliance) => {
               // Fallback image logic
               const imageUrl = appliance.imageUrl || IMAGE_MAPPING[appliance.name] || "/images/placeholder.png";
 
@@ -143,6 +143,33 @@ export default function Electrician() {
                 src="/electrician-expert.png" 
                 alt="Expert Technician" 
                 className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom mix-blend-multiply drop-shadow-sm pr-2 sm:pr-4"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 'Welding & Fabrication' Custom Full-Width Highlight Banner */}
+        {appliances?.find(a => a.name === "Welding & Fabrication") && (
+          <div 
+            className="mt-6 mx-2 sm:mx-0 bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex relative cursor-pointer group hover:shadow-md transition-all h-32 sm:h-40"
+            onClick={() => handleApplianceClick(appliances.find(a => a.name === "Welding & Fabrication")!)}
+          >
+            <div className="p-4 sm:p-6 z-10 w-[60%] sm:w-2/3 flex flex-col justify-center">
+              <h3 className="text-slate-900 font-bold text-base sm:text-2xl mb-1 leading-tight">Welding & Fabrication</h3>
+              <p className="text-slate-700 text-[10px] sm:text-sm font-medium leading-tight mb-2 sm:mb-3">
+                घर और कमर्शियल स्पेस के लिए बेस्ट क्वालिटी वेल्डिंग, शेड, गेट्स और कस्टम फैब्रिकेशन सर्विसेज।
+              </p>
+              <div className="bg-slate-800 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full inline-block self-start shadow-sm group-hover:bg-slate-900 transition-colors">
+                Explore Services &rarr;
+              </div>
+            </div>
+            {/* The uploaded welding image */}
+            <div className="w-[45%] absolute right-0 top-0 bottom-0 flex items-center justify-end pointer-events-none mix-blend-multiply overflow-visible">
+              <img 
+                src="/welding-fabrication.jpeg" 
+                alt="Welding & Fabrication" 
+                className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom mix-blend-multiply drop-shadow-sm pr-2 sm:pr-4"
+                onError={(e) => { e.currentTarget.src = "/images/placeholder.png"; }}
               />
             </div>
           </div>
