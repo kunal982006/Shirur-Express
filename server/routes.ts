@@ -1722,6 +1722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 1. Ek naya schema banao jo string expect kare
       const bodySchema = insertBookingSchema.extend({
         scheduledAt: z.string().datetime(), // String expect karo (ISO format)
+        estimatedCost: z.coerce.string().optional(),
       });
 
       // 2. Body ko naye schema se parse karo
@@ -2195,6 +2196,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("COD invoice payment error:", error);
       res.status(500).json({ message: error.message || "Error processing COD payment" });
+    }
+  });
+
+  // (Customer) Invoice payment via QR scan - mark as awaiting admin confirmation
+  app.post("/api/invoices/:id/pay-online", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const invoiceId = req.params.id;
+      const updatedInvoice = await storage.markInvoiceAwaitingConfirmation(invoiceId);
+      res.json({ status: "success", invoice: updatedInvoice });
+    } catch (error: any) {
+      console.error("Pay online (QR) error:", error);
+      res.status(500).json({ message: error.message || "Error processing online payment" });
+    }
+  });
+
+  // (Admin) Confirm invoice payment - marks invoice paid and booking completed
+  app.post("/api/admin/invoices/:id/confirm-payment", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const invoiceId = req.params.id;
+      const updatedInvoice = await storage.adminConfirmInvoicePayment(invoiceId);
+      res.json({ status: "success", message: "Payment confirmed successfully!", invoice: updatedInvoice });
+    } catch (error: any) {
+      console.error("Admin confirm payment error:", error);
+      res.status(500).json({ message: error.message || "Error confirming payment" });
     }
   });
 
@@ -3823,6 +3848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           provider: true,
           serviceOffering: true,
           problem: true,
+          invoice: true,
         },
         orderBy: [desc(bookings.createdAt)],
         limit: 200,

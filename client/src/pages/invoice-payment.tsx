@@ -11,30 +11,12 @@ import { apiRequest } from "@/lib/queryClient";
 import {
   ArrowLeft,
   FileText,
-  DollarSign,
   Loader2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  QrCode,
+  Clock
 } from "lucide-react";
-
-const loadRazorpayScript = () => {
-  return new Promise((resolve) => {
-    if (document.getElementById('razorpay-checkout-js')) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "razorpay-checkout-js";
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => {
-      resolve(true);
-    };
-    script.onerror = () => {
-      resolve(false);
-    };
-    document.body.appendChild(script);
-  });
-};
 
 type Invoice = {
   id: string;
@@ -53,6 +35,7 @@ export default function InvoicePayment() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   const invoiceId = params?.id || "";
 
@@ -65,38 +48,28 @@ export default function InvoicePayment() {
     enabled: !!invoiceId && isAuthenticated,
   });
 
-  const createPaymentOrderMutation = useMutation({
+  // Pay Online (QR scanned) mutation
+  const payOnlineMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/create-payment-order`);
-      return response.json();
-    },
-  });
-
-  const verifyPaymentMutation = useMutation({
-    mutationFn: async (paymentData: {
-      razorpay_payment_id: string;
-      razorpay_order_id: string;
-      razorpay_signature: string;
-    }) => {
-      const response = await apiRequest("POST", "/api/invoices/verify-payment", {
-        invoice_id: invoiceId,
-        ...paymentData,
-      });
+      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/pay-online`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process payment');
+      }
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Payment Successful!",
-        description: "Your payment has been verified. Thank you!",
+        title: "Payment Submitted!",
+        description: "Your payment is being verified. Admin will confirm shortly.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/invoices", invoiceId] });
-      setLocation("/my-bookings");
     },
     onError: (error: any) => {
       toast({
-        title: "Payment Verification Failed",
-        description: error.message || "Please contact support.",
+        title: "Payment Failed",
+        description: error.message || "Could not process payment.",
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -138,86 +111,10 @@ export default function InvoicePayment() {
     }
   };
 
-  const handlePayment = async () => {
-    setIsProcessing(true);
-
-    const scriptLoaded = await loadRazorpayScript();
-    if (!scriptLoaded) {
-      toast({
-        title: "Error",
-        description: "Payment gateway failed to load. Please try again.",
-        variant: "destructive"
-      });
-      setIsProcessing(false);
-      return;
-    }
-
-    if (!user || !invoice) {
-      toast({
-        title: "Error",
-        description: "Unable to process payment. Please try again.",
-        variant: "destructive"
-      });
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const rzpOrder = await createPaymentOrderMutation.mutateAsync();
-
-      const options = {
-        key: rzpOrder.razorpayKeyId,
-        amount: rzpOrder.amount,
-        currency: rzpOrder.currency,
-        name: "Shirur Express", // Updated name
-        description: `Invoice Payment - ${invoiceId.slice(-8)}`,
-        order_id: rzpOrder.razorpayOrderId,
-        handler: async (response: any) => {
-          try {
-            await verifyPaymentMutation.mutateAsync({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-          } catch (error) {
-            console.error("Payment verification error:", error);
-          }
-        },
-        prefill: {
-          name: user.username,
-          email: user.email,
-          contact: user.phone || "",
-        },
-        notes: {
-          invoiceId: invoiceId,
-          userId: user.id,
-        },
-        theme: {
-          color: "#3399cc",
-        },
-        modal: {
-          ondismiss: () => {
-            toast({
-              title: "Payment Cancelled",
-              description: "You cancelled the payment.",
-              variant: "destructive"
-            });
-            setIsProcessing(false);
-          },
-        },
-      };
-
-      const paymentObject = new (window as any).Razorpay(options);
-      paymentObject.open();
-
-    } catch (error: any) {
-      console.error("Payment initiation error:", error); // Added logging
-      toast({
-        title: "Payment Failed",
-        description: error.message || "Could not initiate payment. Please try again.", // Improved error message
-        variant: "destructive",
-      });
-      setIsProcessing(false);
+  const handlePayOnline = async () => {
+    if (confirm("Have you completed the payment via UPI? Click OK to confirm.")) {
+      setIsProcessing(true);
+      await payOnlineMutation.mutateAsync();
     }
   };
 
@@ -258,7 +155,8 @@ export default function InvoicePayment() {
     );
   }
 
-  if (invoice.paymentStatus === "paid") {
+  // Already paid
+  if (invoice.paymentStatus === "completed") {
     return (
       <div className="min-h-screen bg-background py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -267,6 +165,29 @@ export default function InvoicePayment() {
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Already Paid</h2>
               <p className="text-muted-foreground mb-4">This invoice has already been paid</p>
+              <Button onClick={() => setLocation("/my-bookings")}>Back to My Bookings</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Awaiting admin confirmation
+  if (invoice.paymentStatus === "awaiting_confirmation") {
+    return (
+      <div className="min-h-screen bg-background py-16">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Clock className="h-16 w-16 text-yellow-500 mx-auto mb-4 animate-pulse" />
+              <h2 className="text-2xl font-bold mb-2">Payment Verification Pending</h2>
+              <p className="text-muted-foreground mb-2">
+                You have submitted your payment of <span className="font-bold text-primary">₹{Number(invoice.totalAmount).toFixed(2)}</span>
+              </p>
+              <p className="text-muted-foreground mb-4">
+                Admin will verify and confirm your payment shortly.
+              </p>
               <Button onClick={() => setLocation("/my-bookings")}>Back to My Bookings</Button>
             </CardContent>
           </Card>
@@ -351,51 +272,99 @@ export default function InvoicePayment() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                You will be redirected to Razorpay's secure payment gateway to complete your payment.
-              </p>
-              <Button
-                onClick={handlePayment}
-                disabled={isProcessing}
-                className="w-full bg-primary hover:bg-primary/90 text-lg py-6"
-                data-testid="button-pay-securely"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <DollarSign className="mr-2 h-5 w-5" />
-                    Pay Securely - ₹{Number(invoice.totalAmount).toFixed(2)}
-                  </>
-                )}
-              </Button>
-              <div className="relative my-4 flex items-center py-2">
-                 <div className="flex-grow border-t border-muted"></div>
-                 <span className="flex-shrink-0 mx-4 text-muted-foreground text-sm">OR</span>
-                 <div className="flex-grow border-t border-muted"></div>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleCodPayment}
-                disabled={isProcessing}
-                className="w-full text-lg py-6 border-2"
-                data-testid="button-pay-cash"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <span className="mr-2 text-xl">💵</span>
-                    Pay with Cash on Delivery
-                  </>
-                )}
-              </Button>
+
+              {/* QR Code Section */}
+              {showQr ? (
+                <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-primary/30">
+                  <p className="text-center text-sm font-semibold mb-3">
+                    📱 Scan QR Code to Pay ₹{Number(invoice.totalAmount).toFixed(2)}
+                  </p>
+                  <div className="flex justify-center mb-3">
+                    <img
+                      src="/images/payment-qr.jpeg"
+                      alt="Payment QR Code"
+                      className="w-56 h-auto rounded-lg shadow-lg"
+                    />
+                  </div>
+                  <p className="text-center text-xs text-muted-foreground mb-4">
+                    Scan this QR code with any UPI app (Google Pay, PhonePe, Paytm, etc.) and complete the payment. Then tap "I Have Paid" below.
+                  </p>
+                  <Button
+                    onClick={handlePayOnline}
+                    disabled={isProcessing}
+                    className="w-full bg-green-600 hover:bg-green-700 text-lg py-6"
+                    data-testid="button-i-have-paid"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-2 h-5 w-5" />
+                        I Have Paid ✅
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-2 text-sm text-muted-foreground"
+                    onClick={() => setShowQr(false)}
+                    disabled={isProcessing}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Choose your preferred payment method below.
+                  </p>
+                  <Button
+                    onClick={() => setShowQr(true)}
+                    disabled={isProcessing}
+                    className="w-full bg-primary hover:bg-primary/90 text-lg py-6"
+                    data-testid="button-pay-securely"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-5 w-5" />
+                        Pay Online (Scan QR) - ₹{Number(invoice.totalAmount).toFixed(2)}
+                      </>
+                    )}
+                  </Button>
+                  <div className="relative my-4 flex items-center py-2">
+                     <div className="flex-grow border-t border-muted"></div>
+                     <span className="flex-shrink-0 mx-4 text-muted-foreground text-sm">OR</span>
+                     <div className="flex-grow border-t border-muted"></div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleCodPayment}
+                    disabled={isProcessing}
+                    className="w-full text-lg py-6 border-2"
+                    data-testid="button-pay-cash"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <span className="mr-2 text-xl">💵</span>
+                        Pay Offline (Cash)
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

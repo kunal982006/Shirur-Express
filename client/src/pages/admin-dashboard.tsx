@@ -135,6 +135,7 @@ interface Booking {
     provider?: { businessName: string; address: string };
     serviceOffering?: { name: string | null; price: string; imageUrl?: string | null } | null;
     problem?: { name: string } | null;
+    invoice?: { id: string; totalAmount: string; paymentStatus: string | null } | null;
 }
 
 interface Provider {
@@ -462,6 +463,26 @@ export default function AdminDashboard() {
             toast({
                 title: "Error",
                 description: error.response?.data?.message || "Failed to cancel booking.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    // --- ADMIN CONFIRM PAYMENT: Confirm QR code payment ---
+    const confirmPaymentMutation = useMutation({
+        mutationFn: async (invoiceId: string) => {
+            const res = await api.post(`/admin/invoices/${invoiceId}/confirm-payment`);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast({ title: "✅ Payment Confirmed", description: "Payment has been verified and booking is now complete!" });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to confirm payment.",
                 variant: "destructive",
             });
         },
@@ -1592,6 +1613,35 @@ export default function AdminDashboard() {
                                                             </div>
                                                         );
                                                     })()}
+
+                                                    {/* ─── Admin Confirm Payment Button (for QR payments) ─── */}
+                                                    {b.status === 'pending_payment' && b.invoice && b.invoice.paymentStatus === 'awaiting_confirmation' && (
+                                                        <div className="mt-3 pt-3 border-t border-white/5">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-bold uppercase tracking-wider animate-pulse">
+                                                                    ⏳ Payment Awaiting Confirmation
+                                                                </span>
+                                                                <span className="text-sm font-bold text-gray-200">₹{parseFloat(b.invoice.totalAmount).toFixed(0)}</span>
+                                                            </div>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    if (confirm(`Confirm payment of ₹${parseFloat(b.invoice!.totalAmount).toFixed(0)} for booking #${b.id.slice(0, 8)}? This will mark the service as completed.`)) {
+                                                                        confirmPaymentMutation.mutate(b.invoice!.id);
+                                                                    }
+                                                                }}
+                                                                disabled={confirmPaymentMutation.isPending}
+                                                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg py-2 text-sm gap-2"
+                                                            >
+                                                                {confirmPaymentMutation.isPending ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <CheckCircle className="h-4 w-4" />
+                                                                )}
+                                                                Confirm Payment ✅
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>

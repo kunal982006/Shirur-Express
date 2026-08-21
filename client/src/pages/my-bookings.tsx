@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,6 +40,7 @@ type BookingWithDetails = {
     id: string;
     totalAmount: number;
     serviceCharge: number;
+    paymentStatus?: string;
     spareParts?: Array<{ part: string; cost: number }>;
   };
   paymentMethod?: string;
@@ -97,6 +98,35 @@ export default function MyBookings() {
       });
     },
   });
+
+  // Pay Online (QR code scanned) mutation
+  const payOnlineMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      const response = await apiRequest("POST", `/api/invoices/${invoiceId}/pay-online`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process payment');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Payment Submitted!",
+        description: "Your payment is being verified. Admin will confirm shortly.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Could not process payment.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Track which booking's QR is shown
+  const [showQrForBooking, setShowQrForBooking] = useState<string | null>(null);
 
   // Cancel booking mutation (for customer)
   const cancelBookingMutation = useMutation({
@@ -330,52 +360,117 @@ export default function MyBookings() {
                             {/* Status-specific messages */}
                             {booking.status === "pending_payment" && booking.invoice && (
                               <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                                <p className="text-sm font-bold text-orange-900 dark:text-orange-100 mb-2">
-                                  💰 Job Complete! Your Final Bill is Ready
-                                </p>
-                                <div className="space-y-1 text-sm text-orange-700 dark:text-orange-300 mb-3">
-                                  <p>Service Charge: ₹{booking.invoice.serviceCharge}</p>
-                                  {booking.invoice.spareParts && booking.invoice.spareParts.length > 0 && (
-                                    <div>
-                                      <p className="font-medium">Spare Parts:</p>
-                                      {booking.invoice.spareParts.map((part, idx) => (
-                                        <p key={idx} className="ml-3">
-                                          • {part.part}: ₹{part.cost}
-                                        </p>
-                                      ))}
+                                {/* Awaiting Confirmation State */}
+                                {booking.invoice.paymentStatus === 'awaiting_confirmation' ? (
+                                  <div className="text-center py-3">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-semibold mb-2">
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Payment Verification Pending
                                     </div>
-                                  )}
-                                  <p className="font-bold text-base mt-2">
-                                    Total Bill: ₹{booking.invoice.totalAmount}
-                                  </p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 mt-2">
-                                  <Button
-                                    className="w-full bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm"
-                                    onClick={() => setLocation(`/pay/invoice/${booking.invoice!.id}`)}
-                                    data-testid="button-pay-now"
-                                  >
-                                    <DollarSign className="mr-1 sm:mr-2 h-4 w-4" />
-                                    Pay Online
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    className="w-full text-xs sm:text-sm border-orange-200 text-orange-700 hover:bg-orange-100"
-                                    disabled={payCodMutation.isPending}
-                                    onClick={() => {
-                                      if(confirm("Are you sure you want to pay with cash? The technician will collect it.")) {
-                                        payCodMutation.mutate(booking.invoice!.id);
-                                      }
-                                    }}
-                                  >
-                                    {payCodMutation.isPending ? (
-                                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <span className="mr-1 sm:mr-2 text-lg leading-none">💵</span>
+                                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                                      ⏳ You have submitted payment. Admin will verify and confirm shortly.
+                                    </p>
+                                    <p className="font-bold text-base mt-2 text-orange-900 dark:text-orange-100">
+                                      Total Bill: ₹{booking.invoice.totalAmount}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  /* Normal Payment Due State */
+                                  <>
+                                    <p className="text-sm font-bold text-orange-900 dark:text-orange-100 mb-2">
+                                      💰 Job Complete! Your Final Bill is Ready
+                                    </p>
+                                    <div className="space-y-1 text-sm text-orange-700 dark:text-orange-300 mb-3">
+                                      <p>Service Charge: ₹{booking.invoice.serviceCharge}</p>
+                                      {booking.invoice.spareParts && booking.invoice.spareParts.length > 0 && (
+                                        <div>
+                                          <p className="font-medium">Spare Parts:</p>
+                                          {booking.invoice.spareParts.map((part, idx) => (
+                                            <p key={idx} className="ml-3">
+                                              • {part.part}: ₹{part.cost}
+                                            </p>
+                                          ))}
+                                        </div>
+                                      )}
+                                      <p className="font-bold text-base mt-2">
+                                        Total Bill: ₹{booking.invoice.totalAmount}
+                                      </p>
+                                    </div>
+
+                                    {/* QR Code Section (toggleable) */}
+                                    {showQrForBooking === booking.id ? (
+                                      <div className="mb-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-orange-200 dark:border-orange-700">
+                                        <p className="text-center text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                                          📱 Scan QR Code to Pay ₹{booking.invoice.totalAmount}
+                                        </p>
+                                        <div className="flex justify-center">
+                                          <img
+                                            src="/images/payment-qr.jpeg"
+                                            alt="Payment QR Code"
+                                            className="w-48 h-auto rounded-lg shadow-md"
+                                          />
+                                        </div>
+                                        <p className="text-center text-xs text-gray-500 mt-2">
+                                          After scanning and paying, tap "I Have Paid" below
+                                        </p>
+                                        <Button
+                                          className="w-full mt-3 bg-green-600 hover:bg-green-700 text-sm"
+                                          disabled={payOnlineMutation.isPending}
+                                          onClick={() => {
+                                            if (confirm("Have you completed the payment via UPI? Click OK to confirm.")) {
+                                              payOnlineMutation.mutate(booking.invoice!.id);
+                                            }
+                                          }}
+                                        >
+                                          {payOnlineMutation.isPending ? (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                          )}
+                                          I Have Paid ✅
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          className="w-full mt-1 text-xs text-gray-500"
+                                          onClick={() => setShowQrForBooking(null)}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    ) : null}
+
+                                    {/* Payment Buttons */}
+                                    {showQrForBooking !== booking.id && (
+                                      <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <Button
+                                          className="w-full bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm"
+                                          onClick={() => setShowQrForBooking(booking.id)}
+                                          data-testid="button-pay-now"
+                                        >
+                                          <DollarSign className="mr-1 sm:mr-2 h-4 w-4" />
+                                          Pay Online
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          className="w-full text-xs sm:text-sm border-orange-200 text-orange-700 hover:bg-orange-100"
+                                          disabled={payCodMutation.isPending}
+                                          onClick={() => {
+                                            if(confirm("Are you sure you want to pay with cash? The technician will collect it.")) {
+                                              payCodMutation.mutate(booking.invoice!.id);
+                                            }
+                                          }}
+                                        >
+                                          {payCodMutation.isPending ? (
+                                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <span className="mr-1 sm:mr-2 text-lg leading-none">💵</span>
+                                          )}
+                                          Pay Offline
+                                        </Button>
+                                      </div>
                                     )}
-                                    Pay Cash
-                                  </Button>
-                                </div>
+                                  </>
+                                )}
                               </div>
                             )}
                           </div>

@@ -664,6 +664,7 @@ export class DatabaseStorage implements IStorage {
       userId: booking.userId,
       providerId: booking.providerId,
       isUrgent: booking.isUrgent, // NAYA FIELD
+      estimatedCost: booking.estimatedCost, // Fix for admin panel price bug
     };
     const [newBooking] = await db
       .insert(bookings)
@@ -946,6 +947,71 @@ export class DatabaseStorage implements IStorage {
       .set({
         paymentStatus: "completed",
         razorpayPaymentId: "COD",
+      })
+      .where(eq(invoices.id, invoiceId))
+      .returning();
+
+    if (!updatedInvoice) {
+      throw new Error("Failed to update invoice");
+    }
+
+    // 2. Booking ko 'completed' mark karo
+    await db
+      .update(bookings)
+      .set({ status: "completed" })
+      .where(eq(bookings.id, updatedInvoice.bookingId));
+
+    return updatedInvoice;
+  }
+
+  /**
+   * Customer ne QR scan karke "I Have Paid" click kiya.
+   * Invoice status ko "awaiting_confirmation" pe set karta hai.
+   * Admin ko confirm karna padega.
+   */
+  async markInvoiceAwaitingConfirmation(invoiceId: string): Promise<Invoice> {
+    const invoice = await this.getInvoice(invoiceId);
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+    if (invoice.paymentStatus === "completed") {
+      throw new Error("This invoice has already been paid");
+    }
+
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({
+        paymentStatus: "awaiting_confirmation",
+      })
+      .where(eq(invoices.id, invoiceId))
+      .returning();
+
+    if (!updatedInvoice) {
+      throw new Error("Failed to update invoice");
+    }
+
+    return updatedInvoice;
+  }
+
+  /**
+   * Admin ne payment confirm kiya.
+   * Invoice status ko "completed" aur booking ko "completed" set karta hai.
+   */
+  async adminConfirmInvoicePayment(invoiceId: string): Promise<Invoice> {
+    const invoice = await this.getInvoice(invoiceId);
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+    if (invoice.paymentStatus === "completed") {
+      throw new Error("This invoice has already been paid");
+    }
+
+    // 1. Invoice update karo
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({
+        paymentStatus: "completed",
+        razorpayPaymentId: "ADMIN_CONFIRMED",
       })
       .where(eq(invoices.id, invoiceId))
       .returning();

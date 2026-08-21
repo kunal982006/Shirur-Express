@@ -25,13 +25,13 @@ const CUSTOMER_REVIEWS = [
 ];
 
 const IMAGE_MAPPING: Record<string, string> = {
-  "Air Conditioner (AC)": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448848/shirur-express/electrician/ac.jpg",
-  "Refrigerator": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448852/shirur-express/electrician/refrigerator.jpg",
-  "Television (TV)": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448854/shirur-express/electrician/tv.jpg",
-  "Water Heater (Geyser)": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448857/shirur-express/electrician/water-heater.jpg",
-  "Washing Machine": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448855/shirur-express/electrician/washing-machine.jpg",
-  "Microwave Oven": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448849/shirur-express/electrician/microwave.jpg",
-  "Others": "https://res.cloudinary.com/dtxtql7zd/image/upload/v1772448851/shirur-express/electrician/others.jpg"
+  "Air Conditioner (AC)": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448848/shirur-express/electrician/ac.jpg",
+  "Refrigerator": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448852/shirur-express/electrician/refrigerator.jpg",
+  "Television (TV)": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448854/shirur-express/electrician/tv.jpg",
+  "Water Heater (Geyser)": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448857/shirur-express/electrician/water-heater.jpg",
+  "Washing Machine": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448855/shirur-express/electrician/washing-machine.jpg",
+  "Microwave Oven": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448849/shirur-express/electrician/microwave.jpg",
+  "Others": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448851/shirur-express/electrician/others.jpg"
 };
 
 export default function Electrician() {

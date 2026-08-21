@@ -400,7 +400,7 @@ export const insertServiceProviderSchema = createInsertSchema(serviceProviders).
 export const insertBookingSchema = createInsertSchema(bookings).pick({
   serviceType: true, problemId: true, scheduledAt: true, preferredTimeSlots: true,
   userAddress: true, userPhone: true, notes: true, isUrgent: true, providerId: true,
-  paymentMethod: true,
+  paymentMethod: true, estimatedCost: true,
 });
 export const insertGroceryOrderSchema = createInsertSchema(groceryOrders).pick({
   items: true, subtotal: true, platformFee: true, deliveryFee: true, total: true, deliveryAddress: true, providerId: true, paymentMethod: true, deliveryMode: true, scheduledDeliveryTime: true,
