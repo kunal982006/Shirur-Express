@@ -89,9 +89,12 @@ export default function BookBeauty() {
             const date = data.scheduledDate;
             const scheduledDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0);
 
-            // Construct notes with service details
-            const serviceNames = selectedServices.map((s: any) => s.template?.name || "Service").join(", ");
-            const finalNotes = `Services: ${serviceNames}. ${data.notes || ""}`;
+            // Construct notes with service details and prices
+            const serviceNames = selectedServices.map((s: any) => {
+                const name = s.template?.name || s.name || "Unknown Service";
+                return `${name} (₹${s.price})`;
+            }).join(", ");
+            const finalNotes = `Services: ${serviceNames}${data.notes ? `\n\nNotes: ${data.notes}` : ""}`;
 
             const bookingData = {
                 userId: user?.id,
@@ -297,9 +300,10 @@ export default function BookBeauty() {
                                     <ul className="space-y-2">
                                         {selectedServices.map((s: any) => (
                                             <li key={s.id} className="flex justify-between text-sm">
-                                                <span>{s.template?.name}</span>
+                                                <span>{s.template?.name || s.name || "Unknown Service"}</span>
                                                 <span className="font-medium">₹{s.price}</span>
                                             </li>
+
                                         ))}
                                     </ul>
                                 </div>
