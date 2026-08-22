@@ -21,6 +21,7 @@ import Beauty from "@/pages/beauty";
 import BeautyDetail from "@/pages/BeautyDetail";
 import BookBeauty from "@/pages/book-beauty";
 import CakeShop from "@/pages/cake-shop";
+import CakeShopMenu from "@/pages/cake-shop-menu";
 import Grocery from "@/pages/grocery";
 import Rental from "@/pages/rental";
 import StreetFood from "@/pages/street-food";
@@ -95,6 +96,7 @@ function RouterComponent() {
         <Route path="/beauty" component={Beauty} />
 
         <Route path="/cake-shop" component={CakeShop} />
+        <Route path="/cake-shop-menu/:id" component={CakeShopMenu} />
         <Route path="/grocery" component={Grocery} />
         <Route path="/rental" component={PropertySearch} />
         <Route path="/properties/:id" component={PropertyDetail} />

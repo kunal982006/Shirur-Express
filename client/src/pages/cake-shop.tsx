@@ -1,66 +1,24 @@
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, CakeSlice, Loader2, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Loader2, Star, MapPin, Store } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/api";
-import { CakeProduct } from "@shared/schema";
+import { CakeProduct, ServiceProvider } from "@shared/schema";
 import { CakeCategoryCarousel } from "@/components/cakes/CakeCategoryCarousel";
-import { useCartStore } from "@/hooks/use-cart-store";
-
-function CakeCard({ cake, onAdd, quantity, onUpdateQuantity }: { cake: CakeProduct, onAdd: () => void, quantity: number, onUpdateQuantity: (q: number) => void }) {
-  return (
-    <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-none shadow-sm bg-card">
-      <div className="relative h-48 w-full bg-muted">
-        <img 
-          src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"} 
-          alt={cake.name} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-        />
-        {cake.isAvailable === false && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-white font-bold px-3 py-1 border border-white rounded shadow-sm backdrop-blur-sm">Sold Out</span>
-          </div>
-        )}
-      </div>
-      <CardContent className="p-4">
-        <h3 className="font-bold text-lg truncate text-foreground group-hover:text-primary transition-colors">{cake.name}</h3>
-        <p className="text-xs text-muted-foreground truncate mb-2">{cake.description || "Delicious fresh cake from Shirur Express"}</p>
-        <div className="flex items-center justify-between mt-4">
-          <span className="font-extrabold text-lg">₹{cake.price}</span>
-          
-          {cake.isAvailable !== false && (
-            quantity > 0 ? (
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-1 shadow-sm">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-green-700 hover:bg-green-100 rounded" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity - 1); }}>
-                        <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm font-bold w-4 text-center text-green-800">{quantity}</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-green-700 hover:bg-green-100 rounded" onClick={(e) => { e.stopPropagation(); onUpdateQuantity(quantity + 1); }}>
-                        <Plus className="h-4 w-4" />
-                    </Button>
-                </div>
-            ) : (
-                <Button 
-                    variant="outline" 
-                    className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 uppercase text-xs font-bold px-6 py-1 h-9 shadow-sm"
-                    onClick={(e) => { e.stopPropagation(); onAdd(); }}
-                >
-                    Add
-                </Button>
-            )
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function CakeShop() {
   const [, setLocation] = useLocation();
-  const { addItem, items, updateQuantity } = useCartStore();
 
-  const { data: cakes, isLoading } = useQuery<CakeProduct[]>({
+  const { data: providers, isLoading: isProvidersLoading } = useQuery<ServiceProvider[]>({
+    queryKey: ["/api/service-providers?category=cake-shop"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/service-providers?category=cake-shop`);
+      if (!res.ok) throw new Error("Failed to fetch providers");
+      return res.json();
+    },
+  });
+
+  const { data: cakes, isLoading: isCakesLoading } = useQuery<CakeProduct[]>({
     queryKey: ["/api/cakes"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/cakes`);
@@ -69,6 +27,8 @@ export default function CakeShop() {
     },
   });
 
+  const isLoading = isProvidersLoading || isCakesLoading;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -76,46 +36,6 @@ export default function CakeShop() {
       </div>
     );
   }
-
-  // Fallback if no cakes are loaded yet
-  if (!cakes || cakes.length === 0) {
-    return (
-      <div className="py-16 bg-background pb-24 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Button variant="ghost" className="mb-8 flex items-center space-x-2" onClick={() => setLocation("/")}>
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Home</span>
-          </Button>
-          <div className="flex flex-col items-center justify-center mt-12 text-center">
-            <CakeSlice className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-            <h2 className="text-2xl font-bold text-muted-foreground">No cakes available right now</h2>
-            <p className="text-muted-foreground mt-2">Please check back later.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
-
-  const handleAdd = (cake: CakeProduct) => {
-    addItem({
-      id: cake.id,
-      name: cake.name,
-      price: parseFloat(cake.price.toString()),
-      imageUrl: cake.imageUrl || undefined,
-      providerId: cake.providerId,
-      itemType: 'restaurant', // Using restaurant type to share the cart flow
-    });
-  };
-
-  const handleUpdateQuantity = (cakeId: string, quantity: number) => {
-    if (quantity === 0) {
-      updateQuantity(cakeId, 0);
-    } else {
-      updateQuantity(cakeId, quantity);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -137,39 +57,78 @@ export default function CakeShop() {
         <CakeCategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
 
         <div>
-          <h2 className="text-2xl font-black mb-6 text-foreground tracking-tight">Freshly Baked & Ready</h2>
+          <h2 className="text-2xl font-black mb-6 text-foreground tracking-tight">Top Cake Shops</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-            {cakes.map((cake) => (
-              <CakeCard
-                key={cake.id}
-                cake={cake}
-                onAdd={() => handleAdd(cake)}
-                quantity={getQuantity(cake.id)}
-                onUpdateQuantity={(q) => handleUpdateQuantity(cake.id, q)}
-              />
-            ))}
-          </div>
-        </div>
-
-      </div>
-
-      {/* Floating Cart Button */}
-      {items.length > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-8 md:bottom-8 md:w-96">
-            <Link href="/checkout">
-                <Button className="w-full h-14 rounded-xl shadow-2xl bg-green-600 hover:bg-green-700 text-white flex justify-between items-center px-4 animate-in slide-in-from-bottom-5">
-                    <div className="flex flex-col items-start">
-                        <span className="text-xs font-medium uppercase tracking-wider">{items.length} ITEMS</span>
-                        <span className="font-bold text-lg">₹{items.reduce((a, b) => a + b.price * b.quantity, 0)} plus taxes</span>
+          {(!providers || providers.length === 0) ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
+              <Store className="h-12 w-12 text-gray-300 mb-3" />
+              <h3 className="text-lg font-medium text-gray-600">No cake shops found</h3>
+              <p className="text-sm text-gray-400 mt-1">Check back later for delicious cakes!</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {providers.map((provider) => {
+                // Get up to 6 cakes for this provider
+                const providerCakes = cakes?.filter(c => c.providerId === provider.id).slice(0, 6) || [];
+                
+                return (
+                  <div 
+                    key={provider.id} 
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setLocation(`/cake-shop-menu/${provider.id}`)}
+                  >
+                    <div className="p-4 flex items-start gap-4 border-b border-gray-50">
+                      <img 
+                        src={provider.profileImageUrl || provider.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1"} 
+                        alt={provider.businessName}
+                        className="w-16 h-16 rounded-xl object-cover shadow-sm bg-gray-100"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-lg text-gray-900 truncate">{provider.businessName}</h3>
+                          <div className="flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap border border-green-100">
+                            <Star className="h-3 w-3 fill-current" />
+                            <span>{provider.rating ? parseFloat(provider.rating.toString()).toFixed(1) : "New"}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-500 truncate flex items-center gap-1 mt-1">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {provider.address}
+                        </p>
+                      </div>
                     </div>
-                    <span className="font-bold flex items-center gap-2">
-                        View Cart <ArrowLeft className="h-4 w-4 rotate-180" />
-                    </span>
-                </Button>
-            </Link>
+
+                    {/* Horizontal scrollable cakes */}
+                    {providerCakes.length > 0 && (
+                      <div className="p-4 bg-gray-50/50">
+                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+                          {providerCakes.map(cake => (
+                            <div key={cake.id} className="flex-none w-32 group">
+                              <div className="relative h-24 w-full rounded-lg overflow-hidden bg-white shadow-sm border border-gray-100 mb-2">
+                                <img 
+                                  src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"} 
+                                  alt={cake.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+                              <h4 className="text-xs font-medium text-gray-800 truncate leading-tight">{cake.name}</h4>
+                              <p className="text-xs font-bold text-gray-900 mt-0.5">₹{cake.price}</p>
+                            </div>
+                          ))}
+                          
+                          <div className="flex-none w-32 flex items-center justify-center bg-white rounded-lg shadow-sm border border-gray-100 h-24 mt-0 text-sm font-medium text-primary cursor-pointer hover:bg-gray-50 transition-colors">
+                            View all
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

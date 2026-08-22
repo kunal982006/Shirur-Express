@@ -2926,18 +2926,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- ALL CAKES FOR CAKE SHOP MAIN PAGE ---
   app.get("/api/cakes", async (req: Request, res: Response) => {
     try {
+      const providerId = req.query.providerId ? parseInt(req.query.providerId as string, 10) : undefined;
+      
       // Fetch all active cakes for the main cake shop display
-      const records = await db.select({ cake: cakeProducts })
+      let query = db.select({ cake: cakeProducts })
         .from(cakeProducts)
         .innerJoin(serviceProviders, eq(cakeProducts.providerId, serviceProviders.id))
         .where(
           and(
             eq(cakeProducts.isAvailable, true),
-            eq(serviceProviders.isAvailable, true)
+            eq(serviceProviders.isAvailable, true),
+            providerId ? eq(cakeProducts.providerId, providerId) : undefined
           )
         )
         .orderBy(asc(cakeProducts.price), desc(cakeProducts.isPopular), desc(cakeProducts.id));
         
+      const records = await query;
       res.json(records.map(r => r.cake));
     } catch (error: any) {
       console.error("Get all cakes error:", error);
