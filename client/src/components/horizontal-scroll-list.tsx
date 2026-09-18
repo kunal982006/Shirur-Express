@@ -30,11 +30,11 @@ export function HorizontalScrollList<T extends { id: string | number }>({
     if (!isLoading && (!items || items.length === 0)) return null;
 
     return (
-        <div className="py-2 md:py-4 bg-white mb-2">
-            <div className="flex items-center justify-between px-4 mb-3">
-                <h2 className="text-lg font-bold text-gray-900 tracking-tight">{title}</h2>
+        <section className="py-1" aria-label={title}>
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-base font-extrabold tracking-tight text-slate-950 sm:text-lg">{title}</h2>
                 {onSeeAll && (
-                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="text-blue-600 hover:text-blue-700 h-8 font-semibold">
+                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-8 px-1 text-xs font-semibold text-primary hover:text-primary">
                         See All <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                 )}
@@ -44,23 +44,23 @@ export function HorizontalScrollList<T extends { id: string | number }>({
                 {/* Scroll Buttons (Desktop only) */}
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md border border-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hidden md:block"
+                    className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
                 >
                     <ChevronLeft className="h-5 w-5 text-gray-700" />
                 </button>
 
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide snap-x snap-mandatory"
-                    style={{ scrollBehavior: 'smooth', scrollPaddingLeft: '16px' }}
+                    className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+                    style={{ scrollBehavior: 'smooth' }}
                 >
                     {isLoading ? (
                         Array(5).fill(0).map((_, i) => (
-                            <div key={i} className="min-w-[140px] md:min-w-[200px] h-48 bg-gray-100 rounded-xl animate-pulse snap-start" />
+                            <div key={i} className="h-44 min-w-[154px] animate-pulse rounded-xl bg-muted snap-start sm:min-w-[180px]" />
                         ))
                     ) : (
                         items.map((item) => (
-                            <div key={item.id} className="min-w-[140px] md:min-w-[200px] snap-start">
+                            <div key={item.id} className="min-w-[154px] snap-start sm:min-w-[180px]">
                                 {renderItem(item)}
                             </div>
                         ))
@@ -69,11 +69,11 @@ export function HorizontalScrollList<T extends { id: string | number }>({
 
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md border border-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hidden md:block"
+                    className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
                 >
                     <ChevronRight className="h-5 w-5 text-gray-700" />
                 </button>
             </div>
-        </div>
+        </section>
     );
 }

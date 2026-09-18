@@ -55,6 +55,9 @@ type BookingWithDetails = {
   };
   provider?: {
     businessName: string;
+    profileImageUrl?: string | null;
+    experience?: number | null;
+    specializations?: string[] | null;
     user?: {
       username: string;
     };
@@ -330,9 +333,43 @@ export default function MyBookings() {
                             <CardTitle className="text-lg mb-2">
                               {booking.problem?.name || booking.serviceOffering?.name || booking.serviceOffering?.template?.name || "Service Request"}
                             </CardTitle>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              Provider: {booking.provider?.businessName || "N/A"}
-                            </p>
+                            
+                            {/* Technician Profile Card */}
+                            {booking.provider && (
+                              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg mb-4 border border-slate-100 dark:border-slate-800">
+                                {booking.provider.profileImageUrl ? (
+                                  <img 
+                                    src={booking.provider.profileImageUrl} 
+                                    alt={booking.provider.businessName}
+                                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
+                                  />
+                                ) : (
+                                  <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center border-2 border-white shadow-sm">
+                                    <span className="text-emerald-700 dark:text-emerald-300 font-bold text-lg">
+                                      {booking.provider.businessName.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                                    {booking.provider.businessName}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                                    {booking.provider.experience && (
+                                      <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100">
+                                        {booking.provider.experience}+ Years Exp.
+                                      </Badge>
+                                    )}
+                                    {booking.provider.specializations && booking.provider.specializations.slice(0, 2).map((spec, i) => (
+                                      <Badge key={i} variant="outline" className="text-[10px] text-slate-500 border-slate-200">
+                                        {spec}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
 
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between items-start w-full pr-4 text-muted-foreground">

@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, Loader2, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProblem } from "@shared/schema";
+import { CallNowBar } from "@/components/call-now-bar";
 
 const IMAGE_MAPPING: Record<string, string> = {
   "Tap & Mixer": "https://res.cloudinary.com/mlijtrrb/image/upload/v1772448864/shirur-express/plumber/tap.jpg",
@@ -146,6 +147,9 @@ export default function Plumber() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Call Now Sticky Bottom Bar */}
+      <CallNowBar tagline="Plumber ki zaroorat? Hume call karein!" />
     </div>
   );
 }

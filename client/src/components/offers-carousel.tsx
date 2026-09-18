@@ -25,7 +25,13 @@ interface ProviderOffer {
     redirectUrl?: string;
 }
 
-export function OffersCarousel() {
+export function OffersCarousel({ 
+    onBannerChange, 
+    variant = "default" 
+}: { 
+    onBannerChange?: (index: number, offer: ProviderOffer | null) => void,
+    variant?: "default" | "hero"
+} = {}) {
     const [emblaRef, emblaApi] = useEmblaCarousel(
         { loop: true, align: "start" },
         [Autoplay({ delay: 4000, stopOnInteraction: false })]
@@ -54,6 +60,12 @@ export function OffersCarousel() {
         onSelect();
     }, [emblaApi, onSelect]);
 
+    useEffect(() => {
+        if (offers && offers.length > 0) {
+            onBannerChange?.(selectedIndex, offers[selectedIndex] || null);
+        }
+    }, [selectedIndex, offers, onBannerChange]);
+
     // Don't show carousel if no offers
     if (isLoading) {
         return (
@@ -68,7 +80,7 @@ export function OffersCarousel() {
     }
 
     return (
-        <div className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-primary/5 to-secondary/5">
+        <div className={`relative w-full overflow-hidden ${variant === 'default' ? 'rounded-xl bg-gradient-to-r from-primary/5 to-secondary/5' : ''}`}>
             {/* Carousel Container */}
             <div ref={emblaRef} className="overflow-hidden">
                 <div className="flex">
@@ -76,7 +88,7 @@ export function OffersCarousel() {
                         const isPromo = offer.type === "admin_promo";
 
                         const cardContent = (
-                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden group shadow-md hover:shadow-xl transition-all duration-300 w-full h-full">
+                            <div className={`relative overflow-hidden group shadow-md hover:shadow-xl transition-all duration-300 w-full h-full ${variant === 'hero' ? 'aspect-square rounded-none' : 'aspect-[16/9] rounded-xl'}`}>
                                 <img
                                     src={offer.imageUrl}
                                     alt={offer.title}
@@ -112,7 +124,7 @@ export function OffersCarousel() {
                             return (
                                 <div 
                                     key={offer.id} 
-                                    className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] pl-2 pr-2 first:pl-0 last:pr-0 cursor-pointer"
+                                    className={`flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] cursor-pointer ${variant === 'hero' ? 'pl-0 pr-0' : 'pl-2 pr-2 first:pl-0 last:pr-0'}`}
                                     onClick={() => setSelectedPromo(offer)}
                                 >
                                     {cardContent}
@@ -124,7 +136,7 @@ export function OffersCarousel() {
                             <Link
                                 key={offer.id}
                                 href={`/offer/${offer.id}`}
-                                className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] pl-2 pr-2 first:pl-0 last:pr-0"
+                                className={`flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.33%] ${variant === 'hero' ? 'pl-0 pr-0' : 'pl-2 pr-2 first:pl-0 last:pr-0'}`}
                             >
                                 {cardContent}
                             </Link>

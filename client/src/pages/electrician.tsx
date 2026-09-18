@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProblem } from "@shared/schema";
+import { CallNowBar } from "@/components/call-now-bar";
 
 const CUSTOMER_REVIEWS = [
   { name: "Sachin Gawade (Fridge)", rating: 4.8, text: "Amcha fridge achanak band padla hota. Shirur Express varun technician book kela, khupach bhari service dili. Paisanchi kontihi fasavnuk nahi, ekdum vishwasu manus hota." },
@@ -244,6 +245,9 @@ export default function Electrician() {
           </DialogContent>
         </Dialog>
       </div>
+      
+      {/* Call Now Sticky Bottom Bar */}
+      <CallNowBar tagline="Electrician ki zaroorat? Hume call karein!" />
     </div>
   );
 }

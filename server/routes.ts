@@ -180,6 +180,19 @@ const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   next();
 };
 
+const commerceOrderTypes = ["grocery", "restaurant", "street_food"] as const;
+type CommerceOrderType = typeof commerceOrderTypes[number];
+
+function isCommerceOrderType(value: unknown): value is CommerceOrderType {
+  return typeof value === "string" && commerceOrderTypes.includes(value as CommerceOrderType);
+}
+
+async function getCommerceOrder(orderType: CommerceOrderType, orderId: string) {
+  if (orderType === "street_food") return storage.getStreetFoodOrder(orderId);
+  if (orderType === "restaurant") return storage.getRestaurantOrder(orderId);
+  return storage.getGroceryOrder(orderId);
+}
+
 // ===== PLATFORM SERVICES TOGGLE (in-memory for fast checks) =====
 let servicesEnabled = true;
 
@@ -2356,8 +2369,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature, database_order_id, orderType } = req.body;
 
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !database_order_id) {
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !database_order_id || !isCommerceOrderType(orderType)) {
         return res.status(400).json({ message: "Missing payment details" });
+      }
+
+      const dbOrder = await getCommerceOrder(orderType, database_order_id);
+      if (!dbOrder || dbOrder.userId !== req.userId) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      if (dbOrder.status !== "payment_pending") {
+        return res.status(409).json({ message: "This order is no longer awaiting payment." });
+      }
+      if (dbOrder.razorpayOrderId !== razorpay_order_id) {
+        return res.status(400).json({ message: "Payment does not match this order." });
       }
 
       const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
@@ -2529,6 +2553,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment/create-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const { orderId, orderType } = req.body; // database order id
+      if (!orderId || !isCommerceOrderType(orderType)) {
+        return res.status(400).json({ message: "A valid orderId and orderType are required." });
+      }
 
       let amount = 0;
       let currency = "INR";
@@ -2544,6 +2571,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!dbOrder) {
         return res.status(404).json({ message: "Order not found" });
+      }
+      if (dbOrder.userId !== req.userId) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      if (dbOrder.status !== "payment_pending") {
+        return res.status(409).json({ message: "This order is no longer awaiting payment." });
       }
 
       // Amount must be in paise
@@ -2588,8 +2621,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payment/cancel-order", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const { orderId, orderType } = req.body;
-      if (!orderId || !orderType) {
+      if (!orderId || !isCommerceOrderType(orderType)) {
         return res.status(400).json({ message: "orderId and orderType required" });
+      }
+
+      const dbOrder = await getCommerceOrder(orderType, orderId);
+      if (!dbOrder || dbOrder.userId !== req.userId) {
+        return res.status(404).json({ message: "Order not found" });
       }
 
       // Only cancel orders that are still in payment_pending status

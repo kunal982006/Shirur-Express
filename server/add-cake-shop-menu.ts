@@ -8,7 +8,7 @@ import { crypto } from "crypto"; // Not used but available if we need to hash pa
 const randomPassword = "CakeShop" + Math.floor(Math.random() * 10000);
 
 const BAKERY_DATA = {
-  businessName: "Premium Bakers",
+  businessName: "Poona Bakers",
   categorySlug: "cake-shop",
   address: "Shirur Main Road",
   description: "Delicious cakes, pastries, breads, and snacks.",
@@ -116,20 +116,20 @@ const MENU_ITEMS = [
 async function seed() {
   try {
     let user = await db.query.users.findFirst({
-      where: eq(users.username, 'premiumbakers')
+      where: eq(users.username, 'poonabakers')
     });
 
     if (!user) {
-      console.log('Creating user: premiumbakers');
+      console.log('Creating user: poonabakers');
       const [newUser] = await db.insert(users).values({
-        username: 'premiumbakers',
+        username: 'poonabakers',
         password: randomPassword,
-        email: 'premiumbakers@shirur.com',
+        email: 'poonabakers@shirur.com',
         phone: '9876543210', // Placeholder
         role: 'provider'
       }).returning();
       user = newUser;
-      console.log(`User created. Login with: premiumbakers / ${randomPassword}`);
+      console.log(`User created. Login with: poonabakers / ${randomPassword}`);
     } else {
       console.log('User already exists:', user.username);
     }

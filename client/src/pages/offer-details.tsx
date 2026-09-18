@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus, X, Package } from "lucide-react";
+import { ArrowLeft, Clock, Store, ShoppingCart, Loader2, Tag, ShoppingBag, Plus, Minus, X, Package, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useCartStore } from "@/hooks/use-cart-store";
 
@@ -47,6 +48,8 @@ export default function OfferDetailsPage() {
     const { toast } = useToast();
     const [, setLocation] = useLocation();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isVegOnly, setIsVegOnly] = useState(false);
     const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
 
     const { data: offer, isLoading, error } = useQuery<OfferDetails>({
@@ -191,6 +194,15 @@ export default function OfferDetailsPage() {
         }
     };
 
+    const filteredProducts = offer?.products?.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesVeg = !isVegOnly || (product as any).isVeg === true; // Assuming some might have isVeg property, else this won't filter out things unless strictly set to false
+        // For now since we don't have strict veg data on all products, if isVegOnly is true and property is missing, we can either hide or show. Let's assume we show if we don't know, or better yet, just return matchesSearch for safety. 
+        // We will include it loosely so it filters if explicitly not veg, but keep if missing.
+        const isNonVeg = (product as any).isVeg === false || (product as any).type === 'non-veg';
+        return matchesSearch && (!isVegOnly || !isNonVeg);
+    });
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -214,45 +226,82 @@ export default function OfferDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Header */}
-            <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-                <div className="flex items-center gap-3 p-4 max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gray-50 pb-20 relative">
+            {/* Dark Top Background Section spanning behind Header and Banner */}
+            <div className="absolute top-0 left-0 right-0 h-64 bg-[#0c2f1d] z-0 rounded-b-[2.5rem]" />
+
+            {/* Header & Search Section */}
+            <div className="relative z-40 pt-safe pt-2 pb-4">
+                <header className="flex items-center gap-3 p-4 max-w-4xl mx-auto text-white">
                     <Link href="/">
-                        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                            <ArrowLeft className="h-5 w-5" />
+                        <button className="p-2 rounded-full bg-black/10 hover:bg-black/20 backdrop-blur-sm transition-colors">
+                            <ArrowLeft className="h-5 w-5 text-white" />
                         </button>
                     </Link>
-                    <h1 className="font-bold text-lg truncate">{offer.title}</h1>
+                    <div className="flex flex-col min-w-0">
+                        <h1 className="font-bold text-lg truncate flex items-center gap-2">
+                            {offer.title} <span className="text-[10px] uppercase font-extrabold bg-white text-[#0c2f1d] px-1.5 py-0.5 rounded-full tracking-wide">Offer</span>
+                        </h1>
+                        {offer.provider && (
+                            <p className="text-xs text-white/80 truncate opacity-90">{offer.provider.businessName}, {offer.provider.address}</p>
+                        )}
+                    </div>
+                </header>
+
+                {/* Floating Search Bar */}
+                <div className="px-4 max-w-4xl mx-auto flex items-center gap-2 mt-1">
+                    <div className="relative flex-1 bg-white rounded-full flex items-center shadow-lg border-2 border-white focus-within:border-green-400 transition-all overflow-hidden h-14">
+                        <Search className="h-5 w-5 text-gray-400 ml-4 shrink-0" />
+                        <Input 
+                            type="text" 
+                            placeholder={`Search in '${offer.title}'...`}
+                            className="border-none shadow-none focus-visible:ring-0 text-base h-full bg-transparent pl-3 flex-1 text-gray-800 placeholder:text-gray-400 font-medium"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    
+                    {/* VEG Toggle Button mimicking the toing image */}
+                    <button 
+                        className={`shrink-0 bg-white rounded-[1.25rem] px-3.5 h-14 flex flex-col items-center justify-center shadow-lg border-2 transition-colors ${isVegOnly ? 'border-green-500' : 'border-white'}`}
+                        onClick={() => setIsVegOnly(!isVegOnly)}
+                    >
+                        <span className={`text-[9px] font-extrabold tracking-wider mb-1 ${isVegOnly ? 'text-green-700' : 'text-gray-500'}`}>VEG</span>
+                        <div className={`w-7 h-3.5 rounded-full flex items-center p-0.5 transition-colors ${isVegOnly ? 'bg-green-100' : 'bg-gray-200'}`}>
+                            <div className={`w-2.5 h-2.5 rounded-full shadow-sm transition-transform ${isVegOnly ? 'bg-green-600 translate-x-[14px]' : 'bg-gray-400'}`} />
+                        </div>
+                    </button>
                 </div>
-            </header>
+            </div>
 
             {/* Hero Banner */}
-            <div className="relative w-full aspect-video md:aspect-[21/9] max-w-4xl mx-auto">
-                <img
-                    src={offer.imageUrl}
-                    alt={offer.title}
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="relative w-full aspect-video md:aspect-[21/9] max-w-4xl mx-auto px-4 z-10 mt-1">
+                <div className="w-full h-full rounded-2xl overflow-hidden shadow-xl relative border-4 border-white/10">
+                    <img
+                        src={offer.imageUrl}
+                        alt={offer.title}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                {/* Expiry Badge */}
-                <div className="absolute top-4 right-4">
-                    <Badge
-                        variant={isExpired ? "destructive" : "secondary"}
-                        className={`${isExpired ? 'bg-red-500' : 'bg-green-500'} text-white text-sm px-3 py-1`}
-                    >
-                        <Clock className="h-3 w-3 mr-1" />
-                        {getTimeRemaining()}
-                    </Badge>
-                </div>
+                    {/* Expiry Badge */}
+                    <div className="absolute top-3 right-3">
+                        <Badge
+                            variant={isExpired ? "destructive" : "secondary"}
+                            className={`${isExpired ? 'bg-red-500/90' : 'bg-green-600/90'} backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 shadow-md rounded-full border border-white/20`}
+                        >
+                            <Clock className="h-3.5 w-3.5 mr-1.5" />
+                            {getTimeRemaining()}
+                        </Badge>
+                    </div>
 
-                {/* Title Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h2 className="text-white font-bold text-xl md:text-2xl">{offer.title}</h2>
-                    {offer.description && (
-                        <p className="text-white/80 text-sm mt-1">{offer.description}</p>
-                    )}
+                    {/* Title Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <h2 className="text-white font-extrabold text-2xl md:text-3xl tracking-tight leading-tight drop-shadow-lg">{offer.title}</h2>
+                        {offer.description && (
+                            <p className="text-white/90 text-sm mt-1.5 font-medium drop-shadow-md line-clamp-2 max-w-[90%]">{offer.description}</p>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -383,9 +432,9 @@ export default function OfferDetailsPage() {
                     <h3 className="font-bold text-lg">Products in this offer</h3>
                 </div>
 
-                {offer.products && offer.products.length > 0 ? (
+                {filteredProducts && filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {offer.products.map((product) => {
+                        {filteredProducts.map((product) => {
                             const originalPrice = getOriginalPrice(product);
                             const discountedPrice = getDiscountedPrice(product.id, product);
                             const hasDiscount = discountedPrice !== null && discountedPrice < originalPrice;
@@ -409,38 +458,46 @@ export default function OfferDetailsPage() {
                                                 {Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)}% OFF
                                             </Badge>
                                         )}
+                                        {/* Optional Veg/Non-Veg icon rendering on the product image */}
+                                        {(product as any).isVeg !== undefined && (
+                                            <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm p-1 rounded-sm shadow-sm border border-gray-200">
+                                                <div className={`h-2 w-2 rounded-full ${(product as any).isVeg ? 'bg-green-600' : 'bg-red-600'}`} />
+                                            </div>
+                                        )}
                                     </div>
-                                    <CardContent className="p-3">
-                                        <h4 className="font-medium text-sm line-clamp-2 min-h-[2.5rem]">
-                                            {product.name}
-                                        </h4>
-                                        <div className="mt-2 flex items-center gap-2">
-                                            {hasDiscount ? (
-                                                <>
-                                                    <span className="font-bold text-primary">₹{discountedPrice}</span>
-                                                    <span className="text-gray-400 text-sm line-through">₹{originalPrice}</span>
-                                                </>
-                                            ) : (
-                                                <span className="font-bold text-primary">₹{originalPrice}</span>
-                                            )}
+                                    <CardContent className="p-3 flex flex-col justify-between h-[120px]">
+                                        <div>
+                                            <h4 className="font-bold text-gray-800 text-sm line-clamp-2 min-h-[2.5rem] leading-tight">
+                                                {product.name}
+                                            </h4>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                {hasDiscount ? (
+                                                    <>
+                                                        <span className="font-extrabold text-primary">₹{discountedPrice}</span>
+                                                        <span className="text-gray-400 text-xs font-medium line-through">₹{originalPrice}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="font-extrabold text-primary">₹{originalPrice}</span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Quantity Controls or Add Button */}
                                         {cartQuantity > 0 ? (
-                                            <div className="flex items-center justify-between mt-3 h-8 bg-primary rounded-md">
+                                            <div className="flex items-center justify-between mt-auto h-8 bg-primary rounded-lg shadow-sm border-b-2 border-primary-foreground/20">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary/90"
+                                                    className="h-8 w-8 p-0 text-white hover:bg-white/20 rounded-l-lg rounded-r-none"
                                                     onClick={() => handleDecreaseQuantity(product.id)}
                                                 >
                                                     <Minus className="h-4 w-4" />
                                                 </Button>
-                                                <span className="font-bold text-primary-foreground">{cartQuantity}</span>
+                                                <span className="font-bold text-white text-sm">{cartQuantity}</span>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary/90"
+                                                    className="h-8 w-8 p-0 text-white hover:bg-white/20 rounded-r-lg rounded-l-none"
                                                     onClick={() => handleIncreaseQuantity(product.id)}
                                                 >
                                                     <Plus className="h-4 w-4" />
@@ -448,13 +505,13 @@ export default function OfferDetailsPage() {
                                             </div>
                                         ) : (
                                             <Button
-                                                className="w-full mt-3 h-8 text-sm"
+                                                className="w-full mt-auto h-8 text-sm font-bold shadow-sm rounded-lg"
                                                 size="sm"
                                                 onClick={() => handleAddToCart(product)}
                                                 disabled={isExpired}
                                             >
-                                                <ShoppingCart className="h-3 w-3 mr-1" />
-                                                Add
+                                                <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
+                                                ADD
                                             </Button>
                                         )}
                                     </CardContent>

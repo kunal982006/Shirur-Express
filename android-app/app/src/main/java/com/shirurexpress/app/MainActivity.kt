@@ -3,13 +3,10 @@ package com.shirurexpress.app
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.IntentSender
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
-import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
 import android.widget.ProgressBar
@@ -19,19 +16,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.Manifest
-import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
-import com.google.android.gms.tasks.Task
 import java.io.File
 import com.razorpay.Razorpay
 import androidx.activity.enableEdgeToEdge
@@ -53,6 +45,8 @@ class MainActivity : AppCompatActivity() {
 
     // File upload callback for WebView file chooser
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var geolocationCallback: GeolocationPermissions.Callback? = null
+    private var geolocationOrigin: String? = null
     // URI for camera-captured photo
     private var cameraPhotoUri: Uri? = null
 
@@ -61,23 +55,8 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val deniedPermissions = permissions.filter { !it.value }.map { it.key }
-        
-        if (deniedPermissions.isEmpty()) {
-            checkGpsEnabled()
-            checkSpecialPermissions()
-        } else {
+        if (deniedPermissions.isNotEmpty()) {
             showPermissionRationale(deniedPermissions)
-        }
-    }
-
-    private val enableGpsLauncher = registerForActivityResult(
-        ActivityResultContracts.StartIntentSenderForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            Toast.makeText(this, "GPS Enabled", Toast.LENGTH_SHORT).show()
-            webView.reload()
-        } else {
-            Toast.makeText(this, "GPS is required for location features", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -153,7 +132,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         handleIntent(intent)
-        checkAllPermissions()
+    }
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        geolocationCallback?.invoke(geolocationOrigin, granted, false)
+        geolocationCallback = null
+        geolocationOrigin = null
     }
 
     private fun checkAllPermissions() {
@@ -163,83 +151,18 @@ class MainActivity : AppCompatActivity() {
                 permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.CAMERA)
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
-            permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
         if (permissionsToRequest.isNotEmpty()) {
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
-        } else {
-            checkGpsEnabled()
-            checkSpecialPermissions()
-        }
-    }
-
-    private fun checkSpecialPermissions() {
-        if (Build.VERSION.SDK_INT >= 34) {
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            if (notificationManager != null && !notificationManager.canUseFullScreenIntent()) {
-                AlertDialog.Builder(this)
-                    .setTitle("Full Screen Access Needed")
-                    .setMessage("To allow the app to ring for new orders even when your phone is locked, please enable 'Full Screen Intent' in settings.")
-                    .setPositiveButton("Go to Settings") { _, _ ->
-                        try {
-                            val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.fromParts("package", packageName, null))
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            try {
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-                                }
-                                startActivity(intent)
-                            } catch (e2: Exception) {
-                                startActivity(Intent(Settings.ACTION_SETTINGS))
-                            }
-                        }
-                    }
-                    .setNegativeButton("Later", null).show()
-            }
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(AlarmManager::class.java)
-            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
-                AlertDialog.Builder(this)
-                    .setTitle("Precise Notifications")
-                    .setMessage("To ensure order alerts arrive exactly on time, please allow the app to set exact alarms.")
-                    .setPositiveButton("Settings") { _, _ ->
-                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", packageName, null))
-                        startActivity(intent)
-                    }
-                    .setNegativeButton("Later", null).show()
-            }
         }
     }
 
     private fun showPermissionRationale(deniedPermissions: List<String>) {
         val message = StringBuilder("This app needs the following permissions to function correctly:\n")
         if (deniedPermissions.contains(Manifest.permission.POST_NOTIFICATIONS)) message.append("- Notifications: To alert you of new orders\n")
-        if (deniedPermissions.contains(Manifest.permission.CAMERA)) message.append("- Camera: To upload photos\n")
-        if (deniedPermissions.contains(Manifest.permission.ACCESS_FINE_LOCATION)) message.append("- Location: To track orders\n")
         AlertDialog.Builder(this).setTitle("Permissions Required").setMessage(message.append("\nPlease grant them in Settings.").toString())
             .setPositiveButton("Settings") { _, _ ->
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
             }.setNegativeButton("Cancel", null).show()
-    }
-
-    private fun checkGpsEnabled() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build()
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        LocationServices.getSettingsClient(this).checkLocationSettings(builder.build())
-            .addOnFailureListener { exception ->
-                if (exception is ResolvableApiException) {
-                    try {
-                        enableGpsLauncher.launch(IntentSenderRequest.Builder(exception.resolution).build())
-                    } catch (sendEx: Exception) { }
-                }
-            }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -254,12 +177,12 @@ class MainActivity : AppCompatActivity() {
             useWideViewPort = true
             loadWithOverviewMode = true
             cacheMode = WebSettings.LOAD_DEFAULT
-            allowFileAccess = true
-            allowContentAccess = true
-            mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            allowFileAccess = false
+            allowContentAccess = false
+            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             mediaPlaybackRequiresUserGesture = false
             setSupportMultipleWindows(false)
-            javaScriptCanOpenWindowsAutomatically = true
+            javaScriptCanOpenWindowsAutomatically = false
             setGeolocationEnabled(true)
         }
 
@@ -331,7 +254,21 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onGeolocationPermissionsShowPrompt(origin: String?, callback: GeolocationPermissions.Callback?) {
-                callback?.invoke(origin, true, false)
+                val hasLocationPermission = ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                if (hasLocationPermission) {
+                    callback?.invoke(origin, true, false)
+                } else {
+                    // Ask only after a page feature actually requests location.
+                    geolocationCallback = callback
+                    geolocationOrigin = origin
+                    locationPermissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ))
+                }
             }
 
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
@@ -454,11 +391,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         @android.webkit.JavascriptInterface
-        fun isDisplayOverAppsGranted(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Settings.canDrawOverlays(this@MainActivity) else true
-
-        @android.webkit.JavascriptInterface
-        fun isBatteryOptimizationDisabled(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) (getSystemService(Context.POWER_SERVICE) as android.os.PowerManager).isIgnoringBatteryOptimizations(packageName) else true
-
         @android.webkit.JavascriptInterface
         fun isNotificationPermissionGranted(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED else true
 
@@ -467,30 +399,29 @@ class MainActivity : AppCompatActivity() {
 
         @android.webkit.JavascriptInterface
         fun getPermissionStatus(): String {
-            val status = mapOf("displayOverApps" to isDisplayOverAppsGranted(), "batteryOptimization" to isBatteryOptimizationDisabled(), "notifications" to isNotificationPermissionGranted(), "fullScreenIntent" to isFullScreenIntentGranted())
+            // Overlay and battery-optimization exemptions are intentionally not
+            // requested. Firebase notifications remain the delivery mechanism.
+            val status = mapOf("displayOverApps" to true, "batteryOptimization" to true, "notifications" to isNotificationPermissionGranted(), "fullScreenIntent" to isFullScreenIntentGranted())
             return org.json.JSONObject(status).toString()
         }
 
         @android.webkit.JavascriptInterface
-        fun requestDisplayOverApps() {
+        fun requestSystemPermissions() {
             runOnUiThread {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.fromParts("package", packageName, null)))
+                checkAllPermissions()
+                // This is only reached from the provider-facing permission banner,
+                // never automatically during app launch.
+                if (Build.VERSION.SDK_INT >= 34 && !isFullScreenIntentGranted()) {
+                    startActivity(Intent(
+                        Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                        Uri.fromParts("package", packageName, null)
+                    ))
                 }
             }
         }
 
         @android.webkit.JavascriptInterface
-        fun requestBatteryOptimization() {
-            runOnUiThread {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.fromParts("package", packageName, null)))
-                }
-            }
-        }
-
-        @android.webkit.JavascriptInterface
-        fun areAllPermissionsGranted(): Boolean = isNotificationPermissionGranted() && isBatteryOptimizationDisabled() && isFullScreenIntentGranted()
+        fun areAllPermissionsGranted(): Boolean = isNotificationPermissionGranted() && isFullScreenIntentGranted()
 
         @android.webkit.JavascriptInterface
         fun logFacebookEvent(eventName: String, paramsJson: String) {

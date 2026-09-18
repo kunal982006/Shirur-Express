@@ -7,6 +7,7 @@
     "dev": "npx dotenv -- tsx server/index.ts",
     "check:secrets": "tsx check-secrets.mjs",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "verify:release": "npm run check && npm run build",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
     "seed:electrician": "tsx server/seed-electrician-problems.ts",
