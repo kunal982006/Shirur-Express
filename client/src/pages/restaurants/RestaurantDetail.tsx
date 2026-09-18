@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -72,8 +72,38 @@ export default function RestaurantDetail() {
         enabled: !!id
     });
 
-    // Track ViewContent for Meta Ads when restaurant loads
-    // MUST be before any early returns to comply with React hooks rules
+    // Compute filtered items unconditionally
+    const filteredItems = useMemo(() => {
+        return menuItems?.filter(item =>
+            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        ) || [];
+    }, [menuItems, searchQuery]);
+
+    // Group items by category unconditionally
+    const groupedItems = useMemo(() => {
+        return filteredItems.reduce((acc, item) => {
+            const cat = item.category || "Recommended";
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(item);
+            return acc;
+        }, {} as Record<string, RestaurantMenuItem[]>);
+    }, [filteredItems]);
+
+    const isCafeOfJoy = restaurant?.businessName?.toLowerCase().includes('cafe of joy');
+    const sortedCategoryEntries = useMemo(() => {
+        return Object.entries(groupedItems).sort(([catA], [catB]) => {
+            if (isCafeOfJoy) {
+                const isPastaA = catA.toLowerCase().includes('pasta');
+                const isPastaB = catB.toLowerCase().includes('pasta');
+                if (isPastaA && !isPastaB) return -1;
+                if (!isPastaA && isPastaB) return 1;
+            }
+            return 0;
+        });
+    }, [groupedItems, isCafeOfJoy]);
+
+    // Track ViewContent for Meta Ads when restaurant loads (MUST be before early return)
     useEffect(() => {
       if (restaurant) {
         trackEvent(FacebookStandardEvent.ViewContent, {
@@ -85,86 +115,7 @@ export default function RestaurantDetail() {
       }
     }, [restaurant]);
 
-    if (loadingRest || !restaurant) {
-        return (
-            <div className="min-h-screen animate-pulse bg-background">
-                <div className="h-64 bg-muted" />
-                <div className="max-w-4xl mx-auto p-4 space-y-4">
-                    <div className="h-8 w-1/2 bg-muted rounded" />
-                    <div className="h-4 w-1/4 bg-muted rounded" />
-                </div>
-            </div>
-        );
-    }
-
-    const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
-
-    const handleAdd = (item: RestaurantMenuItem) => {
-        // Prevent adding items if restaurant is closed
-        if (restaurant.isAvailable === false) {
-            return;
-        }
-        addItem({
-            id: item.id,
-            name: item.name,
-            price: parseFloat(item.price.toString()),
-            imageUrl: item.imageUrl || undefined,
-            providerId: restaurant.id,
-            itemType: 'restaurant',
-        });
-        // Track AddToCart for Meta Ads
-        trackEvent(FacebookStandardEvent.AddToCart, {
-            content_name: item.name,
-            content_ids: [String(item.id)],
-            content_type: 'product',
-            value: parseFloat(item.price.toString()),
-            currency: 'INR',
-        });
-    };
-
-    const filteredItems = menuItems?.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category?.toLowerCase().includes(searchQuery.toLowerCase())
-    ) || [];
-
-    // Group items by category
-    const groupedItems = filteredItems.reduce((acc, item) => {
-        const cat = item.category || "Recommended";
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-    }, {} as Record<string, RestaurantMenuItem[]>);
-
-    const isCafeOfJoy = restaurant?.businessName.toLowerCase().includes('cafe of joy');
-    const sortedCategoryEntries = Object.entries(groupedItems).sort(([catA], [catB]) => {
-        if (isCafeOfJoy) {
-            const isPastaA = catA.toLowerCase().includes('pasta');
-            const isPastaB = catB.toLowerCase().includes('pasta');
-            if (isPastaA && !isPastaB) return -1;
-            if (!isPastaA && isPastaB) return 1;
-        }
-        return 0;
-    });
-
-    // Smooth scroll to category items with animated scroll
-    const scrollToCategory = (cat: string) => {
-        setActiveCategory(cat);
-        setIsMenuSheetOpen(false);
-
-        const element = document.getElementById(`cat-${cat}`);
-        if (element) {
-            const headerOffset = 180;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
-            });
-        }
-    };
-
-    // Auto-detect active category on scroll and sync horizontal pill position
+    // Auto-detect active category on scroll and sync horizontal pill position (MUST be before early return)
     useEffect(() => {
         if (sortedCategoryEntries.length === 0) return;
 
@@ -203,6 +154,62 @@ export default function RestaurantDetail() {
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, [sortedCategoryEntries]);
+
+    // Smooth scroll to category items with animated scroll
+    const scrollToCategory = (cat: string) => {
+        setActiveCategory(cat);
+        setIsMenuSheetOpen(false);
+
+        const element = document.getElementById(`cat-${cat}`);
+        if (element) {
+            const headerOffset = 180;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    };
+
+    // Safe early return ONLY AFTER all hooks are declared
+    if (loadingRest || !restaurant) {
+        return (
+            <div className="min-h-screen animate-pulse bg-background">
+                <div className="h-64 bg-muted" />
+                <div className="max-w-4xl mx-auto p-4 space-y-4">
+                    <div className="h-8 w-1/2 bg-muted rounded" />
+                    <div className="h-4 w-1/4 bg-muted rounded" />
+                </div>
+            </div>
+        );
+    }
+
+    const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
+
+    const handleAdd = (item: RestaurantMenuItem) => {
+        // Prevent adding items if restaurant is closed
+        if (restaurant.isAvailable === false) {
+            return;
+        }
+        addItem({
+            id: item.id,
+            name: item.name,
+            price: parseFloat(item.price.toString()),
+            imageUrl: item.imageUrl || undefined,
+            providerId: restaurant.id,
+            itemType: 'restaurant',
+        });
+        // Track AddToCart for Meta Ads
+        trackEvent(FacebookStandardEvent.AddToCart, {
+            content_name: item.name,
+            content_ids: [String(item.id)],
+            content_type: 'product',
+            value: parseFloat(item.price.toString()),
+            currency: 'INR',
+        });
+    };
 
     const isRestaurantClosed = restaurant.isAvailable === false;
 
