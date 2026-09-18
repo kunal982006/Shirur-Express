@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OffersCarousel } from "@/components/offers-carousel";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
+import { motion, AnimatePresence } from "framer-motion";
 
 const services = [
   { name: "Food", slug: "restaurants", icon: UtensilsCrossed, tone: "bg-orange-50 text-orange-600" },
@@ -33,6 +34,15 @@ const phoneHubServices = [
   { id: "phone-repair", name: "Phone repair", icon: Wrench, description: "Expert doorstep help" },
   { id: "buy-phone", name: "Buy phone", icon: ShoppingBag, description: "Verified phone deals" },
   { id: "sell-phone", name: "Sell phone", icon: RefreshCw, description: "Get the best quote" },
+];
+
+const SEARCH_PLACEHOLDERS = [
+  "What do you need in Shirur today?",
+  "Craving food or need a quick fix?",
+  "Shirur ki har zaroorat, bas ek search door...",
+  "Find food, groceries, electricians & more...",
+  "Search for restaurants, daily needs, or home services...",
+  "Order a meal or book a repair in Shirur...",
 ];
 
 function PendingPaymentPrompt() {
@@ -103,9 +113,18 @@ export default function Home() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showPhoneHub, setShowPhoneHub] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
   const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
+
+  useEffect(() => {
+    if (query) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % SEARCH_PLACEHOLDERS.length);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [query]);
 
   useEffect(() => {
     if (user?.role === "admin") navigate("/admin");
@@ -162,9 +181,37 @@ export default function Home() {
         </div>
         <div className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
-            <Input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 160)} onKeyDown={(event) => event.key === "Enter" && search()} placeholder="Search food, services, shops…" className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-24 text-[15px] shadow-sm placeholder:text-slate-400" />
-            <button onClick={() => search()} className="absolute right-1.5 top-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">Search</button>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 z-10" />
+            <Input
+              ref={searchRef}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 160)}
+              onKeyDown={(event) => event.key === "Enter" && search()}
+              className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-24 text-[15px] shadow-sm"
+            />
+            {/* Motion Animated Search Placeholder */}
+            {!query && (
+              <div
+                onClick={() => searchRef.current?.focus()}
+                className="pointer-events-none absolute inset-y-0 left-10 right-24 flex items-center overflow-hidden z-10 select-none"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={placeholderIndex}
+                    initial={{ y: 16, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -16, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="text-[13px] sm:text-[15px] text-slate-400 truncate block w-full"
+                  >
+                    {SEARCH_PLACEHOLDERS[placeholderIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            )}
+            <button onClick={() => search()} className="absolute right-1.5 top-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground z-10">Search</button>
             {isSearchFocused && suggestions.length > 0 && <div className="absolute inset-x-0 z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">{suggestions.slice(0, 6).map((suggestion) => <button key={suggestion} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50" onMouseDown={() => { setQuery(suggestion); search(suggestion); }}><Search className="h-4 w-4 text-slate-400" />{suggestion}</button>)}</div>}
           </div>
         </div>
