@@ -60,7 +60,7 @@ export default function Plumber() {
   const isLoading = appliancesLoading;
 
   return (
-    <div className="py-8 bg-background min-h-screen">
+    <div className="py-8 bg-background min-h-screen pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
@@ -149,7 +149,11 @@ export default function Plumber() {
       </div>
 
       {/* Call Now Sticky Bottom Bar */}
-      <CallNowBar tagline="Plumber ki zaroorat? Hume call karein!" />
+      <CallNowBar
+        variant="plumber"
+        title="Direct Call Specialist"
+        tagline="Hume call karein aur apni problem batayein"
+      />
     </div>
   );
 }

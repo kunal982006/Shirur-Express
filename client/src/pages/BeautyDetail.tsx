@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import api from "@/lib/api";
+import { CallNowBar } from "@/components/call-now-bar";
 
 
 // --- SECTION NORMALIZATION (Prevents duplicate categories like "Skincare" vs "Skin Care") ---
@@ -314,7 +315,7 @@ export default function BeautyDetail() {
     }
 
     return (
-        <div className="py-8 md:py-12 bg-gradient-to-br from-rose-50 via-white to-pink-50 min-h-screen pb-28 selection:bg-pink-200 selection:text-pink-900">
+        <div className="py-8 md:py-12 bg-gradient-to-br from-rose-50 via-white to-pink-50 min-h-screen pb-36 selection:bg-pink-200 selection:text-pink-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
                 {/* Decorative background blurs */}
@@ -450,6 +451,16 @@ export default function BeautyDetail() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Call Now Sticky Bottom Bar - shown when cart is empty so it never blocks checkout */}
+            {cartItemCount === 0 && (
+                <CallNowBar
+                    variant="beauty"
+                    title="Direct Call Specialist"
+                    tagline="Hume call karein aur apni problem batayein"
+                    phoneNumber="+917840940113"
+                />
+            )}
         </div>
     );
 }
