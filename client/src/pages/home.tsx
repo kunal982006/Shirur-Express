@@ -230,8 +230,36 @@ export default function Home() {
           <button className="app-home__help" onClick={() => navigate("/my-bookings")}><Package className="h-5 w-5 text-primary" /><span><span className="block text-sm font-bold text-slate-900">Track an order</span><span className="block text-xs text-slate-500">Bookings & delivery status</span></span><ChevronRight className="ml-auto h-4 w-4 text-slate-400" /></button>
         </section>
 
-        <HorizontalScrollList title="Popular food near you" items={popularData?.menuItems || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(item: any) => <ProductCard item={item} onOpen={() => navigate(`/restaurants/${item.providerId}`)} onAdd={() => addProduct(item, "restaurant")} onUpdate={(change) => updateQuantity(item.id, change)} />} />
-        <HorizontalScrollList title="Local favourites" items={popularData?.streetFood || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/street-food")} renderItem={(item: any) => <ProductCard item={item} onOpen={() => navigate(`/street-food?item=${item.id}`)} onAdd={() => addProduct(item, "street_food")} onUpdate={(change) => updateQuantity(item.id, change)} />} />
+        <HorizontalScrollList
+          title="Popular food near you"
+          items={popularData?.menuItems || []}
+          isLoading={isPopularLoading}
+          autoScroll={true}
+          onSeeAll={() => navigate("/restaurants")}
+          renderItem={(item: any) => (
+            <ProductCard
+              item={item}
+              onOpen={() => navigate(`/restaurants/${item.providerId}`)}
+              onAdd={() => addProduct(item, "restaurant")}
+              onUpdate={(change) => updateQuantity(item.id, change)}
+            />
+          )}
+        />
+        <HorizontalScrollList
+          title="Local favourites"
+          items={popularData?.streetFood || []}
+          isLoading={isPopularLoading}
+          autoScroll={true}
+          onSeeAll={() => navigate("/street-food")}
+          renderItem={(item: any) => (
+            <ProductCard
+              item={item}
+              onOpen={() => navigate(`/street-food?item=${item.id}`)}
+              onAdd={() => addProduct(item, "street_food")}
+              onUpdate={(change) => updateQuantity(item.id, change)}
+            />
+          )}
+        />
         <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <article className="app-place-card" onClick={() => navigate(`/restaurants/${provider.id}`)}><img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" /><div className="p-2.5"><p className="truncate text-sm font-bold text-slate-900">{provider.businessName}</p><p className="mt-0.5 truncate text-[11px] text-slate-500">{provider.address || "Shirur"}</p><span className="mt-2 inline-flex rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">★ 4.2&nbsp; · &nbsp;25 min</span></div></article>} />
       </main>
 
