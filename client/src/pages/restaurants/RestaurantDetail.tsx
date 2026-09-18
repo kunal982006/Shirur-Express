@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input"; // Import Input
 import { Separator } from "@/components/ui/separator"; // Import Separator
-import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed, SlidersHorizontal, Check, ChevronDown } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 import type { RestaurantMenuItem, ServiceProvider } from "@shared/schema";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 // Helper components for placeholder tabs
 const OverviewTab = ({ restaurant }: { restaurant: ServiceProvider }) => (
@@ -55,6 +56,9 @@ export default function RestaurantDetail() {
     const id = params?.id;
     const { addItem, items, removeItem, updateQuantity } = useCartStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeCategory, setActiveCategory] = useState<string>("");
+    const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
+    const categoryPillsRef = useRef<HTMLDivElement>(null);
 
     const { data: restaurant, isLoading: loadingRest } = useQuery<ServiceProvider>({
         queryKey: ["restaurant", id],
@@ -141,6 +145,64 @@ export default function RestaurantDetail() {
         }
         return 0;
     });
+
+    // Smooth scroll to category items with animated scroll
+    const scrollToCategory = (cat: string) => {
+        setActiveCategory(cat);
+        setIsMenuSheetOpen(false);
+
+        const element = document.getElementById(`cat-${cat}`);
+        if (element) {
+            const headerOffset = 180;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    };
+
+    // Auto-detect active category on scroll and sync horizontal pill position
+    useEffect(() => {
+        if (sortedCategoryEntries.length === 0) return;
+
+        if (!activeCategory && sortedCategoryEntries[0]) {
+            setActiveCategory(sortedCategoryEntries[0][0]);
+        }
+
+        const handleScroll = () => {
+            const scrollY = window.pageYOffset;
+            const headerOffset = 195;
+
+            for (let i = sortedCategoryEntries.length - 1; i >= 0; i--) {
+                const [cat] = sortedCategoryEntries[i];
+                const el = document.getElementById(`cat-${cat}`);
+                if (el) {
+                    const top = el.getBoundingClientRect().top + scrollY;
+                    if (scrollY >= top - headerOffset) {
+                        setActiveCategory(cat);
+                        const pill = document.getElementById(`pill-${cat}`);
+                        if (pill && categoryPillsRef.current) {
+                            const container = categoryPillsRef.current;
+                            const pillLeft = pill.offsetLeft;
+                            const pillWidth = pill.offsetWidth;
+                            const containerWidth = container.offsetWidth;
+                            container.scrollTo({
+                                left: pillLeft - containerWidth / 2 + pillWidth / 2,
+                                behavior: "smooth"
+                            });
+                        }
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [sortedCategoryEntries]);
 
     const isRestaurantClosed = restaurant.isAvailable === false;
 
@@ -249,31 +311,133 @@ export default function RestaurantDetail() {
                     </TabsList>
 
                     <TabsContent value="order" className="m-0 min-h-[60vh]">
+                        {/* Sticky Search & Category Navigation Bar (Always Accessible on Mobile) */}
+                        <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-b shadow-sm">
+                            {/* Search in Menu + Categories Filter Button */}
+                            <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search for dishes..."
+                                        className="pl-9 bg-muted/40 border-none rounded-xl h-10 text-sm focus-visible:ring-1"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Quick Categories Filter Sheet (Mobile Drawer) */}
+                                {sortedCategoryEntries.length > 0 && (
+                                    <Sheet open={isMenuSheetOpen} onOpenChange={setIsMenuSheetOpen}>
+                                        <SheetTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-10 px-3 rounded-xl border-muted-foreground/20 font-bold text-xs flex items-center gap-1.5 shrink-0 bg-background shadow-xs hover:bg-muted"
+                                            >
+                                                <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                                                <span className="hidden sm:inline">Categories</span>
+                                                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
+                                                    {sortedCategoryEntries.length}
+                                                </Badge>
+                                            </Button>
+                                        </SheetTrigger>
+                                        <SheetContent side="bottom" className="max-h-[75vh] rounded-t-2xl px-4 py-5 z-50">
+                                            <SheetHeader className="pb-3 border-b">
+                                                <div className="flex items-center justify-between">
+                                                    <SheetTitle className="text-base font-extrabold flex items-center gap-2">
+                                                        <UtensilsCrossed className="h-4 w-4 text-primary" />
+                                                        Menu Categories
+                                                    </SheetTitle>
+                                                    <span className="text-xs text-muted-foreground font-medium">
+                                                        {filteredItems.length} dishes
+                                                    </span>
+                                                </div>
+                                            </SheetHeader>
+                                            <div className="py-3 space-y-1 overflow-y-auto max-h-[55vh]">
+                                                {sortedCategoryEntries.map(([cat, catItems]) => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => scrollToCategory(cat)}
+                                                        className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all ${
+                                                            activeCategory === cat
+                                                                ? "bg-primary/10 text-primary font-bold"
+                                                                : "hover:bg-muted text-foreground/80 font-medium"
+                                                        }`}
+                                                    >
+                                                        <span className="text-sm">{cat}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground font-semibold">
+                                                                {catItems.length}
+                                                            </span>
+                                                            {activeCategory === cat && (
+                                                                <Check className="h-4 w-4 text-primary shrink-0" />
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </SheetContent>
+                                    </Sheet>
+                                )}
+                            </div>
+
+                            {/* Horizontal Category Chips (Mobile & Desktop) */}
+                            {sortedCategoryEntries.length > 0 && (
+                                <div
+                                    ref={categoryPillsRef}
+                                    className="flex items-center gap-2 overflow-x-auto px-4 pb-2.5 pt-0.5 scrollbar-none no-scrollbar scroll-smooth"
+                                >
+                                    {sortedCategoryEntries.map(([cat, catItems]) => (
+                                        <button
+                                            key={cat}
+                                            id={`pill-${cat}`}
+                                            onClick={() => scrollToCategory(cat)}
+                                            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                                                activeCategory === cat
+                                                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                                                    : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            }`}
+                                        >
+                                            <span>{cat}</span>
+                                            <span
+                                                className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                                                    activeCategory === cat
+                                                        ? "bg-white/20 text-white font-bold"
+                                                        : "bg-background/80 text-muted-foreground font-medium"
+                                                }`}
+                                            >
+                                                {catItems.length}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex relative">
-                            {/* Sidebar Categories (Desktop) / Sticky Header (Mobile - simplified here) */}
-                            <div className="w-1/4 hidden md:block sticky top-28 h-[calc(100vh-8rem)] overflow-y-auto border-r p-2">
+                            {/* Sidebar Categories (Desktop) */}
+                            <div className="w-1/4 hidden md:block sticky top-36 h-[calc(100vh-10rem)] overflow-y-auto border-r p-2 space-y-1">
+                                <p className="px-3 py-2 text-xs font-extrabold uppercase text-muted-foreground tracking-wider">
+                                    Categories ({sortedCategoryEntries.length})
+                                </p>
                                 {sortedCategoryEntries.map(([cat, catItems]) => (
-                                    <a key={cat} href={`#cat-${cat}`} className="block py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-r-full transition-colors">
-                                        {cat} ({catItems.length})
-                                    </a>
+                                    <button
+                                        key={cat}
+                                        onClick={() => scrollToCategory(cat)}
+                                        className={`w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
+                                            activeCategory === cat
+                                                ? "text-primary bg-primary/10 font-bold border-l-2 border-primary"
+                                                : "text-muted-foreground hover:text-primary hover:bg-accent"
+                                        }`}
+                                    >
+                                        <span className="truncate">{cat}</span>
+                                        <span className="text-xs text-muted-foreground ml-2 shrink-0">({catItems.length})</span>
+                                    </button>
                                 ))}
                             </div>
 
                             {/* Menu Items List */}
                             <div className="flex-1 pb-20">
-                                {/* Search in Menu */}
-                                <div className="p-4 sticky top-[4rem] bg-background z-20 border-b">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search for dishes..."
-                                            className="pl-9 bg-muted/30 border-none rounded-xl"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-
                                 {sortedCategoryEntries.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -283,10 +447,14 @@ export default function RestaurantDetail() {
                                     </div>
                                 ) : (
                                     sortedCategoryEntries.map(([category, catItems]) => (
-                                        <div key={category} id={`cat-${category}`} className="scroll-mt-32">
-                                            <div className="flex items-center justify-between px-4 py-6">
-                                                <h3 className="font-extrabold text-lg">{category}</h3>
-                                                <ArrowLeft className={`h-4 w-4 rotate-[-90deg] transition-transform ${true ? '' : 'rotate-90'}`} />
+                                        <div key={category} id={`cat-${category}`} className="scroll-mt-44">
+                                            <div className="flex items-center justify-between px-4 py-5 border-b bg-muted/5">
+                                                <h3 className="font-extrabold text-lg flex items-center gap-2">
+                                                    {category}
+                                                    <Badge variant="outline" className="text-xs font-normal">
+                                                        {catItems.length}
+                                                    </Badge>
+                                                </h3>
                                             </div>
                                             {catItems.map(item => (
                                                 <FoodItemCard
@@ -307,6 +475,22 @@ export default function RestaurantDetail() {
                                 )}
                             </div>
                         </div>
+
+                        {/* Floating Mobile Quick Menu Button */}
+                        {sortedCategoryEntries.length > 0 && items.length === 0 && (
+                            <div className="fixed bottom-6 right-4 z-30 md:hidden animate-in fade-in zoom-in duration-200">
+                                <Button
+                                    onClick={() => setIsMenuSheetOpen(true)}
+                                    className="rounded-full bg-slate-950/90 text-white hover:bg-slate-900 shadow-2xl backdrop-blur-md border border-white/20 px-4 h-11 flex items-center gap-2 font-bold text-xs"
+                                >
+                                    <UtensilsCrossed className="h-4 w-4 text-primary" />
+                                    <span>Menu</span>
+                                    <Badge className="bg-primary text-primary-foreground text-[10px] h-4 px-1.5">
+                                        {sortedCategoryEntries.length}
+                                    </Badge>
+                                </Button>
+                            </div>
+                        )}
                     </TabsContent>
 
                     <TabsContent value="overview">
