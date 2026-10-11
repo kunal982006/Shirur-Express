@@ -5,3 +5,17 @@ server/public
 vite.config.ts.*
 *.tar.gz
 .env
+
+# Android & Gradle
+.gradle/
+**/build/
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+*.apk
+*.aab
+local.properties
+.cxx/
+*.class
+.idea/
+*.iml
