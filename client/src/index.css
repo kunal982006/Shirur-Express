@@ -138,11 +138,11 @@
   }
 
   .app-home__help {
-    @apply flex min-h-20 items-center gap-3 rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm transition-shadow hover:shadow-md;
+    @apply flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2 text-left shadow-sm transition-shadow hover:shadow-md;
   }
 
   .app-service-tile {
-    @apply flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border border-transparent bg-card px-1 py-2 text-center text-[11px] font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md sm:min-h-[84px] sm:text-xs;
+    @apply flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border border-border bg-card px-1 py-1.5 text-center text-[10.5px] font-semibold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md sm:min-h-[72px] sm:text-xs;
   }
 
   .app-product-card,
@@ -152,7 +152,7 @@
 
   .app-product-card img,
   .app-place-card img {
-    @apply h-24 w-full object-cover sm:h-28;
+    @apply h-20 w-full object-cover sm:h-24;
   }
 }
 

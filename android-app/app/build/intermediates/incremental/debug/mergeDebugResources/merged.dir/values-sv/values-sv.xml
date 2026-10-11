@@ -46,6 +46,29 @@
     <string name="character_counter_content_description">%1$d av %2$d tecken har angetts</string>
     <string name="character_counter_overflowed_content_description">Teckengränsen har överskridits: %1$d av %2$d</string>
     <string name="clear_text_end_icon_content_description">Rensa text</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Besök &lt;b>facebook.com/device&lt;/b> och ange koden som visas ovan.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Ett oväntat fel inträffade när en bild skulle laddas ned.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">WebView-inloggning kräver INTERNET-behörighet</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">AndroidManifest-fel</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Gillat</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Gilla</string>
+    <string gender="unknown" name="com_facebook_loading">Laddar ...</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Avbryt</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Logga in</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Fortsätt med Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Logga in med Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Logga ut</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Logga ut</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Inloggad som: %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Inloggad med Facebook</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Skicka</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Dela</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Anslut ditt konto genom att öppna Facebook-appen på din mobila enhet och leta efter aviseringar.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">- ELLER -</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Inte du?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Fortsätt som %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Bekräfta inloggning</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Du bestämmer – välj vilken information du vill dela med appar.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Aktivera</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s fungerar inte om du inte aktiverar Google Play-tjänster.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Aktivera Google Play-tjänster</string>

@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, MapPin, ArrowLeft } from "lucide-react";
-import { FilterBar } from "@/components/restaurants/FilterBar";
+import { Search } from "lucide-react";
 import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import type { ServiceProvider } from "@shared/schema";
@@ -13,20 +11,11 @@ import type { ServiceProvider } from "@shared/schema";
 export default function RestaurantsIndex() {
     const [, setLocation] = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeFilter, setActiveFilter] = useState("sort");
 
     const { data: restaurants, isLoading } = useQuery<ServiceProvider[]>({
         queryKey: ["restaurants"],
         queryFn: () => apiRequest("GET", "/api/service-providers?category=restaurants").then(res => res.json())
     });
-
-    const filters = [
-        { label: "Sort", value: "sort", active: true },
-        { label: "Nearest", value: "nearest" },
-        { label: "Rating 4.0+", value: "rating" },
-        { label: "Pure Veg", value: "veg" },
-        { label: "Cuisines", value: "cuisine" },
-    ];
 
     const filteredRestaurants = restaurants?.filter(r =>
         r.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -36,9 +25,9 @@ export default function RestaurantsIndex() {
     return (
         <div className="min-h-screen bg-background pb-20">
 
-            {/* New Zomato-like Header */}
+            {/* Sticky Search Header */}
             <div className="sticky top-0 z-40 bg-background shadow-sm">
-                <div className="px-4 pt-4 pb-1 flex flex-col gap-3">
+                <div className="p-4 flex flex-col gap-3">
                     {/* Search Bar */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -49,11 +38,6 @@ export default function RestaurantsIndex() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                </div>
-
-                {/* Filters - Sticky */}
-                <div className="px-4">
-                    <FilterBar filters={filters} onFilterChange={setActiveFilter} />
                 </div>
             </div>
 

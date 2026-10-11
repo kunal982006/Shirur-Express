@@ -28,6 +28,6 @@
       applicationId="com.shirurexpress.app"
       generatedSourceFolders="build\generated\ap_generated_sources\release\out;build\generated\source\buildConfig\release;build\generated\data_binding_base_class_source_out\release\out"
       generatedResourceFolders="build\generated\res\processReleaseGoogleServices;build\generated\res\resValues\release"
-      desugaredMethodsFiles="C:\Users\Sai\.gradle\caches\8.13\transforms\3b23c2d658eee98902949c83ecaa6a68\transformed\D8BackportedDesugaredMethods.txt">
+      desugaredMethodsFiles="C:\Users\kunal\.gradle\caches\8.13\transforms\3b23c2d658eee98902949c83ecaa6a68\transformed\D8BackportedDesugaredMethods.txt">
   </artifact>
 </variant>

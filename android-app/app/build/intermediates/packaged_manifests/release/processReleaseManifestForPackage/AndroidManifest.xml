@@ -28,11 +28,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-    <!-- Battery & Overlay Permissions for Reliable Ringing -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <!-- Queries for UPI apps for Razorpay -->
@@ -80,6 +75,16 @@
             <action android:name="android.intent.action.SEND" />
 
             <data android:mimeType="*/*" />
+        </intent>
+        <!--
+             Package visibility (API 30+) for CRED discovery: BaseUtils queries
+             credpay:// handlers (e.g. credpay://bio_auth/check for CRED biometric
+             capability, credpay://checkout for CRED app detection)
+        -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+
+            <data android:scheme="credpay" />
         </intent>
     </queries>
 
@@ -402,6 +407,10 @@
                     android:scheme="razorpay" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name="com.razorpay.UpiChooserSelectionReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

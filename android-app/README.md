@@ -18,10 +18,10 @@ A pure WebView-based Android app that wraps the Shirur Express website.
 
 ## Requirements
 
-- Android Studio Arctic Fox (2020.3.1) or later
-- Android SDK 34 (or latest)
-- Kotlin 1.9.x
-- Gradle 8.x
+- Android Studio (Ladybug or later recommended)
+- Android SDK 36 (or latest)
+- Kotlin 1.9.21+
+- Gradle 8.13+ (compatible with Java 8 through Java 23)
 
 ## Setup Instructions
 
@@ -33,7 +33,7 @@ A pure WebView-based Android app that wraps the Shirur Express website.
 
 2. **Sync Gradle**
    - Wait for Gradle sync to complete
-   - If prompted, update Gradle plugin
+   - If prompted, update Gradle plugin or JDK configuration (Gradle 8.13 requires Java 8–23)
 
 3. **Add App Icons**
    - Replace placeholder icons in `res/mipmap-*` folders
@@ -85,8 +85,10 @@ android-app/
 ├── app/
 │   ├── src/main/
 │   │   ├── java/com/shirurexpress/app/
-│   │   │   ├── MainActivity.kt      # Main WebView activity
-│   │   │   └── SplashActivity.kt    # Splash screen
+│   │   │   ├── MainActivity.kt          # Main WebView activity
+│   │   │   ├── SplashActivity.kt        # Splash screen
+│   │   │   ├── IncomingOrderActivity.kt # Incoming order notifications
+│   │   │   └── MyFirebaseMessagingService.kt # FCM service
 │   │   ├── res/
 │   │   │   ├── layout/
 │   │   │   │   └── activity_main.xml
@@ -125,9 +127,9 @@ companion object {
 
 ### Change Theme Colors
 Edit `res/values/colors.xml` and update:
-- `purple_500` - Primary color
-- `background_dark` - Background color
-- `status_bar` - Status bar color
+- Primary color
+- Background color
+- Status bar color
 
 ## Troubleshooting
 
@@ -142,6 +144,9 @@ Edit `res/values/colors.xml` and update:
 ### JavaScript not working
 - Ensure `javaScriptEnabled = true` in WebSettings
 - Check for console errors in Chrome DevTools remote debugging
+
+### Gradle build failing with Java version error
+- Gradle 8.13 supports Java versions 8 through 23. If using JDK 25+, configure Android Studio Gradle JDK to use Java 17 or Java 21 (Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Gradle JDK).
 
 ## License
 

@@ -16,6 +16,9 @@
     <color name="white">#FFFFFFFF</color>
     <string name="app_name">Shirur Express</string>
     <string name="default_notification_channel_id">fcm_default_channel</string>
+    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
+    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
     <string name="gcm_defaultSenderId" translatable="false">580513716834</string>
     <string name="google_api_key" translatable="false">AIzaSyDP4uAvK5OPSXweM4ck3hlEImUQt_356dY</string>
     <string name="google_app_id" translatable="false">1:580513716834:android:977f27834b04dc934acf3b</string>

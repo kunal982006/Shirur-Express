@@ -246,7 +246,12 @@
       </div>
     </div>
   </noscript>
-  <div id="root"></div>
+  <div id="root">
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #ffffff; flex-direction: column;">
+      <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+      <dotlottie-player src="/loading.lottie" background="transparent" speed="1" style="width: 250px; height: 250px;" loop autoplay></dotlottie-player>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

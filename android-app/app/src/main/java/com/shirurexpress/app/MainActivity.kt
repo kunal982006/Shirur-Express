@@ -29,6 +29,7 @@ import com.razorpay.Razorpay
 import androidx.activity.enableEdgeToEdge
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsLogger
+import com.shirurexpress.app.BuildConfig
 
 class MainActivity : AppCompatActivity() {
 
@@ -390,7 +391,6 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show() }
         }
 
-        @android.webkit.JavascriptInterface
         @android.webkit.JavascriptInterface
         fun isNotificationPermissionGranted(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED else true
 

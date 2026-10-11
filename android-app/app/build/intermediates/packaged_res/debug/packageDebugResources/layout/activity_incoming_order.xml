@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Order Received!"
+        android:text="🔔 New Order Received!"
         android:textColor="@android:color/white"
         android:textSize="28sp"
         android:textStyle="bold"
@@ -34,35 +34,37 @@
         android:textColor="#4CAF50"
         android:textSize="32sp"
         android:textStyle="bold"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <TextView
-        android:id="@+id/pickupText"
+        android:id="@+id/itemsSummaryText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pickup: ..."
-        android:textColor="#CCCCCC"
-        android:textSize="16sp"
+        android:text=""
+        android:textColor="#BBBBBB"
+        android:textSize="14sp"
         android:gravity="center"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:id="@+id/dropText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Drop: ..."
+        android:text="📍 Delivery: ..."
         android:textColor="#CCCCCC"
         android:textSize="16sp"
         android:gravity="center"
         android:layout_marginBottom="48dp"/>
 
     <Button
-        android:id="@+id/btnConfirm"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Order Confirmed ✅"
+        android:id="@+id/btnViewOrder"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="View Order →"
         android:backgroundTint="#4CAF50"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"/>
 
 </LinearLayout>

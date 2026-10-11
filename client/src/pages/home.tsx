@@ -9,14 +9,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   Bell, Cake, ChevronRight, Home as HomeIcon, MapPin, Minus, Package, Plus,
   RefreshCw, Scissors, Search, Shield, ShoppingBag, ShoppingBasket, Smartphone,
-  Sparkles, UtensilsCrossed, Wrench, Zap, Sandwich,
+  Sparkles, UtensilsCrossed, Wrench, Zap, Sandwich, Heart, User as UserIcon, Settings as SettingsIcon, HelpCircle, Info, LogOut
 } from "lucide-react";
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { OffersCarousel } from "@/components/offers-carousel";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 import { motion, AnimatePresence } from "framer-motion";
+import { HomeHeroBanner } from "@/components/HomeHeroBanner";
+import { HeroPromoCarousel } from "@/components/HeroPromoCarousel";
 
 const services = [
   { name: "Food", slug: "restaurants", icon: UtensilsCrossed, tone: "bg-orange-50 text-orange-600" },
@@ -96,11 +99,24 @@ function QuantityControl({ item, add, update }: { item: any; add: () => void; up
 function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () => void; onAdd: () => void; onUpdate: (change: number) => void }) {
   return (
     <article className="app-product-card" onClick={onOpen}>
-      <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"} alt={item.name} loading="lazy" onError={(event) => { event.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"; }} />
-      <div className="min-w-0 p-2.5">
-        <p className="truncate text-sm font-bold text-slate-900">{item.name}</p>
-        <p className="truncate text-[11px] text-slate-500">{item.provider?.businessName || item.category || item.description || "Local favourite"}</p>
-        <div className="mt-2 flex items-center justify-between gap-1"><span className="text-sm font-extrabold text-slate-900">₹{item.price}</span><QuantityControl item={item} add={onAdd} update={onUpdate} /></div>
+      <div className="relative">
+        <img
+          src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"}
+          alt={item.name}
+          loading="lazy"
+          onError={(event) => { event.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"; }}
+        />
+        <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">
+          ★ 4.2 · 25m
+        </span>
+      </div>
+      <div className="min-w-0 p-2">
+        <p className="truncate text-xs sm:text-sm font-bold text-slate-900">{item.name}</p>
+        <p className="truncate text-[10.5px] text-slate-500">{item.provider?.businessName || item.category || "Local favourite"}</p>
+        <div className="mt-1.5 flex items-center justify-between gap-1">
+          <span className="text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>
+          <QuantityControl item={item} add={onAdd} update={onUpdate} />
+        </div>
       </div>
     </article>
   );
@@ -114,9 +130,26 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showPhoneHub, setShowPhoneHub] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const { items, addItem, updateQuantity, getTotalPrice } = useCartStore();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        title: "Logout Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     if (query) return;
@@ -168,20 +201,77 @@ export default function Home() {
     <div className="app-home min-h-screen pb-28">
       <PendingPaymentPrompt />
 
-      <header className="app-home__top">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
+      <header className="app-home__top relative overflow-hidden">
+        <HomeHeroBanner />
+        <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
           <button className="flex min-w-0 items-center gap-2 text-left" onClick={() => navigate("/")} aria-label="Shirur Express home">
-            <img src="/shirur-express-logo.png" alt="" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
-            <span className="min-w-0"><span className="block truncate text-[15px] font-extrabold tracking-tight text-white">Shirur Express</span><span className="flex items-center gap-1 text-[11px] font-medium text-white/65"><MapPin className="h-3 w-3" /> Shirur, Maharashtra</span></span>
+            <img src="/shirur-express-logo.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-cover shadow-sm" />
+            <span className="min-w-0"><span className="block truncate text-sm sm:text-[15px] font-extrabold tracking-tight text-white">Shirur Express</span><span className="flex items-center gap-1 text-[10.5px] font-medium text-white/65"><MapPin className="h-3 w-3" /> Shirur, Maharashtra</span></span>
           </button>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-white hover:bg-white/10 hover:text-white" onClick={() => navigate("/notifications")} aria-label="Notifications"><Bell className="h-[18px] w-[18px]" /></Button>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-white text-slate-900 hover:bg-slate-100 hover:text-slate-900" onClick={() => navigate(user ? "/settings" : "/login")} aria-label={user ? "Account settings" : "Sign in"}>{user ? <span className="text-sm font-bold">{user.username.slice(0, 1).toUpperCase()}</span> : <Sparkles className="h-[18px] w-[18px]" />}</Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-white hover:bg-white/10 hover:text-white" onClick={() => navigate("/notifications")} aria-label="Notifications"><Bell className="h-4 w-4" /></Button>
+            
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white text-slate-900 hover:bg-slate-100 hover:text-slate-900" aria-label={user ? "Account settings" : "Sign in"}>
+                  {user ? <span className="text-xs sm:text-sm font-bold">{user.username.slice(0, 1).toUpperCase()}</span> : <Sparkles className="h-4 w-4" />}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[350px]">
+                {user ? (
+                  <>
+                    <SheetHeader className="text-left border-b pb-4 mb-4">
+                      <SheetTitle className="text-xl font-bold tracking-tight">Hi, {user.username}</SheetTitle>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-1 mt-6">
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/wishlist")}>
+                        <Heart className="mr-3 h-5 w-5 text-slate-500" /> Your Wishlist
+                      </Button>
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/help-support")}>
+                        <HelpCircle className="mr-3 h-5 w-5 text-slate-500" /> Help & Support
+                      </Button>
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/edit-profile")}>
+                        <UserIcon className="mr-3 h-5 w-5 text-slate-500" /> Edit Profile
+                      </Button>
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/notifications")}>
+                        <Bell className="mr-3 h-5 w-5 text-slate-500" /> Notifications
+                      </Button>
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/general-info")}>
+                        <Info className="mr-3 h-5 w-5 text-slate-500" /> General Info
+                      </Button>
+                      <Button variant="ghost" className="justify-start font-medium" onClick={() => navigate("/settings")}>
+                        <SettingsIcon className="mr-3 h-5 w-5 text-slate-500" /> Setting
+                      </Button>
+                      <div className="h-px bg-slate-100 my-2" />
+                      <Button variant="ghost" className="justify-start font-medium text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+                        <LogOut className="mr-3 h-5 w-5 text-red-500" /> Logout
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full space-y-6">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                      <UserIcon className="h-8 w-8" />
+                    </div>
+                    <div className="text-center">
+                      <h2 className="text-xl font-bold">Welcome!</h2>
+                      <p className="text-muted-foreground text-sm mt-1">Sign in to manage your account</p>
+                    </div>
+                    <Button onClick={() => navigate("/login")} className="w-full">Login / Signup</Button>
+                  </div>
+                )}
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-        <div className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
+      </header>
+
+      {/* Sticky Search Bar (remains on screen when scrolling) */}
+      <div className="sticky top-0 z-40 bg-gradient-to-r from-[#0d4294] via-[#0f4ea8] to-[#0d4294] shadow-md border-b border-blue-400/20 px-3 pt-[max(0.45rem,env(safe-area-inset-top))] pb-2 sm:px-6 sm:pb-2.5">
+        <div className="mx-auto max-w-6xl">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 z-10" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 z-10" />
             <Input
               ref={searchRef}
               value={query}
@@ -189,45 +279,88 @@ export default function Home() {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => window.setTimeout(() => setIsSearchFocused(false), 160)}
               onKeyDown={(event) => event.key === "Enter" && search()}
-              className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-24 text-[15px] shadow-sm"
+              className="h-10 sm:h-11 rounded-xl border-slate-200 bg-white pl-9 pr-20 text-sm shadow-xs"
             />
             {/* Motion Animated Search Placeholder */}
             {!query && (
               <div
                 onClick={() => searchRef.current?.focus()}
-                className="pointer-events-none absolute inset-y-0 left-10 right-24 flex items-center overflow-hidden z-10 select-none"
+                className="pointer-events-none absolute inset-y-0 left-9 right-20 flex items-center overflow-hidden z-10 select-none"
               >
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={placeholderIndex}
-                    initial={{ y: 16, opacity: 0 }}
+                    initial={{ y: 14, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -16, opacity: 0 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="text-[13px] sm:text-[15px] text-slate-400 truncate block w-full"
+                    exit={{ y: -14, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="text-xs sm:text-sm text-slate-400 truncate block w-full"
                   >
                     {SEARCH_PLACEHOLDERS[placeholderIndex]}
                   </motion.span>
                 </AnimatePresence>
               </div>
             )}
-            <button onClick={() => search()} className="absolute right-1.5 top-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground z-10">Search</button>
-            {isSearchFocused && suggestions.length > 0 && <div className="absolute inset-x-0 z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">{suggestions.slice(0, 6).map((suggestion) => <button key={suggestion} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50" onMouseDown={() => { setQuery(suggestion); search(suggestion); }}><Search className="h-4 w-4 text-slate-400" />{suggestion}</button>)}</div>}
+            <button onClick={() => search()} className="absolute right-1 top-1 h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground z-10">Search</button>
+            {isSearchFocused && suggestions.length > 0 && (
+              <div className="absolute inset-x-0 z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+                {suggestions.slice(0, 6).map((suggestion) => (
+                  <button key={suggestion} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs sm:text-sm hover:bg-slate-50" onMouseDown={() => { setQuery(suggestion); search(suggestion); }}>
+                    <Search className="h-3.5 w-3.5 text-slate-400" />
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="mx-auto max-w-6xl space-y-5 px-4 pt-4 sm:px-6 sm:pt-6">
+      <main className="mx-auto max-w-6xl space-y-2.5 px-3 pt-2 sm:px-6 sm:pt-3">
+        {/* Hero Promo Carousel: Biryani (Restaurants) & HomeCare (Electrician / Technicians) */}
+        <HeroPromoCarousel />
+
         <section aria-labelledby="services-heading">
-          <div className="mb-3 flex items-end justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Everything nearby</p><h1 id="services-heading" className="mt-0.5 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">What do you need today?</h1></div><button className="text-xs font-semibold text-primary" onClick={() => search("services")}>Browse all</button></div>
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-8 sm:gap-3">{services.map((service) => { const Icon = service.icon; return <button key={service.slug} className="app-service-tile" onClick={() => navigate(`/${service.slug}`)}><span className={`grid h-11 w-11 place-items-center rounded-xl ${service.tone}`}><Icon className="h-5 w-5" /></span><span>{service.name}</span></button>; })}</div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Everything nearby</p>
+              <h1 id="services-heading" className="text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">What do you need today?</h1>
+            </div>
+            <button className="text-xs font-semibold text-primary hover:underline" onClick={() => search("services")}>Browse all</button>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8 sm:gap-2">
+            {services.map((service) => {
+              const Icon = service.icon;
+              return (
+                <button key={service.slug} className="app-service-tile" onClick={() => navigate(`/${service.slug}`)}>
+                  <span className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg ${service.tone}`}>
+                    <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+                  </span>
+                  <span className="truncate w-full px-0.5">{service.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-border bg-card p-1.5 shadow-sm" aria-label="Current offers"><OffersCarousel /></section>
-
-        <section className="grid gap-3 sm:grid-cols-1">
-          {/* <button className="app-home__phone-hub text-left" onClick={() => setShowPhoneHub(true)}><span className="grid h-10 w-10 place-items-center rounded-xl bg-white/15"><Smartphone className="h-5 w-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">Express Phone Hub</span><span className="mt-0.5 block truncate text-xs text-emerald-50">Repairs, screen guards, buy & sell</span></span><ChevronRight className="h-5 w-5" /></button> */}
-          <button className="app-home__help" onClick={() => navigate("/my-bookings")}><Package className="h-5 w-5 text-primary" /><span><span className="block text-sm font-bold text-slate-900">Track an order</span><span className="block text-xs text-slate-500">Bookings & delivery status</span></span><ChevronRight className="ml-auto h-4 w-4 text-slate-400" /></button>
+        <section>
+          <button
+            className="app-home__help w-full"
+            onClick={() => navigate("/my-bookings")}
+          >
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <Package className="h-3.5 w-3.5" />
+            </span>
+            <div className="min-w-0 flex-1 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-900">Track an order</span>
+                <span className="text-[10.5px] text-slate-500 hidden sm:inline">• Bookings & live status</span>
+              </div>
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-primary shrink-0">
+                View <ChevronRight className="h-3.5 w-3.5" />
+              </span>
+            </div>
+          </button>
         </section>
 
         <HorizontalScrollList
@@ -260,7 +393,7 @@ export default function Home() {
             />
           )}
         />
-        <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <article className="app-place-card" onClick={() => navigate(`/restaurants/${provider.id}`)}><img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" /><div className="p-2.5"><p className="truncate text-sm font-bold text-slate-900">{provider.businessName}</p><p className="mt-0.5 truncate text-[11px] text-slate-500">{provider.address || "Shirur"}</p><span className="mt-2 inline-flex rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">★ 4.2&nbsp; · &nbsp;25 min</span></div></article>} />
+        <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <article className="app-place-card" onClick={() => navigate(`/restaurants/${provider.id}`)}><div className="relative"><img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" /><span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">★ 4.2 · 25m</span></div><div className="p-2"><p className="truncate text-xs sm:text-sm font-bold text-slate-900">{provider.businessName}</p><p className="truncate text-[10.5px] text-slate-500">{provider.address || "Shirur"}</p></div></article>} />
       </main>
 
       {items.length > 0 && <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 mx-auto max-w-md"><Button className="h-14 w-full justify-between rounded-xl bg-slate-900 px-4 text-white shadow-xl hover:bg-slate-800" onClick={() => navigate("/checkout")}><span className="text-left"><span className="block text-[10px] font-semibold uppercase tracking-wider text-white/70">{cartCount} item{cartCount !== 1 ? "s" : ""}</span><span className="text-sm font-bold">₹{getTotalPrice().toFixed(2)}</span></span><span className="flex items-center gap-1 text-sm font-semibold">View cart <ChevronRight className="h-4 w-4" /></span></Button></div>}

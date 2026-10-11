@@ -25,6 +25,7 @@ const trustedOrigins = new Set([
   "ionic://localhost",
   "http://localhost",
   "http://localhost:5173",
+  "http://localhost:5000",
 ]);
 
 function isTrustedOrigin(origin: string | undefined): boolean {

@@ -10,6 +10,7 @@ import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import { Loader2 } from "lucide-react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
@@ -57,11 +58,21 @@ import SearchResults from "@/pages/search-results";
 import CafeOfJoyMenu from "@/pages/cafe-of-joy-menu";
 import BuyPhone from "@/pages/buy-phone";
 import SellPhone from "@/pages/sell-phone";
+import Wishlist from "@/pages/wishlist";
+import HelpSupport from "@/pages/help-support";
+import GeneralInfo from "@/pages/general-info";
+import EditProfile from "@/pages/edit-profile";
 
 // Fallback loader if ever needed again
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
-    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+    <div className="w-32 h-32">
+      <DotLottieReact
+        src="/loading.lottie"
+        loop
+        autoplay
+      />
+    </div>
   </div>
 );
 
@@ -113,6 +124,10 @@ function RouterComponent() {
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/order-success" component={OrderSuccess} />
         <Route path="/notifications" component={NotificationsPage} />
+        <Route path="/wishlist" component={Wishlist} />
+        <Route path="/help-support" component={HelpSupport} />
+        <Route path="/general-info" component={GeneralInfo} />
+        <Route path="/edit-profile" component={EditProfile} />
         
         {/* Phone Hub Buy/Sell */}
         <Route path="/buy-phone" component={BuyPhone} />

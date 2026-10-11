@@ -126,12 +126,12 @@ export function HorizontalScrollList<T extends { id: string | number }>({
     if (!isLoading && (!items || items.length === 0)) return null;
 
     return (
-        <section className="py-1" aria-label={title}>
-            <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-base font-extrabold tracking-tight text-slate-950 sm:text-lg">{title}</h2>
+        <section className="py-0.5" aria-label={title}>
+            <div className="mb-1.5 flex items-center justify-between">
+                <h2 className="text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">{title}</h2>
                 {onSeeAll && (
-                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-8 px-1 text-xs font-semibold text-primary hover:text-primary">
-                        See All <ChevronRight className="h-4 w-4 ml-1" />
+                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-7 px-1 text-xs font-semibold text-primary hover:text-primary">
+                        See All <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
                     </Button>
                 )}
             </div>
@@ -140,24 +140,24 @@ export function HorizontalScrollList<T extends { id: string | number }>({
                 {/* Scroll Buttons (Desktop only) */}
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
+                    className="absolute left-1 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-1.5 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
                     aria-label="Scroll left"
                 >
-                    <ChevronLeft className="h-5 w-5 text-gray-700" />
+                    <ChevronLeft className="h-4 w-4 text-gray-700" />
                 </button>
 
                 <div
                     ref={scrollRef}
-                    className={`flex gap-3 overflow-x-auto pb-2 scrollbar-hide ${autoScroll ? 'select-none' : 'snap-x snap-mandatory'}`}
+                    className={`flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide ${autoScroll ? 'select-none' : 'snap-x snap-mandatory'}`}
                     style={{ scrollBehavior: autoScroll ? 'auto' : 'smooth' }}
                 >
                     {isLoading ? (
                         Array(5).fill(0).map((_, i) => (
-                            <div key={i} className="h-44 min-w-[154px] shrink-0 animate-pulse rounded-xl bg-muted snap-start sm:min-w-[180px]" />
+                            <div key={i} className="h-36 min-w-[136px] shrink-0 animate-pulse rounded-xl bg-muted snap-start sm:min-w-[160px]" />
                         ))
                     ) : (
                         displayItems.map((item, idx) => (
-                            <div key={`${item.id}-${idx}`} className="min-w-[154px] shrink-0 snap-start sm:min-w-[180px]">
+                            <div key={`${item.id}-${idx}`} className="min-w-[136px] shrink-0 snap-start sm:min-w-[160px]">
                                 {renderItem(item)}
                             </div>
                         ))
@@ -166,10 +166,10 @@ export function HorizontalScrollList<T extends { id: string | number }>({
 
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
+                    className="absolute right-1 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-1.5 shadow-md opacity-0 transition-all duration-300 group-hover:opacity-100 md:block"
                     aria-label="Scroll right"
                 >
-                    <ChevronRight className="h-5 w-5 text-gray-700" />
+                    <ChevronRight className="h-4 w-4 text-gray-700" />
                 </button>
             </div>
         </section>

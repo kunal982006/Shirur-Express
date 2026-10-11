@@ -48,6 +48,29 @@
     <string name="character_counter_content_description">Введено символов: %1$d из %2$d</string>
     <string name="character_counter_overflowed_content_description">Превышено ограничение на количество символов (%1$d из %2$d)</string>
     <string name="clear_text_end_icon_content_description">Очистить текстовое поле</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Перейдите на &lt;b>facebook.com/device&lt;/b> и введите код, указанный выше.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Неожиданная ошибка при скачивании изображения.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">Для входа через WebView необходимо разрешение INTERNET</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">Ошибка AndroidManifest</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Нравится</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Нравится</string>
+    <string gender="unknown" name="com_facebook_loading">Загрузка…</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Отмена</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Войти</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Продолжить с Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Вход через Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Выйти</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Выйти</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Вы вошли как %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Выполнен вход через Facebook</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Отправить</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Поделиться</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Чтобы привязать ваш аккаунт, откройте приложение Facebook на своем мобильном устройстве и проверьте уведомления.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">- ИЛИ -</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Это не вы?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Продолжить как %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Подтвердите вход</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Контроль над данными — выберите, какой информацией вы хотите делиться с приложениями.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Включить</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">Для работы приложения \"%1$s\" требуется включить сервисы Google Play.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Включите сервисы Google Play</string>

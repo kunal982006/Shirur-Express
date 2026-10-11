@@ -46,6 +46,29 @@
     <string name="character_counter_content_description">%1$d van %2$d tekens opgegeven</string>
     <string name="character_counter_overflowed_content_description">Tekenlimiet heeft %1$d van %2$d overschreden</string>
     <string name="clear_text_end_icon_content_description">Tekst wissen</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Ga naar &lt;b>facebook.com/device&lt;/b> en voer de bovenstaande code in.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Onverwachte fout bij downloaden van afbeelding.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">Voor WebView-aanmelding is INTERNET-toestemming vereist</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">AndroidManifest-fout</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Vind ik leuk</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Vind ik leuk</string>
+    <string gender="unknown" name="com_facebook_loading">Laden…</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Annuleren</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Aanmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Doorgaan met Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Aanmelden met Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Afmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Afmelden</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Aangemeld als: %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Aangemeld via Facebook</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Verzenden</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Delen</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Als je je account wilt koppelen, open je de Facebook-app op je mobiele apparaat en controleer je je meldingen.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">- OF -</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Ben jij dit niet?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Doorgaan als %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Aanmelding bevestigen</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Jij hebt de controle: bepaal welke informatie je met apps wilt delen.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Aanzetten</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s werkt niet, tenzij je Google Play-services aanzet.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Google Play-services aanzetten</string>

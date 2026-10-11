@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
+import { Loader2, ChevronRight, ShieldCheck, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ServiceProblem } from "@shared/schema";
 import { CallNowBar } from "@/components/call-now-bar";
@@ -71,24 +71,8 @@ export default function Electrician() {
   const isLoading = appliancesLoading;
 
   return (
-    <div className="py-8 bg-background min-h-screen pb-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          className="mb-6 flex items-center space-x-2"
-          onClick={() => setLocation("/")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Services</span>
-        </Button>
-
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold mb-2">Electrician & Technician Services</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Don't stay in the dark. Let our experts power up your home. 💡⚡
-          </p>
-        </div>
+    <div className="pt-3 sm:pt-5 bg-background min-h-screen pb-32">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
         {isLoading ? (
           <div className="flex justify-center py-12">

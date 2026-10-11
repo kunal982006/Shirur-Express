@@ -46,6 +46,29 @@
     <string name="character_counter_content_description">Carateres introduzidos: %1$d de %2$d</string>
     <string name="character_counter_overflowed_content_description">Limite de carateres excedido: %1$d de %2$d</string>
     <string name="clear_text_end_icon_content_description">Limpar texto</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Acede a &lt;b>facebook.com/device&lt;/b> e insere o código mostrado acima.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Ocorreu um erro inesperado ao descarregar uma imagem.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">O início de sessão WebView requer a permissão INTERNET</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">Erro AndroidManifest</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Gostaste</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Gosto</string>
+    <string gender="unknown" name="com_facebook_loading">A carregar…</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Cancelar</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Iniciar sessão</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Continuar com o Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Iniciar sessão com o Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Terminar sessão</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Terminar sessão</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Com sessão iniciada como %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Com sessão iniciada com o Facebook</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Enviar</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Partilhar</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Para associares a tua conta, abre a app Facebook no teu dispositivo móvel e consulta as notificações.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">- OU -</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Não és tu?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Continuar como %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Confirmar início de sessão</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Tens o controlo. Escolhe as informações que queres partilhar com as apps.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Ativar</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">O %1$s não funciona enquanto não ativar os serviços do Google Play.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Ativar serviços do Google Play</string>

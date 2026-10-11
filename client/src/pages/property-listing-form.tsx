@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertRentalPropertySchema, type InsertRentalProperty } from "@shared/schema";
+import { z } from "zod";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { API_BASE_URL } from "@/lib/api";
@@ -36,6 +37,12 @@ const AMENITIES_LIST = [
     "Security", "Lift", "Club House", "Park", "Gas Pipeline"
 ];
 
+const formSchema = insertRentalPropertySchema.extend({
+    title: z.string().min(1, "Title is required"),
+    rent: z.string().refine((val) => Number(val) > 0, "Price must be greater than 0"),
+    address: z.string().min(1, "Address is required")
+});
+
 export default function PropertyListingForm() {
     const [location, setLocation] = useLocation();
     const { toast } = useToast();
@@ -43,8 +50,8 @@ export default function PropertyListingForm() {
     const [uploading, setUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-    const form = useForm<InsertRentalProperty>({
-        resolver: zodResolver(insertRentalPropertySchema),
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
             listingType: "rent",
@@ -140,7 +147,7 @@ export default function PropertyListingForm() {
 
     const watchListingType = form.watch("listingType");
 
-    const onSubmit = (data: InsertRentalProperty) => {
+    const onSubmit = (data: z.infer<typeof formSchema>) => {
         if (imageUrls.length === 0) {
             toast({
                 title: "Images Required",
@@ -188,8 +195,8 @@ export default function PropertyListingForm() {
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value="rent">Rent out my property</SelectItem>
-                                                    <SelectItem value="sell">Sell my property</SelectItem>
+                                                    <SelectItem value="rent">Giving on rent</SelectItem>
+                                                    <SelectItem value="sell">Selling house permanently</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -204,7 +211,7 @@ export default function PropertyListingForm() {
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Property Title</FormLabel>
+                                            <FormLabel>Property Title *</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="e.g. 2BHK Apartment in City Center" {...field} />
                                             </FormControl>
@@ -245,7 +252,7 @@ export default function PropertyListingForm() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>
-                                                {watchListingType === 'sell' ? 'Selling Price (₹)' : 'Monthly Rent (₹)'}
+                                                {watchListingType === 'sell' ? 'Selling Price (₹) *' : 'Monthly Rent (₹) *'}
                                             </FormLabel>
                                             <FormControl>
                                                 <Input type="number" {...field} />
@@ -357,7 +364,7 @@ export default function PropertyListingForm() {
                                     name="address"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Full Address</FormLabel>
+                                            <FormLabel>Full Address *</FormLabel>
                                             <FormControl>
                                                 <Textarea placeholder="Enter full address" {...field} />
                                             </FormControl>
@@ -467,7 +474,7 @@ export default function PropertyListingForm() {
 
                             {/* Image Upload */}
                             <div className="space-y-2">
-                                <FormLabel>Property Images</FormLabel>
+                                <FormLabel>Property Images *</FormLabel>
                                 <div className="flex items-center gap-4">
                                     <Input
                                         type="file"

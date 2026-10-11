@@ -1,6 +1,5 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, Clock, MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Star } from "lucide-react";
 import type { ServiceProvider } from "@shared/schema";
 
 interface RestaurantCardProps {
@@ -44,20 +43,10 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+                <div className="flex items-center justify-between text-[10px] sm:text-sm text-muted-foreground">
                     <p className="truncate w-2/3">{specializations.slice(0, 2).join(", ")}</p>
                     <p>₹200/2</p>
                 </div>
-
-                <div className="border-t border-dashed pt-2 sm:pt-3 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                    {/* Random aggregate info for Zomato feel */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded flex items-center gap-1">
-                        <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        <span>On time</span>
-                    </div>
-                    <span className="truncate max-w-[100px] sm:max-w-[150px]">{restaurant.address}</span>
-                </div>
-
             </CardContent>
         </Card>
     );

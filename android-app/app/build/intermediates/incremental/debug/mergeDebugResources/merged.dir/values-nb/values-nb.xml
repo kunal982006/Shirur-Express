@@ -46,6 +46,28 @@
     <string name="character_counter_content_description">%1$d av %2$d tegn er skrevet inn</string>
     <string name="character_counter_overflowed_content_description">Tegngrensen er overskredet – %1$d av %2$d</string>
     <string name="clear_text_end_icon_content_description">Fjern teksten</string>
+    <string gender="unknown" name="com_facebook_device_auth_instructions">Gå til &lt;b>facebook.com/device&lt;/b>, og skriv inn koden som vises ovenfor.</string>
+    <string gender="unknown" name="com_facebook_image_download_unknown_error">Det oppstod en uvented feil under nedlasting av et bilde.</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_message">WebView-innlogging krever INTERNETT-tillatelse</string>
+    <string gender="unknown" name="com_facebook_internet_permission_error_title">AndroidManifest-feil</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Likt</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Liker</string>
+    <string gender="unknown" name="com_facebook_loading">Laster inn ...</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Avbryt</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Logg inn</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Fortsett med Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Logg inn med Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Logg ut</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Logg ut</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Logget inn som %1$s</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_using_facebook">Innlogget med Facebook</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Del</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions">Koble til kontoen din ved å åpne Facebook-appen på mobilenheten din og se etter varsler.</string>
+    <string gender="unknown" name="com_facebook_smart_device_instructions_or">– ELLER –</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Ikke deg?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Fortsett som %1$s</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_title">Bekreft innlogging</string>
+    <string gender="unknown" name="com_facebook_tooltip_default">Du bestemmer – velg hvilke opplysninger du vil dele med apper.</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Aktivér</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s fungerer ikke med mindre du slår på Google Play-tjenester.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Slå på Google Play-tjenester</string>

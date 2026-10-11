@@ -48,6 +48,20 @@
     <string name="character_counter_content_description">Введено символів: %1$d з %2$d</string>
     <string name="character_counter_overflowed_content_description">Перевищено ліміт символів: %1$d з %2$d</string>
     <string name="clear_text_end_icon_content_description">Видалити текст</string>
+    <string gender="unknown" name="com_facebook_like_button_liked">Подобається</string>
+    <string gender="unknown" name="com_facebook_like_button_not_liked">Подобається</string>
+    <string gender="unknown" name="com_facebook_loading">Завантаження…</string>
+    <string gender="unknown" name="com_facebook_loginview_cancel_action">Скасувати</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button">Увійти</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_continue">Продовжити у Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_in_button_long">Увійдіть використовуючи Facebook</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_action">Вийти</string>
+    <string gender="unknown" name="com_facebook_loginview_log_out_button">Вийти</string>
+    <string gender="unknown" name="com_facebook_loginview_logged_in_as">Ви ввійшли як %1$s</string>
+    <string gender="unknown" name="com_facebook_send_button_text">Надіслати</string>
+    <string gender="unknown" name="com_facebook_share_button_text">Поширити</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_cancel">Це не ви?</string>
+    <string gender="unknown" name="com_facebook_smart_login_confirmation_continue_as">Продовжити як %1$s</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Увімкнути</string>
     <string msgid="227660514972886228" name="common_google_play_services_enable_text">Додаток %1$s не працюватиме, якщо не ввімкнути сервіси Google Play.</string>
     <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Увімкнути сервіси Google Play</string>
