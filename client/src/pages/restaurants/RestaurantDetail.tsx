@@ -56,6 +56,7 @@ export default function RestaurantDetail() {
     const id = params?.id;
     const { addItem, items, removeItem, updateQuantity } = useCartStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [dietaryFilter, setDietaryFilter] = useState<"all" | "veg" | "non-veg">("all");
     const [activeCategory, setActiveCategory] = useState<string>("");
     const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
     const categoryPillsRef = useRef<HTMLDivElement>(null);
@@ -72,13 +73,21 @@ export default function RestaurantDetail() {
         enabled: !!id
     });
 
+    const hasVeg = useMemo(() => menuItems?.some(i => i.isVeg) ?? false, [menuItems]);
+    const hasNonVeg = useMemo(() => menuItems?.some(i => !i.isVeg) ?? false, [menuItems]);
+    const showDietaryToggle = hasVeg && hasNonVeg;
+
     // Compute filtered items unconditionally
     const filteredItems = useMemo(() => {
-        return menuItems?.filter(item =>
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.category?.toLowerCase().includes(searchQuery.toLowerCase())
-        ) || [];
-    }, [menuItems, searchQuery]);
+        return menuItems?.filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.category?.toLowerCase().includes(searchQuery.toLowerCase());
+            if (!matchesSearch) return false;
+            if (dietaryFilter === "veg") return item.isVeg === true;
+            if (dietaryFilter === "non-veg") return item.isVeg === false;
+            return true;
+        }) || [];
+    }, [menuItems, searchQuery, dietaryFilter]);
 
     // Group items by category unconditionally
     const groupedItems = useMemo(() => {
@@ -119,8 +128,11 @@ export default function RestaurantDetail() {
     useEffect(() => {
         if (sortedCategoryEntries.length === 0) return;
 
-        if (!activeCategory && sortedCategoryEntries[0]) {
-            setActiveCategory(sortedCategoryEntries[0][0]);
+        if (sortedCategoryEntries[0]) {
+            const hasCurrent = sortedCategoryEntries.some(([cat]) => cat === activeCategory);
+            if (!hasCurrent) {
+                setActiveCategory(sortedCategoryEntries[0][0]);
+            }
         }
 
         const handleScroll = () => {
@@ -387,6 +399,47 @@ export default function RestaurantDetail() {
                                     </Sheet>
                                 )}
                             </div>
+
+                            {/* Veg / Non-Veg Dietary Filter Buttons */}
+                            {showDietaryToggle && (
+                                <div className="flex items-center gap-2 px-4 pb-2 pt-0.5 border-b border-border/30">
+                                    <button
+                                        type="button"
+                                        onClick={() => setDietaryFilter("all")}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                                            dietaryFilter === "all"
+                                                ? "bg-foreground text-background shadow-xs"
+                                                : "bg-muted/70 text-muted-foreground hover:bg-muted"
+                                        }`}
+                                    >
+                                        All Items
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setDietaryFilter("veg")}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                            dietaryFilter === "veg"
+                                                ? "bg-green-600 text-white shadow-xs"
+                                                : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800"
+                                        }`}
+                                    >
+                                        <span className={`w-2 h-2 rounded-full ${dietaryFilter === "veg" ? "bg-white" : "bg-green-600 dark:bg-green-400"}`} />
+                                        Veg Only
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setDietaryFilter("non-veg")}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                            dietaryFilter === "non-veg"
+                                                ? "bg-red-600 text-white shadow-xs"
+                                                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800"
+                                        }`}
+                                    >
+                                        <span className={`w-2 h-2 rounded-full ${dietaryFilter === "non-veg" ? "bg-white" : "bg-red-600 dark:bg-red-400"}`} />
+                                        Non-Veg Only
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Horizontal Category Chips (Mobile & Desktop) */}
                             {sortedCategoryEntries.length > 0 && (
