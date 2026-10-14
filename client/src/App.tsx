@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { lazy, Suspense, useEffect } from "react";
 import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
+import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
@@ -87,6 +88,11 @@ function FacebookPixelTracker() {
     trackPageView();
   }, [location]);
 
+  return null;
+}
+
+function AnalyticsTracker() {
+  useAnalyticsTracker();
   return null;
 }
 
@@ -176,6 +182,7 @@ function App() {
         <LocationProvider>
           <TooltipProvider>
             <FacebookPixelTracker />
+            <AnalyticsTracker />
             <div className="min-h-screen bg-background text-foreground flex flex-col">
               <Header />
               <main className="flex-1 pb-16 md:pb-0">

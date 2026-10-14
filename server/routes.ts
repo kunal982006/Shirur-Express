@@ -1,3 +1,4 @@
+import { registerAnalyticsRoutes } from "./analytics-routes";
 // server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
@@ -10,7 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, ne, and, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
+import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -5566,6 +5567,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Error updating order status" });
     }
   });
+
+    // Register User Analytics & Behavior Routes
+  registerAnalyticsRoutes(app, isAdmin);
 
   return httpServer;
 }

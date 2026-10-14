@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list";
+import { useTrackEvent } from "@/hooks/use-analytics";
 
 // Helper for query params
 const useQueryParams = () => {
@@ -70,13 +71,16 @@ export default function SearchResults() {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    const trackEvent = useTrackEvent();
+
     const handleSearch = useCallback((term?: string) => {
         const finalTerm = term || searchTerm;
         if (finalTerm.trim()) {
             setIsFocused(false);
             setLocation(`/search?term=${encodeURIComponent(finalTerm)}`);
+            trackEvent("search", { query: finalTerm.trim() });
         }
-    }, [searchTerm, setLocation]);
+    }, [searchTerm, setLocation, trackEvent]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

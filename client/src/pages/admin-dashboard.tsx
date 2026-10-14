@@ -91,6 +91,7 @@ import {
 import AdminStreetFood from "@/components/admin/admin-street-food";
 import AdminProperties from "@/components/admin/admin-properties";
 import AdminPhoneListings from "@/components/admin/admin-phone-listings";
+import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -266,7 +267,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings">(
+    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -661,6 +662,7 @@ export default function AdminDashboard() {
 
     const baseTabs = [
         { id: "overview", label: "Overview", icon: BarChart3 },
+        { id: "analytics", label: "User Analytics & Behavior", icon: Activity },
         { id: "orders", label: "Orders", icon: ShoppingCart },
         { id: "bookings", label: "Bookings", icon: CalendarCheck },
         { id: "providers", label: "Providers", icon: Store },
@@ -976,6 +978,14 @@ export default function AdminDashboard() {
 
                         {/* Quick Actions */}
                         <div className="grid sm:grid-cols-3 gap-4">
+                            <button onClick={() => setActiveTab("analytics")} className="rounded-2xl bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 border border-indigo-500/30 p-5 text-left hover:border-indigo-500/60 transition-all group shadow-md">
+                                <Activity className="h-6 w-6 text-indigo-400 mb-3 group-hover:scale-110 transition-transform" />
+                                <h4 className="font-semibold text-sm text-white flex items-center gap-1.5">
+                                  User Behavior Analytics
+                                  <span className="text-[10px] bg-indigo-500/30 text-indigo-300 px-1.5 py-0.5 rounded-full font-bold">LIVE</span>
+                                </h4>
+                                <p className="text-xs text-gray-400 mt-1">Dwell time, search queries, service popularity & navigation heatmaps</p>
+                            </button>
                             <button onClick={() => setActiveTab("broadcast")} className="rounded-2xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/20 p-5 text-left hover:border-blue-500/40 transition-all group">
                                 <Send className="h-6 w-6 text-blue-400 mb-3 group-hover:translate-x-1 transition-transform" />
                                 <h4 className="font-semibold text-sm">Send Notification</h4>
@@ -996,7 +1006,7 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && (
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && activeTab !== "analytics" && (
                     <div className="relative max-w-5xl mx-auto mb-6">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -1006,6 +1016,11 @@ export default function AdminDashboard() {
                             className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#111827] border border-white/5 text-base text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-colors shadow-sm"
                         />
                     </div>
+                )}
+
+                {/* ═══ USER ANALYTICS TAB ═══ */}
+                {activeTab === "analytics" && (
+                    <AdminUserAnalytics />
                 )}
 
                 {/* ═══ ORDERS TAB ═══ */}

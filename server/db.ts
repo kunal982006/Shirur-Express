@@ -53,8 +53,43 @@ export async function checkDatabaseConnection(): Promise<boolean> {
         await client.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
         await client.query("SET pg_trgm.similarity_threshold = 0.15");
         console.log("✅ [DB] pg_trgm extension enabled for fuzzy search.");
+        // Auto-create analytics tables if not already present
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS user_analytics_events (
+            id TEXT PRIMARY KEY,
+            user_id VARCHAR,
+            session_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            page TEXT NOT NULL,
+            referrer TEXT,
+            metadata JSONB,
+            duration_seconds INTEGER,
+            device_type TEXT,
+            user_agent TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+          );
+
+          CREATE TABLE IF NOT EXISTS user_sessions (
+            id TEXT PRIMARY KEY,
+            user_id VARCHAR,
+            session_id TEXT NOT NULL UNIQUE,
+            started_at TIMESTAMP DEFAULT NOW(),
+            ended_at TIMESTAMP,
+            total_pages INTEGER DEFAULT 0,
+            entry_page TEXT,
+            exit_page TEXT,
+            device_type TEXT,
+            user_agent TEXT
+          );
+
+          CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON user_analytics_events(created_at);
+          CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON user_analytics_events(event_type);
+          CREATE INDEX IF NOT EXISTS idx_analytics_page ON user_analytics_events(page);
+          CREATE INDEX IF NOT EXISTS idx_analytics_session_id ON user_analytics_events(session_id);
+        `);
+        console.log("✅ [DB] User analytics tables ensured.");
       } catch (trgmErr: any) {
-        console.warn("⚠️ [DB] pg_trgm extension could not be enabled:", trgmErr.message);
+        console.warn("⚠️ [DB] DB schema setup notice:", trgmErr.message);
       }
       
       client.release();

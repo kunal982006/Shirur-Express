@@ -769,4 +769,49 @@ export const phoneListingsRelations = relations(phoneListings, ({ one }) => ({
     fields: [phoneListings.sellerId],
     references: [users.id],
   }),
+}));
+
+// =========================================
+// USER ANALYTICS EVENTS TABLE
+// =========================================
+
+export const userAnalyticsEvents = pgTable("user_analytics_events", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id"), // nullable for anonymous
+  sessionId: text("session_id").notNull(),
+  eventType: text("event_type").notNull(), // page_view, click, search, service_use, order, add_to_cart, scroll_depth
+  page: text("page").notNull(), // /restaurants, /grocery, /home etc.
+  referrer: text("referrer"), // previous page
+  metadata: jsonb("metadata").$type<Record<string, any>>(), // extra data (search query, item clicked, etc.)
+  duration: integer("duration_seconds"), // time spent on page in seconds
+  deviceType: text("device_type"), // mobile, desktop, tablet
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  userId: varchar("user_id"), // nullable for anonymous
+  sessionId: text("session_id").notNull().unique(),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+  totalPages: integer("total_pages").default(0),
+  entryPage: text("entry_page"),
+  exitPage: text("exit_page"),
+  deviceType: text("device_type"),
+  userAgent: text("user_agent"),
+});
+
+export const userAnalyticsEventsRelations = relations(userAnalyticsEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [userAnalyticsEvents.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userSessionsRelations = relations(userSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [userSessions.userId],
+    references: [users.id],
+  }),
 }));
