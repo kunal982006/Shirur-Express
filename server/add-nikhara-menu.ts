@@ -422,7 +422,7 @@ async function seedNikharaMenu() {
       providerId: provider.id,
       name: item.name,
       category: item.category,
-      price: item.price,
+      price: Math.round(parseFloat(item.price) * 1.15).toFixed(2),
       isVeg: item.isVeg,
       description: item.description,
       imageUrl: item.imageUrl || null,

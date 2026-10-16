@@ -303,10 +303,6 @@ export default function RestaurantDetail() {
                                         34 mins
                                     </span>
                                 )}
-                                <span>•</span>
-                                <span>5 km</span>
-                                <span>•</span>
-                                <span>Free Delivery</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-center bg-green-700/10 px-3 py-2 rounded-xl">
