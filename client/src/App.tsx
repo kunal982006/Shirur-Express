@@ -116,6 +116,7 @@ function RouterComponent() {
         <Route path="/cake-shop-menu/:id" component={CakeShopMenu} />
         <Route path="/grocery" component={Grocery} />
         <Route path="/rental" component={PropertySearch} />
+        <Route path="/no-brokerage" component={PropertySearch} />
         <Route path="/properties/:id" component={PropertyDetail} />
         <Route path="/list-property" component={PropertyListingForm} />
         <Route path="/my-properties" component={MyProperties} />

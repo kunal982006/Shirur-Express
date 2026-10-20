@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Camera, Image as ImageIcon, AlertCircle } from "lucide-react";
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "Plot", "Commercial Space", "Independent House"];
 const FURNISHING_TYPES = ["Unfurnished", "Semi-Furnished", "Fully Furnished"];
@@ -472,24 +472,84 @@ export default function PropertyListingForm() {
                                 )}
                             />
 
-                            {/* Image Upload */}
-                            <div className="space-y-2">
-                                <FormLabel>Property Images *</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    <Input
+                            {/* Image Upload with Camera Support */}
+                            <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <FormLabel className="text-sm font-bold text-slate-800">Property Photos *</FormLabel>
+                                        <p className="text-xs text-muted-foreground">Upload or snap multiple photos (Hall, Kitchen, Bedrooms, Washrooms)</p>
+                                    </div>
+                                    {imageUrls.length === 0 ? (
+                                        <span className="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-red-200">
+                                            <AlertCircle className="w-3 h-3" />
+                                            Compulsory (Min 1 photo)
+                                        </span>
+                                    ) : (
+                                        <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                            {imageUrls.length} photo{imageUrls.length > 1 ? "s" : ""} added
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <label
+                                        htmlFor="form-camera-upload"
+                                        className="cursor-pointer bg-white border-2 border-emerald-600 hover:bg-emerald-50 text-emerald-700 font-bold py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm shadow-xs transition"
+                                    >
+                                        <Camera className="h-4 w-4 text-emerald-600" />
+                                        <span>Take Photo (Camera)</span>
+                                    </label>
+                                    <input
+                                        id="form-camera-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        onChange={(e) => {
+                                            handleImageUpload(e);
+                                            e.target.value = "";
+                                        }}
+                                        disabled={uploading}
+                                        className="hidden"
+                                    />
+
+                                    <label
+                                        htmlFor="form-gallery-upload"
+                                        className="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition"
+                                    >
+                                        <ImageIcon className="h-4 w-4 text-slate-500" />
+                                        <span>Choose from Gallery</span>
+                                    </label>
+                                    <input
+                                        id="form-gallery-upload"
                                         type="file"
                                         multiple
                                         accept="image/*"
-                                        onChange={handleImageUpload}
+                                        onChange={(e) => {
+                                            handleImageUpload(e);
+                                            e.target.value = "";
+                                        }}
                                         disabled={uploading}
+                                        className="hidden"
                                     />
-                                    {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 </div>
-                                {imageUrls.length > 0 && (
+
+                                {uploading && (
+                                    <div className="flex items-center justify-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2 rounded-lg animate-pulse">
+                                        <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                                        <span>Uploading photos to cloud... Please wait</span>
+                                    </div>
+                                )}
+
+                                {imageUrls.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-2 mt-2">
                                         {imageUrls.map((url, index) => (
-                                            <div key={index} className="relative group">
-                                                <img src={url} alt={`Property ${index}`} className="h-20 w-full object-cover rounded" />
+                                            <div key={index} className="relative group aspect-4/3 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                                                <img src={url} alt={`Property ${index}`} className="h-full w-full object-cover" />
+                                                {index === 0 && (
+                                                    <span className="absolute bottom-1 left-1 bg-black/75 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                                                        Cover Photo
+                                                    </span>
+                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={() => {
@@ -497,13 +557,18 @@ export default function PropertyListingForm() {
                                                         setImageUrls(newUrls);
                                                         form.setValue("images", newUrls);
                                                     }}
-                                                    className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full shadow-md hover:bg-red-700 transition"
+                                                    title="Remove photo"
                                                 >
                                                     <X className="h-3 w-3" />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
+                                ) : (
+                                    <p className="text-xs text-amber-700 bg-amber-50 border border-dashed border-amber-300 p-2.5 rounded-lg text-center font-medium">
+                                        ⚠️ At least 1 property photo is mandatory before submitting.
+                                    </p>
                                 )}
                             </div>
 

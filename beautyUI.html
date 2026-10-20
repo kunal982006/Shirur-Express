@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shirur Express - Salon & Parlor Services</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        rosebrand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        },
+                        cream: '#FFF8FA',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom light scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #fff1f2; }
+        ::-webkit-scrollbar-thumb { background: #fda4af; border-radius: 4px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-view { display: none; }
+        .tab-view.active { display: block; animation: fadeIn 0.25s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-[#FFF8FA] text-[#1E293B] min-h-full font-sans antialiased flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- STICKY LIGHT MODE HEADER -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-rose-100 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-md mx-auto px-4 pt-3 pb-2.5">
+            <!-- Top Row: Brand & Location -->
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-pink-500 text-white flex items-center justify-center shadow-md shadow-rose-200">
+                        <i class="fa-solid fa-sparkles text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-extrabold text-base tracking-tight text-slate-800">Shirur Express</h1>
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Salon</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i> Home & Studio Parlor • Shirur
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="openCallModal()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-phone-volume animate-pulse"></i> Help
+                    </button>
+                    <button onclick="switchMainTab('profile')" class="w-9 h-9 rounded-full bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs flex items-center justify-center shadow-sm">
+                        SK
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Instant Search Bar (Only visible on Home Menu tab) -->
+            <div id="headerSearchContainer" class="mt-3 relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-rose-400 text-xs"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    oninput="handleSearch(this.value)" 
+                    placeholder="Search 'Butterfly cut', 'Rica wax', 'Keratin', 'Pedicure'..." 
+                    class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-rose-100 focus:border-rose-400 rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-800 placeholder-slate-400 outline-none transition shadow-inner"
+                >
+                <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sticky Horizontal Category Jump-Pills -->
+        <div id="categoryBarContainer" class="max-w-md mx-auto px-4 py-2 bg-white border-t border-rose-50 flex space-x-2 overflow-x-auto no-scrollbar">
+            <button onclick="scrollToCategory('all')" data-cat="all" class="cat-pill active-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 bg-rose-600 text-white shadow-sm shadow-rose-200">
+                <span>All Menu</span>
+                <span class="bg-white/20 text-white px-1.5 py-0.2 rounded-full text-[10px]">38</span>
+            </button>
+            <button onclick="scrollToCategory('sec-basic-hair')" data-cat="sec-basic-hair" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                ✂️ Basic Cuts <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-adv-hair')" data-cat="sec-adv-hair" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                💇‍♀️ Advance Cuts <span class="text-[10px] text-rose-600 font-bold">(12)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-baby-cut')" data-cat="sec-baby-cut" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                👶 Baby Cut <span class="text-[10px] text-rose-600 font-bold">(4)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-hair-color')" data-cat="sec-hair-color" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                🎨 Hair Color <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-hair-treat')" data-cat="sec-hair-treat" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                ✨ Treatments <span class="text-[10px] text-rose-600 font-bold">(8)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-skincare')" data-cat="sec-skincare" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                💅 Skincare <span class="text-[10px] text-rose-600 font-bold">(2)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-body-wax')" data-cat="sec-body-wax" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                🍯 Body Wax <span class="text-[10px] text-rose-600 font-bold">(4)</span>
+            </button>
+            <button onclick="scrollToCategory('sec-face-wax')" data-cat="sec-face-wax" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                🌸 Face Wax <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-md mx-auto w-full flex-1 px-4 pt-3 pb-40">
+
+        <!-- ==================== TAB 1: HOME MENU ==================== -->
+        <div id="tab-home" class="tab-view active space-y-5">
+
+            <!-- Promo Highlight Banner -->
+            <div class="bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 rounded-2xl p-4 text-white shadow-md shadow-rose-200/70 relative overflow-hidden">
+                <div class="relative z-10 flex items-center justify-between">
+                    <div class="space-y-1 max-w-[72%]">
+                        <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            Flat Parlor Savings
+                        </span>
+                        <h2 class="text-base font-extrabold leading-tight">Up to 35% OFF on Complete Salon Menu!</h2>
+                        <p class="text-[11px] text-rose-50 font-medium">All categories open below • Zero hidden menus • Direct Add</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex flex-col items-center justify-center border border-white/30 shrink-0">
+                        <span class="text-xs font-bold">STARTS</span>
+                        <span class="text-lg font-extrabold">₹99</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats / Trust Bar -->
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-white border border-rose-100 rounded-xl p-2 shadow-sm">
+                    <p class="text-xs font-extrabold text-rose-600"><i class="fa-solid fa-tag mr-1"></i>Our Price</p>
+                    <p class="text-[10px] text-slate-500">Lowest in Shirur</p>
+                </div>
+                <div class="bg-white border border-rose-100 rounded-xl p-2 shadow-sm">
+                    <p class="text-xs font-extrabold text-emerald-600"><i class="fa-solid fa-shield-heart mr-1"></i>100% Hygienic</p>
+                    <p class="text-[10px] text-slate-500">Branded Kits</p>
+                </div>
+                <div class="bg-white border border-rose-100 rounded-xl p-2 shadow-sm">
+                    <p class="text-xs font-extrabold text-amber-600"><i class="fa-solid fa-user-tie mr-1"></i>Expert Didi</p>
+                    <p class="text-[10px] text-slate-500">Certified Stylists</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Menu Sections Wrapper -->
+            <div id="menuSectionsWrapper" class="space-y-6">
+                <!-- Populated by JavaScript so search, quantity counters, and variants stay 100% reactive -->
+            </div>
+
+            <!-- Light-Mode Direct Call Specialist Banner -->
+            <div class="bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 border-2 border-rose-200 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
+                <div class="flex items-start space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-200 mt-0.5">
+                        <i class="fa-solid fa-headset text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-100 px-2 py-0.5 rounded-md">Direct Call Specialist</span>
+                        <h4 class="text-xs font-extrabold text-slate-800 mt-1">Confused about Hair Length or Treatments?</h4>
+                        <p class="text-[11px] text-slate-600 mt-0.5">Hume call karein! Our head beautician will guide you on Keratin, Straightening & Color prices.</p>
+                    </div>
+                </div>
+                <button onclick="openCallModal()" class="shrink-0 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-200 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-phone"></i> Call Now
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ==================== TAB 2: BOOKINGS ==================== -->
+        <div id="tab-bookings" class="tab-view space-y-4">
+            <div class="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm">
+                <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-check text-rose-600"></i> My Salon Bookings
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Track your upcoming parlor appointments and specialist visits.</p>
+            </div>
+
+            <div id="bookingsListContainer" class="space-y-3">
+                <!-- Default active booking -->
+                <div class="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm space-y-3">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                        <div>
+                            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+                                CONFIRMED SLOT
+                            </span>
+                            <h3 class="font-bold text-sm text-slate-800 mt-1.5">Butterfly Cut + Rica Wax (Hand)</h3>
+                            <p class="text-[11px] text-slate-500">Booking ID: #SE-8492</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 line-through">₹748</span>
+                            <p class="font-extrabold text-base text-rose-600">₹698</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-1.5 bg-rose-50/50 p-3 rounded-xl border border-rose-100/60">
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-rose-500 w-4"></i> <strong>Today, 4:30 PM</strong></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-user-check text-rose-500 w-4"></i> Beautician: <strong>Priya Didi (Senior Stylist)</strong></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-rose-500 w-4"></i> Shirur Express Parlor Studio, Main Market</p>
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="openCallModal()" class="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-2 rounded-xl text-xs border border-rose-200 transition">
+                            <i class="fa-solid fa-phone mr-1"></i> Call Stylist
+                        </button>
+                        <button onclick="showToast('📍 Studio Google Maps link shared on your WhatsApp!')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-map-location-dot mr-1"></i> Directions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: BEAUTICIAN ADMIN VIEW ==================== -->
+        <div id="tab-admin" class="tab-view space-y-4">
+            <div class="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">Admin Mode</span>
+                        <h2 class="text-base font-extrabold text-slate-800 mt-1">Add New Parlor Service</h2>
+                        <p class="text-xs text-slate-500">Add a custom service directly into the live light-mode menu.</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                </div>
+
+                <form onsubmit="addCustomService(event)" class="mt-4 space-y-3 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Select Category Section</label>
+                        <select id="newServiceCat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
+                            <option value="sec-basic-hair">Basic Haircuts</option>
+                            <option value="sec-adv-hair">Advance Haircuts</option>
+                            <option value="sec-baby-cut">Baby Cut (Kids)</option>
+                            <option value="sec-hair-color">Hair Colouring</option>
+                            <option value="sec-hair-treat">Hair Treatment</option>
+                            <option value="sec-face-wax">Face Wax</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Service Name</label>
+                        <input type="text" id="newServiceName" required placeholder="e.g., Bridal Glow Facial" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">Market Price (₹)</label>
+                            <input type="number" id="newServiceMarket" required placeholder="e.g., 499" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">Our Price (₹)</label>
+                            <input type="number" id="newServiceOur" required placeholder="e.g., 349" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Duration / Special Note</label>
+                        <input type="text" id="newServiceNote" placeholder="e.g., 30 mins • Instant shine" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
+                    </div>
+                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl shadow-md shadow-rose-200 transition">
+                        <i class="fa-solid fa-circle-plus mr-1"></i> Publish to Live Menu
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: PROFILE ==================== -->
+        <div id="tab-profile" class="tab-view space-y-4">
+            <div class="bg-white border border-rose-100 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 text-white flex items-center justify-center text-xl font-extrabold shadow-md shadow-rose-200">
+                    SK
+                </div>
+                <div>
+                    <span class="bg-rose-100 text-rose-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">GLAM VIP MEMBER</span>
+                    <h3 class="font-extrabold text-base text-slate-800 mt-1">Snehal Kulkarni</h3>
+                    <p class="text-xs text-slate-500">+91 98220 45120 • Shirur, Pune</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-rose-100 rounded-2xl divide-y divide-slate-100 overflow-hidden shadow-sm text-xs font-semibold text-slate-700">
+                <button onclick="showToast('🎁 You have ₹100 Parlor Cash ready to use!')" class="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-wallet text-rose-500 text-sm w-5"></i> Shirur Glam Wallet & Offers</span>
+                    <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">₹100 Free</span>
+                </button>
+                <button onclick="showToast('🏠 Saved Address: Near Bus Stand, Shirur')" class="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-house-chimneyUser text-rose-500 text-sm w-5"></i> Saved Home Visit Address</span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+                <button onclick="openCallModal()" class="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-headset text-rose-500 text-sm w-5"></i> Speak to Head Beautician</span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- STICKY FLOATING CART & SPECIALIST BAR -->
+    <div class="fixed bottom-16 left-0 right-0 z-40 px-4 max-w-md mx-auto pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-md border-2 border-rose-200 rounded-2xl p-3 shadow-xl shadow-rose-200/60 flex items-center justify-between gap-2 pointer-events-auto">
+            <div onclick="openCartDrawer()" class="flex items-center space-x-3 cursor-pointer">
+                <div class="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold text-base relative shadow-md shadow-rose-200">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span id="cartBadgeCount" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-400 text-slate-900 font-extrabold rounded-full text-[10px] flex items-center justify-center border-2 border-white">0</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span id="cartTotalText" class="text-sm font-extrabold text-slate-800">₹0</span>
+                        <span id="cartSavingsBadge" class="hidden bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">Save ₹0</span>
+                    </div>
+                    <p id="cartSubText" class="text-[11px] text-rose-600 font-semibold flex items-center gap-1">
+                        Tap to view selected services <i class="fa-solid fa-angle-up text-[10px]"></i>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="openCartDrawer()" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 active:scale-95 text-white px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-md shadow-rose-200 transition flex items-center gap-1.5">
+                    <span>Book Slot</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR (LIGHT MODE) -->
+    <nav class="bg-white border-t border-rose-100 fixed bottom-0 left-0 right-0 z-50 px-2 py-1.5 shadow-[0_-4px_12px_rgba(244,63,94,0.06)]">
+        <div class="max-w-md mx-auto grid grid-cols-4 gap-1 text-center">
+            <button onclick="switchMainTab('home')" id="nav-home" class="nav-item flex flex-col items-center justify-center py-1 text-rose-600 font-bold transition">
+                <i class="fa-solid fa-scissors text-base"></i>
+                <span class="text-[10px] mt-0.5">Salon Menu</span>
+            </button>
+            <button onclick="switchMainTab('bookings')" id="nav-bookings" class="nav-item flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-700 font-medium transition">
+                <i class="fa-solid fa-calendar-check text-base"></i>
+                <span class="text-[10px] mt-0.5">Bookings</span>
+            </button>
+            <button onclick="switchMainTab('admin')" id="nav-admin" class="nav-item flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-700 font-medium transition">
+                <i class="fa-solid fa-wand-magic-sparkles text-base"></i>
+                <span class="text-[10px] mt-0.5">Beautician+</span>
+            </button>
+            <button onclick="switchMainTab('profile')" id="nav-profile" class="nav-item flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-700 font-medium transition">
+                <i class="fa-regular fa-user text-base"></i>
+                <span class="text-[10px] mt-0.5">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CHECKOUT DRAWER MODAL (LIGHT MODE) -->
+    <div id="cartDrawerModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex-col justify-end">
+        <div class="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 shadow-2xl border-t border-rose-100 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-extrabold text-base text-slate-800">Your Parlor Service Bag</h3>
+                    <p class="text-[11px] text-slate-500">Transparent 'Our Price' billing • Pay after service</p>
+                </div>
+                <button onclick="closeCartDrawer()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-rose-100 hover:text-rose-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="drawerCartItems" class="overflow-y-auto py-3 space-y-2.5 flex-1">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Appointment Slot Picker -->
+            <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-3 my-2 space-y-2">
+                <label class="text-[11px] font-extrabold text-slate-700 block">Select Preferred Visit Type & Time</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <select id="bookingMode" class="bg-white border border-rose-200 rounded-xl px-2.5 py-2 font-semibold text-slate-700 outline-none">
+                        <option value="Parlor Studio Visit">🏪 Visit Parlor Studio</option>
+                        <option value="Home Salon Service">🏠 Home Service (+₹50)</option>
+                    </select>
+                    <select id="bookingTime" class="bg-white border border-rose-200 rounded-xl px-2.5 py-2 font-semibold text-slate-700 outline-none">
+                        <option value="Today, Within 1 Hr">⚡ Express (In 60 mins)</option>
+                        <option value="Today, 5:00 PM">🕔 Today, 5:00 PM</option>
+                        <option value="Tomorrow, 11:00 AM">🕚 Tomorrow, 11:00 AM</option>
+                        <option value="Tomorrow, 4:00 PM">🕓 Tomorrow, 4:00 PM</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bill Summary & Confirm Button -->
+            <div class="border-t border-slate-100 pt-3 space-y-2">
+                <div class="flex justify-between text-xs text-slate-500">
+                    <span>Market Price Total</span>
+                    <span id="drawerMarketTotal" class="line-through">₹0</span>
+                </div>
+                <div class="flex justify-between text-xs font-bold text-emerald-600">
+                    <span>Shirur Express Discount</span>
+                    <span id="drawerSavingsTotal">- ₹0</span>
+                </div>
+                <div class="flex justify-between text-base font-extrabold text-slate-800 pt-1">
+                    <span>Our Final Price</span>
+                    <span id="drawerOurTotal" class="text-rose-600">₹0</span>
+                </div>
+                <button onclick="confirmParlorBooking()" class="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-extrabold py-3.5 rounded-2xl text-xs shadow-lg shadow-rose-200 transition flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-circle-check"></i> Confirm Salon Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECT CALL SPECIALIST MODAL (LIGHT MODE) -->
+    <div id="callModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-rose-100 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl shadow-inner">
+                <i class="fa-solid fa-phone-volume"></i>
+            </div>
+            <div>
+                <span class="bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Beautician Online</span>
+                <h3 class="font-extrabold text-base text-slate-800 mt-1">Direct Call Salon Specialist</h3>
+                <p class="text-xs text-slate-500 mt-1">For Hair Straightening, Smoothening, Keratin, Botox, Nanoplastia, Aqua Gold or Global Color length consultation, our expert beautician will guide you immediately.</p>
+            </div>
+            <div class="bg-rose-50 border border-rose-100 rounded-2xl p-3 text-left text-xs space-y-1">
+                <p class="font-bold text-slate-800">👩‍💼 Senior Stylist: Priya Didi</p>
+                <p class="text-slate-600">📞 Helpline: <strong>+91 98220 00111</strong></p>
+                <p class="text-[11px] text-rose-600 font-medium">✨ Free consultation on hair length & highlight strips!</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeCallModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">
+                    Close
+                </button>
+                <button onclick="closeCallModal(); showToast('📞 Request received! Our beautician will call you within 2 minutes.')" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-md shadow-rose-200">
+                    Request Callback
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGE -->
+    <div id="toastBox" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 max-w-xs text-center">
+        <span id="toastText">Notification</span>
+    </div>
+
+    <!-- COMPLETE MENU DATA & INTERACTIVE APPLICATION LOGIC -->
+    <script>
+        // Exact Menu Data from User Specification
+        const salonMenuData = [
+            {
+                id: 'sec-basic-hair',
+                title: 'Basic Haircuts',
+                subtitle: 'HAIR • Everyday clean & classic cuts',
+                icon: '✂️',
+                badgeColor: 'bg-rose-100 text-rose-700',
+                items: [
+                    { id: 'bh-1', name: 'Straight Haircut', marketPrice: 129, ourPrice: 99, time: '20 mins', desc: 'Clean, even straight trim for neat everyday look' },
+                    { id: 'bh-2', name: 'U Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Soft rounded U-shape edges for natural bounce' },
+                    { id: 'bh-3', name: 'V Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Sharp V-point tapering for sleek length definition' }
+                ]
+            },
+            {
+                id: 'sec-adv-hair',
+                title: 'Advance Haircuts',
+                subtitle: 'HAIR • Designer layers, steps & volume cuts',
+                icon: '💇‍♀️',
+                badgeColor: 'bg-pink-100 text-pink-700',
+                items: [
+                    { id: 'ah-1', name: 'Butterfly Cut', marketPrice: 349, ourPrice: 299, time: '40 mins', desc: 'Trending voluminous face-framing butterfly layers', tag: 'Bestseller' },
+                    { id: 'ah-2', name: 'Layer Cut', marketPrice: 279, ourPrice: 249, time: '35 mins', desc: 'Textured cascading layers for movement & volume' },
+                    { id: 'ah-3', name: 'Feather Cut', marketPrice: 279, ourPrice: 249, time: '35 mins', desc: 'Light feather-styled ends brushed outward' },
+                    { id: 'ah-4', name: 'Face Framing Layer', marketPrice: 349, ourPrice: 299, time: '35 mins', desc: 'Custom contoured strands to highlight cheekbones' },
+                    { id: 'ah-5', name: 'Curtain Bangs with Layer', marketPrice: 399, ourPrice: 350, time: '45 mins', desc: 'Soft parted bangs blended with full hair layers', tag: 'Trending' },
+                    { id: 'ah-6', name: 'Blund Cut [Lob]', marketPrice: 179, ourPrice: 149, time: '30 mins', desc: 'Chic shoulder-grazing blunt long bob [Lob]' },
+                    { id: 'ah-7', name: 'Soft Layer Cut', marketPrice: 399, ourPrice: 349, time: '40 mins', desc: 'Subtle seamless layers for silky smooth flow' },
+                    { id: 'ah-8', name: 'Multi Step Cut', marketPrice: 319, ourPrice: 279, time: '40 mins', desc: 'Distinct multi-tiered steps for extra bounce' },
+                    { id: 'ah-9', name: '90 Degree Step Cut', marketPrice: 219, ourPrice: 179, time: '35 mins', desc: 'Precision 90-degree angle cut for uniform lift' },
+                    { id: 'ah-10', name: 'Voluminous Feathered Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Full-bodied feather styling for thick & lively hair' },
+                    { id: 'ah-11', name: 'Long Hair Step Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Defined steps keeping your full hair length intact' },
+                    { id: 'ah-12', name: 'Long Layer Step Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Combination of long layers & steps for maximum flair' }
+                ]
+            },
+            {
+                id: 'sec-baby-cut',
+                title: 'Baby Cut (Kids Special)',
+                subtitle: 'HAIR • Gentle & cute styles for little ones',
+                icon: '👶',
+                badgeColor: 'bg-amber-100 text-amber-800',
+                items: [
+                    { id: 'bc-1', name: 'Little Round Cut', marketPrice: 149, ourPrice: 99, time: '20 mins', desc: 'Neat, comfortable rounded trim for kids' },
+                    { id: 'bc-2', name: 'Apple Hair Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Adorable curved apple-shape kids hairstyle' },
+                    { id: 'bc-3', name: 'Mushroom Hair Cut', marketPrice: 199, ourPrice: 149, time: '25 mins', desc: 'Classic cute bowl-style mushroom cut' },
+                    { id: 'bc-4', name: 'Bob Cut', marketPrice: 199, ourPrice: 149, time: '25 mins', desc: 'Easy-to-manage classic kids bob haircut' }
+                ]
+            },
+            {
+                id: 'sec-hair-color',
+                title: 'Hair Colouring',
+                subtitle: 'HAIR • Root touchups, global shades & highlights',
+                icon: '🎨',
+                badgeColor: 'bg-purple-100 text-purple-800',
+                items: [
+                    { id: 'hc-1', name: 'Root Touchup', marketPrice: 699, ourPrice: 499, time: '45 mins', desc: 'Ammonia-safe grey coverage for crown & roots' },
+                    { id: 'hc-2', name: 'Global Hair Color', marketPrice: null, ourPrice: 799, startsFrom: true, time: '90 mins', desc: 'Full head vibrant colour application', note: 'Starting from ₹799 • Final price depends upon hair length' },
+                    { id: 'hc-3', name: 'Highlights (1 Strip)', marketPrice: null, ourPrice: 199, perStrip: true, time: '30 mins', desc: 'Custom streak styling per strip', note: '₹199 per strip • Depends upon customer requirement & highlight color type' }
+                ]
+            },
+            {
+                id: 'sec-hair-treat',
+                title: 'Hair Treatment & Spa',
+                subtitle: 'HAIR • Scalp care, Keratin, Botox & Straightening',
+                icon: '✨',
+                badgeColor: 'bg-emerald-100 text-emerald-800',
+                items: [
+                    { id: 'ht-1', name: 'Dandruff Treatment', marketPrice: 1299, ourPrice: 999, time: '60 mins', desc: 'Deep anti-flake scalp detox & soothing therapy' },
+                    { id: 'ht-2', name: 'Hair Regrowth Treatment', marketPrice: 399, ourPrice: 299, time: '45 mins', desc: 'Root-stimulating serum & high-frequency massage' },
+                    { id: 'ht-3', name: 'Hair Straightening', marketPrice: null, ourPrice: 3499, startsFrom: true, time: '2.5 - 3 hrs', desc: 'Pin-straight sleek transformation', note: 'Starting from ₹3499 (starting length). Overall depends upon hair length & density. Our beautician will attend you shortly.' },
+                    { id: 'ht-4', name: 'Smoothening', marketPrice: null, ourPrice: 4599, startsFrom: true, time: '2.5 - 3 hrs', desc: 'Frizz-free natural silky smooth finish', note: 'Starts from ₹4599 (starting length & overall depends upon price). Our beautician will attend you shortly.' },
+                    { id: 'ht-5', name: 'Keratin Treatment', marketPrice: null, ourPrice: 3999, startsFrom: true, time: '2.5 hrs', desc: 'Protein-rich shine & deep frizz repair', note: 'Starts from ₹3999 (starting length & overall depends upon price). Our beautician will attend you shortly.' },
+                    { id: 'ht-6', name: 'Botox Hair Treatment', marketPrice: null, ourPrice: 4499, startsFrom: true, time: '2.5 hrs', desc: 'Intense anti-ageing deep conditioning fiber restoration', note: 'Starts from ₹4499 (starting length & overall depends upon price). Our beautician will attend you shortly.' },
+                    { id: 'ht-7', name: 'Nanoplastia', marketPrice: null, ourPrice: 5999, startsFrom: true, time: '3 hrs', desc: 'Advanced organic amino-acid straightening & gloss', note: 'Starts from ₹5999 • Depends upon length. Our beautician will attend you shortly.' },
+                    { id: 'ht-8', name: 'Aqua Gold Treatment', marketPrice: null, ourPrice: 6499, startsFrom: true, time: '3 hrs', desc: 'Luxury hydration & mirror-shine gold infusion', note: 'Starts from ₹6499 • Depends upon length. Our beautician will attend you shortly.' }
+                ]
+            },
+            {
+                id: 'sec-skincare',
+                title: 'Skincare (Manicure & Pedicure)',
+                subtitle: 'SKINCARE • Tap Basic or Advance option below',
+                icon: '💅',
+                badgeColor: 'bg-sky-100 text-sky-800',
+                items: [
+                    {
+                        id: 'sk-1',
+                        name: 'Medicure (Manicure)',
+                        time: '35 - 45 mins',
+                        desc: 'Hand soak, nail shaping, cuticle care & relaxing massage',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Basic', marketPrice: 349, ourPrice: 299 },
+                            { label: 'Advance', marketPrice: 699, ourPrice: 599 }
+                        ]
+                    },
+                    {
+                        id: 'sk-2',
+                        name: 'Pedicure Treatment',
+                        time: '45 - 60 mins',
+                        desc: 'Warm foot spa, heel scrub, tan removal & foot reflexology',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Basic', marketPrice: 499, ourPrice: 499 },
+                            { label: 'Advance', marketPrice: 899, ourPrice: 799 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'sec-body-wax',
+                title: 'Body Waxing',
+                subtitle: 'WAX • Choose Hand, Leg or Face directly inside card',
+                icon: '🍯',
+                badgeColor: 'bg-orange-100 text-orange-800',
+                items: [
+                    {
+                        id: 'bw-1',
+                        name: 'Regular Jell Wax',
+                        time: '25 - 40 mins',
+                        desc: 'Smooth aloe-gel enriched gentle hair removal',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hand', marketPrice: null, ourPrice: 149 },
+                            { label: 'Leg', marketPrice: null, ourPrice: 249 }
+                        ]
+                    },
+                    {
+                        id: 'bw-2',
+                        name: 'Rica Wax (Italian Liposoluble)',
+                        time: '30 - 45 mins',
+                        desc: 'Zero-redness peelable formula with detan benefits',
+                        tag: 'Most Popular',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hand', marketPrice: null, ourPrice: 399 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 699 }
+                        ]
+                    },
+                    {
+                        id: 'bw-3',
+                        name: 'Roll On Wax',
+                        time: '30 - 45 mins',
+                        desc: 'Hygienic single-use cartridge applicator waxing',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hands', marketPrice: null, ourPrice: 449 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 999 }
+                        ]
+                    },
+                    {
+                        id: 'bw-4',
+                        name: 'Brazilian Wax',
+                        time: '20 - 45 mins',
+                        desc: 'Strikeless peel-off luxury wax for sensitive areas',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Face', marketPrice: null, ourPrice: 299 },
+                            { label: 'Hands', marketPrice: null, ourPrice: 499 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 999 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'sec-face-wax',
+                title: 'Face Wax',
+                subtitle: 'FACE WAX • Gentle facial fuzz & upper-lip removal',
+                icon: '🌸',
+                badgeColor: 'bg-rose-100 text-rose-800',
+                items: [
+                    { id: 'fw-1', name: 'Bin Wax (Bean Face Wax)', marketPrice: null, ourPrice: 399, time: '25 mins', desc: 'Stripless hard bean wax gentle on facial skin' },
+                    { id: 'fw-2', name: 'Microwave Face Wax', marketPrice: null, ourPrice: 449, time: '25 mins', desc: 'Warm low-temperature soothing facial wax' },
+                    { id: 'fw-3', name: 'Paraffin Face Wax', marketPrice: null, ourPrice: 399, time: '30 mins', desc: 'Moisturizing paraffin therapy + clean facial hair removal' }
+                ]
+            }
+        ];
+
+        // Cart state keyed by unique cartKey (e.g. item.id or item.id + variantLabel)
+        let cart = {};
+        let currentSearchQuery = '';
+
+        function getCartKey(item, variantIdx = null) {
+            if (item.variants) {
+                const vIdx = variantIdx !== null ? variantIdx : item.selectedVariantIdx;
+                return `${item.id}__${item.variants[vIdx].label}`;
+            }
+            return item.id;
+        }
+
+        // Render all sections & items in a clean, single-scroll light-mode layout
+        function renderMenu() {
+            const wrapper = document.getElementById('menuSectionsWrapper');
+            wrapper.innerHTML = '';
+
+            let totalRenderedItems = 0;
+
+            salonMenuData.forEach(section => {
+                // Filter items by search query
+                const filteredItems = section.items.filter(item => {
+                    if (!currentSearchQuery) return true;
+                    const q = currentSearchQuery.toLowerCase();
+                    const matchName = item.name.toLowerCase().includes(q);
+                    const matchDesc = (item.desc || '').toLowerCase().includes(q);
+                    const matchSec = section.title.toLowerCase().includes(q);
+                    const matchVar = item.variants && item.variants.some(v => v.label.toLowerCase().includes(q));
+                    return matchName || matchDesc || matchSec || matchVar;
+                });
+
+                if (filteredItems.length === 0) return;
+
+                totalRenderedItems += filteredItems.length;
+
+                const sectionEl = document.createElement('section');
+                sectionEl.id = section.id;
+                sectionEl.className = 'scroll-mt-32 space-y-3';
+
+                // Section Header
+                sectionEl.innerHTML = `
+                    <div class="flex items-center justify-between bg-white border border-rose-100 rounded-2xl px-3.5 py-2.5 shadow-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-9 h-9 rounded-xl ${section.badgeColor} flex items-center justify-center text-base shadow-2xs">
+                                ${section.icon}
+                            </span>
+                            <div>
+                                <h3 class="font-extrabold text-sm text-slate-800">${section.title}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">${section.subtitle}</p>
+                            </div>
+                        </div>
+                        <span class="bg-rose-50 text-rose-600 border border-rose-100 text-[11px] font-extrabold px-2.5 py-1 rounded-full">
+                            ${filteredItems.length} ${filteredItems.length === 1 ? 'Item' : 'Items'}
+                        </span>
+                    </div>
+                    <div class="space-y-2.5" id="list-${section.id}"></div>
+                `;
+
+                wrapper.appendChild(sectionEl);
+                const listContainer = sectionEl.querySelector(`#list-${section.id}`);
+
+                filteredItems.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-rose-100/90 hover:border-rose-300 rounded-2xl p-3.5 shadow-xs transition relative overflow-hidden';
+
+                    // Determine active pricing (either standard or currently selected variant)
+                    let activeMarket = item.marketPrice;
+                    let activeOur = item.ourPrice;
+                    let activeVariantLabel = null;
+
+                    if (item.variants) {
+                        const activeVar = item.variants[item.selectedVariantIdx];
+                        activeMarket = activeVar.marketPrice;
+                        activeOur = activeVar.ourPrice;
+                        activeVariantLabel = activeVar.label;
+                    }
+
+                    const savings = (activeMarket && activeMarket > activeOur) ? (activeMarket - activeOur) : 0;
+                    const cartKey = getCartKey(item);
+                    const qtyInCart = cart[cartKey] ? cart[cartKey].qty : 0;
+
+                    // Top tags (Savings or Bestseller)
+                    let badgesHTML = '';
+                    if (savings > 0) {
+                        badgesHTML += `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md">SAVE ₹${savings}</span>`;
+                    }
+                    if (item.tag) {
+                        badgesHTML += `<span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md">★ ${item.tag}</span>`;
+                    }
+                    if (item.startsFrom) {
+                        badgesHTML += `<span class="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md">Starts From</span>`;
+                    }
+                    if (item.perStrip) {
+                        badgesHTML += `<span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md">Per Strip</span>`;
+                    }
+
+                    // Inline Variant Selector Pills (for Skincare & Body Waxing)
+                    let variantsHTML = '';
+                    if (item.variants) {
+                        const buttons = item.variants.map((v, idx) => {
+                            const isSelected = idx === item.selectedVariantIdx;
+                            const vKey = getCartKey(item, idx);
+                            const vQty = cart[vKey] ? cart[vKey].qty : 0;
+                            return `
+                                <button 
+                                    type="button"
+                                    onclick="selectVariant('${section.id}', '${item.id}', ${idx})"
+                                    class="flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-between gap-1 ${
+                                        isSelected 
+                                        ? 'bg-rose-600 text-white border-rose-600 shadow-xs' 
+                                        : 'bg-rose-50/60 text-slate-700 border-rose-200 hover:bg-rose-100/70'
+                                    }"
+                                >
+                                    <span>${v.label}</span>
+                                    <span class="text-[11px] ${isSelected ? 'text-rose-100' : 'text-rose-600'} font-extrabold">
+                                        ₹${v.ourPrice}${vQty > 0 ? ` (${vQty})` : ''}
+                                    </span>
+                                </button>
+                            `;
+                        }).join('');
+
+                        variantsHTML = `
+                            <div class="mt-2.5 pt-2.5 border-t border-slate-100">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Select Option:</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${buttons}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Special Note Box (for Straightening, Keratin, Global Color, etc.)
+                    let noteHTML = '';
+                    if (item.note) {
+                        noteHTML = `
+                            <div class="mt-2.5 bg-amber-50/90 border border-amber-200/80 rounded-xl p-2.5 flex items-start justify-between gap-2">
+                                <div class="flex items-start gap-1.5 text-[11px] text-amber-900 leading-snug">
+                                    <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
+                                    <span>${item.note}</span>
+                                </div>
+                                <button onclick="openCallModal()" class="shrink-0 bg-white hover:bg-amber-100 text-rose-600 border border-amber-300 px-2 py-1 rounded-lg text-[10px] font-extrabold shadow-2xs">
+                                    <i class="fa-solid fa-phone mr-0.5"></i> Ask
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    // Add / Quantity Counter Button
+                    let actionButtonHTML = '';
+                    if (qtyInCart === 0) {
+                        actionButtonHTML = `
+                            <button 
+                                onclick="modifyCart('${section.id}', '${item.id}', 1)"
+                                class="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-2 border-rose-500 font-extrabold text-xs px-4 py-1.5 rounded-xl shadow-2xs active:scale-95 transition flex items-center gap-1"
+                            >
+                                <span>+ ADD</span>
+                            </button>
+                        `;
+                    } else {
+                        actionButtonHTML = `
+                            <div class="flex items-center bg-rose-600 text-white rounded-xl shadow-sm overflow-hidden border border-rose-600">
+                                <button onclick="modifyCart('${section.id}', '${item.id}', -1)" class="px-2.5 py-1.5 hover:bg-rose-700 font-extrabold text-xs">-</button>
+                                <span class="px-2 text-xs font-extrabold">${qtyInCart}</span>
+                                <button onclick="modifyCart('${section.id}', '${item.id}', 1)" class="px-2.5 py-1.5 hover:bg-rose-700 font-extrabold text-xs">+</button>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="space-y-1 flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    ${badgesHTML}
+                                    <span class="text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                                        <i class="fa-regular fa-clock text-rose-400"></i> ${item.time}
+                                    </span>
+                                </div>
+                                <h4 class="font-extrabold text-sm text-slate-800 leading-snug">
+                                    ${item.name} ${activeVariantLabel ? `<span class="text-rose-600 font-bold text-xs">(${activeVariantLabel})</span>` : ''}
+                                </h4>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">${item.desc}</p>
+                            </div>
+
+                            <!-- Price & Add Column -->
+                            <div class="text-right flex flex-col items-end shrink-0">
+                                <div class="flex items-baseline gap-1.5">
+                                    ${activeMarket && activeMarket > activeOur ? `<span class="text-xs text-slate-400 line-through font-semibold">₹${activeMarket}</span>` : ''}
+                                    <span class="text-base font-extrabold text-slate-900">₹${activeOur}</span>
+                                </div>
+                                <span class="text-[9px] uppercase tracking-wider font-extrabold text-rose-600 mb-2">Our Price</span>
+                                ${actionButtonHTML}
+                            </div>
+                        </div>
+                        ${variantsHTML}
+                        ${noteHTML}
+                    `;
+
+                    listContainer.appendChild(card);
+                });
+            });
+
+            if (totalRenderedItems === 0) {
+                wrapper.innerHTML = `
+                    <div class="bg-white border border-rose-100 rounded-2xl p-8 text-center space-y-2">
+                        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800">No matching parlor service found</h4>
+                        <p class="text-xs text-slate-500">Try searching for "Cut", "Wax", "Keratin", or clear the search filter.</p>
+                        <button onclick="clearSearch()" class="mt-2 bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Show All Services</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle inline variant selection for Skincare & Body Wax
+        function selectVariant(sectionId, itemId, variantIdx) {
+            const section = salonMenuData.find(s => s.id === sectionId);
+            if (!section) return;
+            const item = section.items.find(i => i.id === itemId);
+            if (!item) return;
+            item.selectedVariantIdx = variantIdx;
+            renderMenu();
+        }
+
+        // Add or remove items from Cart
+        function modifyCart(sectionId, itemId, delta) {
+            const section = salonMenuData.find(s => s.id === sectionId);
+            if (!section) return;
+            const item = section.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            const cartKey = getCartKey(item);
+            let displayName = item.name;
+            let marketPrice = item.marketPrice || item.ourPrice;
+            let ourPrice = item.ourPrice;
+
+            if (item.variants) {
+                const v = item.variants[item.selectedVariantIdx];
+                displayName = `${item.name} (${v.label})`;
+                marketPrice = v.marketPrice || v.ourPrice;
+                ourPrice = v.ourPrice;
+            }
+
+            if (!cart[cartKey]) {
+                cart[cartKey] = {
+                    key: cartKey,
+                    sectionId,
+                    itemId,
+                    name: displayName,
+                    marketPrice,
+                    ourPrice,
+                    qty: 0
+                };
+            }
+
+            cart[cartKey].qty += delta;
+
+            if (cart[cartKey].qty <= 0) {
+                delete cart[cartKey];
+                showToast(`Removed ${displayName} from bag`);
+            } else if (delta > 0) {
+                showToast(`✨ Added ${displayName} (₹${ourPrice})`);
+            }
+
+            updateCartSummaryUI();
+            renderMenu();
+            renderDrawerCartItems();
+        }
+
+        function modifyCartByKey(cartKey, delta) {
+            if (!cart[cartKey]) return;
+            cart[cartKey].qty += delta;
+            if (cart[cartKey].qty <= 0) {
+                delete cart[cartKey];
+            }
+            updateCartSummaryUI();
+            renderMenu();
+            renderDrawerCartItems();
+        }
+
+        function updateCartSummaryUI() {
+            const items = Object.values(cart);
+            const totalQty = items.reduce((sum, i) => sum + i.qty, 0);
+            const totalOur = items.reduce((sum, i) => sum + (i.ourPrice * i.qty), 0);
+            const totalMarket = items.reduce((sum, i) => sum + (i.marketPrice * i.qty), 0);
+            const totalSavings = Math.max(0, totalMarket - totalOur);
+
+            document.getElementById('cartBadgeCount').innerText = totalQty;
+            document.getElementById('cartTotalText').innerText = `₹${totalOur}`;
+
+            const savingsBadge = document.getElementById('cartSavingsBadge');
+            if (totalSavings > 0) {
+                savingsBadge.innerText = `Save ₹${totalSavings}`;
+                savingsBadge.classList.remove('hidden');
+            } else {
+                savingsBadge.classList.add('hidden');
+            }
+
+            const subText = document.getElementById('cartSubText');
+            if (totalQty > 0) {
+                subText.innerHTML = `${totalQty} service${totalQty > 1 ? 's' : ''} added • Tap to checkout <i class="fa-solid fa-angle-up text-[10px]"></i>`;
+            } else {
+                subText.innerHTML = `Tap to view selected services <i class="fa-solid fa-angle-up text-[10px]"></i>`;
+            }
+
+            // Update drawer totals
+            document.getElementById('drawerMarketTotal').innerText = `₹${totalMarket}`;
+            document.getElementById('drawerSavingsTotal').innerText = `- ₹${totalSavings}`;
+            document.getElementById('drawerOurTotal').innerText = `₹${totalOur}`;
+        }
+
+        function openCartDrawer() {
+            renderDrawerCartItems();
+            const modal = document.getElementById('cartDrawerModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCartDrawer() {
+            const modal = document.getElementById('cartDrawerModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderDrawerCartItems() {
+            const container = document.getElementById('drawerCartItems');
+            const items = Object.values(cart);
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-2">
+                        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700">Your service bag is empty</p>
+                        <p class="text-[11px] text-slate-400">Tap '+ ADD' on any haircut, wax, or treatment from the menu.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="bg-slate-50 border border-rose-100 rounded-xl p-3 flex items-center justify-between gap-2">
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">${item.name}</h4>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            ${item.marketPrice > item.ourPrice ? `<span class="text-[10px] text-slate-400 line-through">₹${item.marketPrice}</span>` : ''}
+                            <span class="text-xs font-extrabold text-rose-600">₹${item.ourPrice}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-white border border-rose-200 rounded-lg overflow-hidden">
+                            <button onclick="modifyCartByKey('${item.key}', -1)" class="px-2.5 py-1 text-rose-600 font-bold text-xs hover:bg-rose-50">-</button>
+                            <span class="px-2 text-xs font-extrabold text-slate-800">${item.qty}</span>
+                            <button onclick="modifyCartByKey('${item.key}', 1)" class="px-2.5 py-1 text-rose-600 font-bold text-xs hover:bg-rose-50">+</button>
+                        </div>
+                        <span class="text-xs font-extrabold text-slate-800 w-12 text-right">₹${item.ourPrice * item.qty}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmParlorBooking() {
+            const items = Object.values(cart);
+            if (items.length === 0) {
+                showToast('⚠️ Please add at least one service to book!');
+                return;
+            }
+
+            const totalOur = items.reduce((sum, i) => sum + (i.ourPrice * i.qty), 0);
+            const totalMarket = items.reduce((sum, i) => sum + (i.marketPrice * i.qty), 0);
+            const namesSummary = items.map(i => `${i.name}${i.qty > 1 ? ' x' + i.qty : ''}`).join(' + ');
+            const mode = document.getElementById('bookingMode').value;
+            const time = document.getElementById('bookingTime').value;
+
+            const bookingsContainer = document.getElementById('bookingsListContainer');
+            const newBookingHTML = `
+                <div class="bg-white border-2 border-rose-300 rounded-2xl p-4 shadow-sm space-y-3">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                        <div>
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+                                NEW BOOKING • ${mode.toUpperCase()}
+                            </span>
+                            <h3 class="font-bold text-sm text-slate-800 mt-1.5">${namesSummary}</h3>
+                            <p class="text-[11px] text-slate-500">Booking ID: #SE-${Math.floor(1000 + Math.random() * 9000)}</p>
+                        </div>
+                        <div class="text-right">
+                            ${totalMarket > totalOur ? `<span class="text-xs text-slate-400 line-through">₹${totalMarket}</span>` : ''}
+                            <p class="font-extrabold text-base text-rose-600">₹${totalOur}</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-1 bg-rose-50/60 p-3 rounded-xl border border-rose-100">
+                        <p><i class="fa-regular fa-clock text-rose-500 mr-1.5"></i> Slot: <strong>${time}</strong></p>
+                        <p><i class="fa-solid fa-user-check text-rose-500 mr-1.5"></i> Beautician assigned & notified</p>
+                    </div>
+                </div>
+            `;
+            bookingsContainer.insertAdjacentHTML('afterbegin', newBookingHTML);
+
+            cart = {};
+            updateCartSummaryUI();
+            renderMenu();
+            closeCartDrawer();
+            switchMainTab('bookings');
+            showToast('🎉 Booking Confirmed! Our beautician will attend you shortly.');
+        }
+
+        // Category Smooth Scroll & Active Pill Highlight
+        function scrollToCategory(sectionId) {
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.dataset.cat === sectionId) {
+                    btn.className = 'cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 bg-rose-600 text-white shadow-sm shadow-rose-200';
+                } else {
+                    btn.className = 'cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1';
+                }
+            });
+
+            if (sectionId === 'all') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Instant Search Filtering
+        function handleSearch(val) {
+            currentSearchQuery = val.trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (currentSearchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderMenu();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            handleSearch('');
+        }
+
+        // Bottom Navigation Tab Switching
+        function switchMainTab(tabName) {
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            // Toggle search & category bar visibility only on Home tab
+            const searchBar = document.getElementById('headerSearchContainer');
+            const catBar = document.getElementById('categoryBarContainer');
+            if (tabName === 'home') {
+                searchBar.classList.remove('hidden');
+                catBar.classList.remove('hidden');
+            } else {
+                searchBar.classList.add('hidden');
+                catBar.classList.add('hidden');
+            }
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('text-rose-600', 'font-bold');
+                btn.classList.add('text-slate-400', 'font-medium');
+            });
+            const activeNav = document.getElementById('nav-' + tabName);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-400', 'font-medium');
+                activeNav.classList.add('text-rose-600', 'font-bold');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Admin Form: Add Custom Service
+        function addCustomService(e) {
+            e.preventDefault();
+            const catId = document.getElementById('newServiceCat').value;
+            const name = document.getElementById('newServiceName').value.trim();
+            const marketPrice = parseInt(document.getElementById('newServiceMarket').value, 10);
+            const ourPrice = parseInt(document.getElementById('newServiceOur').value, 10);
+            const note = document.getElementById('newServiceNote').value.trim() || '30 mins • Added by Beautician';
+
+            const section = salonMenuData.find(s => s.id === catId);
+            if (section) {
+                section.items.unshift({
+                    id: 'custom-' + Date.now(),
+                    name,
+                    marketPrice,
+                    ourPrice,
+                    time: '30 mins',
+                    desc: note,
+                    tag: 'New'
+                });
+                renderMenu();
+                e.target.reset();
+                switchMainTab('home');
+                setTimeout(() => scrollToCategory(catId), 150);
+                showToast(`✅ Added "${name}" at Our Price ₹${ourPrice}!`);
+            }
+        }
+
+        // Call Specialist Modal
+        function openCallModal() {
+            const modal = document.getElementById('callModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCallModal() {
+            const modal = document.getElementById('callModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Toast Helper
+        let toastTimeout;
+        function showToast(msg) {
+            const box = document.getElementById('toastBox');
+            document.getElementById('toastText').innerText = msg;
+            box.classList.remove('hidden');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 2800);
+        }
+
+        // Initialize Menu on Load
+        window.onload = function() {
+            renderMenu();
+            updateCartSummaryUI();
+        };
+    </script>
+</body>
+</html>

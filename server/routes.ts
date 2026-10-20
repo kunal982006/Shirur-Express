@@ -690,9 +690,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/rental-properties", isLoggedIn, async (req: AuthRequest, res: Response) => {
+  app.post("/api/rental-properties", async (req: Request, res: Response) => {
     try {
-      const userId = req.userId!;
+      const sessionUserId = (req.session as any)?.userId;
+      let userId = sessionUserId;
+      if (!userId) {
+        const phone = req.body.contactPhone;
+        if (!phone) {
+          return res.status(401).json({ message: "Please log in or provide a valid contact phone number." });
+        }
+        const existingUser = await storage.getUserByPhone(phone);
+        userId = existingUser?.id || `owner_${phone.replace(/[^0-9]/g, "")}`;
+      }
       const propertyData = insertRentalPropertySchema.parse(req.body);
       const property = await storage.createRentalProperty({ ...propertyData, ownerId: userId });
       res.status(201).json(property);
@@ -807,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
 
-  app.post("/api/upload", upload.array("images", 5), async (req: Request, res: Response) => {
+  app.post("/api/upload", upload.array("images", 15), async (req: Request, res: Response) => {
     try {
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {

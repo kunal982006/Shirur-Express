@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shirur Express - 0% Brokerage Properties & Beauty Parlor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Clean Light Mode Scrollbars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .app-module { display: none; }
+        .app-module.active { display: block; animation: fadeIn 0.25s ease-out; }
+        .sub-tab { display: none; }
+        .sub-tab.active { display: block; animation: fadeIn 0.2s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] min-h-full font-sans antialiased flex flex-col justify-between selection:bg-emerald-600 selection:text-white">
+
+    <!-- ==================== GLOBAL TOP MODULE SWITCHER (STICKY) ==================== -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
+        <div class="max-w-md mx-auto px-3 pt-2.5 pb-2">
+            <!-- Top Brand Bar -->
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-2">
+                    <div id="brandIconBox" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-sm font-extrabold text-sm">
+                        <i id="brandIcon" class="fa-solid fa-building-shield"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-black text-sm tracking-tight text-slate-900">SHIRUR EXPRESS</span>
+                            <span id="brandBadge" class="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">0% Brokerage</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot text-emerald-600 text-[9px]"></i> Shirur, Dist. Pune • Verified Local SuperApp
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dynamic Top Action Button -->
+                <div id="topRightActions">
+                    <button id="topPostPropBtn" onclick="openPostPropertyModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-xl shadow-sm shadow-emerald-200 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-plus-circle"></i> Post Property <span class="bg-amber-300 text-slate-900 px-1 rounded text-[9px] font-black">FREE</span>
+                    </button>
+                    <button id="topSalonHelpBtn" onclick="openCallModal()" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-xl text-[11px] font-extrabold items-center gap-1.5 transition">
+                        <i class="fa-solid fa-phone-volume animate-pulse"></i> Call Stylist
+                    </button>
+                </div>
+            </div>
+
+            <!-- Two-Module Segmented Switcher -->
+            <div class="bg-slate-100 p-1 rounded-xl grid grid-cols-2 gap-1 border border-slate-200/80">
+                <button onclick="switchAppModule('properties')" id="modBtn-properties" class="py-2 px-2 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-xs border border-emerald-200/60">
+                    <span>🏠 No-Brokerage Properties</span>
+                </button>
+                <button onclick="switchAppModule('salon')" id="modBtn-salon" class="py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900">
+                    <span>💇‍♀️ Beauty Parlor (38)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================ -->
+    <!-- MODULE 1: SHIRUR EXPRESS NO-BROKERAGE PROPERTY HUB (DEFAULT ACTIVE VIEW)     -->
+    <!-- ============================================================================ -->
+    <div id="module-properties" class="app-module active flex-1">
+
+        <!-- Sticky Filters & Search Sub-Header -->
+        <div class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[93px] z-40 shadow-2xs">
+            <div class="max-w-md mx-auto px-3.5 py-2.5 space-y-2">
+                <!-- Search Input -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-emerald-600 text-xs"></i>
+                    <input 
+                        type="text" 
+                        id="propSearchInput" 
+                        oninput="handlePropertySearch(this.value)" 
+                        placeholder="Search 'Ramdara Road', '2 BHK', 'MIDC', 'Shop', 'Plot'..." 
+                        class="w-full bg-slate-50 focus:bg-white border border-slate-200 focus:border-emerald-500 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none transition"
+                    >
+                    <button id="clearPropSearchBtn" onclick="clearPropertySearch()" class="hidden absolute right-3 top-2 text-slate-400 hover:text-slate-600 text-xs">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Primary Intent Tabs -->
+                <div class="flex space-x-1.5 overflow-x-auto no-scrollbar pt-0.5" id="intentTabsBar">
+                    <button onclick="setPropertyIntent('all')" data-intent="all" class="intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-xs transition">
+                        All Properties <span id="count-all" class="ml-1 bg-white/20 px-1.5 py-0.2 rounded-full text-[10px]">8</span>
+                    </button>
+                    <button onclick="setPropertyIntent('rent')" data-intent="rent" class="intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 border border-slate-200 transition">
+                        🔑 For Rent
+                    </button>
+                    <button onclick="setPropertyIntent('sale')" data-intent="sale" class="intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 border border-slate-200 transition">
+                        🏡 Buy / Sale
+                    </button>
+                    <button onclick="setPropertyIntent('commercial')" data-intent="commercial" class="intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 border border-slate-200 transition">
+                        🏪 Commercial & Shops
+                    </button>
+                    <button onclick="setPropertyIntent('plot')" data-intent="plot" class="intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 border border-slate-200 transition">
+                        📐 Plots / Land
+                    </button>
+                </div>
+
+                <!-- Shirur Locality Chips -->
+                <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pt-0.5 border-t border-slate-100">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase shrink-0 pr-1"><i class="fa-solid fa-map-pin text-emerald-500 mr-0.5"></i>Area:</span>
+                    <button onclick="setLocalityFilter('All Shirur')" data-loc="All Shirur" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 transition">All Shirur</button>
+                    <button onclick="setLocalityFilter('Pune-Nagar Highway')" data-loc="Pune-Nagar Highway" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">Pune-Nagar Highway</button>
+                    <button onclick="setLocalityFilter('Ramdara Road')" data-loc="Ramdara Road" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">Ramdara Road</button>
+                    <button onclick="setLocalityFilter('Joshi Wadi')" data-loc="Joshi Wadi" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">Joshi Wadi</button>
+                    <button onclick="setLocalityFilter('Babu Peth')" data-loc="Babu Peth" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">Babu Peth</button>
+                    <button onclick="setLocalityFilter('MIDC Karegaon')" data-loc="MIDC Karegaon" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">MIDC Karegaon</button>
+                    <button onclick="setLocalityFilter('Saradwadi Road')" data-loc="Saradwadi Road" class="loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition">Saradwadi Road</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN PROPERTY HUB CONTENT -->
+        <main class="max-w-md mx-auto px-3.5 pt-3 pb-36 space-y-4">
+
+            <!-- SUB-TAB 1: EXPLORE PROPERTIES FEED -->
+            <div id="prop-tab-feed" class="sub-tab active space-y-4">
+
+                <!-- 0% Brokerage Hero Savings Banner -->
+                <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-4 text-white shadow-md shadow-emerald-200/70 relative overflow-hidden">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-xs px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                                <i class="fa-solid fa-handshake-slash"></i> Say Goodbye to Brokers
+                            </div>
+                            <h2 class="text-base font-black leading-tight">100% Direct Owner Properties in Shirur</h2>
+                            <p class="text-[11px] text-emerald-50 font-medium">Save 1 Month Rent or 2% Commission • Talk Directly to Verified Owners</p>
+                        </div>
+                        <button onclick="openPostPropertyModal()" class="shrink-0 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 py-2.5 rounded-xl shadow-md transition text-center leading-tight">
+                            + List Yours<br><span class="text-[10px] font-bold">₹0 Fee</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Filter Toggle Pills -->
+                <div class="flex space-x-2 overflow-x-auto no-scrollbar py-0.5">
+                    <button onclick="toggleQuickFilter('bachelors')" id="qf-bachelors" class="qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition">
+                        <span>🎓 Bachelors Allowed</span>
+                    </button>
+                    <button onclick="toggleQuickFilter('furnished')" id="qf-furnished" class="qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition">
+                        <span>🛋️ Furnished</span>
+                    </button>
+                    <button onclick="toggleQuickFilter('immediate')" id="qf-immediate" class="qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition">
+                        <span>⚡ Ready to Move</span>
+                    </button>
+                    <button onclick="resetAllPropertyFilters()" class="shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                        Reset
+                    </button>
+                </div>
+
+                <!-- Results Count & Sort Strip -->
+                <div class="flex items-center justify-between px-1">
+                    <p class="text-xs font-extrabold text-slate-700">
+                        Showing <span id="visiblePropCount" class="text-emerald-600">8</span> Verified Owner Listings
+                    </p>
+                    <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <i class="fa-solid fa-shield-halved mr-1"></i>Aadhaar & 7/12 Checked
+                    </span>
+                </div>
+
+                <!-- Dynamic Property Listings Container -->
+                <div id="propertyCardsContainer" class="space-y-4">
+                    <!-- Populated via JavaScript -->
+                </div>
+
+                <!-- Owner CTA Card at bottom of feed -->
+                <div class="bg-white border-2 border-dashed border-emerald-300 rounded-2xl p-4 text-center space-y-2 shadow-xs">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-lg">
+                        <i class="fa-solid fa-house-medical-circle-check"></i>
+                    </div>
+                    <h3 class="font-extrabold text-sm text-slate-900">Have a Flat, Shop, Row House or Plot in Shirur?</h3>
+                    <p class="text-xs text-slate-500">Post your property advertisement in 60 seconds. Get direct calls from verified tenants & buyers without paying any broker commission.</p>
+                    <button onclick="openPostPropertyModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-sm shadow-emerald-200 transition inline-flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Post Free Property Ad Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUB-TAB 2: SHORTLISTED / SAVED PROPERTIES -->
+            <div id="prop-tab-saved" class="sub-tab space-y-4">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                    <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-heart text-rose-500"></i> Shortlisted Properties
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Compare your saved zero-brokerage homes & contact owners directly.</p>
+                </div>
+                <div id="savedPropertiesContainer" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- SUB-TAB 3: BROKERAGE CALCULATOR & SAFETY GUIDE -->
+            <div id="prop-tab-calc" class="sub-tab space-y-4">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Savings Calculator</span>
+                    <h2 class="text-base font-extrabold text-slate-900">How Much Brokerage Do You Save?</h2>
+                    <p class="text-xs text-slate-500">Traditional brokers in Shirur charge 1 month rent or 2% on property sales. Check your direct savings:</p>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-700 block mb-1">Enter Monthly Rent (₹) or Sale Value (₹)</label>
+                            <input type="number" id="calcInputAmount" value="10000" oninput="runBrokerageCalc()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-extrabold text-slate-900 outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-center">
+                            <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">If Rent (1 Month)</p>
+                                <p id="calcRentSave" class="text-base font-black text-emerald-600 mt-0.5">Save ₹10,000</p>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">If Sale (2% Comm.)</p>
+                                <p id="calcSaleSave" class="text-base font-black text-emerald-600 mt-0.5">Save ₹200</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2.5">
+                    <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-emerald-600"></i> Shirur Express Zero-Brokerage Promise
+                    </h3>
+                    <ul class="text-xs text-slate-600 space-y-2">
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i> <strong>Never Pay Visit Charges:</strong> Calling owners and visiting properties on Shirur Express is 100% free.</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i> <strong>Direct Agreement:</strong> Online Leave & License (Rent Agreement) assistance available at government stamp rates.</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-circle-check text-emerald-600 mt-0.5"></i> <strong>Report Brokers:</strong> If any listed number asks for brokerage, tap "Report Broker" and we remove it immediately.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- PROPERTY MODULE BOTTOM NAVIGATION BAR -->
+        <nav class="bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 shadow-[0_-4px_12px_rgba(15,23,42,0.05)]">
+            <div class="max-w-md mx-auto grid grid-cols-4 gap-1 text-center">
+                <button onclick="switchPropertySubTab('feed')" id="propnav-feed" class="prop-nav-item flex flex-col items-center justify-center py-1 text-emerald-600 font-extrabold transition">
+                    <i class="fa-solid fa-building text-base"></i>
+                    <span class="text-[10px] mt-0.5">Explore</span>
+                </button>
+                <button onclick="openPostPropertyModal()" class="prop-nav-item flex flex-col items-center justify-center py-1 text-slate-500 hover:text-emerald-600 font-bold transition">
+                    <i class="fa-solid fa-square-plus text-base text-emerald-600"></i>
+                    <span class="text-[10px] mt-0.5">Post Free</span>
+                </button>
+                <button onclick="switchPropertySubTab('saved')" id="propnav-saved" class="prop-nav-item flex flex-col items-center justify-center py-1 text-slate-500 hover:text-emerald-600 font-medium transition relative">
+                    <i class="fa-solid fa-heart text-base"></i>
+                    <span class="text-[10px] mt-0.5">Shortlist (<span id="shortlistNavCount">0</span>)</span>
+                </button>
+                <button onclick="switchPropertySubTab('calc')" id="propnav-calc" class="prop-nav-item flex flex-col items-center justify-center py-1 text-slate-500 hover:text-emerald-600 font-medium transition">
+                    <i class="fa-solid fa-calculator text-base"></i>
+                    <span class="text-[10px] mt-0.5">Savings</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ============================================================================ -->
+    <!-- MODULE 2: SHIRUR EXPRESS BEAUTY PARLOR MENU (100% LIGHT MODE, 38 SERVICES)   -->
+    <!-- ============================================================================ -->
+    <div id="module-salon" class="app-module flex-1 bg-[#FFF8FA]">
+
+        <!-- Sticky Salon Search & Category Jump Bar -->
+        <div class="bg-white/95 backdrop-blur-md border-b border-rose-100 sticky top-[93px] z-40 shadow-2xs">
+            <div class="max-w-md mx-auto px-4 pt-2.5 pb-2">
+                <div id="headerSearchContainer" class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-rose-400 text-xs"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        oninput="handleSearch(this.value)" 
+                        placeholder="Search 'Butterfly cut', 'Rica wax', 'Keratin', 'Pedicure'..." 
+                        class="w-full bg-rose-50/40 focus:bg-white border border-rose-200 focus:border-rose-500 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none transition"
+                    >
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-2 text-slate-400 hover:text-slate-600 text-xs">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Horizontal Category Jump-Pills -->
+            <div id="categoryBarContainer" class="max-w-md mx-auto px-4 py-2 bg-white border-t border-rose-50 flex space-x-2 overflow-x-auto no-scrollbar">
+                <button onclick="scrollToCategory('all')" data-cat="all" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 bg-rose-600 text-white shadow-xs">
+                    <span>All Menu</span>
+                    <span class="bg-white/20 text-white px-1.5 py-0.2 rounded-full text-[10px]">38</span>
+                </button>
+                <button onclick="scrollToCategory('sec-basic-hair')" data-cat="sec-basic-hair" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    ✂️ Basic Cuts <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-adv-hair')" data-cat="sec-adv-hair" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    💇‍♀️ Advance Cuts <span class="text-[10px] text-rose-600 font-bold">(12)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-baby-cut')" data-cat="sec-baby-cut" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    👶 Baby Cut <span class="text-[10px] text-rose-600 font-bold">(4)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-hair-color')" data-cat="sec-hair-color" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    🎨 Hair Color <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-hair-treat')" data-cat="sec-hair-treat" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    ✨ Treatments <span class="text-[10px] text-rose-600 font-bold">(8)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-skincare')" data-cat="sec-skincare" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    💅 Skincare <span class="text-[10px] text-rose-600 font-bold">(2)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-body-wax')" data-cat="sec-body-wax" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    🍯 Body Wax <span class="text-[10px] text-rose-600 font-bold">(4)</span>
+                </button>
+                <button onclick="scrollToCategory('sec-face-wax')" data-cat="sec-face-wax" class="cat-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition flex items-center gap-1">
+                    🌸 Face Wax <span class="text-[10px] text-rose-600 font-bold">(3)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SALON MAIN CONTENT -->
+        <div class="max-w-md mx-auto w-full px-4 pt-3 pb-40">
+            <!-- Salon Sub-Tab 1: Menu -->
+            <div id="salon-tab-home" class="sub-tab active space-y-5">
+                <div class="bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 rounded-2xl p-4 text-white shadow-md shadow-rose-200/70 flex items-center justify-between">
+                    <div class="space-y-1 max-w-[74%]">
+                        <span class="bg-white/25 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Flat Parlor Savings</span>
+                        <h2 class="text-base font-extrabold leading-tight">All 38 Beauty Services in One Scroll!</h2>
+                        <p class="text-[11px] text-rose-50 font-medium">Slashed Market Prices • Direct Variant Toggles</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-white/20 flex flex-col items-center justify-center border border-white/30 shrink-0">
+                        <span class="text-[10px] font-bold">STARTS</span>
+                        <span class="text-lg font-extrabold">₹99</span>
+                    </div>
+                </div>
+
+                <div id="menuSectionsWrapper" class="space-y-6"></div>
+            </div>
+
+            <!-- Salon Sub-Tab 2: Bookings -->
+            <div id="salon-tab-bookings" class="sub-tab space-y-4">
+                <div class="bg-white border border-rose-100 rounded-2xl p-4 shadow-xs">
+                    <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-rose-600"></i> My Salon Bookings
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Track your upcoming parlor appointments.</p>
+                </div>
+                <div id="bookingsListContainer" class="space-y-3">
+                    <div class="bg-white border border-rose-100 rounded-2xl p-4 shadow-xs space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full">CONFIRMED SLOT</span>
+                                <h3 class="font-bold text-sm text-slate-800 mt-1">Butterfly Cut + Rica Wax (Hand)</h3>
+                            </div>
+                            <p class="font-extrabold text-base text-rose-600">₹698</p>
+                        </div>
+                        <p class="text-xs text-slate-500"><i class="fa-regular fa-clock text-rose-500 mr-1"></i> Today, 4:30 PM • Stylist Priya Didi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Salon Floating Cart Bar -->
+        <div class="fixed bottom-14 left-0 right-0 z-40 px-4 max-w-md mx-auto pointer-events-none">
+            <div class="bg-white/95 backdrop-blur-md border-2 border-rose-200 rounded-2xl p-3 shadow-xl flex items-center justify-between gap-2 pointer-events-auto">
+                <div onclick="openCartDrawer()" class="flex items-center space-x-3 cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold text-sm relative">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span id="cartBadgeCount" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-400 text-slate-900 font-extrabold rounded-full text-[10px] flex items-center justify-center border-2 border-white">0</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span id="cartTotalText" class="text-sm font-extrabold text-slate-800">₹0</span>
+                            <span id="cartSavingsBadge" class="hidden bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">Save ₹0</span>
+                        </div>
+                        <p id="cartSubText" class="text-[11px] text-rose-600 font-semibold">Tap to view parlor bag</p>
+                    </div>
+                </div>
+                <button onclick="openCartDrawer()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-sm transition">
+                    Book Slot <i class="fa-solid fa-arrow-right ml-1 text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Salon Bottom Navigation -->
+        <nav class="bg-white border-t border-rose-100 fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5">
+            <div class="max-w-md mx-auto grid grid-cols-3 gap-1 text-center">
+                <button onclick="switchSalonSubTab('home')" id="salonnav-home" class=" flex flex-col items-center justify-center py-1 text-rose-600 font-extrabold">
+                    <i class="fa-solid fa-scissors text-base"></i>
+                    <span class="text-[10px] mt-0.5">Salon Menu (38)</span>
+                </button>
+                <button onclick="switchSalonSubTab('bookings')" id="salonnav-bookings" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
+                    <i class="fa-solid fa-calendar-check text-base"></i>
+                    <span class="text-[10px] mt-0.5">My Bookings</span>
+                </button>
+                <button onclick="openCallModal()" class="flex flex-col items-center justify-center py-1 text-slate-400 font-medium">
+                    <i class="fa-solid fa-headset text-base text-rose-500"></i>
+                    <span class="text-[10px] mt-0.5">Call Specialist</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ============================================================================ -->
+    <!-- MODALS FOR PROPERTY HUB & SALON                                              -->
+    <!-- ============================================================================ -->
+
+    <!-- 1. POST FREE PROPERTY MODAL (LIGHT MODE) -->
+    <div id="postPropertyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border-t border-slate-200 max-h-[90vh] overflow-y-auto space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">100% Free Owner Listing</span>
+                    <h3 class="font-black text-base text-slate-900 mt-0.5">Post Your Property (0% Brokerage)</h3>
+                </div>
+                <button onclick="closePostPropertyModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-rose-100 hover:text-rose-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitNewProperty(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Listing Category *</label>
+                        <select id="postPropCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-slate-800 outline-none focus:border-emerald-500">
+                            <option value="rent">🔑 Flat / House for Rent</option>
+                            <option value="sale">🏡 Property for Sale</option>
+                            <option value="commercial">🏪 Commercial Shop / Office</option>
+                            <option value="plot">📐 NA Plot / Land Sale</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Shirur Locality *</label>
+                        <select id="postPropLocality" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-slate-800 outline-none focus:border-emerald-500">
+                            <option value="Ramdara Road">Ramdara Road</option>
+                            <option value="Pune-Nagar Highway">Pune-Nagar Highway</option>
+                            <option value="Joshi Wadi">Joshi Wadi</option>
+                            <option value="Babu Peth">Babu Peth</option>
+                            <option value="MIDC Karegaon">MIDC Karegaon</option>
+                            <option value="Saradwadi Road">Saradwadi Road</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="font-bold text-slate-700 block mb-1">Property Title / Configuration *</label>
+                    <input type="text" id="postPropTitle" required placeholder="e.g., Spacious 2 BHK Flat in Ganesh Park" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Rent/mo or Sale Price *</label>
+                        <input type="text" id="postPropPrice" required placeholder="e.g., ₹8,500/mo or ₹32 Lakhs" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Deposit or Rate/Sq.ft *</label>
+                        <input type="text" id="postPropSubPrice" required placeholder="e.g., ₹20,000 Deposit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Built-up Area *</label>
+                        <input type="text" id="postPropArea" required placeholder="e.g., 850 sq.ft or 2 Guntha" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Tenant / Buyer Pref.</label>
+                        <select id="postPropTenant" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-slate-800 outline-none focus:border-emerald-500">
+                            <option value="Family / Working Bachelors">Family & Bachelors Allowed</option>
+                            <option value="Family Only">Family Only</option>
+                            <option value="Bachelors / MIDC Staff">Bachelors / Students Welcome</option>
+                            <option value="Immediate Registration">Direct Buyer / Immediate Reg.</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Owner Full Name *</label>
+                        <input type="text" id="postPropOwner" required placeholder="e.g., Sandeep Gavhane" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Owner Mobile No. *</label>
+                        <input type="tel" id="postPropPhone" required placeholder="e.g., 9822011223" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 text-[11px] text-emerald-900 flex items-center gap-2">
+                    <i class="fa-solid fa-check-double text-emerald-600"></i>
+                    <span>I confirm I am the direct owner (or family member) and will charge <strong>₹0 Brokerage</strong>.</span>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-md shadow-emerald-200 transition">
+                    <i class="fa-solid fa-bolt mr-1"></i> Publish Property Live (Free)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. OWNER DIRECT CONTACT & PROPERTY DETAILS MODAL -->
+    <div id="ownerContactModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-start">
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+                    <i class="fa-solid fa-shield-check mr-1"></i>Verified Direct Owner
+                </span>
+                <button onclick="closeOwnerModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div>
+                <h3 id="modalPropTitle" class="font-extrabold text-sm text-slate-900">Property Title</h3>
+                <p id="modalPropPrice" class="text-xs font-extrabold text-emerald-600 mt-0.5"></p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Owner Name:</span>
+                    <strong id="modalOwnerName" class="text-slate-900"></strong>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Direct Mobile:</span>
+                    <strong id="modalOwnerPhone" class="text-emerald-700 font-black text-sm"></strong>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Brokerage Saved:</span>
+                    <span id="modalBrokerageSaved" class="bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded text-[11px]"></span>
+                </div>
+                <div class="pt-2 border-t border-slate-200 text-[11px] text-slate-600" id="modalExtraSpecs"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="copyOwnerPhone()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-regular fa-copy"></i> Copy Number
+                </button>
+                <button onclick="closeOwnerModal(); showToast('💬 Opening direct WhatsApp chat with owner...')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Owner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. SALON CHECKOUT DRAWER MODAL -->
+    <div id="cartDrawerModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex-col justify-end">
+        <div class="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 shadow-2xl border-t border-rose-100 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-extrabold text-base text-slate-800">Your Parlor Service Bag</h3>
+                    <p class="text-[11px] text-slate-500">Transparent 'Our Price' billing • Pay after service</p>
+                </div>
+                <button onclick="closeCartDrawer()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="drawerCartItems" class="overflow-y-auto py-3 space-y-2.5 flex-1"></div>
+            <div class="border-t border-slate-100 pt-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-slate-500">
+                    <span>Market Price Total</span>
+                    <span id="drawerMarketTotal" class="line-through">₹0</span>
+                </div>
+                <div class="flex justify-between text-xs font-bold text-emerald-600">
+                    <span>Shirur Express Discount</span>
+                    <span id="drawerSavingsTotal">- ₹0</span>
+                </div>
+                <div class="flex justify-between text-base font-extrabold text-slate-800 pt-1">
+                    <span>Our Final Price</span>
+                    <span id="drawerOurTotal" class="text-rose-600">₹0</span>
+                </div>
+                <button onclick="confirmParlorBooking()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold py-3 rounded-2xl text-xs shadow-md mt-2">
+                    <i class="fa-solid fa-circle-check mr-1"></i> Confirm Salon Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. SALON CALL MODAL -->
+    <div id="callModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-rose-100 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-phone-volume"></i>
+            </div>
+            <h3 class="font-extrabold text-base text-slate-800">Direct Call Salon Specialist</h3>
+            <p class="text-xs text-slate-500">Speak with Senior Stylist Priya Didi (+91 98220 00111) for hair length pricing on Keratin, Straightening, Nanoplastia & Global Color.</p>
+            <div class="flex gap-2">
+                <button onclick="closeCallModal()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Close</button>
+                <button onclick="closeCallModal(); showToast('📞 Callback requested! Beautician will call you in 2 mins.')" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Request Call</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBox" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2 max-w-xs text-center">
+        <span id="toastText">Notification</span>
+    </div>
+
+    <!-- ============================================================================ -->
+    <!-- APPLICATION DATA & JAVASCRIPT LOGIC                                          -->
+    <!-- ============================================================================ -->
+    <script>
+        // ---------------------------------------------------------------------------
+        // 1. PRE-LOADED REALISTIC SHIRUR PROPERTIES (8 DETAILED LISTINGS)
+        // ---------------------------------------------------------------------------
+        const shirurProperties = [
+            {
+                id: 'prop-1',
+                category: 'rent',
+                typeBadge: 'FOR RENT',
+                title: 'Spacious 2 BHK Flat in Sai Residency',
+                locality: 'Ramdara Road',
+                fullAddress: 'Near Ramdara Temple Turn, Ramdara Road, Shirur',
+                priceText: '₹9,500/mo',
+                subPriceText: 'Deposit: ₹25,000 • Maint. Included',
+                brokerageSaved: '₹9,500',
+                area: '920 sq.ft',
+                furnishing: 'Semi-Furnished',
+                floor: '2nd of 4 Floors (Lift)',
+                tenantPref: 'Family / Working Bachelors',
+                bachelorsAllowed: true,
+                isFurnished: true,
+                readyToMove: true,
+                waterParking: '24x7 Municipal + Borewell • Covered Car & Bike Parking',
+                ownerName: 'Rajesh Deshmukh (Owner)',
+                ownerPhone: '+91 98224 51092',
+                verifiedDoc: 'Verified Aadhaar & Index-II',
+                postedTime: '2 hours ago',
+                image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-2',
+                category: 'commercial',
+                typeBadge: 'COMMERCIAL RENT',
+                title: 'Highway Touch Commercial Shop / Showroom',
+                locality: 'Pune-Nagar Highway',
+                fullAddress: 'Near Shirur ST Bus Stand, Pune-Nagar Highway',
+                priceText: '₹18,000/mo',
+                subPriceText: 'Deposit: ₹60,000 • 18ft Frontage',
+                brokerageSaved: '₹18,000',
+                area: '450 sq.ft (Ground Floor)',
+                furnishing: 'Glass Shutter + Washroom',
+                floor: 'Ground Floor Road Touch',
+                tenantPref: 'Ideal for Cafe, Medical, Salon, Office',
+                bachelorsAllowed: true,
+                isFurnished: false,
+                readyToMove: true,
+                waterParking: '3-Phase MSEB Meter • Customer Front Parking',
+                ownerName: 'vishwas Bora (Owner)',
+                ownerPhone: '+91 94220 88341',
+                verifiedDoc: 'Verified Shop Act & Tax Receipt',
+                postedTime: '5 hours ago',
+                image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-3',
+                category: 'sale',
+                typeBadge: 'FOR SALE',
+                title: 'Independent 3 BHK Row House with Terrace',
+                locality: 'Joshi Wadi',
+                fullAddress: 'Shanti Nagar Society, Joshi Wadi, Shirur',
+                priceText: '₹46.5 Lakhs',
+                subPriceText: '₹3,206 / sq.ft • Slightly Negotiable',
+                brokerageSaved: '₹93,000 (2%)',
+                area: '1,450 sq.ft Built-up',
+                furnishing: 'Modular Kitchen + Trolley',
+                floor: 'G + 1 Independent Duplex',
+                tenantPref: 'East Facing • Bank Loan Approved',
+                bachelorsAllowed: false,
+                isFurnished: true,
+                readyToMove: true,
+                waterParking: 'Private Porch Car Parking • Solar Water Heater',
+                ownerName: 'Anil Kulkarni (Owner)',
+                ownerPhone: '+91 98500 32910',
+                verifiedDoc: 'Verified 7/12 & Completion Cert.',
+                postedTime: '1 day ago',
+                image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-4',
+                category: 'rent',
+                typeBadge: 'FOR RENT',
+                title: 'Affordable 1 BHK Studio for Bachelors / MIDC Staff',
+                locality: 'MIDC Karegaon',
+                fullAddress: '5 Mins from Ranjangaon-Karegaon MIDC Gate, Shirur',
+                priceText: '₹5,500/mo',
+                subPriceText: 'Deposit: ₹12,000 • Zero Maintenance',
+                brokerageSaved: '₹5,500',
+                area: '580 sq.ft',
+                furnishing: 'Unfurnished (Geyser Fitted)',
+                floor: '1st Floor',
+                tenantPref: 'Bachelors Allowed / Company Staff',
+                bachelorsAllowed: true,
+                isFurnished: false,
+                readyToMove: true,
+                waterParking: '24x7 Sweet Water + CCTV Bike Parking',
+                ownerName: 'Mahesh Pacharne (Owner)',
+                ownerPhone: '+91 97654 11209',
+                verifiedDoc: 'Verified Aadhaar & Light Bill',
+                postedTime: '3 hours ago',
+                image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-5',
+                category: 'plot',
+                typeBadge: 'NA PLOT SALE',
+                title: 'NA Residential Plot (2.5 Guntha) Clear Title',
+                locality: 'Saradwadi Road',
+                fullAddress: 'Near Highway Touch Layout, Saradwadi Road, Shirur',
+                priceText: '₹22.5 Lakhs',
+                subPriceText: '₹9 Lakhs / Guntha • Collector NA',
+                brokerageSaved: '₹45,000 (2%)',
+                area: '2.5 Guntha (2,500 sq.ft)',
+                furnishing: 'Demarcated Boundary Wall',
+                floor: '30ft Internal WBM Road',
+                tenantPref: 'Immediate Sale Deed Registration',
+                bachelorsAllowed: true,
+                isFurnished: false,
+                readyToMove: true,
+                waterParking: 'Town Planning Approved • Street Lights & Drainage',
+                ownerName: 'Balasaheb Shinde (Owner)',
+                ownerPhone: '+91 99211 76543',
+                verifiedDoc: 'Verified Individual 7/12 & NA Order',
+                postedTime: 'Yesterday',
+                image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-6',
+                category: 'rent',
+                typeBadge: 'FOR RENT',
+                title: 'Modern 2 BHK Fully Furnished Flat near College',
+                locality: 'Babu Peth',
+                fullAddress: 'Behind Market Yard, Babu Peth, Shirur',
+                priceText: '₹11,500/mo',
+                subPriceText: 'Deposit: ₹30,000 • Ready to Shift',
+                brokerageSaved: '₹11,500',
+                area: '1,050 sq.ft',
+                furnishing: 'Fully Furnished (Bed, Wardrobe, RO, Geyser)',
+                floor: '3rd Floor with Balcony View',
+                tenantPref: 'Family / Working Professionals',
+                bachelorsAllowed: true,
+                isFurnished: true,
+                readyToMove: true,
+                waterParking: 'Reserved Covered Parking • 24x7 Security',
+                ownerName: 'Mrs. Sunita Dhariwal (Owner)',
+                ownerPhone: '+91 98231 65008',
+                verifiedDoc: 'Verified Owner Property Tax',
+                postedTime: '6 hours ago',
+                image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-7',
+                category: 'rent',
+                typeBadge: 'FOR RENT',
+                title: 'Prime 1 RK Budget Room for Students / Singles',
+                locality: 'Babu Peth',
+                fullAddress: 'Near CT Bora College Road, Shirur',
+                priceText: '₹3,800/mo',
+                subPriceText: 'Deposit: ₹8,000 • Separate Electricity Meter',
+                brokerageSaved: '₹3,800',
+                area: '340 sq.ft',
+                furnishing: 'Study Table & Fan Included',
+                floor: 'Ground Floor Independent Entry',
+                tenantPref: 'Students / Bachelors Allowed (Zero Restrictions)',
+                bachelorsAllowed: true,
+                isFurnished: true,
+                readyToMove: true,
+                waterParking: '2-Wheeler Inside Gate • 24 Hr Water',
+                ownerName: 'Prakash बनकर (Owner)',
+                ownerPhone: '+91 96045 22198',
+                verifiedDoc: 'Verified Owner Aadhaar',
+                postedTime: 'Today',
+                image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=700&q=80'
+            },
+            {
+                id: 'prop-8',
+                category: 'plot',
+                typeBadge: 'LAND / FARM SALE',
+                title: 'Agricultural / Farmhouse Land (1 Acre) with Well Water',
+                locality: 'Pune-Nagar Highway',
+                fullAddress: 'Shirur-Pabal Road Touch, 4 km from Shirur Center',
+                priceText: '₹35.0 Lakhs',
+                subPriceText: '1 Acre (40 Guntha) • Direct Farmer Sale',
+                brokerageSaved: '₹70,000 (2%)',
+                area: '1 Acre (43,560 sq.ft)',
+                furnishing: 'Fenced + Drip Pipeline Ready',
+                floor: 'Tar Road Touch Frontage',
+                tenantPref: 'Clear Single-Owner 7/12 Extract',
+                bachelorsAllowed: true,
+                isFurnished: false,
+                readyToMove: true,
+                waterParking: 'Perennial Well Water + Electricity Pole Connected',
+                ownerName: 'Dattatray Pawar (Farmer Owner)',
+                ownerPhone: '+91 94235 90871',
+                verifiedDoc: 'Verified 7/12 & 8A Ferfar',
+                postedTime: '2 days ago',
+                image: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=700&q=80'
+            }
+        ];
+
+        // Property Filter States
+        let activeIntent = 'all';
+        let activeLocality = 'All Shirur';
+        let propSearchQuery = '';
+        let quickFilters = {
+            bachelors: false,
+            furnished: false,
+            immediate: false
+        };
+        let savedPropertyIds = new Set(['prop-1']);
+        let activeModalPhone = '';
+
+        // Render Property Cards
+        function renderProperties() {
+            const container = document.getElementById('propertyCardsContainer');
+            container.innerHTML = '';
+
+            const filtered = shirurProperties.filter(p => {
+                if (activeIntent !== 'all' && p.category !== activeIntent) return false;
+                if (activeLocality !== 'All Shirur' && p.locality !== activeLocality) return false;
+                if (quickFilters.bachelors && !p.bachelorsAllowed) return false;
+                if (quickFilters.furnished && !p.isFurnished) return false;
+                if (quickFilters.immediate && !p.readyToMove) return false;
+
+                if (propSearchQuery) {
+                    const q = propSearchQuery.toLowerCase();
+                    const hay = `${p.title} ${p.locality} ${p.fullAddress} ${p.ownerName} ${p.priceText} ${p.tenantPref}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('visiblePropCount').innerText = filtered.length;
+            document.getElementById('count-all').innerText = shirurProperties.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-2.5 shadow-2xs">
+                        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-lg">
+                            <i class="fa-solid fa-house-circle-xmark"></i>
+                        </div>
+                        <h4 class="font-extrabold text-sm text-slate-800">No properties match this filter</h4>
+                        <p class="text-xs text-slate-500">Try selecting "All Shirur" or resetting quick filters to view all direct-owner properties.</p>
+                        <button onclick="resetAllPropertyFilters()" class="bg-emerald-600 text-white text-xs font-extrabold px-4 py-2 rounded-xl">Show All ${shirurProperties.length} Properties</button>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(prop => {
+                const isSaved = savedPropertyIds.has(prop.id);
+                const badgeColor = prop.category === 'rent' ? 'bg-emerald-600 text-white' :
+                                   prop.category === 'sale' ? 'bg-indigo-600 text-white' :
+                                   prop.category === 'commercial' ? 'bg-amber-500 text-slate-950' : 'bg-teal-700 text-white';
+
+                const card = document.createElement('article');
+                card.className = 'bg-white border border-slate-200 hover:border-emerald-400 rounded-2xl overflow-hidden shadow-xs transition';
+                card.innerHTML = `
+                    <!-- Image & Top Badges -->
+                    <div class="relative h-44 w-full bg-slate-100 overflow-hidden">
+                        <img src="${prop.image}" alt="${prop.title}" onerror="this.src='https://placehold.co/600x350/e2e8f0/0f172a?text=Shirur+Property'" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30"></div>
+
+                        <!-- Top Left Badges -->
+                        <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
+                            <span class="${badgeColor} text-[10px] font-black px-2.5 py-0.5 rounded-md shadow-xs uppercase tracking-wide">
+                                ${prop.typeBadge}
+                            </span>
+                            <span class="bg-white/95 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
+                                <i class="fa-solid fa-bolt text-emerald-600"></i> 0% BROKERAGE
+                            </span>
+                        </div>
+
+                        <!-- Shortlist Heart Button -->
+                        <button onclick="toggleShortlist('${prop.id}')" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/95 hover:bg-white flex items-center justify-center shadow-md transition">
+                            <i class="${isSaved ? 'fa-solid text-rose-500' : 'fa-regular text-slate-600'} fa-heart text-sm"></i>
+                        </button>
+
+                        <!-- Bottom Image Overlay: Brokerage Saved Pill -->
+                        <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+                            <span class="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">
+                                💰 SAVE ${prop.brokerageSaved} BROKERAGE
+                            </span>
+                            <span class="bg-slate-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                                <i class="fa-regular fa-clock mr-1"></i>${prop.postedTime}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-3.5 space-y-3">
+                        <!-- Title, Location & Price Row -->
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <h3 class="font-extrabold text-sm text-slate-900 leading-snug">${prop.title}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium mt-0.5 flex items-center gap-1">
+                                    <i class="fa-solid fa-location-dot text-emerald-600"></i> ${prop.fullAddress}
+                                </p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <p class="text-base font-black text-emerald-700">${prop.priceText}</p>
+                                <p class="text-[10px] font-bold text-slate-400">Direct Owner Rate</p>
+                            </div>
+                        </div>
+
+                        <!-- Sub-price / Deposit Strip -->
+                        <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl px-3 py-1.5 flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-slate-700">${prop.subPriceText}</span>
+                            <span class="text-emerald-700 font-extrabold text-[10px] uppercase">Ready Visit</span>
+                        </div>
+
+                        <!-- 4-Grid Key Property Specs -->
+                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-[11px]">
+                            <div class="flex items-center gap-1.5 text-slate-700">
+                                <i class="fa-solid fa-ruler-combined text-emerald-600 w-3.5"></i>
+                                <span class="truncate font-semibold">${prop.area}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-700">
+                                <i class="fa-solid fa-couch text-emerald-600 w-3.5"></i>
+                                <span class="truncate font-semibold">${prop.furnishing}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-700">
+                                <i class="fa-solid fa-users text-emerald-600 w-3.5"></i>
+                                <span class="truncate font-semibold">${prop.tenantPref}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-700">
+                                <i class="fa-solid fa-droplet text-emerald-600 w-3.5"></i>
+                                <span class="truncate font-semibold">${prop.waterParking}</span>
+                            </div>
+                        </div>
+
+                        <!-- Verified Owner Strip & Action Buttons -->
+                        <div class="pt-1 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                    ${prop.ownerName.charAt(0)}
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-xs font-extrabold text-slate-800 truncate">${prop.ownerName}</p>
+                                    <p class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-circle-check"></i> ${prop.verifiedDoc}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button onclick="openOwnerModal('${prop.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-extrabold text-xs px-2.5 py-2 rounded-xl transition flex items-center gap-1">
+                                    <i class="fa-brands fa-whatsapp text-sm"></i> Chat
+                                </button>
+                                <button onclick="openOwnerModal('${prop.id}')" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs px-3 py-2 rounded-xl shadow-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-phone text-[10px]"></i> Call Owner
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Filter Handlers
+        function setPropertyIntent(intent) {
+            activeIntent = intent;
+            document.querySelectorAll('.intent-pill').forEach(btn => {
+                if (btn.dataset.intent === intent) {
+                    btn.className = 'intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-xs transition';
+                } else {
+                    btn.className = 'intent-pill shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 border border-slate-200 transition';
+                }
+            });
+            renderProperties();
+        }
+
+        function setLocalityFilter(loc) {
+            activeLocality = loc;
+            document.querySelectorAll('.loc-pill').forEach(btn => {
+                if (btn.dataset.loc === loc) {
+                    btn.className = 'loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 transition';
+                } else {
+                    btn.className = 'loc-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition';
+                }
+            });
+            renderProperties();
+        }
+
+        function toggleQuickFilter(key) {
+            quickFilters[key] = !quickFilters[key];
+            const btn = document.getElementById('qf-' + key);
+            if (quickFilters[key]) {
+                btn.className = 'qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-emerald-600 text-white border border-emerald-600 shadow-xs flex items-center gap-1.5 transition';
+            } else {
+                btn.className = 'qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition';
+            }
+            renderProperties();
+        }
+
+        function handlePropertySearch(val) {
+            propSearchQuery = val.trim();
+            document.getElementById('clearPropSearchBtn').classList.toggle('hidden', propSearchQuery.length === 0);
+            renderProperties();
+        }
+
+        function clearPropertySearch() {
+            document.getElementById('propSearchInput').value = '';
+            handlePropertySearch('');
+        }
+
+        function resetAllPropertyFilters() {
+            activeIntent = 'all';
+            activeLocality = 'All Shirur';
+            quickFilters = { bachelors: false, furnished: false, immediate: false };
+            clearPropertySearch();
+            setPropertyIntent('all');
+            setLocalityFilter('All Shirur');
+            ['bachelors', 'furnished', 'immediate'].forEach(k => {
+                document.getElementById('qf-' + k).className = 'qf-btn shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition';
+            });
+            renderProperties();
+            showToast('🔄 Showing all verified Shirur properties');
+        }
+
+        // Shortlist / Saved Properties
+        function toggleShortlist(propId) {
+            if (savedPropertyIds.has(propId)) {
+                savedPropertyIds.delete(propId);
+                showToast('Removed from Shortlist');
+            } else {
+                savedPropertyIds.add(propId);
+                showToast('❤️ Saved to your Shortlist!');
+            }
+            document.getElementById('shortlistNavCount').innerText = savedPropertyIds.size;
+            renderProperties();
+            renderSavedProperties();
+        }
+
+        function renderSavedProperties() {
+            const container = document.getElementById('savedPropertiesContainer');
+            document.getElementById('shortlistNavCount').innerText = savedPropertyIds.size;
+            const list = shirurProperties.filter(p => savedPropertyIds.has(p.id));
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-2">
+                        <p class="text-xs font-bold text-slate-700">No properties shortlisted yet</p>
+                        <p class="text-[11px] text-slate-400">Tap the heart icon on any property card to save it here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = list.map(p => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+                    <div class="space-y-0.5">
+                        <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">${p.typeBadge} • ${p.locality}</span>
+                        <h4 class="font-extrabold text-xs text-slate-900 mt-1">${p.title}</h4>
+                        <p class="text-xs font-black text-emerald-600">${p.priceText} <span class="text-[10px] text-slate-400 font-normal">(${p.ownerName})</span></p>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="openOwnerModal('${p.id}')" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl">Call Owner</button>
+                        <button onclick="toggleShortlist('${p.id}')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Owner Direct Contact Modal
+        function openOwnerModal(propId) {
+            const prop = shirurProperties.find(p => p.id === propId);
+            if (!prop) return;
+            activeModalPhone = prop.ownerPhone;
+            document.getElementById('modalPropTitle').innerText = prop.title;
+            document.getElementById('modalPropPrice').innerText = `${prop.priceText} • ${prop.locality}, Shirur`;
+            document.getElementById('modalOwnerName').innerText = prop.ownerName;
+            document.getElementById('modalOwnerPhone').innerText = prop.ownerPhone;
+            document.getElementById('modalBrokerageSaved').innerText = `₹${prop.brokerageSaved.replace('₹', '')} Saved`;
+            document.getElementById('modalExtraSpecs').innerHTML = `
+                <p><strong>Address:</strong> ${prop.fullAddress}</p>
+                <p class="mt-1"><strong>Specs:</strong> ${prop.area} • ${prop.furnishing} • ${prop.waterParking}</p>
+            `;
+            const modal = document.getElementById('ownerContactModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeOwnerModal() {
+            const modal = document.getElementById('ownerContactModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function copyOwnerPhone() {
+            const tempInput = document.createElement('input');
+            tempInput.value = activeModalPhone;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`📋 Copied Owner Number: ${activeModalPhone}`);
+        }
+
+        // Post Free Property Modal & Submission
+        function openPostPropertyModal() {
+            const modal = document.getElementById('postPropertyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePostPropertyModal() {
+            const modal = document.getElementById('postPropertyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function submitNewProperty(e) {
+            e.preventDefault();
+            const cat = document.getElementById('postPropCategory').value;
+            const locality = document.getElementById('postPropLocality').value;
+            const title = document.getElementById('postPropTitle').value.trim();
+            const priceText = document.getElementById('postPropPrice').value.trim();
+            const subPriceText = document.getElementById('postPropSubPrice').value.trim();
+            const area = document.getElementById('postPropArea').value.trim();
+            const tenantPref = document.getElementById('postPropTenant').value;
+            const owner = document.getElementById('postPropOwner').value.trim();
+            const phone = document.getElementById('postPropPhone').value.trim();
+
+            const badgeMap = {
+                rent: 'FOR RENT',
+                sale: 'FOR SALE',
+                commercial: 'COMMERCIAL RENT',
+                plot: 'NA PLOT SALE'
+            };
+
+            const newProp = {
+                id: 'prop-custom-' + Date.now(),
+                category: cat,
+                typeBadge: 'JUST LISTED • ' + badgeMap[cat],
+                title: title,
+                locality: locality,
+                fullAddress: `${locality}, Shirur`,
+                priceText: priceText.startsWith('₹') ? priceText : '₹' + priceText,
+                subPriceText: subPriceText,
+                brokerageSaved: '100% Direct',
+                area: area,
+                furnishing: 'Direct Owner Listing',
+                floor: 'Verified Floor',
+                tenantPref: tenantPref,
+                bachelorsAllowed: !tenantPref.includes('Family Only'),
+                isFurnished: true,
+                readyToMove: true,
+                waterParking: '24x7 Water + Parking Available',
+                ownerName: owner + ' (Owner)',
+                ownerPhone: '+91 ' + phone,
+                verifiedDoc: 'Just Listed • 0% Brokerage',
+                postedTime: 'Just Now',
+                image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=700&q=80'
+            };
+
+            shirurProperties.unshift(newProp);
+            closePostPropertyModal();
+            e.target.reset();
+            resetAllPropertyFilters();
+            switchPropertySubTab('feed');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast('🎉 Your Property is LIVE with 0% Brokerage!');
+        }
+
+        // Brokerage Savings Calculator
+        function runBrokerageCalc() {
+            const val = parseFloat(document.getElementById('calcInputAmount').value) || 0;
+            document.getElementById('calcRentSave').innerText = 'Save ₹' + val.toLocaleString('en-IN');
+            document.getElementById('calcSaleSave').innerText = 'Save ₹' + Math.round(val * 0.02).toLocaleString('en-IN');
+        }
+
+        function switchPropertySubTab(tab) {
+            document.querySelectorAll('#module-properties .sub-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('prop-tab-' + tab).classList.add('active');
+
+            ['feed', 'saved', 'calc'].forEach(t => {
+                const nav = document.getElementById('propnav-' + t);
+                if (nav) {
+                    nav.className = (t === tab)
+                        ? 'prop-nav-item flex flex-col items-center justify-center py-1 text-emerald-600 font-extrabold transition'
+                        : 'prop-nav-item flex flex-col items-center justify-center py-1 text-slate-500 hover:text-emerald-600 font-medium transition';
+                }
+            });
+            if (tab === 'saved') renderSavedProperties();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ---------------------------------------------------------------------------
+        // 2. MODULE SWITCHER (NO-BROKERAGE PROPERTIES <-> BEAUTY PARLOR)
+        // ---------------------------------------------------------------------------
+        function switchAppModule(mod) {
+            document.querySelectorAll('.app-module').forEach(el => el.classList.remove('active'));
+            document.getElementById('module-' + mod).classList.add('active');
+
+            const propBtn = document.getElementById('modBtn-properties');
+            const salonBtn = document.getElementById('modBtn-salon');
+            const brandIconBox = document.getElementById('brandIconBox');
+            const brandIcon = document.getElementById('brandIcon');
+            const brandBadge = document.getElementById('brandBadge');
+            const topPostPropBtn = document.getElementById('topPostPropBtn');
+            const topSalonHelpBtn = document.getElementById('topSalonHelpBtn');
+
+            if (mod === 'properties') {
+                propBtn.className = 'py-2 px-2 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-xs border border-emerald-200/60';
+                salonBtn.className = 'py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900';
+                brandIconBox.className = 'w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-sm font-extrabold text-sm';
+                brandIcon.className = 'fa-solid fa-building-shield';
+                brandBadge.className = 'bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider';
+                brandBadge.innerText = '0% Brokerage';
+                topPostPropBtn.classList.remove('hidden');
+                topPostPropBtn.classList.add('flex');
+                topSalonHelpBtn.classList.add('hidden');
+                topSalonHelpBtn.classList.remove('flex');
+            } else {
+                salonBtn.className = 'py-2 px-2 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-white text-rose-600 shadow-xs border border-rose-200/60';
+                propBtn.className = 'py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900';
+                brandIconBox.className = 'w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-pink-500 text-white flex items-center justify-center shadow-sm font-extrabold text-sm';
+                brandIcon.className = 'fa-solid fa-scissors';
+                brandBadge.className = 'bg-rose-100 text-rose-700 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider';
+                brandBadge.innerText = 'Beauty Parlor';
+                topPostPropBtn.classList.add('hidden');
+                topPostPropBtn.classList.remove('flex');
+                topSalonHelpBtn.classList.remove('hidden');
+                topSalonHelpBtn.classList.add('flex');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ---------------------------------------------------------------------------
+        // 3. COMPLETE SALON MENU DATA (ALL 38 ITEMS & EXACT USER PRICES)
+        // ---------------------------------------------------------------------------
+        const salonMenuData = [
+            {
+                id: 'sec-basic-hair',
+                title: 'Basic Haircuts',
+                subtitle: 'HAIR • Everyday clean & classic cuts',
+                icon: '✂️',
+                badgeColor: 'bg-rose-100 text-rose-700',
+                items: [
+                    { id: 'bh-1', name: 'Straight Haircut', marketPrice: 129, ourPrice: 99, time: '20 mins', desc: 'Clean, even straight trim for neat everyday look' },
+                    { id: 'bh-2', name: 'U Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Soft rounded U-shape edges for natural bounce' },
+                    { id: 'bh-3', name: 'V Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Sharp V-point tapering for sleek length definition' }
+                ]
+            },
+            {
+                id: 'sec-adv-hair',
+                title: 'Advance Haircuts',
+                subtitle: 'HAIR • Designer layers, steps & volume cuts',
+                icon: '💇‍♀️',
+                badgeColor: 'bg-pink-100 text-pink-700',
+                items: [
+                    { id: 'ah-1', name: 'Butterfly Cut', marketPrice: 349, ourPrice: 299, time: '40 mins', desc: 'Trending voluminous face-framing butterfly layers', tag: 'Bestseller' },
+                    { id: 'ah-2', name: 'Layer Cut', marketPrice: 279, ourPrice: 249, time: '35 mins', desc: 'Textured cascading layers for movement & volume' },
+                    { id: 'ah-3', name: 'Feather Cut', marketPrice: 279, ourPrice: 249, time: '35 mins', desc: 'Light feather-styled ends brushed outward' },
+                    { id: 'ah-4', name: 'Face Framing Layer', marketPrice: 349, ourPrice: 299, time: '35 mins', desc: 'Custom contoured strands to highlight cheekbones' },
+                    { id: 'ah-5', name: 'Curtain Bangs with Layer', marketPrice: 399, ourPrice: 350, time: '45 mins', desc: 'Soft parted bangs blended with full hair layers', tag: 'Trending' },
+                    { id: 'ah-6', name: 'Blund Cut [Lob]', marketPrice: 179, ourPrice: 149, time: '30 mins', desc: 'Chic shoulder-grazing blunt long bob [Lob]' },
+                    { id: 'ah-7', name: 'Soft Layer Cut', marketPrice: 399, ourPrice: 349, time: '40 mins', desc: 'Subtle seamless layers for silky smooth flow' },
+                    { id: 'ah-8', name: 'Multi Step Cut', marketPrice: 319, ourPrice: 279, time: '40 mins', desc: 'Distinct multi-tiered steps for extra bounce' },
+                    { id: 'ah-9', name: '90 Degree Step Cut', marketPrice: 219, ourPrice: 179, time: '35 mins', desc: 'Precision 90-degree angle cut for uniform lift' },
+                    { id: 'ah-10', name: 'Voluminous Feathered Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Full-bodied feather styling for thick & lively hair' },
+                    { id: 'ah-11', name: 'Long Hair Step Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Defined steps keeping your full hair length intact' },
+                    { id: 'ah-12', name: 'Long Layer Step Cut', marketPrice: 389, ourPrice: 349, time: '45 mins', desc: 'Combination of long layers & steps for maximum flair' }
+                ]
+            },
+            {
+                id: 'sec-baby-cut',
+                title: 'Baby Cut (Kids Special)',
+                subtitle: 'HAIR • Gentle & cute styles for little ones',
+                icon: '👶',
+                badgeColor: 'bg-amber-100 text-amber-800',
+                items: [
+                    { id: 'bc-1', name: 'Little Round Cut', marketPrice: 149, ourPrice: 99, time: '20 mins', desc: 'Neat, comfortable rounded trim for kids' },
+                    { id: 'bc-2', name: 'Apple Hair Cut', marketPrice: 189, ourPrice: 149, time: '25 mins', desc: 'Adorable curved apple-shape kids hairstyle' },
+                    { id: 'bc-3', name: 'Mushroom Hair Cut', marketPrice: 199, ourPrice: 149, time: '25 mins', desc: 'Classic cute bowl-style mushroom cut' },
+                    { id: 'bc-4', name: 'Bob Cut', marketPrice: 199, ourPrice: 149, time: '25 mins', desc: 'Easy-to-manage classic kids bob haircut' }
+                ]
+            },
+            {
+                id: 'sec-hair-color',
+                title: 'Hair Colouring',
+                subtitle: 'HAIR • Root touchups, global shades & highlights',
+                icon: '🎨',
+                badgeColor: 'bg-purple-100 text-purple-800',
+                items: [
+                    { id: 'hc-1', name: 'Root Touchup', marketPrice: 699, ourPrice: 499, time: '45 mins', desc: 'Ammonia-safe grey coverage for crown & roots' },
+                    { id: 'hc-2', name: 'Global Hair Color', marketPrice: null, ourPrice: 799, startsFrom: true, time: '90 mins', desc: 'Full head vibrant colour application', note: 'Starting from ₹799 • Depends upon hair length' },
+                    { id: 'hc-3', name: 'Highlights (1 Strip)', marketPrice: null, ourPrice: 199, perStrip: true, time: '30 mins', desc: 'Custom streak styling per strip', note: '₹199 per strip • Depends upon customer requirement & highlight color type' }
+                ]
+            },
+            {
+                id: 'sec-hair-treat',
+                title: 'Hair Treatment & Spa',
+                subtitle: 'HAIR • Scalp care, Keratin, Botox & Straightening',
+                icon: '✨',
+                badgeColor: 'bg-emerald-100 text-emerald-800',
+                items: [
+                    { id: 'ht-1', name: 'Dandruff Treatment', marketPrice: 1299, ourPrice: 999, time: '60 mins', desc: 'Deep anti-flake scalp detox & soothing therapy' },
+                    { id: 'ht-2', name: 'Hair Regrowth Treatment', marketPrice: 399, ourPrice: 299, time: '45 mins', desc: 'Root-stimulating serum & high-frequency massage' },
+                    { id: 'ht-3', name: 'Hair Straightening', marketPrice: null, ourPrice: 3499, startsFrom: true, time: '2.5 - 3 hrs', desc: 'Pin-straight sleek transformation', note: 'Starting from ₹3499 starting length & overall depends upon price. Our beautician will attend you shortly.' },
+                    { id: 'ht-4', name: 'Smoothening', marketPrice: null, ourPrice: 4599, startsFrom: true, time: '2.5 - 3 hrs', desc: 'Frizz-free natural silky smooth finish', note: 'Starts from ₹4599 • Follow from straightening details. Beautician will attend you shortly.' },
+                    { id: 'ht-5', name: 'Keratin Treatment', marketPrice: null, ourPrice: 3999, startsFrom: true, time: '2.5 hrs', desc: 'Protein-rich shine & deep frizz repair', note: 'Starts from ₹3999 • Follow straightening details. Beautician will attend you shortly.' },
+                    { id: 'ht-6', name: 'Botox Hair Treatment', marketPrice: null, ourPrice: 4499, startsFrom: true, time: '2.5 hrs', desc: 'Intense deep conditioning fiber restoration', note: 'Starts from ₹4499 • Follow straightening details. Beautician will attend you shortly.' },
+                    { id: 'ht-7', name: 'Nanoplastia', marketPrice: null, ourPrice: 5999, startsFrom: true, time: '3 hrs', desc: 'Advanced amino-acid straightening & gloss', note: 'Starts from ₹5999 • Depends upon length, follow details from straightening.' },
+                    { id: 'ht-8', name: 'Aqua Gold Treatment', marketPrice: null, ourPrice: 6499, startsFrom: true, time: '3 hrs', desc: 'Luxury hydration & mirror-shine gold infusion', note: 'Starts from ₹6499 • Depends upon length, follow details from straightening.' }
+                ]
+            },
+            {
+                id: 'sec-skincare',
+                title: 'Skincare (Manicure & Pedicure)',
+                subtitle: 'SKINCARE • Tap Basic or Advance option below',
+                icon: '💅',
+                badgeColor: 'bg-sky-100 text-sky-800',
+                items: [
+                    {
+                        id: 'sk-1',
+                        name: 'Medicure (Manicure)',
+                        time: '35 - 45 mins',
+                        desc: 'Hand soak, nail shaping, cuticle care & relaxing massage',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Basic', marketPrice: 349, ourPrice: 299 },
+                            { label: 'Advance', marketPrice: 699, ourPrice: 599 }
+                        ]
+                    },
+                    {
+                        id: 'sk-2',
+                        name: 'Pedicure Treatment',
+                        time: '45 - 60 mins',
+                        desc: 'Warm foot spa, heel scrub, tan removal & foot reflexology',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Basic', marketPrice: 499, ourPrice: 499 },
+                            { label: 'Advance', marketPrice: 899, ourPrice: 799 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'sec-body-wax',
+                title: 'Body Waxing',
+                subtitle: 'WAX • Choose Hand, Leg or Face directly inside card',
+                icon: '🍯',
+                badgeColor: 'bg-orange-100 text-orange-800',
+                items: [
+                    {
+                        id: 'bw-1',
+                        name: 'Regular Jell Wax',
+                        time: '25 - 40 mins',
+                        desc: 'Smooth aloe-gel enriched gentle hair removal',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hand', marketPrice: null, ourPrice: 149 },
+                            { label: 'Leg', marketPrice: null, ourPrice: 249 }
+                        ]
+                    },
+                    {
+                        id: 'bw-2',
+                        name: 'Rica Wax',
+                        time: '30 - 45 mins',
+                        desc: 'Zero-redness Italian liposoluble peelable formula with detan',
+                        tag: 'Most Popular',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hand', marketPrice: null, ourPrice: 399 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 699 }
+                        ]
+                    },
+                    {
+                        id: 'bw-3',
+                        name: 'Roll On Wax',
+                        time: '30 - 45 mins',
+                        desc: 'Hygienic single-use cartridge applicator waxing',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Hands', marketPrice: null, ourPrice: 449 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 999 }
+                        ]
+                    },
+                    {
+                        id: 'bw-4',
+                        name: 'Brazilian Wax',
+                        time: '20 - 45 mins',
+                        desc: 'Stripless peel-off luxury wax for sensitive skin',
+                        selectedVariantIdx: 0,
+                        variants: [
+                            { label: 'Face', marketPrice: null, ourPrice: 299 },
+                            { label: 'Hands', marketPrice: null, ourPrice: 499 },
+                            { label: 'Legs', marketPrice: null, ourPrice: 999 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'sec-face-wax',
+                title: 'Face Wax',
+                subtitle: 'FACE WAX • Gentle facial fuzz & upper-lip removal',
+                icon: '🌸',
+                badgeColor: 'bg-rose-100 text-rose-800',
+                items: [
+                    { id: 'fw-1', name: 'Bin Wax', marketPrice: null, ourPrice: 399, time: '25 mins', desc: 'Stripless hard bean wax gentle on facial skin' },
+                    { id: 'fw-2', name: 'Microwave Face Wax', marketPrice: null, ourPrice: 449, time: '25 mins', desc: 'Warm low-temperature soothing facial wax' },
+                    { id: 'fw-3', name: 'Paraffin Face Wax', marketPrice: null, ourPrice: 399, time: '30 mins', desc: 'Moisturizing paraffin therapy + clean facial hair removal' }
+                ]
+            }
+        ];
+
+        let cart = {};
+        let currentSearchQuery = '';
+
+        function getCartKey(item, variantIdx = null) {
+            if (item.variants) {
+                const vIdx = variantIdx !== null ? variantIdx : item.selectedVariantIdx;
+                return `${item.id}__${item.variants[vIdx].label}`;
+            }
+            return item.id;
+        }
+
+        function renderSalonMenu() {
+            const wrapper = document.getElementById('menuSectionsWrapper');
+            wrapper.innerHTML = '';
+
+            salonMenuData.forEach(section => {
+                const filteredItems = section.items.filter(item => {
+                    if (!currentSearchQuery) return true;
+                    const q = currentSearchQuery.toLowerCase();
+                    return item.name.toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q) || section.title.toLowerCase().includes(q);
+                });
+                if (filteredItems.length === 0) return;
+
+                const sectionEl = document.createElement('section');
+                sectionEl.id = section.id;
+                sectionEl.className = 'scroll-mt-36 space-y-3';
+                sectionEl.innerHTML = `
+                    <div class="flex items-center justify-between bg-white border border-rose-100 rounded-2xl px-3.5 py-2.5 shadow-2xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-9 h-9 rounded-xl ${section.badgeColor} flex items-center justify-center text-base">${section.icon}</span>
+                            <div>
+                                <h3 class="font-extrabold text-sm text-slate-800">${section.title}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">${section.subtitle}</p>
+                            </div>
+                        </div>
+                        <span class="bg-rose-50 text-rose-600 text-[11px] font-extrabold px-2.5 py-1 rounded-full">${filteredItems.length}</span>
+                    </div>
+                    <div class="space-y-2.5" id="list-${section.id}"></div>
+                `;
+                wrapper.appendChild(sectionEl);
+                const listContainer = sectionEl.querySelector(`#list-${section.id}`);
+
+                filteredItems.forEach(item => {
+                    let activeMarket = item.marketPrice;
+                    let activeOur = item.ourPrice;
+                    let activeVariantLabel = null;
+                    if (item.variants) {
+                        const v = item.variants[item.selectedVariantIdx];
+                        activeMarket = v.marketPrice;
+                        activeOur = v.ourPrice;
+                        activeVariantLabel = v.label;
+                    }
+                    const savings = (activeMarket && activeMarket > activeOur) ? (activeMarket - activeOur) : 0;
+                    const cartKey = getCartKey(item);
+                    const qtyInCart = cart[cartKey] ? cart[cartKey].qty : 0;
+
+                    let variantsHTML = '';
+                    if (item.variants) {
+                        variantsHTML = `<div class="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">` +
+                            item.variants.map((v, idx) => {
+                                const isSel = idx === item.selectedVariantIdx;
+                                return `<button onclick="selectVariant('${section.id}','${item.id}',${idx})" class="flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-between ${isSel ? 'bg-rose-600 text-white border-rose-600' : 'bg-rose-50/60 text-slate-700 border-rose-200'}"><span>${v.label}</span><span>₹${v.ourPrice}</span></button>`;
+                            }).join('') + `</div>`;
+                    }
+
+                    let noteHTML = item.note ? `<div class="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px] text-amber-900 flex items-center justify-between gap-2"><span><i class="fa-solid fa-circle-info text-amber-600 mr-1"></i>${item.note}</span><button onclick="openCallModal()" class="shrink-0 bg-white text-rose-600 border border-amber-300 px-2 py-1 rounded-lg text-[10px] font-extrabold">Ask</button></div>` : '';
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-rose-100 rounded-2xl p-3.5 shadow-2xs';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="space-y-1 flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    ${savings > 0 ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md">SAVE ₹${savings}</span>` : ''}
+                                    ${item.startsFrom ? `<span class="bg-rose-50 text-rose-700 text-[10px] font-extrabold px-2 py-0.5 rounded-md">Starts From</span>` : ''}
+                                    <span class="text-[10px] text-slate-400 font-medium"><i class="fa-regular fa-clock text-rose-400 mr-0.5"></i>${item.time}</span>
+                                </div>
+                                <h4 class="font-extrabold text-sm text-slate-800">${item.name} ${activeVariantLabel ? `<span class="text-rose-600 text-xs">(${activeVariantLabel})</span>` : ''}</h4>
+                                <p class="text-[11px] text-slate-500">${item.desc}</p>
+                            </div>
+                            <div class="text-right flex flex-col items-end shrink-0">
+                                <div class="flex items-baseline gap-1.5">
+                                    ${activeMarket && activeMarket > activeOur ? `<span class="text-xs text-slate-400 line-through font-semibold">₹${activeMarket}</span>` : ''}
+                                    <span class="text-base font-extrabold text-slate-900">₹${activeOur}</span>
+                                </div>
+                                <span class="text-[9px] uppercase font-extrabold text-rose-600 mb-2">Our Price</span>
+                                ${qtyInCart === 0
+                                    ? `<button onclick="modifyCart('${section.id}','${item.id}',1)" class="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-2 border-rose-500 font-extrabold text-xs px-4 py-1 rounded-xl transition">+ ADD</button>`
+                                    : `<div class="flex items-center bg-rose-600 text-white rounded-xl overflow-hidden"><button onclick="modifyCart('${section.id}','${item.id}',-1)" class="px-2.5 py-1 font-extrabold text-xs">-</button><span class="px-2 text-xs font-extrabold">${qtyInCart}</span><button onclick="modifyCart('${section.id}','${item.id}',1)" class="px-2.5 py-1 font-extrabold text-xs">+</button></div>`
+                                }
+                            </div>
+                        </div>
+                        ${variantsHTML}
+                        ${noteHTML}
+                    `;
+                    listContainer.appendChild(card);
+                });
+            });
+        }
+
+        function selectVariant(secId, itemId, idx) {
+            const sec = salonMenuData.find(s => s.id === secId);
+            const item = sec.items.find(i => i.id === itemId);
+            item.selectedVariantIdx = idx;
+            renderSalonMenu();
+        }
+
+        function modifyCart(secId, itemId, delta) {
+            const sec = salonMenuData.find(s => s.id === secId);
+            const item = sec.items.find(i => i.id === itemId);
+            const key = getCartKey(item);
+            let name = item.name;
+            let mPrice = item.marketPrice || item.ourPrice;
+            let oPrice = item.ourPrice;
+            if (item.variants) {
+                const v = item.variants[item.selectedVariantIdx];
+                name = `${item.name} (${v.label})`;
+                mPrice = v.marketPrice || v.ourPrice;
+                oPrice = v.ourPrice;
+            }
+            if (!cart[key]) cart[key] = { key, name, marketPrice: mPrice, ourPrice: oPrice, qty: 0 };
+            cart[key].qty += delta;
+            if (cart[key].qty <= 0) delete cart[key];
+            else if (delta > 0) showToast(`✨ Added ${name} (₹${oPrice})`);
+            updateSalonCartUI();
+            renderSalonMenu();
+        }
+
+        function updateSalonCartUI() {
+            const items = Object.values(cart);
+            const qty = items.reduce((s, i) => s + i.qty, 0);
+            const our = items.reduce((s, i) => s + i.ourPrice * i.qty, 0);
+            const mkt = items.reduce((s, i) => s + i.marketPrice * i.qty, 0);
+            const save = Math.max(0, mkt - our);
+            document.getElementById('cartBadgeCount').innerText = qty;
+            document.getElementById('cartTotalText').innerText = `₹${our}`;
+            const sb = document.getElementById('cartSavingsBadge');
+            sb.innerText = `Save ₹${save}`;
+            sb.classList.toggle('hidden', save === 0);
+            document.getElementById('drawerMarketTotal').innerText = `₹${mkt}`;
+            document.getElementById('drawerSavingsTotal').innerText = `- ₹${save}`;
+            document.getElementById('drawerOurTotal').innerText = `₹${our}`;
+        }
+
+        function openCartDrawer() {
+            const container = document.getElementById('drawerCartItems');
+            const items = Object.values(cart);
+            container.innerHTML = items.length === 0
+                ? `<p class="text-center text-xs text-slate-400 py-8">Your parlor service bag is empty.</p>`
+                : items.map(i => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs"><div><p class="font-bold text-slate-800">${i.name}</p><p class="text-rose-600 font-extrabold">₹${i.ourPrice} x ${i.qty}</p></div><span class="font-extrabold">₹${i.ourPrice * i.qty}</span></div>`).join('');
+            const modal = document.getElementById('cartDrawerModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCartDrawer() {
+            const modal = document.getElementById('cartDrawerModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmParlorBooking() {
+            if (Object.keys(cart).length === 0) {
+                showToast('⚠️ Add at least one parlor service first!');
+                return;
+            }
+            cart = {};
+            updateSalonCartUI();
+            renderSalonMenu();
+            closeCartDrawer();
+            switchSalonSubTab('bookings');
+            showToast('🎉 Parlor Slot Confirmed!');
+        }
+
+        function scrollToCategory(secId) {
+            if (secId === 'all') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            const el = document.getElementById(secId);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function handleSearch(val) {
+            currentSearchQuery = val.trim();
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', currentSearchQuery.length === 0);
+            renderSalonMenu();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            handleSearch('');
+        }
+
+        function switchSalonSubTab(tab) {
+            document.querySelectorAll('#module-salon .sub-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('salon-tab-' + tab).classList.add('active');
+        }
+
+        function openCallModal() {
+            const m = document.getElementById('callModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeCallModal() {
+            const m = document.getElementById('callModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        let toastTimer;
+        function showToast(msg) {
+            const box = document.getElementById('toastBox');
+            document.getElementById('toastText').innerText = msg;
+            box.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => box.classList.add('hidden'), 2800);
+        }
+
+        window.onload = function() {
+            renderProperties();
+            renderSavedProperties();
+            renderSalonMenu();
+            updateSalonCartUI();
+        };
+    </script>
+</body>
+</html>
