@@ -1,0 +1,2292 @@
+[
+  {
+    "name": "CA Spcl Grilled Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578642/cwkmpdlcay4ltwqbzegj.jpg",
+    "category": "Grilled Non-Veg Burgers"
+  },
+  {
+    "name": "Cruncho Pop Cheesy (M)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626897/n3voy3udniskh5ahjhgr.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Ukhar (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733782/e5olav2m6fxm7hcqup1v.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Cheesy Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579547/be5opufznafhqc7th9d9.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Simple Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579254/cu02a4y02vozsjhpdhaf.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Zesty Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733825/zhsqp6qoqaw2g5fmfkiq.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Lollipop",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726779/shirur-express/restaurants/hadyqf7ug2czazrc56go.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726064/shirur-express/restaurants/ukt6vliydfq0h4ifnwib.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Handi Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726112/shirur-express/restaurants/dawvqjdpw7z8e6elu5x5.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Malvani Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726790/shirur-express/restaurants/mve4jojfcbdy9wur59qa.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Egg Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726795/shirur-express/restaurants/dcbdlf2pq0scebfx7swl.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Egg Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726803/shirur-express/restaurants/gtjuem9oalb1tip1aril.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Choice Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/zajpmhlgrksfycj5bwrg.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Lover Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579255/hofnavx0zclv9weggyko.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Pepe Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733816/qzywgvjvdng2uc75oqil.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Cheese Burst Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/wlxoagyvamcvwkeewmut.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "B.B.Q Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578945/eudaka7zmlpvmobfbynv.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Tandoori Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579544/punbkitapdevyokjsrwz.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Makhani Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/rzhfvikhvfkjioaplkhf.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Peri Peri Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/ukixwx53dp7zx6tq7vx9.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Crispy Wings Sriracha (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578645/q6nnfyuaf1hjk9u5ytrd.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Spicy Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733829/bmpmbqubzab7x0krkfaz.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Supremo Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578976/r5u2joakr7bw3i51jmt9.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Fry Gavran (7 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733782/zkizolvme279v9xl1epc.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken 65",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579252/e4wzvmyv55pahik1aunb.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Boiled Egg",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726816/shirur-express/restaurants/c61cqusm01fjesvvx4oo.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Mutton Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726531/shirur-express/restaurants/mytcnbplhitl6vjilzzv.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "Chicken Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726833/shirur-express/restaurants/jaflcovtmzwvlxg4tmuq.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Steak (Plate)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726912/shirur-express/restaurants/ppkzeiowmlsivncgknwx.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Kadi Gosht",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726918/shirur-express/restaurants/t0pbbxdcv6ob749jejo7.jpg",
+    "category": null
+  },
+  {
+    "name": "Thums Up",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726926/shirur-express/restaurants/ptxorxgp75kpcgm1kaha.jpg",
+    "category": null
+  },
+  {
+    "name": "Sting",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726933/shirur-express/restaurants/iqbgc0oa67r1hbc9opv2.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Sukha",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726939/shirur-express/restaurants/tjlljuohcjmleac8g0a9.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Extravaganza Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/joc7mp1djnznq3lmp2zq.jpg",
+    "category": "Non Veg Pizza"
+  },
+  {
+    "name": "Chicken Kashmiri Pulav",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726989/shirur-express/restaurants/nyb1kdu66hz2gnlejbq4.jpg",
+    "category": null
+  },
+  {
+    "name": "Cheesy Chicken (7\") Pizza Combo",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/bzeszdtxhzuip7jqfi8p.jpg",
+    "category": "Pizza Combo"
+  },
+  {
+    "name": "Any Classic Chicken (7\") Pizza Combo",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733824/d03ttbn0jalpknjevtk3.jpg",
+    "category": "Pizza Combo"
+  },
+  {
+    "name": "Any Signature Chicken (7\") Pizza Combo",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/tjyfwfk7cq8yphxinynw.jpg",
+    "category": "Pizza Combo"
+  },
+  {
+    "name": "Any Exotic Chicken (7\") Pizza Combo",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/engzk7k5nsnplp4czrzr.jpg",
+    "category": "Pizza Combo"
+  },
+  {
+    "name": "Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733825/ue8rmjfjladw2qckteap.jpg",
+    "category": "Burger"
+  },
+  {
+    "name": "Cheesy Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/wwmidrm1ogu3bd4q6yzq.jpg",
+    "category": "Burger"
+  },
+  {
+    "name": "Makhani Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733816/ebcdiavrjjzd5avjm6g9.jpg",
+    "category": "Burger"
+  },
+  {
+    "name": "Tandoori Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578826/owsk8kig3cvsyfqyikqn.jpg",
+    "category": "Burger"
+  },
+  {
+    "name": "Spicy Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578957/okeoktuoh7l7hpxxbxgf.jpg",
+    "category": "Burger"
+  },
+  {
+    "name": "Chicken Fry Pan Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579721/tebbiiwgucbml5voxnma.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Boiled Bhurji (2 Eggs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579918/oes7xd1dey3sxbmfiw4h.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "1 Kg Boiler Making (Rassa Only)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579948/oc1uu81kxhyxkpav0nfn.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "मटन जंबो थाळी - ४ व्यक्तींसाठी (Mutton Jumbo Thali - For 4)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578653/ntqhjhxnkmrmr1cboxzb.jpg",
+    "category": "Mutton Special"
+  },
+  {
+    "name": "Chicken Popcorn",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733812/xcqi7uw2btsdsqopid9u.jpg",
+    "category": "Non Veg Starters"
+  },
+  {
+    "name": "Chicken Fries",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578959/utlr6efrnvd8f1vbyd6u.jpg",
+    "category": "Non Veg Starters"
+  },
+  {
+    "name": "Chicken Nuggets",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/kzrib57qynojpzi0hcud.jpg",
+    "category": "Non Veg Starters"
+  },
+  {
+    "name": "Chicken Stuff Garlic Bread",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578965/djmd4v3zxvb26px0ql7h.jpg",
+    "category": "Non Veg Starters"
+  },
+  {
+    "name": "Chicken Wings",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578966/sdkfq5o0iogl1kr6bzze.jpg",
+    "category": "Chicken Wings"
+  },
+  {
+    "name": "Peri Peri Chicken Wings",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/gnp4xgwf4x7ldhayp1xs.jpg",
+    "category": "Chicken Wings"
+  },
+  {
+    "name": "Chicken Momos",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/btzwptnuovrezdnhj6ri.jpg",
+    "category": "Momos"
+  },
+  {
+    "name": "Chicken Peri Peri Momos",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/ihsgakfyl8ttvegz8jd0.jpg",
+    "category": "Momos"
+  },
+  {
+    "name": "Non Veg Topping",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077540/shirur-express/bulls-cafe/dlt2ny4tmn7bsgghzmvs.jpg",
+    "category": "Add On"
+  },
+  {
+    "name": "Herb Chicken Pizza (Daily Offer)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077501/shirur-express/bulls-cafe/wfdk6tzybef6qrwlfs9a.jpg",
+    "category": "Special Offers"
+  },
+  {
+    "name": "Peri Peri Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578664/sti56mx4ajmoo1i1qem6.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "Tender Strip Classic",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578665/lqj0hysjvmf3cke35ch8.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "BBQ Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578679/mqghmrnalxfcrnhti7wq.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "Fries N Fly Classic",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578680/cuk8ocv7azjqdizizji2.jpg",
+    "category": "Fries"
+  },
+  {
+    "name": "Tender Strip Sriracha",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578681/zhqofpved3hdas0vxcf7.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "चिकन जंबो थाळी - ६ व्यक्तींसाठी (Chicken Jumbo Thali - For 6)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578686/wglpxyswozftoz1h5hta.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "Classic Non-Veg Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578688/wxl7zzq6kwwzdduawmv5.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "चिकन स्पे. थाळी (Chicken Special Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578705/zoyfynngrzu1niuymsi1.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "Crispy Wings Cheesy (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578707/rgauqkgo0xyufn28dann.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "मटन साधी थाळी / बरबाट थाळी (Mutton Sadhi Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578723/rof9m4cjbpep86ifygbf.jpg",
+    "category": "Mutton Special"
+  },
+  {
+    "name": "Chicken Tandoor Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578727/u27eiysbedmqg1wanozn.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "मटन स्पे. थाळी (Mutton Special Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578733/whgmzp4ewvrmjpexoejg.jpg",
+    "category": "Mutton Special"
+  },
+  {
+    "name": "Chicken Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726064/shirur-express/restaurants/ukt6vliydfq0h4ifnwib.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726067/shirur-express/restaurants/b7or0hs9vqjpu8kfe3xk.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726070/shirur-express/restaurants/uxuullzqmxgteljtvqkj.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Korma",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726072/shirur-express/restaurants/qvt9iniatunnze4xs0eq.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Shahi-Korma",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726075/shirur-express/restaurants/z4cxw7hg8gvfs8oddxuf.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Fried Rice Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578774/lmurpqomxyfbyfme7gbo.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Angara",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726078/shirur-express/restaurants/g0l3cf2phitb37tjkyup.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Kolhapuri",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726098/shirur-express/restaurants/wbxqjgsovriflffuynqv.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Kadhai",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726102/shirur-express/restaurants/hu0bdfjes4qvftunoaws.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Do Pyaza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726107/shirur-express/restaurants/tfxnwth249a2f8ihvvl0.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Butter Chicken",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726109/shirur-express/restaurants/smuecozfxjvy4kgxhyv8.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Handi (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726112/shirur-express/restaurants/dawvqjdpw7z8e6elu5x5.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Handi (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726112/shirur-express/restaurants/dawvqjdpw7z8e6elu5x5.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Adraki",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726116/shirur-express/restaurants/whxmwkni5nv1wil13wm9.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Lasuni",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726122/shirur-express/restaurants/nca09w4ilrjvunggmbul.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Patiyala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726412/shirur-express/restaurants/xibiohpcow6vujiayyam.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Tiranga",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726416/shirur-express/restaurants/i478unatka8akzsh5ftv.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Roast",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726419/shirur-express/restaurants/jfphzmkjxpldpqq4tod1.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Makhani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726422/shirur-express/restaurants/ririjcz4ytkitngpbpd0.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Kheema Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726436/shirur-express/restaurants/feeylrwunq0zjmoxus2o.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Pepper Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726439/shirur-express/restaurants/zzsz3x1equzszeyxkt9t.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Kaleji Petha Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726444/shirur-express/restaurants/fwedbbw8dhtaeebr4vha.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Gavran Chicken Kala Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726450/shirur-express/restaurants/git4tch3pcnvcmi55hfz.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Anda Hakka Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578779/uizku2b7pdczlrnyv8ud.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Gavran Chicken Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726453/shirur-express/restaurants/i6xumw5nnrsjjjseuzxt.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Hyderabadi",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726457/shirur-express/restaurants/yekqrroit7jxwnqnfuo4.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Moglai",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726460/shirur-express/restaurants/yootfrigkzj7rgudy6i3.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Sukka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726462/shirur-express/restaurants/o8hg3dh4aelorfz2fwmg.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Khajana",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726478/shirur-express/restaurants/cv9m6f8pc425crslbras.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Maharaja (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726483/shirur-express/restaurants/ifpzaighrtigf3lvy61q.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Maharaja (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726483/shirur-express/restaurants/ifpzaighrtigf3lvy61q.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Murg Mussallam (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726486/shirur-express/restaurants/y28m3n7wscdysdnmu0ny.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Murg Mussallam (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726486/shirur-express/restaurants/y28m3n7wscdysdnmu0ny.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Bhuna",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726490/shirur-express/restaurants/x6vw9sxluwrmq88gt8wg.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Garlic Kheema",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791727063/shirur-express/restaurants/z0zcuesoch6hreluberp.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Butter Chicken - Boneless",
+    "image_url": "/images/menu-items/butter_chicken.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Pepper Dry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726494/shirur-express/restaurants/c7bmx0izrimx9ddkgzao.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Dalcha",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726500/shirur-express/restaurants/gmsps7sal3yk1znjwv67.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Anda Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726503/shirur-express/restaurants/unvlnmhyo9clh3jg1fwb.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Chilli Gravy",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726506/shirur-express/restaurants/pjqnnfl05mapnh5pqqdf.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Dal Gost",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726510/shirur-express/restaurants/vsdb9yll9nfhofxcjbfn.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Achar Gost",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726515/shirur-express/restaurants/rwx4c7wj6mgn2nu2sucn.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Anda Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726519/shirur-express/restaurants/hsuvarciytzoqscktug7.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Crispy",
+    "image_url": "/images/menu-items/chicken_strips.jpg",
+    "category": "Chinese Starters (Non-Veg)"
+  },
+  {
+    "name": "Chicken Dum Biryani",
+    "image_url": "/images/menu-items/chicken_biryani.jpg",
+    "category": "Nikhara Speciality (Non-Veg)"
+  },
+  {
+    "name": "Chicken Fried Rice",
+    "image_url": "/images/menu-items/fried_rice.jpg",
+    "category": "Chinese Fried Rice (Non-Veg)"
+  },
+  {
+    "name": "Kerala Chicken Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726522/shirur-express/restaurants/k48dyzhz06jnl6uyega2.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Malvan Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726525/shirur-express/restaurants/bocbmyfbupibkb8ip3rl.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Handi (Full)",
+    "image_url": "/images/menu-items/chicken_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Handi (Half)",
+    "image_url": "/images/menu-items/chicken_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Hyderabadi Dum Biryani",
+    "image_url": "/images/menu-items/chicken_biryani.jpg",
+    "category": "Nikhara Speciality (Non-Veg)"
+  },
+  {
+    "name": "Chicken Kheema Fry",
+    "image_url": "/images/menu-items/kheema.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Kheema Masala",
+    "image_url": "/images/menu-items/kheema.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Kolhapuri",
+    "image_url": "/images/menu-items/chicken_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Tender Strip Cheesy",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578786/afhk7kq0ymwvddpi8m5j.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Tutti-Fruti",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726528/shirur-express/restaurants/zihg4zgrvn5einomlbbd.jpg",
+    "category": "Chicken Main Course"
+  },
+  {
+    "name": "Chicken Lollipop Dry",
+    "image_url": "/images/menu-items/chicken_drumstick.jpg",
+    "category": "Chinese Starters (Non-Veg)"
+  },
+  {
+    "name": "Chicken Lucknowi Dum Biryani (Mild)",
+    "image_url": "/images/menu-items/chicken_biryani.jpg",
+    "category": "Nikhara Speciality (Non-Veg)"
+  },
+  {
+    "name": "Chicken Manchow Soup",
+    "image_url": "/images/menu-items/manchau_soup.jpg",
+    "category": "Chinese Soups (Non-Veg)"
+  },
+  {
+    "name": "Chicken Masala",
+    "image_url": "/images/menu-items/chicken_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Chicken Masala Lollipop",
+    "image_url": "/images/menu-items/chicken_drumstick.jpg",
+    "category": "Chinese Starters (Non-Veg)"
+  },
+  {
+    "name": "Chicken Noodle",
+    "image_url": "/images/menu-items/hakka_noodles.jpg",
+    "category": "Chinese Noodles (Non-Veg)"
+  },
+  {
+    "name": "Chicken Schezwan Fried Rice",
+    "image_url": "/images/menu-items/fried_rice.jpg",
+    "category": "Chinese Fried Rice (Non-Veg)"
+  },
+  {
+    "name": "Chicken Schezwan Noodle",
+    "image_url": "/images/menu-items/hakka_noodles.jpg",
+    "category": "Chinese Noodles (Non-Veg)"
+  },
+  {
+    "name": "Mutton Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726531/shirur-express/restaurants/mytcnbplhitl6vjilzzv.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Egg Curry",
+    "image_url": "/images/menu-items/egg_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Egg Fried Rice",
+    "image_url": "/images/menu-items/fried_rice.jpg",
+    "category": "Chinese Fried Rice (Non-Veg)"
+  },
+  {
+    "name": "Egg Masala",
+    "image_url": "/images/menu-items/egg_curry.jpg",
+    "category": "Chicken Main Course (Non-Veg)"
+  },
+  {
+    "name": "Egg Noodle",
+    "image_url": "/images/menu-items/hakka_noodles.jpg",
+    "category": "Chinese Noodles (Non-Veg)"
+  },
+  {
+    "name": "Mutton Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726537/shirur-express/restaurants/qsj6coyt4y4hz1a6sgyz.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726541/shirur-express/restaurants/j8umux297tbxxrauewfm.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578788/vmaam5lrchy5e1rew80e.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Mutton Korma",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726545/shirur-express/restaurants/wi5ue4ea6havjl3q97gx.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Shahi-Korma",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726548/shirur-express/restaurants/m267evpnfmlhp8lqwur3.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Handi (Full)",
+    "image_url": "/images/menu-items/mutton_curry.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Handi (Half)",
+    "image_url": "/images/menu-items/mutton_curry.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Kolhapuri",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726552/shirur-express/restaurants/qhqdhhlrhsmjayeb4and.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Kheema",
+    "image_url": "/images/menu-items/kheema.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Kheema Fry",
+    "image_url": "/images/menu-items/kheema.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Kolhapuri",
+    "image_url": "/images/menu-items/mutton_curry.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Masala",
+    "image_url": "/images/menu-items/mutton_curry.jpg",
+    "category": "Mutton Main Course (Non-Veg)"
+  },
+  {
+    "name": "Mutton Kadhai",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726556/shirur-express/restaurants/ldkm6cccsnf1jr3bkhlx.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Special Hyderabadi Mutton Dum Biryani",
+    "image_url": "/images/menu-items/biryani.jpg",
+    "category": "Nikhara Speciality (Non-Veg)"
+  },
+  {
+    "name": "Mutton Pepper Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726560/shirur-express/restaurants/xtbn9fsli9pi5bqetjsj.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Makhani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726563/shirur-express/restaurants/stoj5m0skes84tajybwx.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Hyderabadi",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726567/shirur-express/restaurants/z6j1tuixfdj4knkdlhzf.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Handi (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726576/shirur-express/restaurants/faroarjcqm8tmeyagryl.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Handi (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726576/shirur-express/restaurants/faroarjcqm8tmeyagryl.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Roast",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726606/shirur-express/restaurants/mxfp7ijilf57vwjmpr9h.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Kheema Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726610/shirur-express/restaurants/mpcx4xhunuufnbrm6pux.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Adraki",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791727070/shirur-express/restaurants/sd8gxxng3pnh7mkdtqnf.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Vajadi Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726626/shirur-express/restaurants/hhp7iihkbnhlqplujz1d.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Vajadi Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726630/shirur-express/restaurants/dgvyfbfkzpcvcl97qnb3.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Chicken Dum Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726634/shirur-express/restaurants/culac4x6dohl8owtjogr.jpg",
+    "category": "Biryani & Rice"
+  },
+  {
+    "name": "Mutton Dum Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726637/shirur-express/restaurants/krts8k0h45kdei1krsdh.jpg",
+    "category": "Biryani & Rice"
+  },
+  {
+    "name": "Chicken Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726644/shirur-express/restaurants/aj0laqeogeakgxcvdwmq.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Mutton Lasuni",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726647/shirur-express/restaurants/anlailjaiof6ihl8q4nl.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Malbar Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726650/shirur-express/restaurants/gg9ic1kzpi63c3pxsvuw.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Achar Gost",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726653/shirur-express/restaurants/fba8kqv6je7yvsqv8msg.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Dal Gost",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726656/shirur-express/restaurants/eek2pgsp2wmxufe39xkk.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Chicken Zamzam Pulao",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726659/shirur-express/restaurants/o1wd4jgzaarv3ezqnvkx.jpg",
+    "category": "Biryani & Rice"
+  },
+  {
+    "name": "Chicken Kashmiri Pulao",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726664/shirur-express/restaurants/lq01qyffjb5kfnmfi03i.jpg",
+    "category": "Biryani & Rice"
+  },
+  {
+    "name": "Chicken Fried Rice (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726667/shirur-express/restaurants/q320ytcxpurlhrerkzc4.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726670/shirur-express/restaurants/rojcr2l849izspxczd23.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Tiranga Special Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726673/shirur-express/restaurants/lu9cydf1be9obbmamrw1.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Chicken Fried Rice (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726667/shirur-express/restaurants/q320ytcxpurlhrerkzc4.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Schezwan Rice (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726676/shirur-express/restaurants/g7d3yyweo3r09dpsjemm.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Schezwan Rice (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726676/shirur-express/restaurants/g7d3yyweo3r09dpsjemm.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Triple Rice (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726680/shirur-express/restaurants/reljewm2fenytv5lzdy5.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Triple Rice (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726680/shirur-express/restaurants/reljewm2fenytv5lzdy5.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Noodles (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726683/shirur-express/restaurants/hp5upaij6mwr7nhcswmi.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Noodles (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726683/shirur-express/restaurants/hp5upaij6mwr7nhcswmi.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Schezwan Noodles (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726686/shirur-express/restaurants/bpgaswpwkdvoesjxh9s1.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Schezwan Noodles (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726686/shirur-express/restaurants/bpgaswpwkdvoesjxh9s1.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Triple Noodles (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726689/shirur-express/restaurants/jjs79nn6faqluryixfqz.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Lollipop Oil Fry (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726692/shirur-express/restaurants/iwgwbgsd6vx4awsxzclr.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Lollipop Masala Dry (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726695/shirur-express/restaurants/bbnr049fhlffpgrj3wof.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Chilli Dry (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726698/shirur-express/restaurants/izlobiimy98iemtjwppf.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Tandoori (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726702/shirur-express/restaurants/rxgl2wcq3caoqihppasd.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Tandoori (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726702/shirur-express/restaurants/rxgl2wcq3caoqihppasd.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Chilli Dry (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726698/shirur-express/restaurants/izlobiimy98iemtjwppf.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Crispy",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726705/shirur-express/restaurants/oq5sup0b9ev7u62huua6.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Drumstick (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726708/shirur-express/restaurants/w1cc9nqbtkqpeu9ukb1t.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Drumstick (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726708/shirur-express/restaurants/w1cc9nqbtkqpeu9ukb1t.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Samosa",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726711/shirur-express/restaurants/q0vvdrulmlk9rccrtcln.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Roll (Plate)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726714/shirur-express/restaurants/ct9sdfquwsb7c9mv2eqp.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Stick (Plate)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726716/shirur-express/restaurants/wfcxxocsboz9hiyzqdfg.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken 65",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726719/shirur-express/restaurants/smznxdmoox7pigx1woub.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Wings",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726722/shirur-express/restaurants/inengirhar3dvwgl0hvm.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken KFC",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726724/shirur-express/restaurants/xz1tx4j12nf534fbgea8.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Seek",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726728/shirur-express/restaurants/anethv6jqkwgmo09swg2.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Kadi Gosh",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726730/shirur-express/restaurants/cpdsopzrrgnnghmr8fwm.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Chilli",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726783/shirur-express/restaurants/du34ppxonwhix8z77zdn.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726070/shirur-express/restaurants/uxuullzqmxgteljtvqkj.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Handi Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726112/shirur-express/restaurants/dawvqjdpw7z8e6elu5x5.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Special Chicken Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726787/shirur-express/restaurants/wb4rp6ny5fp4v85hrdcx.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Chicken Malvani Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726790/shirur-express/restaurants/mve4jojfcbdy9wur59qa.jpg",
+    "category": "Chicken Menu"
+  },
+  {
+    "name": "Egg Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726797/shirur-express/restaurants/uaygdkwb2cgcjcbrboco.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Egg Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726809/shirur-express/restaurants/uucznyyhcvthic61ikpu.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Egg Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726811/shirur-express/restaurants/druq82rtinpa92emwnho.jpg",
+    "category": "Egg Menu"
+  },
+  {
+    "name": "Mutton Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726819/shirur-express/restaurants/tcudu2obsinmolebzmq1.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "Mutton Sukka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726828/shirur-express/restaurants/c7mvxbowyl1irgaznegs.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "चिकन कुक्कडू-कु थाळी - ४ व्यक्तींसाठी (Chicken Kukkadu-Koo Thali - For 4)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578833/oujuo8gnv288t1smruwt.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "Mutton Handi",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726576/shirur-express/restaurants/faroarjcqm8tmeyagryl.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "Special Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726894/shirur-express/restaurants/onaa06pgkxupoptrza8k.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "Mutton Malvani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791727073/shirur-express/restaurants/izoz6fad7e7hkfmlycc0.jpg",
+    "category": "Mutton Menu"
+  },
+  {
+    "name": "Chicken Triple Noodles (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726689/shirur-express/restaurants/jjs79nn6faqluryixfqz.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Lollipop Oil Fry (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726692/shirur-express/restaurants/iwgwbgsd6vx4awsxzclr.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Lollipop Masala Dry (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726695/shirur-express/restaurants/bbnr049fhlffpgrj3wof.jpg",
+    "category": "Chicken Starter"
+  },
+  {
+    "name": "Chicken Chilly Dry (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726908/shirur-express/restaurants/gtg9zxoz2gil3mlqfqk5.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Chilly Dry (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726908/shirur-express/restaurants/gtg9zxoz2gil3mlqfqk5.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Seekh",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726915/shirur-express/restaurants/gqiov5vb0khge86bquyq.jpg",
+    "category": null
+  },
+  {
+    "name": "Sprite",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726930/shirur-express/restaurants/fe5objvqk5rqifp9qiy0.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Moghlai",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726936/shirur-express/restaurants/mtykrst0wcjclej9e1h3.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Chilly Gravy",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726942/shirur-express/restaurants/ov9umvb6uzhndrmriem3.jpg",
+    "category": null
+  },
+  {
+    "name": "चिकन साधी थाळी (Chicken Sadhi Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578857/kkgquxoklv6ulh1sxrmb.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "स्पे. मच्छी थाळी (Special Fish Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578859/ukuiy21gqxw1ks8vnxao.jpg",
+    "category": "Fish & Egg"
+  },
+  {
+    "name": "अंडा थाळी (Egg Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578859/vkajpdhwiz210bbxfofp.jpg",
+    "category": "Fish & Egg"
+  },
+  {
+    "name": "चिकन फ्राय थाळी (Chicken Fry Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578867/fax2oqwptath1slrenzp.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "चिकन जंबो थाळी - ४ व्यक्तींसाठी (Chicken Jumbo Thali - For 4)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578868/wf2ivjkc5vu05frgzwkr.jpg",
+    "category": "Chicken Special"
+  },
+  {
+    "name": "मटन जंबो थाळी - ६ व्यक्तींसाठी (Mutton Jumbo Thali - For 6)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578868/gq5vrgabdkyahtch3ma1.jpg",
+    "category": "Mutton Special"
+  },
+  {
+    "name": "Chicken Achar Gosht",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726949/shirur-express/restaurants/nmzqs4ddd7xl3bzbsdxz.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Curry (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726067/shirur-express/restaurants/b7or0hs9vqjpu8kfe3xk.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Malwar Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726952/shirur-express/restaurants/f0oolayhnvwhq4spkruj.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Tutti Frutti",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726955/shirur-express/restaurants/g7c01eh0qsi8ierci8mi.jpg",
+    "category": null
+  },
+  {
+    "name": "Mutton Dalcha",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726958/shirur-express/restaurants/caqccr9sgtes2qacpukv.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Angara",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726961/shirur-express/restaurants/zvavcopl8bzaysszkjyg.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Do Pyaza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726964/shirur-express/restaurants/ulwiwdfbuwelhstqtfsr.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Roast Pepper",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726968/shirur-express/restaurants/sfybauc02gv1bqun4e2l.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Kheema Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726971/shirur-express/restaurants/uuvuxl6zb9lxhjgcttpr.jpg",
+    "category": "Mutton Main Course"
+  },
+  {
+    "name": "Mutton Lahsuni",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726974/shirur-express/restaurants/u22njkbuckkqhjpgclul.jpg",
+    "category": null
+  },
+  {
+    "name": "Mutton Malwar Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726978/shirur-express/restaurants/fhyemitgtbfnmcaj5d4p.jpg",
+    "category": null
+  },
+  {
+    "name": "Mutton Achar Gosht",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726981/shirur-express/restaurants/hgujrq5dgcioxezlamvk.jpg",
+    "category": null
+  },
+  {
+    "name": "Chicken Zamzam Pulav",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1791726986/shirur-express/restaurants/eo3milqziejzzpzr5xsd.jpg",
+    "category": null
+  },
+  {
+    "name": "Chettinad Grilled Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578877/cmovoysmvra4xtnwzrsq.jpg",
+    "category": "Grilled Non-Veg Burgers"
+  },
+  {
+    "name": "Zinger Special Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578878/n1frpzsx6ofsxpfixjbg.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "Medium Bucket",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578874/jgzwgeavulnsleirduj2.jpg",
+    "category": "Bucket Combos"
+  },
+  {
+    "name": "Chicken Grilled Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578875/spxx4hq4bzdyhaje9tql.jpg",
+    "category": "Grilled Non-Veg Burgers"
+  },
+  {
+    "name": "CA Special Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578884/ospgnwe3t6n1bomubhqr.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "Smokey BBQ Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578884/x7jcocpir964hmf5avef.jpg",
+    "category": "Non-Veg Pizza"
+  },
+  {
+    "name": "Chettinad Kheema (with Paratha)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578886/yk2q3wu0n8m8gspvmgp5.jpg",
+    "category": "Kheema with Paratha"
+  },
+  {
+    "name": "Sriracha Chicken Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578892/gutn7hvgy90zhm5bd69f.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "Large Bucket",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578893/dyud1envjlour9lh9wcb.jpg",
+    "category": "Bucket Combos"
+  },
+  {
+    "name": "Cruncho Pop Sriracha (M)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578893/e6jqzv3jhgkx2dao1ecx.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Drumstick Classic (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578895/uyr3y2iovw0kwwirjdes.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Small Bucket",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578906/ngjidttqzmtgdzm0abn9.jpg",
+    "category": "Bucket Combos"
+  },
+  {
+    "name": "Cruncho Pop CA Spcl (L)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578908/oqzse71nnrzwpwfm7xni.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chotta Meal",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578915/gr3nvtdcf7mn0x8hzgtm.jpg",
+    "category": "Meal Combos"
+  },
+  {
+    "name": "Cruncho Pop CA Spcl (M)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578919/ie97pb7svddbp3h989fg.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Fries N Fly Sriracha",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578920/is25pzmlowowqlrt9rv1.jpg",
+    "category": "Fries"
+  },
+  {
+    "name": "Peri Peri Grilled Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578921/ohfxkc8cftqhkkpbew4c.jpg",
+    "category": "Grilled Non-Veg Burgers"
+  },
+  {
+    "name": "Chicken Biryani (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578939/evglslhrvfnj7bzhgp8x.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Mutton Biryani (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578943/bmkmdurjfvlzoppzohon.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Drumstick Classic (6 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578946/efq3lltqa2ua3oivn1qx.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Sukka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578948/fdlhgtita30eem8ki4ld.jpg",
+    "category": "Main_Course"
+  },
+  {
+    "name": "Chicken Loaded Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578990/boch9paejgii5os2xx7w.jpg",
+    "category": "Non-Veg Pizza"
+  },
+  {
+    "name": "Cruncho Pop Wrap",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579004/php7zftjhahse5eeuc1z.jpg",
+    "category": "Wraps (Non-Veg)"
+  },
+  {
+    "name": "Simply Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579120/ufhoo1fz9c959vm6qgvn.jpg",
+    "category": "Non-Veg Pizza"
+  },
+  {
+    "name": "Chicken Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579125/ezpa9bmjrh7gys1c3wkm.png",
+    "category": "Main_Course"
+  },
+  {
+    "name": "Chicken Khare (Sajuk Tupatle)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579237/jtjhcshnn9jbmn1hcg9h.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "मटन फ्राय थाळी (Mutton Fry Thali)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579235/wwlh49svxgi4shxcixvy.jpg",
+    "category": "Mutton Special"
+  },
+  {
+    "name": "Chicken Pahadi Tikka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579244/piwoepghxoaadb0qk3z2.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Anda Omelette",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579245/eu63cw6eny6sonc7ujph.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Dragon Chilly",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579248/eewrihdxtfhx739zadun.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Hyderabadi Biryani Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579249/bcmy9l3kf6ft4aenaq3p.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Chicken Hakka Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579251/idnbc9ob8qcd1qexocna.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579234/ixgjiyc8clak0fjmjusk.png",
+    "category": "Main_Course"
+  },
+  {
+    "name": "Anda Boil",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579232/ii1jjxtpxxh1j3coxvor.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Fries N Fly Tandoori",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579281/cgzer8ny5yxyfu0nuvlx.jpg",
+    "category": "Fries"
+  },
+  {
+    "name": "Anda Schezwan Fried Rice Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579253/v30wlwkax50ehahchtzn.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Cheese Kheema (with Paratha)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579365/xhypqsarftevk8r01gga.jpg",
+    "category": "Kheema with Paratha"
+  },
+  {
+    "name": "Sukat Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579374/ehilt3syi758uxei866b.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Anda Boil Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579452/wiqtsqav2zxrbaoa6wqv.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579454/gkhscdke4lf6tlh30hfk.jpg",
+    "category": "Chicken"
+  },
+  {
+    "name": "Butter Chicken (Sweet)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579455/negkixhqqol9ywfbeva2.jpg",
+    "category": "Chicken"
+  },
+  {
+    "name": "Mutton Aalani Ukkad",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579456/szl8jla0xmybggdqxyem.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579460/rwhkh6gvnyoegu4vwx4b.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Chicken Kharda",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579465/geiw2y9zrzyopkqucmbx.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Special Anda Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579468/p6rhpr1coa7ri1pclfnn.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Macchi Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579474/uxkyg0k9dudhlya1qbz5.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579469/ywzi3w5aloevday8nbar.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Kaleja Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579473/arasn4qwuelbpbydf6rs.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Mutton Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579450/azm8kj3agqgywgh0cdnb.jpg",
+    "category": "Mutton"
+  },
+  {
+    "name": "Burger Buddy Combo",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579480/qrc1zodxcvvbgcrzmg5o.jpg",
+    "category": "Meal Combos"
+  },
+  {
+    "name": "Chettinad Kheema (with Pav)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579483/r2g9iv5iszmkbnpdhchw.jpg",
+    "category": "Kheema with Pav"
+  },
+  {
+    "name": "Cruncho Pop Cheesy (L)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579509/mlcoaeabdcftzqawr3nj.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Cheese Kheema (with Pav)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579523/meauvn8hxkwfvsyskd7q.jpg",
+    "category": "Kheema with Pav"
+  },
+  {
+    "name": "Tender Strip CA Spcl",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579593/hiatvwwdlctexl9tfze6.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Cruncho Pop Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579594/t9wyk9bolbkne46syjf2.jpg",
+    "category": "Fried Non-Veg Burgers"
+  },
+  {
+    "name": "BBQ Grilled Burger",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579601/hmbzr3fli3epp2yxkvls.jpg",
+    "category": "Grilled Non-Veg Burgers"
+  },
+  {
+    "name": "Crispy Wings CA Spcl (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579605/iqjfggbrd4fya7nunsqj.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Fries N Fly CA Spcl",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579607/ui142ykkajhzsmizcykn.jpg",
+    "category": "Fries"
+  },
+  {
+    "name": "Kheema Regular (with Paratha)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579609/qmghjx7ldmjit771vxfo.jpg",
+    "category": "Kheema with Paratha"
+  },
+  {
+    "name": "Kheema Regular (with Pav)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579610/fgrnsogauwrwa1ivs95y.jpg",
+    "category": "Kheema with Pav"
+  },
+  {
+    "name": "Drumstick Classic (2 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579627/m7asb8fmvq9kzrsv70kz.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chettinad Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579628/u3mpi00xllln9hmsmd12.jpg",
+    "category": "Non-Veg Pizza"
+  },
+  {
+    "name": "Chicken Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579647/i8kjufgrmso9mf8i5aca.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Anda Fried Rice Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579649/vzojoc0b6ywedpyjgftj.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Anda Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579650/iunp90x1uriwhx6uyqds.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Schezwan Chicken Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579651/nujtcj72pqgb0imbcugq.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Hyderabadi Biryani (1 KG)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579652/ddf6ocei0vabg5poqvm4.jpg",
+    "category": "Biryani 1 KG"
+  },
+  {
+    "name": "Chicken Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579652/oj4kn3zbjryqq9eagfyl.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Special Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579634/hgnbgarvv9awksxxjnsa.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Cruncho Pop Classic (M)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579654/s8qgmoo55ympveiyhecz.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579646/oyulit4pdceqynrc8ix5.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Cruncho Pop Classic (L)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579678/ziwivq8teqmtetlj5izp.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Chilly",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579697/hm5dnbtjl5nznwfdwghi.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Manchurian",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579699/lavgcxhunxcudds0c1ee.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Triple Rice Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579710/ef7qrrsolmhxgntipakf.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Aalani Rice",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579713/xcf7azvnhrbafblmcpav.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Chicken Fried Rice Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579714/gj8rtdoply7sdztjvk7f.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Mutton Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579714/s6iq4bhiyp9mw4d31bg9.jpg",
+    "category": "Mutton"
+  },
+  {
+    "name": "Chicken Malwani Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579715/jgxwhmssprndqshdysdc.jpg",
+    "category": "Handi Special"
+  },
+  {
+    "name": "Chicken Schezwan Rice Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579716/rdhz441244yu6rhejjmc.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Mutton Biryani (1 KG)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579717/jt1svmqkxcpc9pwizspk.jpg",
+    "category": "Biryani 1 KG"
+  },
+  {
+    "name": "Anda Fried Rice Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579719/klvj28owcsbt5lqunfhz.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Malwani Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579723/fl1shbuxkhwq9ismskup.jpg",
+    "category": "Handi Special"
+  },
+  {
+    "name": "Chicken Tandoor Biryani Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579724/imsyumbu195nhd278vni.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Anda Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579725/szptdzpjaygbzinta7k3.jpg",
+    "category": "Egg"
+  },
+  {
+    "name": "Lucknow Biryani (1 KG)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579726/itnaunbjbu5oulnk1wsl.jpg",
+    "category": "Biryani 1 KG"
+  },
+  {
+    "name": "Chicken Manchow Soup",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579733/bkrdwhcu89qu6ifzbjwh.jpg",
+    "category": "Soup"
+  },
+  {
+    "name": "Schezwan Anda Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579734/ufacfubfgrkdfsbjzuqj.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Triple Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579738/iilmjjubnsy2de7dzknw.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Anda Schezwan Fried Rice Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579739/nevh005ps8vav5nhli82.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Schezwan Anda Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579741/kvejdsykehixueec075f.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Anda Hakka Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579742/cjuhhlmxitsttygcufeq.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Mutton Soup",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579744/tu0pltj6pvwgttgf3fxf.jpg",
+    "category": "Soup"
+  },
+  {
+    "name": "Prawns Chilly",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579746/uwaldqhb9dc8byyjjqcc.jpg",
+    "category": "Prawns"
+  },
+  {
+    "name": "Sadhi Chicken Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579749/xdmc6vvz7mo6jgngzar6.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Anda Bhurji",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579721/jhzqsylsheikj0kqoukd.jpg",
+    "category": "Egg"
+  },
+  {
+    "name": "Schezwan Chicken Pizza",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579758/xmybvsqrv9yeasbvyoh8.jpg",
+    "category": "Non-Veg Pizza"
+  },
+  {
+    "name": "Mutton Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579807/bynxbrg8xela1hyfgdag.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Cruncho Pop Sriracha (L)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579854/o3x4hewuvhc4pkadl5a8.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Chicken Tikka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579857/vd4kyxhpwvvmci9qfggl.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Special Macchi Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579859/m1mtl3p9bmtxus4iwqlt.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Chicken Hyderabadi Biryani Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579860/hnzo98yxauzmepzsxqhc.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Special Chicken Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579872/uzm1hzohsjxityuloxph.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Special Mutton Biryani Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579864/s2umqc4sw7d4za4uxfsj.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Chicken Triple Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579866/bwqptwi2fhmscvflktzm.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Triple Rice Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579867/zsgtccmqspz5vpccrsor.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Mutton Khare (Sajuk Tupatle)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579868/ochayaqezgpgtjtzmwyx.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Tandoor Biryani (1 KG)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579873/sxetgn6zipz4if84ejhr.jpg",
+    "category": "Biryani 1 KG"
+  },
+  {
+    "name": "Chicken Kolhapuri",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579874/qcs3bfb0d3ciwzbpgoqv.jpg",
+    "category": "Chicken"
+  },
+  {
+    "name": "Chicken Malai Tikka",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579875/kkxkuqfap3ocuwixoz0n.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chilly Lollipop",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579877/hxlimp4az5syt1ou9l5v.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Mutton Aalani Rice",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579879/unqnygraejpjdk5pxipp.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Dalcha Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579855/iqmzgv9r0qjrbih4srl0.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Regular Mutton Thali (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579910/kwsmlv8mibxzpsxycdj7.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Regular Chicken Thali (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579911/uwnwohlttyjlaqjy6ejp.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Special Chicken Thali (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579912/w6pz6h5ujv5d7bwyi8um.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Special Chicken Thali (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579913/rnzgg5ubfvdl3rmeppew.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Chilapi Macchi Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579914/kdb0igps8lkazghfstrh.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Anda Half Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579915/abb9feznf2fbkzmaum2a.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Boiled Plate (2 Eggs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579916/kmmwknwvroeogb8eldp6.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Fry Boiler (7 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579919/xnitgdbzgx9kquz0md4u.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Ukhar (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579920/jnzvtrdup0zxkv1ytd4r.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Dry Boiler (7 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579921/iwq2as2qipawu7r15prv.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Rava Macchi Kadak Fry (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579922/pdonemjlkyamk5fn0g0q.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chilapi Macchi Kadak Fry (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579923/fmcxakgrrzsbryzf4oxn.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chilapi Macchi Tawa Fry (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579924/pwocrplpayje2sjn87oc.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Chilli (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579925/melaqrglsgdmjhk31uft.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Tandoor (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579926/ap7c9bpnpdbdpv9gg9mv.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Fry Handi (Full Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579927/shwle27e8nk4xoecmtzs.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Fry Handi (Half Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579928/djaydwgyw1dx7ycqqd22.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Mutton Fry Handi (Half Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579929/ucjpyjs8qk6mxufibkpw.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Lollipop (Half 4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579930/fz4captt3iymr00pwiwv.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Lollipop (Full 8 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579931/ategjz1egjqdpp7oagq3.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Anda Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579932/yxzayoaquaxoxuqk8seq.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Macchi Curry (Slab 4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579933/goxg36dsyvj46bf9qoj4.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Chicken Masala (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579934/ocj9cfb4s330ht2vb1mj.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Mutton Masala (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579935/zgdzk3bhxfmvclkqmmzl.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Butter Chicken Masala (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579936/zgh8jvvnsfhhplfcyure.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Butter Mutton Masala (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579938/htp2bhxj4jydvc54pwpd.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Non-Veg Rassa Vati",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579938/cekqqgupxktdkjujdccy.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Chicken Handi Full (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579939/sjldoqnyrxhzsye2wgod.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Chicken Handi Half (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579940/ifgulgitqk0pb48fe7nj.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Mutton Handi Half (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579941/bt1w6ve4107cr2mrbvao.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Malvani Chicken Handi Half (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579942/xfddwevvaivd8gdl4zad.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "Malvani Chicken Handi Full (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579944/g7luencznzlgcc9eiday.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "Malvani Chicken Handi Half (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579945/ok0q4m7ok3lo7rx4xkuh.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "Malvani Chicken Handi Full (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579946/ksdqbgojximfexzox3rb.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "Malvani Mutton Handi Half (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579947/kzh2cxymhcasn6ieaazi.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "Malvani Mutton Handi Full (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579947/asmpa6fcbtp976gdu52s.jpg",
+    "category": "Malvani Handi"
+  },
+  {
+    "name": "1 Kg Boiler Making (Rassa & Fry)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579949/aqinptchwljzzcmslg4b.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "1 Kg Gavran Making (Rassa Only)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579950/odwexnuzutmky3dbd8ez.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "1 Kg Gavran Making (Rassa & Fry)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579952/pvm5wmwr1bhzjgrdbne3.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "1 Kg Mutton Making (Rassa Only)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579953/kqr4p3ssbqumcmhuhytn.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "1 Kg Mutton Making (Rassa & Fry)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579954/ebaktdi0eiuyoelexsal.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "1 Kg Fish Making (Rassa & Fry)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579954/dqgk4isuqvkekppamdoo.jpg",
+    "category": "Kitchen Service"
+  },
+  {
+    "name": "Handi Rassa (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579956/mflgdqhu2xs6xnncw0gi.jpg",
+    "category": "Non-Veg Rassa"
+  },
+  {
+    "name": "Handi Rassa (Full)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579957/vea08zgh9b8srrivrfhs.jpg",
+    "category": "Non-Veg Rassa"
+  },
+  {
+    "name": "Anda Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579973/npjugi9wsuc5qea0hypr.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Chicken Biryani (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579973/bmuwzosshriahzv5k131.jpg",
+    "category": "Rice"
+  },
+  {
+    "name": "Macchi Roast",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580149/r0wixkjxmg2d83eofeuk.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Aalani Ukkad",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580151/ic1o5hyneerd2pxxqaqc.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Mutton Handi Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580153/jjdgisjsrspkbwrknsjk.jpg",
+    "category": "Handi Special"
+  },
+  {
+    "name": "Mutton Fry Pan Biryani",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626853/rlyqfr2nvgnq2bee7dvy.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Chicken Schezwan Rice Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626856/cxzkd4xgzsmmmtyeq4ac.jpg",
+    "category": "Chinese Rice"
+  },
+  {
+    "name": "Chicken Hakka Noodles Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626857/t0a3vpctwzyoylfpsaxp.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Soup",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626858/eve8o27wcn65swqhhjp2.jpg",
+    "category": "Soup"
+  },
+  {
+    "name": "Chicken Tandoor Biryani Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626859/bqob1lsoretkm8vrcukv.jpg",
+    "category": "Biryani"
+  },
+  {
+    "name": "Chicken Tandoor Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626860/nautlgmvqqriftjhfkgg.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Anda Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626862/lxqhlfkqxy6pnmj1webh.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Wrap",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626874/q3wap4bokxkx7v5c1eui.jpg",
+    "category": "Wraps (Non-Veg)"
+  },
+  {
+    "name": "Complete Meal",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626886/h7kskg8ezb8gofuwupty.jpg",
+    "category": "Meal Combos"
+  },
+  {
+    "name": "Singles Meal",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626887/r7yvlpjhmb6wcvecwg1n.jpg",
+    "category": "Meal Combos"
+  },
+  {
+    "name": "Crispy Wings Classic (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789626889/rqmjdyd8g8bsrcpztptw.jpg",
+    "category": "Fried Chicken"
+  },
+  {
+    "name": "Special Mutton Thali (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733780/oycqophcuvu3arpjcjg3.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Regular Chicken Thali (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733780/qfoz2epeveihm61u046k.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Rassa Macchi Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733781/vpekv50maj55r2mazj43.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Special Anda Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733781/tlcljyrdmtmk4yukufpm.jpg",
+    "category": "Non-Veg Thali"
+  },
+  {
+    "name": "Anda Bhurji",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733781/dkrihjtmbm0mt4s9xotf.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Bombil Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733782/pudb1vampy3wf6x9eloj.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Anda Omelette",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733782/o2ypiguaot8abn1hec8z.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Boiled Fry (2 Eggs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733782/aev5bf6zx1nnhrenygnw.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Rava Tawa Macchi Fry (4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/rontfwzsz2a7yldbw2ra.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Chilli (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/t2oqo0rwc655ptbqv9dv.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Mutton Ukhar (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/m0wvseaophz5yzdjtffl.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Chicken Fry Handi (Full Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/ede5qd5kiv80mm92lzoy.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Anda Curry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733784/lxftqf53rpduld8brgpz.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Mutton Fry Handi (Full Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/ycdilo71hryfawg6zfbf.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Macchi Curry (Chilapi 4 Pcs)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733784/gfuzphepszluqkcox7r2.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Bombil Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733784/lirvfnaixlingtrcnmsn.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Chicken Masala (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733784/wbgwyjls8jrb69m1udof.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Chicken Fry Handi (Half Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733783/vmyfzzxbqf6ia569qjmo.jpg",
+    "category": "Non-Veg Snacks"
+  },
+  {
+    "name": "Non-Veg Rassa Plate",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/a56e0dp1jguii0auhtze.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Mutton Handi Full (Bolhai)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/emolhzsto9awe7o3u4ss.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Chicken Handi Half (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/qdlexpqzmdfcqgmqaepi.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Chicken Tandoor (Half)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/gajeozu0eh4tjzouusnz.jpg",
+    "category": "Main_Course"
+  },
+  {
+    "name": "Butter Chicken Masala (Boiler)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/yehascwim8ihkxe1wrth.jpg",
+    "category": "Non-Veg Dishes"
+  },
+  {
+    "name": "Chicken Handi Full (Gavran)",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733785/aa1vwamhp22x3vv0xqfy.jpg",
+    "category": "Non-Veg Handi"
+  },
+  {
+    "name": "Mutton Kharda",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733804/d24qw758jqkbnqkouqig.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Lollipop Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733804/afsnv5esbgggc9ihf8ju.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Dalcha Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733805/gbtq0vmij4i4vcw3w4wx.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Chicken Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733805/xecrglccqgsflburmxes.jpg",
+    "category": "Chicken"
+  },
+  {
+    "name": "Chicken Lollipop Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733805/pgfgc69ykio81oczxi75.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Schezwan Chicken Noodles Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733806/xp9ugfgnc7ywrxmavpe6.jpg",
+    "category": "Chinese Noodles"
+  },
+  {
+    "name": "Chicken Handi Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733806/pg3ae5w1gw7hhspmyrzp.jpg",
+    "category": "Handi Special"
+  },
+  {
+    "name": "Anda Masala",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733806/c7w1o0hwevq0d7mfcx2x.jpg",
+    "category": "Egg"
+  },
+  {
+    "name": "Anda Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733806/sh6fgroov81esyuhp2mi.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Mutton Handi Half",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733807/an7ikrtcj7a8fea4ujh0.jpg",
+    "category": "Handi Special"
+  },
+  {
+    "name": "Macchi Fry",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733807/cs9l2dhz8vjcpk2buzie.jpg",
+    "category": "Non-Veg Starter"
+  },
+  {
+    "name": "Sadhi Mutton Thali",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733805/x1uidpmpam5wfx0hadhq.jpg",
+    "category": "Thali"
+  },
+  {
+    "name": "Prawns 65",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733802/uqmbvbnnc1gvjadoln96.jpg",
+    "category": "Prawns"
+  },
+  {
+    "name": "Chettinad Wrap",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733810/nb56xkl8vhcxrheore7c.jpg",
+    "category": "Wraps (Non-Veg)"
+  },
+  {
+    "name": "Tandoori Wrap",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733810/nrlemrm0jaj9u74mvd8i.jpg",
+    "category": "Wraps (Non-Veg)"
+  },
+  {
+    "name": "Fries N Fly Zesty",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733811/guicrmsj3xvh1ibt23mj.jpg",
+    "category": "Fries"
+  },
+  {
+    "name": "Chicken Handi Full",
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733816/uux1fwug4oojiv2ckbng.jpg",
+    "category": "Handi Special"
+  }
+]

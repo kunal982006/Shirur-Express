@@ -1,0 +1,974 @@
+[
+  {
+    "id": "b95272goeui69umzacxfl2zj",
+    "name": "आलू परोठा (Aloo Paratha)",
+    "category": "Breads",
+    "price": "66.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580125/xvacric3d6mxquanrsvi.jpg",
+    "description": null
+  },
+  {
+    "id": "adethbn9aqa79w6l658fwapk",
+    "name": "नान (Naan)",
+    "category": "Breads",
+    "price": "33.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578776/lv82cefnpn1jw6vtqc58.jpg",
+    "description": null
+  },
+  {
+    "id": "ljcr8ymntktfrdx7rek6h7f2",
+    "name": "बटर कुलचा (Butter Kulcha)",
+    "category": "Breads",
+    "price": "44.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580123/llepbtydviqzsg7fktoj.jpg",
+    "description": null
+  },
+  {
+    "id": "mx6atkelun41i5qrw94npniw",
+    "name": "बटर चपाती (Butter Chapati)",
+    "category": "Breads",
+    "price": "17.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579752/bqxk9wweygm0qwi551so.jpg",
+    "description": null
+  },
+  {
+    "id": "jlldqsf4ysyk7kypxj61l92e",
+    "name": "बटर नान (Butter Naan)",
+    "category": "Breads",
+    "price": "39.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579718/nqw5qzfxm3bzmwranplk.jpg",
+    "description": null
+  },
+  {
+    "id": "gadv3utpa8x24m9tkfd98aed",
+    "name": "बटर परोठा (Butter Paratha)",
+    "category": "Breads",
+    "price": "39.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580124/n8vy95l7r2yhafhfkqpc.jpg",
+    "description": null
+  },
+  {
+    "id": "viniqdfpn5wflzsw8lr2xah5",
+    "name": "बटर रोटी (Butter Roti)",
+    "category": "Breads",
+    "price": "22.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580122/cfjggnafbnl9catciwso.jpg",
+    "description": null
+  },
+  {
+    "id": "bree9r7f624m3ti4igezdnxj",
+    "name": "बाजरीची भाकरी (Bajari Bhakari)",
+    "category": "Breads",
+    "price": "28.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579185/tinpwg1hwcojozlqytv2.jpg",
+    "description": null
+  },
+  {
+    "id": "lg2cwlw6dhawrtgv7k6n12k1",
+    "name": "रोटी (Roti)",
+    "category": "Breads",
+    "price": "17.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580081/qhuvsqi2jqimp2lbx3x4.jpg",
+    "description": null
+  },
+  {
+    "id": "miluetgw8k1y1wyoc4hrwp3t",
+    "name": "साधा परोठा (Sadha Paratha)",
+    "category": "Breads",
+    "price": "33.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579151/umy3z5gv015z3w1yhqhd.jpg",
+    "description": null
+  },
+  {
+    "id": "hvwjfimnzcxig100e200fk8x",
+    "name": "साधी चपाती (Sadhi Chapati)",
+    "category": "Breads",
+    "price": "17.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579727/ugj9lhr5wkphl57fwgge.jpg",
+    "description": null
+  },
+  {
+    "id": "b0odso2o6cmy0re7fvgme8uf",
+    "name": "कोल्हापुरी दाल तडका (Kolhapuri Dal Tadka)",
+    "category": "Dal Special",
+    "price": "154.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579778/f1dqmjezy6o7tiepig3h.jpg",
+    "description": null
+  },
+  {
+    "id": "hllgxq3usaelxzcwckvd958t",
+    "name": "दाल तडका (Dal Tadka)",
+    "category": "Dal Special",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580138/w2m2uxbulur1gox3iwue.jpg",
+    "description": null
+  },
+  {
+    "id": "rx7l7qmn4mmzfkb4hq69jpjz",
+    "name": "दाल फ्राय (Dal Fry)",
+    "category": "Dal Special",
+    "price": "122.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579284/twy92cjkaxz8jeibil7n.jpg",
+    "description": null
+  },
+  {
+    "id": "aisbmfapi4owka1d9dpbkmhr",
+    "name": "बटर दाल फ्राय (Butter Dal Fry)",
+    "category": "Dal Special",
+    "price": "132.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579779/naq3x10q3sg4azgbag2z.jpg",
+    "description": null
+  },
+  {
+    "id": "xd0m40pfhbwvaxs9immqqvxh",
+    "name": "लसूणी दाल तडका (Lasooni Dal Tadka)",
+    "category": "Dal Special",
+    "price": "132.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579801/qud9qtu9jdyyl7qidem8.jpg",
+    "description": null
+  },
+  {
+    "id": "abxhjqvw27bwibk0mqzixtw0",
+    "name": "गंगा ड्रॅगन स्पे. काजू (Ganga Dragon Sp. Kaju)",
+    "category": "Ganga Special",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579076/nlxlvbrnbx0pb14wcmtp.jpg",
+    "description": null
+  },
+  {
+    "id": "i5ojspaj9xx8f5t517tjnpf9",
+    "name": "गंगा ड्रॅगन स्पे. पनीर (Ganga Dragon Sp. Paneer)",
+    "category": "Ganga Special",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579073/swh55ihmzwvwbmfwkxv9.jpg",
+    "description": null
+  },
+  {
+    "id": "vf1ozad2sin0at9987m0hjk5",
+    "name": "गंगा ड्रॅगन स्पे. व्हेज (Ganga Dragon Sp. Veg)",
+    "category": "Ganga Special",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579631/f3ghldhquwxaf8ggkil7.jpg",
+    "description": null
+  },
+  {
+    "id": "kx3dqvf8v4kp9zd230gg8ex2",
+    "name": "काजू हंडी फुल (Kaju Handi Full)",
+    "category": "Handi Special",
+    "price": "660.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580069/vxaoiyuieszgkrmxf5dn.jpg",
+    "description": null
+  },
+  {
+    "id": "ad14lqg9xe86vn4e8uupe7wb",
+    "name": "काजू हंडी हाफ (Kaju Handi Half)",
+    "category": "Handi Special",
+    "price": "386.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579599/ez75fawktjuybxpkyay2.jpg",
+    "description": null
+  },
+  {
+    "id": "xb1g1jdrc3va1kq1yd8vlglw",
+    "name": "पनीर मखमली फुल (Paneer Makhmali Full)",
+    "category": "Handi Special",
+    "price": "660.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579630/ul3jqomfoncsi8r7bzxe.jpg",
+    "description": null
+  },
+  {
+    "id": "f923qs2fwqa9qdvrqcemxgac",
+    "name": "पनीर मखमली हाफ (Paneer Makhmali Half)",
+    "category": "Handi Special",
+    "price": "496.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580072/qhjqy7vumxkvy1b1lx9g.jpg",
+    "description": null
+  },
+  {
+    "id": "bx9267ch413jg3eh7mvwv0ic",
+    "name": "पनीर हंडी फुल (Paneer Handi Full)",
+    "category": "Handi Special",
+    "price": "605.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578737/b3d8ocjdaia43g2yc4jy.jpg",
+    "description": null
+  },
+  {
+    "id": "qvmzqrf6vyp2bmfcci9veggk",
+    "name": "पनीर हंडी हाफ (Paneer Handi Half)",
+    "category": "Handi Special",
+    "price": "385.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579575/utr80mx7o80ehinr3sk1.jpg",
+    "description": null
+  },
+  {
+    "id": "bt8qdbrrroys8fc4hc1csnvo",
+    "name": "व्हेज मखमली फुल (Veg Makhmali Full)",
+    "category": "Handi Special",
+    "price": "605.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579614/uy0ghu7uak5bxwmyutgm.jpg",
+    "description": null
+  },
+  {
+    "id": "ilzz1g23h7v51hm15upzb7up",
+    "name": "व्हेज मखमली हाफ (Veg Makhmali Half)",
+    "category": "Handi Special",
+    "price": "386.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580071/nyvvcdg8t8ejzkamfp4b.jpg",
+    "description": null
+  },
+  {
+    "id": "kc94ldn5bhj6pib8tyqrg9vc",
+    "name": "व्हेज हंडी फुल (Veg Handi Full)",
+    "category": "Handi Special",
+    "price": "495.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578746/kmotwhll0d3m4ccutvp1.jpg",
+    "description": null
+  },
+  {
+    "id": "kbia2ql7d3e5peyf3w88nslm",
+    "name": "व्हेज हंडी हाफ (Veg Handi Half)",
+    "category": "Handi Special",
+    "price": "330.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580053/nlvclm2jv0xx7cbefmmd.jpg",
+    "description": null
+  },
+  {
+    "id": "ftikrnaka1adtpmu6xjwbhe6",
+    "name": "शेवगा हंडी फुल (Shevga Handi Full)",
+    "category": "Handi Special",
+    "price": "550.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580055/jszdctf18eyll7grg3nz.jpg",
+    "description": null
+  },
+  {
+    "id": "kl49bqoxldw5885b00ard7g0",
+    "name": "शेवगा हंडी हाफ (Shevga Handi Half)",
+    "category": "Handi Special",
+    "price": "330.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580054/yv361g0m1ftphfo66zv8.jpg",
+    "description": null
+  },
+  {
+    "id": "msp3rg4ahu9js3fhewe56xf4",
+    "name": "शेवगापुरी फुल (Shevgapuri Full)",
+    "category": "Handi Special",
+    "price": "441.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578763/vc2onkwzipebbvnqkvcm.jpg",
+    "description": null
+  },
+  {
+    "id": "pkflsgr5b2oq25ds1fq68urt",
+    "name": "शेवगापुरी हाफ (Shevgapuri Half)",
+    "category": "Handi Special",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580070/uxs1tl4tkcd6vyknuir2.jpg",
+    "description": null
+  },
+  {
+    "id": "uduwlpj98fjwyrvuimv5mjp9",
+    "name": "आलू जीरा (Aloo Jeera)",
+    "category": "Indian Veg",
+    "price": "154.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580045/b0qob1g5cion3veozsjj.jpg",
+    "description": null
+  },
+  {
+    "id": "ap5el1xdj5ticxv4c2sk5s7i",
+    "name": "आलू पालक (Aloo Palak)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580040/kwt4v1hbpo8wjdkwekgk.jpg",
+    "description": null
+  },
+  {
+    "id": "p822ywz1jpfwnxjjfubfu7zs",
+    "name": "आलू मटर (Aloo Matar)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580113/yvndad1p3kcoms034ecp.jpg",
+    "description": null
+  },
+  {
+    "id": "hxd8f80lnt4omtx7t9eekj5j",
+    "name": "ग्रीन पिस मसाला (Green Peas Masala)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580036/zx2vb9ikt7utacrkfysv.jpg",
+    "description": null
+  },
+  {
+    "id": "jtx5hod3utlfge598g4jmzu2",
+    "name": "प्लेन पालक (Plain Palak)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580041/kklekl7bxrrnff0mdc77.jpg",
+    "description": null
+  },
+  {
+    "id": "k746uiju4jsglwitcysk5oyp",
+    "name": "बैंगन मसाला (Baingan Masala)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580039/ufb0bsp5k60wh0lbcsph.jpg",
+    "description": null
+  },
+  {
+    "id": "dne2cifh08xdu750cjcjs92n",
+    "name": "भेंडी फ्राय (Bhendi Fry)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579054/mdpyprq6ytp1webtfwlk.jpg",
+    "description": null
+  },
+  {
+    "id": "xrxousmnrng9g367msry5rk5",
+    "name": "मटकी फ्राय (Matki Fry)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580037/le2mijy5kzu6nzktht0t.jpg",
+    "description": null
+  },
+  {
+    "id": "p30ggripy8le58uih635vj34",
+    "name": "मटकी मसाला (Matki Masala)",
+    "category": "Indian Veg",
+    "price": "154.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580038/wzd9kcc7u4drom5k8vo6.jpg",
+    "description": null
+  },
+  {
+    "id": "gb5xefe7n8p9oo13gz48ro2a",
+    "name": "मशरूम मसाला (Mushroom Masala)",
+    "category": "Indian Veg",
+    "price": "187.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579323/qsqqdhdpuuqonjgxfuvt.jpg",
+    "description": null
+  },
+  {
+    "id": "ceq72062hni2b5dfvvn9qmau",
+    "name": "मिक्स व्हेज (Mix Veg)",
+    "category": "Indian Veg",
+    "price": "154.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580112/q987bxr5cuo6mjgxzkvn.jpg",
+    "description": null
+  },
+  {
+    "id": "j945uwdijki6j0cc4ezuvwi5",
+    "name": "लसूणी पालक (Lasooni Palak)",
+    "category": "Indian Veg",
+    "price": "154.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579449/trmlrbwebewj9h41e7zy.jpg",
+    "description": null
+  },
+  {
+    "id": "ygbr238akggnsaboqo7hchyz",
+    "name": "व्हेज कोल्हापुरी (Veg Kolhapuri)",
+    "category": "Indian Veg",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579040/lcpy8z4ghtedsdtifvk1.jpg",
+    "description": null
+  },
+  {
+    "id": "q7pq4er97whlkzsrgghzjnpq",
+    "name": "व्हेज मराठा (Veg Maratha)",
+    "category": "Indian Veg",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580035/tsfxnjoziwcdhfiewmxw.jpg",
+    "description": null
+  },
+  {
+    "id": "x69ntbl93ukhxtamdfdsn7gw",
+    "name": "शेव टमाटर (Shev Tamatar)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580117/cu3sfpzvpotcuz6nfyya.jpg",
+    "description": null
+  },
+  {
+    "id": "q9lr5ou0i4ep485hv94s29po",
+    "name": "शेवगा करी (Shevga Curry)",
+    "category": "Indian Veg",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580115/asgehnpprqvppivyrtbs.jpg",
+    "description": null
+  },
+  {
+    "id": "y3hg5ar5ce8iqwa1zts6i98x",
+    "name": "शेवगा मसाला (Shevga Masala)",
+    "category": "Indian Veg",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580044/o8vl07uu9jdvwmslczyi.jpg",
+    "description": null
+  },
+  {
+    "id": "sk5wr8mugloteukqxrqllkh6",
+    "name": "शेवभाजी (Shev Bhaji)",
+    "category": "Indian Veg",
+    "price": "132.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580116/xjs8aouhogglki0z6fwz.jpg",
+    "description": null
+  },
+  {
+    "id": "m7k7afadeu7iug6oytafbl6e",
+    "name": "सोयाबीन मसाला (Soyabean Masala)",
+    "category": "Indian Veg",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579426/xuthe0m4ldvq8topconq.jpg",
+    "description": null
+  },
+  {
+    "id": "tlnruus2pasxdmazy6e3isl1",
+    "name": "काजू कढाई (Kaju Kadhai)",
+    "category": "Kaju Special",
+    "price": "243.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580137/vlz7dsd3vwni8byjhwl3.jpg",
+    "description": null
+  },
+  {
+    "id": "t5wertim71axik7yad7zyanv",
+    "name": "काजू करी (Kaju Curry)",
+    "category": "Kaju Special",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580128/j6yuuzzacv3mh8hbnjkp.jpg",
+    "description": null
+  },
+  {
+    "id": "fwka86oxkeu7tnoavettwm73",
+    "name": "काजू पनीर मसाला (Kaju Paneer Masala)",
+    "category": "Kaju Special",
+    "price": "182.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580136/wqvhk1sdvlcmsjoz7pf9.jpg",
+    "description": null
+  },
+  {
+    "id": "vidaq15yc14ty0mad28kimj7",
+    "name": "काजू मसाला (Kaju Masala)",
+    "category": "Kaju Special",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580092/hch0xruj6jfmpzewhb8u.jpg",
+    "description": null
+  },
+  {
+    "id": "f0nb575vv8stkp8fdlcj6avs",
+    "name": "पनीर अंगारा (Paneer Angara)",
+    "category": "Paneer Special",
+    "price": "264.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580052/u1etll1ivkagjvsacd3q.jpg",
+    "description": null
+  },
+  {
+    "id": "wkzmm90r92c7ic4lw9ujg9cl",
+    "name": "पनीर कढाई (Paneer Kadhai)",
+    "category": "Paneer Special",
+    "price": "264.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579517/l5pdn0gtbndtronswwls.jpg",
+    "description": null
+  },
+  {
+    "id": "xjev8eiieka8kksbqr34e6km",
+    "name": "पनीर कोफ़्ता (Paneer Kofta)",
+    "category": "Paneer Special",
+    "price": "254.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580050/iwgpjisxty9r2hkvuarl.jpg",
+    "description": null
+  },
+  {
+    "id": "tps0rfclozg1g6ik8fofhywh",
+    "name": "पनीर खडा मसाला (Paneer Khada Masala)",
+    "category": "Paneer Special",
+    "price": "264.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579513/ng3ihyys3eyrgpgqio8i.jpg",
+    "description": null
+  },
+  {
+    "id": "s7gpueimjygs7vscqzj4ylji",
+    "name": "पनीर टिका मसाला (Paneer Tikka Masala)",
+    "category": "Paneer Special",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580120/s8ofp9fphkfifdxhmhsw.jpg",
+    "description": null
+  },
+  {
+    "id": "scryzzc6yxj09m3osi00224p",
+    "name": "पनीर पसंदा (Paneer Pasanda)",
+    "category": "Paneer Special",
+    "price": "254.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580049/z5mtudmlhyumqnd9mcad.jpg",
+    "description": null
+  },
+  {
+    "id": "xrk1d9cuzlmqcs9olp2uix1f",
+    "name": "पनीर भुर्जी (Paneer Bhurji)",
+    "category": "Paneer Special",
+    "price": "221.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580046/e2yuiboqnzuswihgnrmp.jpg",
+    "description": null
+  },
+  {
+    "id": "d3qnbs8qpbxdyfbfemwphs5j",
+    "name": "पनीर मसाला (Paneer Masala)",
+    "category": "Paneer Special",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580119/z9y6ndlg1c4tsiii483i.jpg",
+    "description": null
+  },
+  {
+    "id": "oe1em8c99sk0kg98kg1janxw",
+    "name": "पनीर लपेटा (Paneer Lapeta)",
+    "category": "Paneer Special",
+    "price": "314.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580118/qvt1h28n9usn6n6ggnbm.jpg",
+    "description": null
+  },
+  {
+    "id": "i0xdi0zcdeqfq0xsnhshdcmw",
+    "name": "पालक पनीर (Palak Paneer)",
+    "category": "Paneer Special",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580047/ibgfw6mmeyekifznxnrs.jpg",
+    "description": null
+  },
+  {
+    "id": "t5r790pna5amcwd5l8vjozy9",
+    "name": "बटर पनीर मसाला (Butter Paneer Masala)",
+    "category": "Paneer Special",
+    "price": "199.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580048/wrhcyhpstb45zgf8n8zk.jpg",
+    "description": null
+  },
+  {
+    "id": "glqvp8dx24i2u3rtfi1cvymb",
+    "name": "इंद्रायणी राईस फुल (Indrayani Rice Full)",
+    "category": "Rice",
+    "price": "110.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580078/rqdkrbvmpwzpcbguxjxr.jpg",
+    "description": null
+  },
+  {
+    "id": "zpxvklh5r70yeuk93e8xk6sz",
+    "name": "इंद्रायणी राईस हाफ (Indrayani Rice Half)",
+    "category": "Rice",
+    "price": "66.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580077/rb5pq8hfyrb6uv7gdcsz.jpg",
+    "description": null
+  },
+  {
+    "id": "x7mg5rujblyk029sheum34ux",
+    "name": "कर्ड राईस (Curd Rice)",
+    "category": "Rice",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580079/ioastad63qwp1esbg3dn.jpg",
+    "description": null
+  },
+  {
+    "id": "tnt8iqrczc8x8ffntq18y7vw",
+    "name": "जिरा राईस फुल (Jeera Rice Full)",
+    "category": "Rice",
+    "price": "99.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580074/ydrpobihzgfsoyb7skcy.jpg",
+    "description": null
+  },
+  {
+    "id": "lwxb9lne2ljfuz07z6n3o6i0",
+    "name": "जिरा राईस हाफ (Jeera Rice Half)",
+    "category": "Rice",
+    "price": "55.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580121/hwcgfslfq8hunn7hh8dj.jpg",
+    "description": null
+  },
+  {
+    "id": "hxahitlf7rwfbj6ixs8w2kkw",
+    "name": "दाल खिचडी (Dal Khichdi)",
+    "category": "Rice",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579680/tucyhirf2a4seemvbkwr.jpg",
+    "description": null
+  },
+  {
+    "id": "i4sixr2n5tqgikbgqde2lb06",
+    "name": "बटर दाल खिचडी (Butter Dal Khichdi)",
+    "category": "Rice",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580080/t793qrcp83zgffprgqsg.jpg",
+    "description": null
+  },
+  {
+    "id": "bk3ivxuiya8j4xpexy7r079c",
+    "name": "मसाला राईस (Masala Rice)",
+    "category": "Rice",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579681/rlipxutfl8syysgcxzpp.jpg",
+    "description": null
+  },
+  {
+    "id": "vti8951ocpy9axuaakxq4lzd",
+    "name": "व्हेज पुलाव (Veg Pulao)",
+    "category": "Rice",
+    "price": "176.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580076/gyfrppbmptyhs4tljank.jpg",
+    "description": null
+  },
+  {
+    "id": "tyl0jhv00t9l062gbhnzlbxn",
+    "name": "व्हेज बिर्याणी (Veg Biryani)",
+    "category": "Rice",
+    "price": "198.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579681/a2wvejbu6gmpqguqgdp8.jpg",
+    "description": null
+  },
+  {
+    "id": "t3y0sm8o5yp6qxv3kuqh4m97",
+    "name": "साधा राईस फुल (Sadha Rice Full)",
+    "category": "Rice",
+    "price": "88.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580073/zuju5yjvfsjclc42rdvt.jpg",
+    "description": null
+  },
+  {
+    "id": "ok24nuj84ottzip736mlw0xr",
+    "name": "साधा राईस हाफ (Sadha Rice Half)",
+    "category": "Rice",
+    "price": "56.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579634/l3u7pftr7vwawgwcm6fc.jpg",
+    "description": null
+  },
+  {
+    "id": "ldkusno95wrgrzzg3fpuz9we",
+    "name": "स्टीम राईस फुल (Steam Rice Full)",
+    "category": "Rice",
+    "price": "99.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580121/zog0murs60ehh10he8h8.jpg",
+    "description": null
+  },
+  {
+    "id": "gtwej5nbu2q06eysud6iyo8a",
+    "name": "स्टीम राईस हाफ (Steam Rice Half)",
+    "category": "Rice",
+    "price": "55.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580075/d7nwevi9hgv03ysip1jm.jpg",
+    "description": null
+  },
+  {
+    "id": "c6179cv5dcu947nxaeetchhj",
+    "name": "टोमॅटो सूप (Tomato Soup)",
+    "category": "Soup",
+    "price": "77.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579326/hvjjgvfkmibwndoaott7.jpg",
+    "description": null
+  },
+  {
+    "id": "rfn51fnhtoos4b7k9sc7nzxj",
+    "name": "व्हेज मंचाऊ सूप (Veg Manchow Soup)",
+    "category": "Soup",
+    "price": "94.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579335/skzf2mzjdjxyigt6gdes.jpg",
+    "description": null
+  },
+  {
+    "id": "fkci9eochzywjil52ow626n3",
+    "name": "व्हेज मनचोरीयन सूप (Veg Manchurian Soup)",
+    "category": "Soup",
+    "price": "77.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579995/w3pvreralxwo5rlf2bxp.jpg",
+    "description": null
+  },
+  {
+    "id": "xexzyq7y57cj1rita8eo4o97",
+    "name": "मलाई कोफ्ता (स्वीट) (Malai Kofta - Sweet)",
+    "category": "Special Veg",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578807/e5wyrjrobyq49uuflp0t.jpg",
+    "description": null
+  },
+  {
+    "id": "hlht6wbxp2jz6nutve0pkdfn",
+    "name": "व्हेज अंगारा (Veg Angara)",
+    "category": "Special Veg",
+    "price": "243.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579762/k5hleecl4ze4fynyofu5.jpg",
+    "description": null
+  },
+  {
+    "id": "lwtm8qfvpuzgd6gqbs75es4r",
+    "name": "व्हेज कढाई (Veg Kadhai)",
+    "category": "Special Veg",
+    "price": "243.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579763/hn9jjqoj5e6dw7eg0rct.jpg",
+    "description": null
+  },
+  {
+    "id": "atuftynhnm3639pcrmokfl82",
+    "name": "व्हेज कस्तुरी (Veg Kasturi)",
+    "category": "Special Veg",
+    "price": "264.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580083/ztnxmsrksukhvg2x8u57.jpg",
+    "description": null
+  },
+  {
+    "id": "smm9zwlhqejfkx7mgx575c97",
+    "name": "व्हेज तिरंगा (Veg Tiranga)",
+    "category": "Special Veg",
+    "price": "330.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580125/yp15fzvcrqgrr8xjprdr.jpg",
+    "description": null
+  },
+  {
+    "id": "irt331pll9yd6gjuesnwbqvj",
+    "name": "व्हेज पटीयाला (Veg Patiala)",
+    "category": "Special Veg",
+    "price": "243.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580126/ojqnbz8rkympnnopstiv.jpg",
+    "description": null
+  },
+  {
+    "id": "umvieyr5rqmsq4ozn2323s4s",
+    "name": "व्हेज भुना (Veg Bhuna)",
+    "category": "Special Veg",
+    "price": "243.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580082/znqv6o3twzlpjhqyztmk.jpg",
+    "description": null
+  },
+  {
+    "id": "fgr59huxp9mja5o8rm78ls6j",
+    "name": "शाही पनीर (स्वीट) (Shahi Paneer - Sweet)",
+    "category": "Special Veg",
+    "price": "275.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578807/elvon3kmxcieawpgcc8f.jpg",
+    "description": null
+  },
+  {
+    "id": "etdms5dwwy5y6lf3vzavgrcf",
+    "name": "पनीर चिली ग्रेव्ही (Paneer Chilli Gravy)",
+    "category": "Starter",
+    "price": "221.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579361/wilxgkmt7njm4k5hqgwt.jpg",
+    "description": null
+  },
+  {
+    "id": "bgj7osyfuiyrmmq4gji7l18d",
+    "name": "पनीर चिली ड्राय (Paneer Chilli Dry)",
+    "category": "Starter",
+    "price": "198.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579998/yedpptv3p9jvhcigcoil.jpg",
+    "description": null
+  },
+  {
+    "id": "dla60znq41ret5mumgdyctsb",
+    "name": "पनीर मंचुरीयन (Paneer Manchurian)",
+    "category": "Starter",
+    "price": "210.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578792/ob80juiueel1fe3zjq4v.jpg",
+    "description": null
+  },
+  {
+    "id": "e9olhn3ap9mi2d5g5hiw7tme",
+    "name": "फ्राय पापड (Fry Papad)",
+    "category": "Starter",
+    "price": "28.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579352/g0y8kr893d9gnmlpmwmz.jpg",
+    "description": null
+  },
+  {
+    "id": "cdjdbbjxf9a7sxdff1fh1e99",
+    "name": "मशरूम चिली ग्रेव्ही (Mushroom Chilli Gravy)",
+    "category": "Starter",
+    "price": "221.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579476/klck3q4cglbwlhywgyoa.jpg",
+    "description": null
+  },
+  {
+    "id": "okqa0fa54h8elq3365rhpb0a",
+    "name": "मशरूम चिली ड्राय (Mushroom Chilli Dry)",
+    "category": "Starter",
+    "price": "209.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579445/qd9jhdli72ap6yfacdzr.jpg",
+    "description": null
+  },
+  {
+    "id": "a56tkbgeovy9w56jtxgyvhcd",
+    "name": "मसाला पापड (Masala Papad)",
+    "category": "Starter",
+    "price": "33.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578791/w0ffodxyhk4kdfdvjjea.jpg",
+    "description": null
+  },
+  {
+    "id": "yxclddf6m13e7a2q3zdnwybb",
+    "name": "रोस्टेड पापड (Roasted Papad)",
+    "category": "Starter",
+    "price": "22.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578790/dnh90z1yzaf4dsvwioxq.jpg",
+    "description": null
+  },
+  {
+    "id": "xnz2gl6t0kghkue3j00scwy4",
+    "name": "व्हेज मंचुरीयन ग्रेव्ही (Veg Manchurian Gravy)",
+    "category": "Starter",
+    "price": "209.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580111/s451zc6hmckv93afwovz.jpg",
+    "description": null
+  },
+  {
+    "id": "combeuqc4tr7uy9gbsjlyb7w",
+    "name": "व्हेज मंचुरीयन ड्राय (Veg Manchurian Dry)",
+    "category": "Starter",
+    "price": "209.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580103/ja2ymz86yiost5oxi3ey.jpg",
+    "description": null
+  },
+  {
+    "id": "sakhe52ciyunv6y3utwc73a2",
+    "name": "सोयाबीन चिली ग्रेव्ही (Soyabean Chilli Gravy)",
+    "category": "Starter",
+    "price": "188.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580099/stqgt75zmdhcat66m83w.jpg",
+    "description": null
+  },
+  {
+    "id": "f1ukif4n9xgenknx6v5gm9t6",
+    "name": "सोयाबीन चिली ड्राय (Soyabean Chilli Dry)",
+    "category": "Starter",
+    "price": "143.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579999/nxche1kjhn9zwpucdmku.jpg",
+    "description": null
+  },
+  {
+    "id": "exx5xaucjh4s6zdp4ucwydh6",
+    "name": "हराभरा कबाब (Hara Bhara Kebab)",
+    "category": "Starter",
+    "price": "198.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579360/x6tyr8uzye6yopcq296y.jpg",
+    "description": null
+  },
+  {
+    "id": "qmwvru3x2kp4692qs9fu13mh",
+    "name": "महाराष्ट्रीयन स्पे. व्हेज थाळी (Maharashtrian Sp. Veg Thali)",
+    "category": "Thali",
+    "price": "231.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580095/maluide1xqjoeqcskegu.jpg",
+    "description": null
+  },
+  {
+    "id": "z5l2rfu8v2n0jemrwzo0dwwj",
+    "name": "व्हेज थाळी (Veg Thali)",
+    "category": "Thali",
+    "price": "165.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580096/yepqbpg0qsufvswsxfcf.jpg",
+    "description": null
+  },
+  {
+    "id": "uvf5zry2fxgh1q41momqa29d",
+    "name": "स्पे. पिठलं भाकरी थाळी (Sp. Pithal Bhakari)",
+    "category": "Thali",
+    "price": "198.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789580139/fbnmqsiflrjma14mpo8r.jpg",
+    "description": null
+  }
+]

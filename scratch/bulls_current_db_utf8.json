@@ -1,0 +1,1010 @@
+[
+  {
+    "id": "g90gmn4z7get3cblyngnhz57",
+    "name": "Peri Peri Chicken Wings",
+    "category": "Special Chicken Wings",
+    "price": "186.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/gnp4xgwf4x7ldhayp1xs.jpg",
+    "description": "Special Chicken Wings item"
+  },
+  {
+    "id": "targ794lbw4j0p6ij0svgcgm",
+    "name": "Peri Peri Chicken Pizza",
+    "category": "Signature Chicken Pizza",
+    "price": "263.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/ukixwx53dp7zx6tq7vx9.jpg",
+    "description": "Peri Peri Sauce, Marinated Chicken, Onion, Capsicum, Tomato, Green Chilly, Jalapeno & Mozzarella Cheese"
+  },
+  {
+    "id": "ybki4vfcz456xjd0typ1rxlm",
+    "name": "Veg Topping",
+    "category": "Add On",
+    "price": "17.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077410/shirur-express/bulls-cafe/echpwuhbtnj4cqizq2yp.jpg",
+    "description": "Add On item"
+  },
+  {
+    "id": "qo6waasq8b09hgisqq6mzk1v",
+    "name": "Cheese Burst",
+    "category": "Add On",
+    "price": "65.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077417/shirur-express/bulls-cafe/r2nwsmfizunlpocwupbc.jpg",
+    "description": "Add On item"
+  },
+  {
+    "id": "i2ew78g9vd9fdww4qiztbjwy",
+    "name": "Chilly Garlic Shots",
+    "category": "Veg Starters",
+    "price": "87.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077422/shirur-express/bulls-cafe/r121kivo1eykpqegz2rd.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "c034fl3bt7sdibfi5vv2sv1v",
+    "name": "Onion Ring",
+    "category": "Veg Starters",
+    "price": "98.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077433/shirur-express/bulls-cafe/e1g1zrqt4by0kzvxuywn.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "xbr9wmzq0ervzlhh6w08857d",
+    "name": "Chocolate Stuff Bread",
+    "category": "Veg Starters",
+    "price": "164.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077436/shirur-express/bulls-cafe/ecjwqtmtqeoux1dsh4c4.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "b8t4gbtjeu60ct20hqejfdu0",
+    "name": "Exotic Stuff Garlic Bread",
+    "category": "Veg Starters",
+    "price": "164.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077442/shirur-express/bulls-cafe/mnoxe3vsiylwh6xvl43y.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "ghy79qox2hbg9u8xq3dpq2j6",
+    "name": "Shezwan Cheese Burger",
+    "category": "Veg Burger",
+    "price": "131.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077447/shirur-express/bulls-cafe/rgjs2l59dy8hx8vleeun.jpg",
+    "description": "Veg Burger item"
+  },
+  {
+    "id": "iyvsgu47pdljlu7jji46q7lt",
+    "name": "Makhani Cheesy Burger",
+    "category": "Veg Burger",
+    "price": "142.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077452/shirur-express/bulls-cafe/mmakebouu6ascrljjlwz.jpg",
+    "description": "Veg Burger item"
+  },
+  {
+    "id": "ulpl6kiqd1hgozyqlv4ihu5g",
+    "name": "Peri Peri Momos",
+    "category": "Momos Veg",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077456/shirur-express/bulls-cafe/c6ajvo5vc68tejqk0oj1.jpg",
+    "description": "Momos Veg item"
+  },
+  {
+    "id": "qzbbotpdd9x9j3zbaypyz3p9",
+    "name": "Paneer Peri Peri Momos",
+    "category": "Momos Veg",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077461/shirur-express/bulls-cafe/safugycirmhlfmd5szur.jpg",
+    "description": "Momos Veg item"
+  },
+  {
+    "id": "gqm268ro68tt0ec9r23mayo5",
+    "name": "Crush Thick Cold Coffee",
+    "category": "Coffee",
+    "price": "66.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077466/shirur-express/bulls-cafe/mvpou9nxva6tmaf8s2qn.jpg",
+    "description": "Coffee item"
+  },
+  {
+    "id": "h163lfngifqzcne4mrjliuuc",
+    "name": "Blueberry Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077472/shirur-express/bulls-cafe/nxznq7m6zzmp3xuxf0sr.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "qdvl971ml35h3fmdo9j47tn8",
+    "name": "Mint Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077477/shirur-express/bulls-cafe/vcqi0dyizf9vlpfrd2jt.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "mtbyczpbxyw1vucslgl77d5g",
+    "name": "Watermelon Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077484/shirur-express/bulls-cafe/oo3342gnxzdr2xfeycqj.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "tf77gy7ftcc8vo8hfw9eqflp",
+    "name": "Corn with Cheese Pizza (Daily Offer)",
+    "category": "Offers",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077498/shirur-express/bulls-cafe/oxdkf0bswnniuv96gent.jpg",
+    "description": "Offers item"
+  },
+  {
+    "id": "v0yp0j2977r35f67agrh6wnf",
+    "name": "Non Veg Topping",
+    "category": "Add On",
+    "price": "22.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077540/shirur-express/bulls-cafe/dlt2ny4tmn7bsgghzmvs.jpg",
+    "description": "Add On item"
+  },
+  {
+    "id": "esmrel6kul5kkln39td2attq",
+    "name": "Peri Peri Cheesy Fries",
+    "category": "Veg Starters",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077541/shirur-express/bulls-cafe/gb7an0aoijyp8iye5uqm.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "wbbh9hgb400qdq090cm5m2u8",
+    "name": "Harabhara Kawab",
+    "category": "Veg Starters",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077547/shirur-express/bulls-cafe/stjpqullwskee7zw4dny.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "lo0v2q01e4p1c6o1pdh11ijn",
+    "name": "Veg Platter: Fries Chilly",
+    "category": "Veg Platter",
+    "price": "153.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077366/shirur-express/bulls-cafe/eytzfdnngvssepuvc6ch.jpg",
+    "description": "Garlic Shots, Onion Ring, Harabhara Kawab, Cheese Corn Pop"
+  },
+  {
+    "id": "is3jm84vucpzdhzj6pmanfqd",
+    "name": "Tandoori Chicken Burger",
+    "category": "Non Veg Burger",
+    "price": "131.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578826/owsk8kig3cvsyfqyikqn.jpg",
+    "description": "Non Veg Burger item"
+  },
+  {
+    "id": "ihclmio2dk6gvt11tpj5z8zs",
+    "name": "Masala Cheese Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "105.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077379/shirur-express/bulls-cafe/z4kmedjgbbpm0oatunfh.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "r2xy3dglsxfxznmuqitayg18",
+    "name": "Cheese Chilli Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "105.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077383/shirur-express/bulls-cafe/vlcfrw7eae98fxqioxlz.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "wltmom8qupbuppbpo6hlk1xt",
+    "name": "Garlic Cheese Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "105.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077386/shirur-express/bulls-cafe/unyzjs823gb3tnarzhev.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "qgcdifr2tweuys82xtv7sl22",
+    "name": "Chocolate Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "105.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077388/shirur-express/bulls-cafe/vjsr3ent1dj4ko1olc26.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "eujw0xpf9yvedrgzl6anq6tz",
+    "name": "Any Classic Pizza (7\") Combo",
+    "category": "Veg Pizza Combo",
+    "price": "318.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077369/shirur-express/bulls-cafe/d87grb9mogtpmi1s3rfv.jpg",
+    "description": "Any Classic Pizza (7\"), Peri Peri Fries / Tandoori Fries, Any Mocktel"
+  },
+  {
+    "id": "q2anafql3e52h87n1fl9oocf",
+    "name": "Any Signature Pizza (7\") Combo",
+    "category": "Veg Pizza Combo",
+    "price": "351.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077370/shirur-express/bulls-cafe/d4ynhiydpdb44dbqub08.jpg",
+    "description": "Any Signature Pizza (7\"), Peri Peri Fries / Tandoori Fries, Any Mocktel"
+  },
+  {
+    "id": "tsirf3rjvb9m0x1lcn8zu59x",
+    "name": "Chee Chilli Garlic Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077389/shirur-express/bulls-cafe/tkbbmc228nxfljwtvu1w.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "aay6ahofxp4gso7in6cg1578",
+    "name": "Any Exotic Pizza (7\") Combo",
+    "category": "Veg Pizza Combo",
+    "price": "406.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077372/shirur-express/bulls-cafe/cbpp2ngxjxmndpnmcdmh.jpg",
+    "description": "Any Exotic Pizza (7\"), Peri Peri Fries / Tandoori Fries, Any Mocktel"
+  },
+  {
+    "id": "yjyc17nn4kbpvntbuvbkon5h",
+    "name": "Paneer Cheese Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077390/shirur-express/bulls-cafe/l5eaf9e0f6jk5pf3eici.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "e9cmy5do452t9i7xstmykaye",
+    "name": "Chutney Cheese Sandwich",
+    "category": "Veg Sandwich",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077374/shirur-express/bulls-cafe/rmib9jwq1zn1fnpejemk.jpg",
+    "description": "Veg Sandwich item"
+  },
+  {
+    "id": "acbtvx1q4agn7lwucjmzsx6s",
+    "name": "Veg Cheese Sandwich",
+    "category": "Veg Sandwich",
+    "price": "98.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077375/shirur-express/bulls-cafe/gv0dmutxmpdb8geusyel.jpg",
+    "description": "Veg Sandwich item"
+  },
+  {
+    "id": "scf5k4qfz9szwlk8402dl9fh",
+    "name": "Corn Cheese Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077393/shirur-express/bulls-cafe/bpfg6myyosglyvboewxt.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "cfofmnjuw23nlr29thgsc3mh",
+    "name": "Veg Cheese Grilled Sandwich",
+    "category": "Grilled Sandwich 2 Slice",
+    "price": "105.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077377/shirur-express/bulls-cafe/aaweb7uchtbcrejugfne.jpg",
+    "description": "Grilled Sandwich 2 Slice item"
+  },
+  {
+    "id": "k5aev6il2ws3rpze5evgx8m3",
+    "name": "Kolhapuri Paneer Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077394/shirur-express/bulls-cafe/x0arudpmpqryjnshnopb.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "kntgvw8abhwsmu9cw3pgv16h",
+    "name": "Paneer Schezwan Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077396/shirur-express/bulls-cafe/xq3ckgnpxsytkpqnngdw.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "ppvnou6a5iosm37m1a72u2mh",
+    "name": "Tandoori Paneer Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077398/shirur-express/bulls-cafe/idi7awrgunoje91wfca7.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "fi84125vq73qez0fcrezarp4",
+    "name": "Peri Peri Paneer Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077401/shirur-express/bulls-cafe/lyqwtg0s8lx0eqt1oytt.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "mjpuqfz1cfzcsljbf723apec",
+    "name": "Peri Peri Corn Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077403/shirur-express/bulls-cafe/dchhovm9fvbhamxjtlv3.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "frs8myyczhzphx0l2fgn7337",
+    "name": "Makhani Paneer Grilled Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077405/shirur-express/bulls-cafe/aoi1vjql0ufu0orz6ajt.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "e5aldl76k12zl0lk3pztpazk",
+    "name": "Mix Veg Grill Sandwich",
+    "category": "3 Slice Sandwich",
+    "price": "131.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077407/shirur-express/bulls-cafe/k4qtcb0kvimkzxrr5xry.jpg",
+    "description": "3 Slice Sandwich item"
+  },
+  {
+    "id": "bwlf80j32o4tr8z4qo0yxf30",
+    "name": "Extra Cheese",
+    "category": "Add On",
+    "price": "54.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077413/shirur-express/bulls-cafe/yu2qmemoak2l6posoocw.jpg",
+    "description": "Add On item"
+  },
+  {
+    "id": "j8fy2m9w6v05bj0fs71g292a",
+    "name": "Extra Cheese Slice",
+    "category": "Add On",
+    "price": "17.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077419/shirur-express/bulls-cafe/s6dnlbcfueccllxuhlbq.jpg",
+    "description": "Add On item"
+  },
+  {
+    "id": "fb7zfsxrzvsi5t8yx2edst5u",
+    "name": "Salted Fries",
+    "category": "Veg Starters",
+    "price": "98.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077424/shirur-express/bulls-cafe/qu8zubsgixotjwmsbozs.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "dyhw8n53tclse1yfnte53afi",
+    "name": "Peri Peri Fries",
+    "category": "Veg Starters",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077425/shirur-express/bulls-cafe/xpnha9ewxejedutarmng.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "s8zhrzu04k5477weajtp9vfh",
+    "name": "Tandoori Fries",
+    "category": "Veg Starters",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077427/shirur-express/bulls-cafe/hwsydzvwiotk4fhza91n.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "t7pdaigshbf5yqc37qprctd4",
+    "name": "Cheesy Fries",
+    "category": "Veg Starters",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077429/shirur-express/bulls-cafe/qrqmycw1ln5jcwcgfrsh.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "iqruwdc25qtob3kv02ntsppc",
+    "name": "Cheese Corn Pop",
+    "category": "Veg Starters",
+    "price": "98.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077435/shirur-express/bulls-cafe/y3y2fweseuvadtotoocw.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "o8gf7xdlu33xytgugkd3bd4a",
+    "name": "Cheese Stuff Garlic Bread",
+    "category": "Veg Starters",
+    "price": "164.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077439/shirur-express/bulls-cafe/wixphj2fkftegzzj3is2.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "o8h0fugcjctu49c5c8b08wzz",
+    "name": "Aloo Tikki Cheese Burger",
+    "category": "Veg Burger",
+    "price": "98.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077444/shirur-express/bulls-cafe/zvf6xv2czeavahfrwbgm.jpg",
+    "description": "Veg Burger item"
+  },
+  {
+    "id": "iazlfm3go00e9glglc0jc6b8",
+    "name": "Cheese Chilli Burger",
+    "category": "Veg Burger",
+    "price": "131.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077449/shirur-express/bulls-cafe/w8iki38df62tjus3ovqh.jpg",
+    "description": "Veg Burger item"
+  },
+  {
+    "id": "j6nwg2c72u5ghixko7346vuf",
+    "name": "Italiyan Paneer Cheese Burger",
+    "category": "Veg Burger",
+    "price": "142.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077451/shirur-express/bulls-cafe/evzhsem57al6eafkcbcv.jpg",
+    "description": "Veg Burger item"
+  },
+  {
+    "id": "dg8xxjze0m87hsgo3qco1n9z",
+    "name": "Mix Veg Fried Momo",
+    "category": "Momos Veg",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077454/shirur-express/bulls-cafe/useasvjtgtohxjueyxk8.jpg",
+    "description": "Momos Veg item"
+  },
+  {
+    "id": "e4hty2qy73d7im4oji9r52gd",
+    "name": "Paneer Momos",
+    "category": "Momos Veg",
+    "price": "109.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077458/shirur-express/bulls-cafe/rwv7u52ghiujxwpckjw8.jpg",
+    "description": "Momos Veg item"
+  },
+  {
+    "id": "gv77u801fggpy8vzhq893r00",
+    "name": "Hot Coffee",
+    "category": "Coffee",
+    "price": "28.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077463/shirur-express/bulls-cafe/vvztzdnuebzhv95dsopg.jpg",
+    "description": "Coffee item"
+  },
+  {
+    "id": "i843sp0yyiumqn1wb7bqmzwm",
+    "name": "Thick Cold Coffee",
+    "category": "Coffee",
+    "price": "56.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077464/shirur-express/bulls-cafe/atmwjw3dhvoh4doqb8lp.jpg",
+    "description": "Coffee item"
+  },
+  {
+    "id": "s7xkx8ia3yq6wry4sr9c9xgt",
+    "name": "Tandoori Cheesy Fries",
+    "category": "Veg Starters",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077544/shirur-express/bulls-cafe/iuw4bbwbsnrla7iudd2a.jpg",
+    "description": "Veg Starters item"
+  },
+  {
+    "id": "gqjten3bo8a1fwvuqiei1uwj",
+    "name": "Green Apple Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077550/shirur-express/bulls-cafe/htsl5z0fohtp3gd1opmn.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "ekjd4yhy74by1tvy6mlnotf7",
+    "name": "Peach Ice Tea Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077553/shirur-express/bulls-cafe/rpyotjpksee2fvzrk2kz.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "tzik6lw6jwog6wbb76cn4hi8",
+    "name": "Blue Ocen Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077468/shirur-express/bulls-cafe/bjny52fg3obh3no4nia6.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "gw6fn6jm0ndqvp3rz5cymg12",
+    "name": "Kala Khata Mojito",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077475/shirur-express/bulls-cafe/ve9rgpeuoj2ukhgp1seq.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "vkw38ycqupeo5klr4ngt7w0j",
+    "name": "Leman Ice Tea",
+    "category": "Mocktails",
+    "price": "76.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077480/shirur-express/bulls-cafe/kbnwifdlukhfmvz6zopr.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "kuv9weshaapr6elkn0widinh",
+    "name": "Cold Drink",
+    "category": "Mocktails",
+    "price": "22.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077486/shirur-express/bulls-cafe/pbeznootd6crdanky1jf.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "n5vry33nqw5nfojnh4ryfx9j",
+    "name": "Water Bottle",
+    "category": "Mocktails",
+    "price": "22.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077491/shirur-express/bulls-cafe/qr2b926kogpw9afozwzk.jpg",
+    "description": "Mocktails item"
+  },
+  {
+    "id": "bw60y9qgh8td3220zfgwu78r",
+    "name": "Herb Chicken Pizza (Daily Offer)",
+    "category": "Offers",
+    "price": "98.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1792077501/shirur-express/bulls-cafe/wfdk6tzybef6qrwlfs9a.jpg",
+    "description": "Offers item"
+  },
+  {
+    "id": "w49ar8r1c5b38vypqvb0oa7l",
+    "name": "B.B.Q Chicken Pizza",
+    "category": "Signature Chicken Pizza",
+    "price": "263.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578945/eudaka7zmlpvmobfbynv.jpg",
+    "description": "B.B.Q Sauce, Marinated Chicken, Onion, Olive, Red Paprika & Mozzarella Cheese"
+  },
+  {
+    "id": "xnvxxcs18ibvczxs930ipugg",
+    "name": "Spicy Chicken Burger",
+    "category": "Non Veg Burger",
+    "price": "131.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578957/okeoktuoh7l7hpxxbxgf.jpg",
+    "description": "Non Veg Burger item"
+  },
+  {
+    "id": "is7zzb1q4wsjczqr6zf9824t",
+    "name": "Chicken Fries",
+    "category": "Non Veg Starters",
+    "price": "98.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578959/utlr6efrnvd8f1vbyd6u.jpg",
+    "description": "Non Veg Starters item"
+  },
+  {
+    "id": "fy60o5qfejyj4cx42dfzm2ur",
+    "name": "Chicken Stuff Garlic Bread",
+    "category": "Non Veg Starters",
+    "price": "153.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578965/djmd4v3zxvb26px0ql7h.jpg",
+    "description": "Non Veg Starters item"
+  },
+  {
+    "id": "igj7zia8ame8h4f3dlzra4yh",
+    "name": "Chicken Wings",
+    "category": "Special Chicken Wings",
+    "price": "175.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578966/sdkfq5o0iogl1kr6bzze.jpg",
+    "description": "Special Chicken Wings item"
+  },
+  {
+    "id": "mca3lnk955p2fwlwb8t8k6q2",
+    "name": "Choco Lava Cake",
+    "category": "Desserts",
+    "price": "87.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578967/ihbontffynawu0mqou90.jpg",
+    "description": "Desserts item"
+  },
+  {
+    "id": "wcn6dy1rb9y2hlwaelkwpwrz",
+    "name": "Margherita Pizza",
+    "category": "Veg Pizza",
+    "price": "120.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578968/vsmjgaygcee3rqyb5aam.jpg",
+    "description": "Tomato Sauce, Fresh & Mozzarella Cheese"
+  },
+  {
+    "id": "mc866xc8a76d8ruwlkpyw87t",
+    "name": "Tandoori Paneer Pizza",
+    "category": "Signature Veg Pizza",
+    "price": "230.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578969/wbd37xhcep4hdn5griv7.jpg",
+    "description": "Tandoori Sauce, Marinated Paneer, Onion, Capsicum, Tomato, Red Paprika, Mozzarella Cheese"
+  },
+  {
+    "id": "paw3ixs6lgd12v21xzbchkuc",
+    "name": "Chicken Supremo Pizza",
+    "category": "Exotic Chicken Pizza",
+    "price": "307.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578976/r5u2joakr7bw3i51jmt9.jpg",
+    "description": "Onion, Capsicum, Tomato, Sweet Corn, Olive, Red Paprika, Mushroom & Mozzarella Cheese"
+  },
+  {
+    "id": "bns9wje0iicp215i8kpa8rkz",
+    "name": "Makhani Cheesy Pizza",
+    "category": "Veg Pizza",
+    "price": "142.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578978/mtqxyaxujxtwcgp1gscg.jpg",
+    "description": "Pure Makhani Sauce, Tomato's & Mozzarella Cheese"
+  },
+  {
+    "id": "e156okw8epuyuxtlgvllguzc",
+    "name": "Lovers Choice Pizza",
+    "category": "Classic Veg Pizza",
+    "price": "186.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578979/i7s4l1qqlk6vomtznosk.jpg",
+    "description": "Onion, Capsicum, Tomato, Mushroom & Mozzarella Cheese"
+  },
+  {
+    "id": "p01zh1l7uzr4meu154s8s3so",
+    "name": "Cheesy Mushroom Pizza",
+    "category": "Classic Veg Pizza",
+    "price": "186.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578980/nusclncwlytg3rlbcvme.jpg",
+    "description": "Mushroom, Onion, Capsicum, Red Paprika & Mozzarella Cheese"
+  },
+  {
+    "id": "ay8tcopoyprkysdvgugtgipr",
+    "name": "Peri Peri Paneer Pizza",
+    "category": "Signature Veg Pizza",
+    "price": "230.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578983/qmkedmoupmz42rvtdwux.jpg",
+    "description": "Peri Peri Sauce, Marinated Paneer, Onion, Capsicum, Tomato, Green Chilly, Jalapeno, Mozzarella Cheese"
+  },
+  {
+    "id": "lut49xst65z7rjv07rb8jub9",
+    "name": "Veg Extravaganza Pizza",
+    "category": "Exotic Veg Pizza",
+    "price": "263.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789578985/zrmly14vtcdtqskxjtnx.jpg",
+    "description": "Onion, Capsicum, Tomato, Sweet Corn, Paneer, Jalapeno, Olive, Mushroom, Mozzarella Cheese"
+  },
+  {
+    "id": "xjtfq8i7f3o4mcuvmbfqrpqb",
+    "name": "Simple Chicken Pizza",
+    "category": "Non Veg Pizza",
+    "price": "153.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579254/cu02a4y02vozsjhpdhaf.jpg",
+    "description": "Pizza Sauce, Onion, Chicken & Mozzarella Cheese"
+  },
+  {
+    "id": "lfnicum5qoybj7u6n5ey841w",
+    "name": "Chicken Lover Pizza",
+    "category": "Classic Chicken Pizza",
+    "price": "197.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579255/hofnavx0zclv9weggyko.jpg",
+    "description": "Onion, Capsicum, Tomato, Mushroom & Mozzarella Cheese"
+  },
+  {
+    "id": "metmamy4plapjgmhbadn59cv",
+    "name": "Makhani Paneer Pizza",
+    "category": "Signature Veg Pizza",
+    "price": "230.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579536/udsy8is9ttvbjkxnsfxf.jpg",
+    "description": "Makhani Sauce, Marinated Paneer, Onion, Capsicum, Olive, Sweet Corn, Mozzarella Cheese"
+  },
+  {
+    "id": "e7g9j6vrqyzi786ahbxw2ky0",
+    "name": "Tandoori Chicken Pizza",
+    "category": "Signature Chicken Pizza",
+    "price": "263.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579544/punbkitapdevyokjsrwz.jpg",
+    "description": "Tandoori Sauce, Marinated Chi., Onion, Capsicum, Tomato, Red Paprika & Mozzarella Cheese"
+  },
+  {
+    "id": "g7hknobgnoep10k7qxcl9q9t",
+    "name": "Cheesy Chicken Pizza",
+    "category": "Non Veg Pizza",
+    "price": "142.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579547/be5opufznafhqc7th9d9.jpg",
+    "description": "Sauce, Plain Chicken & Mozzarella Cheese & Mozzarella Cheese"
+  },
+  {
+    "id": "yq7lpzyob7a50cg0wvzixs6c",
+    "name": "Vedge burger",
+    "category": "Main_Course",
+    "price": "100.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789579557/whtenqjxiwh8xhm3nfz7.jpg",
+    "description": null
+  },
+  {
+    "id": "nt1jaoizdmj94wec19hf7gpb",
+    "name": "Chicken Popcorn",
+    "category": "Non Veg Starters",
+    "price": "87.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733812/xcqi7uw2btsdsqopid9u.jpg",
+    "description": "Non Veg Starters item"
+  },
+  {
+    "id": "q22ec3e7yqecpn8d8u01eocg",
+    "name": "Chicken Momos",
+    "category": "Momos Nonveg",
+    "price": "109.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/btzwptnuovrezdnhj6ri.jpg",
+    "description": "Momos Nonveg item"
+  },
+  {
+    "id": "b64gz8ol50n7fhei07qqnbwu",
+    "name": "Chicken Peri Peri Momos",
+    "category": "Momos Nonveg",
+    "price": "120.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/ihsgakfyl8ttvegz8jd0.jpg",
+    "description": "Momos Nonveg item"
+  },
+  {
+    "id": "gq786tqyo60202molhb2wl48",
+    "name": "Chicken Nuggets",
+    "category": "Non Veg Starters",
+    "price": "98.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733813/kzrib57qynojpzi0hcud.jpg",
+    "description": "Non Veg Starters item"
+  },
+  {
+    "id": "g9xxhc4rusjxuw7o6s3dcgnn",
+    "name": "Choice Chicken Pizza",
+    "category": "Classic Chicken Pizza",
+    "price": "197.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/zajpmhlgrksfycj5bwrg.jpg",
+    "description": "Onion, Capsicum, Tomato, Plain Chicken, Corn & Mozzarella"
+  },
+  {
+    "id": "f7k0wazsfskt1q5oqsejej4z",
+    "name": "Chicken Cheese Burst Pizza",
+    "category": "Signature Chicken Pizza",
+    "price": "307.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/wlxoagyvamcvwkeewmut.jpg",
+    "description": "Double Layered Cheese, Plain Chicken, Onion & Mozzarella Cheese"
+  },
+  {
+    "id": "ye4qq53nwv0hy0a5m4xumcap",
+    "name": "Chicken Extravaganza Pizza",
+    "category": "Exotic Chicken Pizza",
+    "price": "307.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733814/joc7mp1djnznq3lmp2zq.jpg",
+    "description": "Onion, Olive, Capsicum, Jalapeno, Red Paprika, Green Chilly, Sp"
+  },
+  {
+    "id": "gv8mpdaspa566ouwbqp38d4f",
+    "name": "Cheesy Chicken (7\") Pizza Combo",
+    "category": "Non-Veg Pizza Combo",
+    "price": "263.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/bzeszdtxhzuip7jqfi8p.jpg",
+    "description": "Cheesy Chicken (7\") Pizza, Chicken Popcorn, Coke"
+  },
+  {
+    "id": "yj0oslz23wc17jkhx4dhj7hq",
+    "name": "Makhani Chicken Pizza",
+    "category": "Signature Chicken Pizza",
+    "price": "263.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/rzhfvikhvfkjioaplkhf.jpg",
+    "description": "Makhani Sauce, Onion, Capsicum, Jalapeno, Makhani Chicken & Mozzarella Cheese"
+  },
+  {
+    "id": "xpeopdaqru0sj1qvnuiypnit",
+    "name": "Any Exotic Chicken (7\") Pizza Combo",
+    "category": "Non-Veg Pizza Combo",
+    "price": "406.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/engzk7k5nsnplp4czrzr.jpg",
+    "description": "Any Exotic Chicken (7\") Pizza, Chicken Fries, Any Mocktel"
+  },
+  {
+    "id": "ac29vnujuinaqiidl8hihbej",
+    "name": "Any Signature Chicken (7\") Pizza Combo",
+    "category": "Non-Veg Pizza Combo",
+    "price": "351.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/tjyfwfk7cq8yphxinynw.jpg",
+    "description": "Any Signature Chicken (7\") Pizza, Chicken Fries, Any Mocktel"
+  },
+  {
+    "id": "ossg6sc7j2jxu4a950okn8us",
+    "name": "Chicken Pepe Pizza",
+    "category": "Classic Chicken Pizza",
+    "price": "197.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733816/qzywgvjvdng2uc75oqil.jpg",
+    "description": "Onion, Capsicum, Tomato, Plain Chicken, Green Chilly, Mozzarella Cheese"
+  },
+  {
+    "id": "rngdday75te0x0xbx6w6m7bf",
+    "name": "Cheesy Chicken Burger",
+    "category": "Non Veg Burger",
+    "price": "120.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733815/wwmidrm1ogu3bd4q6yzq.jpg",
+    "description": "Non Veg Burger item"
+  },
+  {
+    "id": "otvsl5vezccqdn79egypn8xf",
+    "name": "Makhani Chicken Burger",
+    "category": "Non Veg Burger",
+    "price": "120.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733816/ebcdiavrjjzd5avjm6g9.jpg",
+    "description": "Non Veg Burger item"
+  },
+  {
+    "id": "kh8s8xio52sicgli7tzc8x3f",
+    "name": "Farm Choice Pizza",
+    "category": "Classic Veg Pizza",
+    "price": "186.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733817/wuwcfucvjkpmb8otw3gb.jpg",
+    "description": "Onion, Capsicum, Tomato, Sweet Corn & Mozzarella Cheese"
+  },
+  {
+    "id": "x9xm57oz4be3k532fgitpbsd",
+    "name": "Spicy Paneer Pizza",
+    "category": "Exotic Veg Pizza",
+    "price": "263.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733817/mxdsqw32kxjawqeeceml.jpg",
+    "description": "Spicy Sauce, Marinated Paneer, Onion, Capsicum, Jalapeno, Red Paprika, Green Chilly, Mozzarella Cheese"
+  },
+  {
+    "id": "sesvw113li6s7z39o2rgqu80",
+    "name": "Pepe Paneer Pizza",
+    "category": "Classic Veg Pizza",
+    "price": "186.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733817/rpdkaqj3amhaa0wiowlf.jpg",
+    "description": "Paneer, Onion, Tomato, Sweet Corn & Mozzarella Cheese"
+  },
+  {
+    "id": "spa4aly0gjg3kpumsfmpuytx",
+    "name": "B.B.Q Paneer Pizza",
+    "category": "Signature Veg Pizza",
+    "price": "230.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733817/wsjvukcsb9y15fbosw9w.jpg",
+    "description": "B.B.Q Sauce, Marinated Paneer, Onion, Capsicum"
+  },
+  {
+    "id": "f6rqobqo9ezeqtwr7rcq62ct",
+    "name": "Veg Supremo Pizza",
+    "category": "Exotic Veg Pizza",
+    "price": "263.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733818/jwrqxoakmrggvkqeh2wv.jpg",
+    "description": "Onion, Capsicum, Tomato, Sweet Corn, Olive, Red Paprika, Mushroom & Mozzarella Cheese"
+  },
+  {
+    "id": "nazrhmhcvwls3p42c63gjrcj",
+    "name": "Margarita Pizza (7\") Combo",
+    "category": "Veg Pizza Combo",
+    "price": "263.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733818/x0cauyrasfwhp2wknson.jpg",
+    "description": "Margarita Pizza (7\"), Peri Peri Fries / Tandoori Fries, Coke"
+  },
+  {
+    "id": "ncq6gtx6v696l5e9bmj8fhyw",
+    "name": "Double Burst Pizza",
+    "category": "Signature Veg Pizza",
+    "price": "230.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733818/t1rehws3zg54wnjjkp46.jpg",
+    "description": "Double Layered Cheese & Mozzarella Cheese"
+  },
+  {
+    "id": "nx2l0ei6p583y6sifqezav5o",
+    "name": "Cheesy Corn Pizza",
+    "category": "Veg Pizza",
+    "price": "142.00",
+    "is_veg": true,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733818/fc9gh4sllnmrrrle0fd3.jpg",
+    "description": "Tomato Sauce, Sweet Corn Mozzarella Cheese"
+  },
+  {
+    "id": "gr1sr4w56hsncmbukw4g9q5t",
+    "name": "Any Classic Chicken (7\") Pizza Combo",
+    "category": "Non-Veg Pizza Combo",
+    "price": "318.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733824/d03ttbn0jalpknjevtk3.jpg",
+    "description": "Any Classic Chicken (7\") Pizza, Chicken Fries, Coke"
+  },
+  {
+    "id": "hzp03qx93ujzqy74kg1jzvbi",
+    "name": "Chicken Burger",
+    "category": "Non Veg Burger",
+    "price": "109.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733825/ue8rmjfjladw2qckteap.jpg",
+    "description": "Non Veg Burger item"
+  },
+  {
+    "id": "nbm35q97wy1p4pieqjtrfyt4",
+    "name": "Zesty Chicken Pizza",
+    "category": "Non Veg Pizza",
+    "price": "164.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733825/zhsqp6qoqaw2g5fmfkiq.jpg",
+    "description": "Pizza Sauce, Onion, Green Chilly, Plain Chicken & Mozzarella Cheese"
+  },
+  {
+    "id": "x8l20ztz2vg1ahlyajenqnqd",
+    "name": "Spicy Chicken Pizza",
+    "category": "Exotic Chicken Pizza",
+    "price": "307.00",
+    "is_veg": false,
+    "image_url": "https://res.cloudinary.com/bjpfhxj7/image/upload/v1789733829/bmpmbqubzab7x0krkfaz.jpg",
+    "description": "Spicy Sauce, Onion, Capsicum Jalapeno, Red Paprika, Green Chilly, Spicy Chicken & Mozzarella Cheese"
+  }
+]

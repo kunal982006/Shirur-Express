@@ -32,164 +32,152 @@ interface MenuSection {
 
 const INITIAL_MENU: MenuSection[] = [
   {
-    id: "sec-basic-hair",
-    title: "Basic Haircuts",
-    subtitle: "HAIR • Everyday clean & classic cuts",
+    id: "sec-hair-women",
+    title: "Hair Cut (Women)",
+    subtitle: "HAIR • Classic, layered & designer cuts",
     icon: "✂️",
     badgeColor: "bg-rose-100 text-rose-700",
     items: [
-      { id: "bh-1", name: "Straight Haircut", marketPrice: 129, ourPrice: 99, time: "20 mins", desc: "Clean, even straight trim for neat everyday look" },
-      { id: "bh-2", name: "U Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "Soft rounded U-shape edges for natural bounce" },
-      { id: "bh-3", name: "V Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "Sharp V-point tapering for sleek length definition" },
+      { id: "hw-1", name: "Straight Cut", marketPrice: 129, ourPrice: 99, time: "20 mins", desc: "सरळ, स्वच्छ आणि क्लासिक हेअर कट." },
+      { id: "hw-2", name: "U Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "मागे हलकासा गोलाकार देऊन मिळणारा नॅचरल लूक." },
+      { id: "hw-3", name: "V Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "केसांना आकर्षक आणि शार्प V-शेप देणारा स्टायलिश कट." },
+      { id: "hw-4", name: "Butterfly Cut", marketPrice: 349, ourPrice: 299, time: "40 mins", desc: "केसांना भरपूर बाऊन्स आणि ट्रेन्डी व्हॉल्युम देणारा लेअर्ड कट.", tag: "Advanced" },
+      { id: "hw-5", name: "Layer Cut", marketPrice: 279, ourPrice: 249, time: "35 mins", desc: "केस दाट आणि मोकळे दिसण्यासाठी परफेक्ट स्टेप्स." },
+      { id: "hw-6", name: "Feather Cut", marketPrice: 279, ourPrice: 249, time: "35 mins", desc: "हलके, मोकळे आणि चेहऱ्याला फ्रेश लूक देणारे लेअर्स." },
+      { id: "hw-7", name: "Face Framing Cut", marketPrice: 349, ourPrice: 299, time: "35 mins", desc: "चेहऱ्याचा आकार उठून दिसण्यासाठी पुढच्या केसांची खास कटिंग.", tag: "Advanced" },
+      { id: "hw-8", name: "Curtain Bangs with Layers", marketPrice: 399, ourPrice: 350, time: "45 mins", desc: "स्टायलिश फ्रंट फ्लिक्स आणि सुंदर बॅक लेअर्सचा कॉम्बो.", tag: "Advanced" },
+      { id: "hw-9", name: "Blunt Cut / Long Bob", marketPrice: 179, ourPrice: 149, time: "30 mins", desc: "खांद्यापर्यंतचा मॉडर्न, शार्प आणि सोबर स्ट्रेट कट." },
+      { id: "hw-10", name: "Soft Layer Cut", marketPrice: 399, ourPrice: 349, time: "40 mins", desc: "रोजच्या वापरासाठी एकदम नॅचरल आणि हलके लेअर्स." },
+      { id: "hw-11", name: "Multi Step Cut", marketPrice: 319, ourPrice: 279, time: "40 mins", desc: "जास्त स्टेप्स आणि केसांमध्ये एक्स्ट्रा बाऊन्स हवा असल्यास." },
+      { id: "hw-12", name: "90-Degree Step Cut", marketPrice: 219, ourPrice: 179, time: "35 mins", desc: "केस जाड आणि भरगच्च दिसण्यासाठी योग्य कट." },
+      { id: "hw-13", name: "Voluminous Feather Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "बारीक किंवा विरळ केसांसाठी हेवी व्हॉल्युम देणारा कट.", tag: "Advanced" },
+      { id: "hw-14", name: "Long Hair Step Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "केसांची लांबी न कमी करता दिलेला स्टायलिश स्टेप लूक." },
+      { id: "hw-15", name: "Long Layer Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "लांब केसांसाठी स्मूथ आणि सुंदर फ्लो देणारे लेअर्स." },
     ],
   },
   {
-    id: "sec-adv-hair",
-    title: "Advance Haircuts",
-    subtitle: "HAIR • Designer layers, steps & volume cuts",
-    icon: "💇‍♀️",
-    badgeColor: "bg-pink-100 text-pink-700",
-    items: [
-      { id: "ah-1", name: "Butterfly Cut", marketPrice: 349, ourPrice: 299, time: "40 mins", desc: "Trending voluminous face-framing butterfly layers", tag: "Bestseller" },
-      { id: "ah-2", name: "Layer Cut", marketPrice: 279, ourPrice: 249, time: "35 mins", desc: "Textured cascading layers for movement & volume" },
-      { id: "ah-3", name: "Feather Cut", marketPrice: 279, ourPrice: 249, time: "35 mins", desc: "Light feather-styled ends brushed outward" },
-      { id: "ah-4", name: "Face Framing Layer", marketPrice: 349, ourPrice: 299, time: "35 mins", desc: "Custom contoured strands to highlight cheekbones" },
-      { id: "ah-5", name: "Curtain Bangs with Layer", marketPrice: 399, ourPrice: 350, time: "45 mins", desc: "Soft parted bangs blended with full hair layers", tag: "Trending" },
-      { id: "ah-6", name: "Blund Cut [Lob]", marketPrice: 179, ourPrice: 149, time: "30 mins", desc: "Chic shoulder-grazing blunt long bob [Lob]" },
-      { id: "ah-7", name: "Soft Layer Cut", marketPrice: 399, ourPrice: 349, time: "40 mins", desc: "Subtle seamless layers for silky smooth flow" },
-      { id: "ah-8", name: "Multi Step Cut", marketPrice: 319, ourPrice: 279, time: "40 mins", desc: "Distinct multi-tiered steps for extra bounce" },
-      { id: "ah-9", name: "90 Degree Step Cut", marketPrice: 219, ourPrice: 179, time: "35 mins", desc: "Precision 90-degree angle cut for uniform lift" },
-      { id: "ah-10", name: "Voluminous Feathered Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "Full-bodied feather styling for thick & lively hair" },
-      { id: "ah-11", name: "Long Hair Step Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "Defined steps keeping your full hair length intact" },
-      { id: "ah-12", name: "Long Layer Step Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "Combination of long layers & steps for maximum flair" },
-    ],
-  },
-  {
-    id: "sec-baby-cut",
-    title: "Baby Cut (Kids Special)",
+    id: "sec-kids-hair",
+    title: "Kids Hair Cut",
     subtitle: "HAIR • Gentle & cute styles for little ones",
     icon: "👶",
     badgeColor: "bg-amber-100 text-amber-800",
     items: [
-      { id: "bc-1", name: "Little Round Cut", marketPrice: 149, ourPrice: 99, time: "20 mins", desc: "Neat, comfortable rounded trim for kids" },
-      { id: "bc-2", name: "Apple Hair Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "Adorable curved apple-shape kids hairstyle" },
-      { id: "bc-3", name: "Mushroom Hair Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "Classic cute bowl-style mushroom cut" },
-      { id: "bc-4", name: "Bob Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "Easy-to-manage classic kids bob haircut" },
+      { id: "kh-1", name: "Little Round Cut", marketPrice: 149, ourPrice: 99, time: "20 mins", desc: "लहान मुलांसाठी क्यूट, सोपा आणि नीटनेटका कट." },
+      { id: "kh-2", name: "Apple Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "गोड चेहऱ्यावर उठून दिसणारा गोल बाऊन्सी कट." },
+      { id: "kh-3", name: "Mushroom Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "मुलांसाठी सांभाळायला सोपा आणि क्लासिक मशरूम शेप." },
+      { id: "kh-4", name: "Baby Bob Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "लहान मुलींसाठी एकदम गोड आणि मॉडर्न बॉब कट." },
     ],
   },
   {
     id: "sec-hair-color",
-    title: "Hair Colouring",
+    title: "Hair Color",
     subtitle: "HAIR • Root touchups, global shades & highlights",
     icon: "🎨",
     badgeColor: "bg-purple-100 text-purple-800",
     items: [
-      { id: "hc-1", name: "Root Touchup", marketPrice: 699, ourPrice: 499, time: "45 mins", desc: "Ammonia-safe grey coverage for crown & roots" },
-      { id: "hc-2", name: "Global Hair Color", marketPrice: null, ourPrice: 799, startsFrom: true, time: "90 mins", desc: "Full head vibrant colour application", note: "Starting from ₹799 • Final price depends upon hair length" },
-      { id: "hc-3", name: "Highlights (1 Strip)", marketPrice: null, ourPrice: 199, perStrip: true, time: "30 mins", desc: "Custom streak styling per strip", note: "₹199 per strip • Depends upon customer requirement & highlight color type" },
+      { id: "hc-1", name: "Root Touch-Up", marketPrice: 699, ourPrice: 499, time: "45 mins", desc: "पांढरे केस आणि मुळांमधील वाढ लपवण्यासाठी झटपट कलर." },
+      { id: "hc-2", name: "Full Hair Color (Global)", marketPrice: null, ourPrice: 799, startsFrom: true, time: "90 mins", desc: "मुळांपासून टोकापर्यंत एकसारखा, रिच आणि चमकदार रंग.", tag: "Advanced", note: "Starting from ₹799 • Final price depends upon hair length" },
+      { id: "hc-3", name: "Hair Highlights", marketPrice: null, ourPrice: 199, perStrip: true, time: "30 mins", desc: "केसांना मॉडर्न आणि फॅशनेबल लूक देण्यासाठी हायलाइट स्ट्रिप्स.", tag: "Advanced", note: "₹199 per strip • Depends upon customer requirement & highlight color type" },
     ],
   },
   {
-    id: "sec-hair-treat",
-    title: "Hair Treatment & Spa",
-    subtitle: "HAIR • Scalp care, Keratin, Botox & Straightening",
-    icon: "✨",
+    id: "sec-hair-care",
+    title: "Hair Care & Dandruff",
+    subtitle: "HAIR • Scalp care & hair regrowth therapy",
+    icon: "🌿",
     badgeColor: "bg-emerald-100 text-emerald-800",
     items: [
-      { id: "ht-1", name: "Dandruff Treatment", marketPrice: 1299, ourPrice: 999, time: "60 mins", desc: "Deep anti-flake scalp detox & soothing therapy" },
-      { id: "ht-2", name: "Hair Regrowth Treatment", marketPrice: 399, ourPrice: 299, time: "45 mins", desc: "Root-stimulating serum & high-frequency massage" },
-      { id: "ht-3", name: "Hair Straightening", marketPrice: null, ourPrice: 3499, startsFrom: true, time: "2.5–3 hrs", desc: "Pin-straight sleek transformation", note: "Starting from ₹3499 (starting length). Overall depends upon hair length & density. Our beautician will attend you shortly." },
-      { id: "ht-4", name: "Smoothening", marketPrice: null, ourPrice: 4599, startsFrom: true, time: "2.5–3 hrs", desc: "Frizz-free natural silky smooth finish", note: "Starts from ₹4599 (starting length & overall depends upon price). Our beautician will attend you shortly." },
-      { id: "ht-5", name: "Keratin Treatment", marketPrice: null, ourPrice: 3999, startsFrom: true, time: "2.5 hrs", desc: "Protein-rich shine & deep frizz repair", note: "Starts from ₹3999 (starting length & overall depends upon price). Our beautician will attend you shortly." },
-      { id: "ht-6", name: "Botox Hair Treatment", marketPrice: null, ourPrice: 4499, startsFrom: true, time: "2.5 hrs", desc: "Intense anti-ageing deep conditioning fiber restoration", note: "Starts from ₹4499 (starting length & overall depends upon price). Our beautician will attend you shortly." },
-      { id: "ht-7", name: "Nanoplastia", marketPrice: null, ourPrice: 5999, startsFrom: true, time: "3 hrs", desc: "Advanced organic amino-acid straightening & gloss", note: "Starts from ₹5999 • Depends upon length. Our beautician will attend you shortly." },
-      { id: "ht-8", name: "Aqua Gold Treatment", marketPrice: null, ourPrice: 6499, startsFrom: true, time: "3 hrs", desc: "Luxury hydration & mirror-shine gold infusion", note: "Starts from ₹6499 • Depends upon length. Our beautician will attend you shortly." },
+      { id: "hcd-1", name: "Anti-Dandruff Treatment", marketPrice: 1299, ourPrice: 999, time: "60 mins", desc: "कोंड्याचा मुळापासून नायनाट आणि टाळूची (Scalp) खोलवर स्वच्छता." },
+      { id: "hcd-2", name: "Hair Regrowth Therapy", marketPrice: 399, ourPrice: 299, time: "45 mins", desc: "केस गळती रोखण्यासाठी आणि मुळे मजबूत करण्यासाठी खास उपचार.", tag: "Advanced" },
     ],
   },
   {
-    id: "sec-skincare",
-    title: "Skincare (Manicure & Pedicure)",
-    subtitle: "SKINCARE • Tap Basic or Advance option below",
+    id: "sec-hair-straight",
+    title: "Hair Straightening & Smoothening",
+    subtitle: "HAIR • Keratin, Botox, Nanoplastia & more",
+    icon: "✨",
+    badgeColor: "bg-pink-100 text-pink-700",
+    items: [
+      { id: "hs-1", name: "Hair Straightening", marketPrice: null, ourPrice: 3499, startsFrom: true, time: "2.5–3 hrs", desc: "कुरळे केस कायमस्वरूपी एकदम सरळ आणि स्लीक करण्यासाठी.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+      { id: "hs-2", name: "Hair Smoothening", marketPrice: null, ourPrice: 4599, startsFrom: true, time: "2.5–3 hrs", desc: "केसांचा कोरडेपणा घालवून मिळणारा मऊ, रेशमी आणि नॅचरल लूक.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+      { id: "hs-3", name: "Keratin Treatment", marketPrice: null, ourPrice: 3999, startsFrom: true, time: "2.5 hrs", desc: "केसांना आवश्यक प्रोटीन देऊन फ्रिझिनेस (रुखेपणा) घालवण्यासाठी.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+      { id: "hs-4", name: "Hair Botox", marketPrice: null, ourPrice: 4499, startsFrom: true, time: "2.5 hrs", desc: "खराब झालेल्या (डॅमेज) केसांना रिपेअर करून चमकदार बनवण्यासाठी.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+      { id: "hs-5", name: "Nanoplastia", marketPrice: null, ourPrice: 5999, startsFrom: true, time: "3 hrs", desc: "केमिकल-फ्री फॉर्म्युला, जो केसांना देईल काचेसारखी चमक आणि स्ट्रेट लूक.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+      { id: "hs-6", name: "Aqua Gold Treatment", marketPrice: null, ourPrice: 6499, startsFrom: true, time: "3 hrs", desc: "कोरड्या केसांना मऊ आणि तजेलदार बनवणारी सुपर लक्झरी ट्रीटमेंट.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
+    ],
+  },
+  {
+    id: "sec-hands-feet",
+    title: "Hands & Feet Care",
+    subtitle: "SKINCARE • Manicure & Pedicure services",
     icon: "💅",
     badgeColor: "bg-sky-100 text-sky-800",
     items: [
-      {
-        id: "sk-1", name: "Medicure (Manicure)", time: "35–45 mins",
-        desc: "Hand soak, nail shaping, cuticle care & relaxing massage",
-        selectedVariantIdx: 0,
-        variants: [
-          { label: "Basic", marketPrice: 349, ourPrice: 299 },
-          { label: "Advance", marketPrice: 699, ourPrice: 599 },
-        ],
-      },
-      {
-        id: "sk-2", name: "Pedicure Treatment", time: "45–60 mins",
-        desc: "Warm foot spa, heel scrub, tan removal & foot reflexology",
-        selectedVariantIdx: 0,
-        variants: [
-          { label: "Basic", marketPrice: 499, ourPrice: 499 },
-          { label: "Advance", marketPrice: 899, ourPrice: 799 },
-        ],
-      },
+      { id: "hf-1", name: "Basic Manicure", marketPrice: 349, ourPrice: 299, time: "35 mins", desc: "हातांची मूलभूत स्वच्छता, नखांचा शेप आणि हलका मसाज." },
+      { id: "hf-2", name: "Spa Glow Manicure", marketPrice: 699, ourPrice: 599, time: "45 mins", desc: "टॅनिंग घालवणारा स्क्रब, पॅक आणि हातांना ग्लो देणारा डीप मसाज.", tag: "Advanced" },
+      { id: "hf-3", name: "Basic Pedicure", marketPrice: 599, ourPrice: 499, time: "45 mins", desc: "पायांची स्वच्छता, टाचांची काळजी आणि रिलॅक्सिंग मसाज." },
+      { id: "hf-4", name: "Spa Glow Pedicure", marketPrice: 899, ourPrice: 799, time: "60 mins", desc: "मृत त्वचा काढून भेगा भरण्यासाठी आणि पायांना मऊ करण्यासाठी खास स्पा.", tag: "Advanced" },
+    ],
+  },
+  {
+    id: "sec-face-wax",
+    title: "Face Waxing",
+    subtitle: "WAX • चेहऱ्यासाठी gentle facial waxing",
+    icon: "🌸",
+    badgeColor: "bg-rose-100 text-rose-800",
+    items: [
+      { id: "fw-1", name: "Bean Wax (Full Face)", marketPrice: 499, ourPrice: 399, time: "25 mins", desc: "चेहऱ्यावरील बारीक लव आणि केस त्रास न होता सहज काढण्यासाठी पेनलेस वॅक्स.", tag: "Advanced" },
+      { id: "fw-2", name: "Brazilian Face Wax", marketPrice: 399, ourPrice: 299, time: "20 mins", desc: "अतिशय नाजूक त्वचेसाठी सौम्य, सुरक्षित आणि विना-पट्टीची (Stripless) वॅक्स.", tag: "Advanced" },
+      { id: "fw-3", name: "Microwave Face Wax", marketPrice: 549, ourPrice: 449, time: "25 mins", desc: "सेन्सिटिव्ह त्वचेसाठी झटपट वितळणारी, मऊ आणि सुरक्षित वॅक्स.", tag: "Advanced" },
+      { id: "fw-4", name: "Paraffin Face Wax", marketPrice: 499, ourPrice: 399, time: "30 mins", desc: "टॅनिंग काढून चेहऱ्यावर नैसर्गिक ओलावा आणि चमक टिकवणारी वॅक्स.", tag: "Advanced" },
     ],
   },
   {
     id: "sec-body-wax",
     title: "Body Waxing",
-    subtitle: "WAX • Choose Hand, Leg or Face directly inside card",
+    subtitle: "WAX • हात आणि पाय — Choose Hand or Leg",
     icon: "🍯",
     badgeColor: "bg-orange-100 text-orange-800",
     items: [
       {
-        id: "bw-1", name: "Regular Jell Wax", time: "25–40 mins",
-        desc: "Smooth aloe-gel enriched gentle hair removal",
+        id: "bw-1", name: "Regular Gel Wax", time: "25–40 mins",
+        desc: "कमी खर्चात रोजच्या देखभालीसाठी सोपी आणि जलद जेल वॅक्सिंग.",
         selectedVariantIdx: 0,
         variants: [
-          { label: "Hand", marketPrice: null, ourPrice: 149 },
-          { label: "Leg", marketPrice: null, ourPrice: 249 },
+          { label: "Hands", marketPrice: 199, ourPrice: 149 },
+          { label: "Legs", marketPrice: 299, ourPrice: 249 },
         ],
       },
       {
-        id: "bw-2", name: "Rica Wax (Italian Liposoluble)", time: "30–45 mins",
-        desc: "Zero-redness peelable formula with detan benefits",
-        tag: "Most Popular",
+        id: "bw-2", name: "Rica Italian Wax", time: "30–45 mins",
+        desc: "कमी वेदना आणि मऊ त्वचेसाठी खास केमिकल-फ्री इटालियन वॅक्स.",
+        tag: "Advanced",
         selectedVariantIdx: 0,
         variants: [
-          { label: "Hand", marketPrice: null, ourPrice: 399 },
-          { label: "Legs", marketPrice: null, ourPrice: 699 },
+          { label: "Hands", marketPrice: 499, ourPrice: 399 },
+          { label: "Legs", marketPrice: 849, ourPrice: 699 },
         ],
       },
       {
-        id: "bw-3", name: "Roll On Wax", time: "30–45 mins",
-        desc: "Hygienic single-use cartridge applicator waxing",
+        id: "bw-3", name: "Roll-On Cartridge Wax", time: "30–45 mins",
+        desc: "स्वच्छ, वेगवान आणि अजिबात पसारा न होणारी 100% हायजिनिक वॅक्स.",
+        tag: "Advanced",
         selectedVariantIdx: 0,
         variants: [
-          { label: "Hands", marketPrice: null, ourPrice: 449 },
-          { label: "Legs", marketPrice: null, ourPrice: 999 },
+          { label: "Hands", marketPrice: 549, ourPrice: 449 },
+          { label: "Legs", marketPrice: 1199, ourPrice: 999 },
         ],
       },
       {
-        id: "bw-4", name: "Brazilian Wax", time: "20–45 mins",
-        desc: "Strikeless peel-off luxury wax for sensitive areas",
+        id: "bw-4", name: "Brazilian Body Wax", time: "20–45 mins",
+        desc: "फक्त केसांना पकडणारी आणि त्वचेला अजिबात ताण न देणारी प्रीमियम वॅक्स.",
+        tag: "Advanced",
         selectedVariantIdx: 0,
         variants: [
-          { label: "Face", marketPrice: null, ourPrice: 299 },
-          { label: "Hands", marketPrice: null, ourPrice: 499 },
-          { label: "Legs", marketPrice: null, ourPrice: 999 },
+          { label: "Hands", marketPrice: 599, ourPrice: 499 },
+          { label: "Legs", marketPrice: 1199, ourPrice: 999 },
         ],
       },
-    ],
-  },
-  {
-    id: "sec-face-wax",
-    title: "Face Wax",
-    subtitle: "FACE WAX • Gentle facial fuzz & upper-lip removal",
-    icon: "🌸",
-    badgeColor: "bg-rose-100 text-rose-800",
-    items: [
-      { id: "fw-1", name: "Bin Wax (Bean Face Wax)", marketPrice: null, ourPrice: 399, time: "25 mins", desc: "Stripless hard bean wax gentle on facial skin" },
-      { id: "fw-2", name: "Microwave Face Wax", marketPrice: null, ourPrice: 449, time: "25 mins", desc: "Warm low-temperature soothing facial wax" },
-      { id: "fw-3", name: "Paraffin Face Wax", marketPrice: null, ourPrice: 399, time: "30 mins", desc: "Moisturizing paraffin therapy + clean facial hair removal" },
     ],
   },
 ];
@@ -517,6 +505,7 @@ export default function BeautyDetail() {
     }))
   );
   const [activeTab, setActiveTab] = useState<MainTab>("home");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<CartMap>({});
   const [cartOpen, setCartOpen] = useState(false);
@@ -649,6 +638,7 @@ export default function BeautyDetail() {
 
   // Scroll to section
   function scrollToSection(id: string) {
+    setSelectedCategory(id);
     if (id === "all") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -739,21 +729,38 @@ export default function BeautyDetail() {
           <div className="max-w-md mx-auto px-4 py-2 bg-white border-t border-rose-50 flex space-x-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             <button
               onClick={() => scrollToSection("all")}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-600 text-white border border-rose-600 shadow-sm shadow-rose-200"
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition shadow-sm ${
+                selectedCategory === "all"
+                  ? "bg-rose-600 text-white border border-rose-600 shadow-rose-200"
+                  : "bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100"
+              }`}
             >
               <span>All Menu</span>
-              <span className="bg-white/20 text-white text-[10px] font-extrabold px-1.5 rounded-full">({totalItems})</span>
+              <span className={`text-[10px] font-extrabold px-1.5 rounded-full ${
+                selectedCategory === "all" ? "bg-white/20 text-white" : "bg-rose-100 text-rose-700"
+              }`}>
+                ({totalItems})
+              </span>
             </button>
-            {menuData.map(sec => (
-              <button
-                key={sec.id}
-                onClick={() => scrollToSection(sec.id)}
-                className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50/70 text-slate-700 hover:bg-rose-100 border border-rose-100 transition"
-              >
-                {sec.icon} {sec.title.split(" ")[0]}
-                <span className="text-[10px] text-rose-600 font-bold">({sec.items.length})</span>
-              </button>
-            ))}
+            {menuData.map(sec => {
+              const isSelected = selectedCategory === sec.id;
+              return (
+                <button
+                  key={sec.id}
+                  onClick={() => scrollToSection(sec.id)}
+                  className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition border ${
+                    isSelected
+                      ? "bg-rose-600 text-white border-rose-600 shadow-sm shadow-rose-200"
+                      : "bg-rose-50/70 text-slate-700 hover:bg-rose-100 border-rose-100"
+                  }`}
+                >
+                  {sec.icon} {sec.title.split(" ")[0]}
+                  <span className={`text-[10px] font-bold ${isSelected ? "text-white/90" : "text-rose-600"}`}>
+                    ({sec.items.length})
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
       </header>
