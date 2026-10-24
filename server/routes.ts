@@ -107,6 +107,33 @@ async function notifyAdmin(payload: {
 }
 // =====================================================================
 
+// ===== REAL-TIME SSE ORDER EVENT BROADCASTER =====
+type SseClient = { res: Response; userId?: string };
+const orderSseClients = new Set<SseClient>();
+
+export function broadcastOrderUpdate(payload: {
+  orderId: string;
+  status: string;
+  orderType?: string;
+  riderId?: string;
+  userId?: string;
+}) {
+  const data = JSON.stringify({
+    ...payload,
+    timestamp: Date.now(),
+  });
+  console.log(`[SSE Broadcast] Order ${payload.orderId} status changed to '${payload.status}' — notifying ${orderSseClients.size} live client(s)`);
+
+  orderSseClients.forEach((client) => {
+    try {
+      client.res.write(`event: order_update\ndata: ${data}\n\n`);
+    } catch (err) {
+      orderSseClients.delete(client);
+    }
+  });
+}
+// =================================================
+
 // Custom request types
 interface CustomRequest extends Request {
   provider?: {
@@ -2782,6 +2809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedOrder = await storage.updateStreetFoodOrderStatus(id, status);
+      broadcastOrderUpdate({ orderId: id, status, orderType: 'street_food', userId: (updatedOrder as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
       if (status === 'preparing') {
@@ -3340,6 +3368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const order = await storage.updateProviderOrderStatus(orderId, providerId, status);
+      broadcastOrderUpdate({ orderId, status, orderType: 'restaurant', userId: (order as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
       if (status === 'preparing') {
@@ -3417,6 +3446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const order = await storage.updateGroceryOrderStatusByProvider(orderId, providerId, status);
+      broadcastOrderUpdate({ orderId, status, orderType: 'grocery', userId: (order as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
       if (status === 'preparing') {
@@ -3566,7 +3596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const riderId = req.userId!;
       const { orderType } = req.body; // 'restaurant' or 'grocery'
 
-      let order;
+      let order: any;
       if (orderType === 'grocery') {
         order = await storage.acceptGroceryOrderAsRider(orderId, riderId);
       } else if (orderType === 'street_food') {
@@ -3574,6 +3604,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         order = await storage.acceptOrderAsRider(orderId, riderId);
       }
+      broadcastOrderUpdate({ orderId, status: 'assigned', orderType: orderType || 'restaurant', riderId, userId: order?.userId });
       res.json({ message: "Order accepted!", order });
     } catch (error: any) {
       console.error("Accept order error:", error);
@@ -3588,7 +3619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const riderId = req.userId!;
       const { orderType } = req.body;
 
-      let order;
+      let order: any;
       if (orderType === 'grocery') {
         order = await storage.updateGroceryOrderStatusByRider(orderId, riderId, 'arrived_at_pickup');
       } else if (orderType === 'street_food') {
@@ -3596,6 +3627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         order = await storage.updateOrderStatus(orderId, riderId, 'arrived_at_pickup');
       }
+      broadcastOrderUpdate({ orderId, status: 'arrived_at_pickup', orderType: orderType || 'restaurant', riderId, userId: order?.userId });
       res.json({ message: "Marked as arrived at pickup", order });
     } catch (error: any) {
       console.error("Arrived at pickup error:", error);
@@ -3610,7 +3642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const riderId = req.userId!;
       const { orderType } = req.body;
 
-      let result;
+      let result: any;
       if (orderType === 'grocery') {
         result = await storage.markGroceryOrderPickedUp(orderId, riderId);
       } else if (orderType === 'street_food') {
@@ -3618,6 +3650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         result = await storage.markOrderPickedUp(orderId, riderId);
       }
+      broadcastOrderUpdate({ orderId, status: 'out_for_delivery', orderType: orderType || 'restaurant', riderId, userId: result?.order?.userId });
       res.json({ message: "Order picked up! Deliver to customer.", order: result.order });
     } catch (error: any) {
       console.error("Pick up order error:", error);
@@ -3632,7 +3665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const riderId = req.userId!;
       const { orderType } = req.body;
 
-      let order;
+      let order: any;
       if (orderType === 'grocery') {
         order = await storage.markGroceryOrderDelivered(orderId, riderId);
       } else if (orderType === 'street_food') {
@@ -3640,11 +3673,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         order = await storage.markOrderDelivered(orderId, riderId);
       }
+      broadcastOrderUpdate({ orderId, status: 'delivered', orderType: orderType || 'restaurant', riderId, userId: order?.userId });
       res.json({ message: "Delivery completed successfully!", order });
     } catch (error: any) {
       console.error("Mark delivered error:", error);
       res.status(400).json({ message: error.message || "Error marking delivered" });
     }
+  });
+
+  // =========================================
+  // REAL-TIME ORDER TRACKING VIA SSE
+  // =========================================
+  app.get("/api/orders/live", (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders?.();
+
+    const client: SseClient = { res, userId: (req.session as any)?.userId };
+    orderSseClients.add(client);
+
+    res.write(`event: connected\ndata: ${JSON.stringify({ status: "connected", timestamp: Date.now() })}\n\n`);
+
+    const pingInterval = setInterval(() => {
+      try {
+        res.write(`: ping\n\n`);
+      } catch (e) {
+        clearInterval(pingInterval);
+        orderSseClients.delete(client);
+      }
+    }, 15000);
+
+    req.on("close", () => {
+      clearInterval(pingInterval);
+      orderSseClients.delete(client);
+    });
   });
 
   // Customer: Track Order
@@ -3668,6 +3732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const providerId = req.provider!.id;
 
       const order = await storage.markOrderReadyForPickup(orderId, providerId);
+      broadcastOrderUpdate({ orderId, status: 'ready_for_pickup', orderType: 'restaurant', userId: (order as any)?.userId });
       res.json({ message: "Order marked ready for pickup!", order });
     } catch (error: any) {
       console.error("Mark ready error:", error);

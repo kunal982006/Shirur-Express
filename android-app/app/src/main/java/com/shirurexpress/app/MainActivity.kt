@@ -51,14 +51,13 @@ class MainActivity : AppCompatActivity() {
     // URI for camera-captured photo
     private var cameraPhotoUri: Uri? = null
 
-    // Unified permission request launcher
+    // Provider permission request launcher (notifications)
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val deniedPermissions = permissions.filter { !it.value }.map { it.key }
-        if (deniedPermissions.isNotEmpty()) {
-            showPermissionRationale(deniedPermissions)
-        }
+        // Graceful handling without intrusive repeated popup dialogs
+        val granted = permissions[Manifest.permission.POST_NOTIFICATIONS] == true
+        Log.d("Permissions", "Notification permission granted: $granted")
     }
 
     // File chooser launcher for handling file upload in WebView
@@ -155,15 +154,6 @@ class MainActivity : AppCompatActivity() {
         if (permissionsToRequest.isNotEmpty()) {
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
-    }
-
-    private fun showPermissionRationale(deniedPermissions: List<String>) {
-        val message = StringBuilder("This app needs the following permissions to function correctly:\n")
-        if (deniedPermissions.contains(Manifest.permission.POST_NOTIFICATIONS)) message.append("- Notifications: To alert you of new orders\n")
-        AlertDialog.Builder(this).setTitle("Permissions Required").setMessage(message.append("\nPlease grant them in Settings.").toString())
-            .setPositiveButton("Settings") { _, _ ->
-                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
-            }.setNegativeButton("Cancel", null).show()
     }
 
     @SuppressLint("SetJavaScriptEnabled")

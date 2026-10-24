@@ -23,6 +23,7 @@ import {
   Navigation,
   UtensilsCrossed
 } from "lucide-react";
+import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 import { apiRequest } from "@/lib/queryClient";
 import api from "@/lib/api";
 import { GroceryOrder, RestaurantOrder } from "@shared/schema";
@@ -157,6 +158,9 @@ export default function MyBookings() {
     },
   });
 
+  // Real-time live order updates via Server-Sent Events
+  useLiveOrderTracking();
+
   const { data: bookings, isLoading: isLoadingBookings } = useQuery<BookingWithDetails[]>({
     queryKey: ["/api/customer/my-bookings"],
     queryFn: async () => {
@@ -164,6 +168,11 @@ export default function MyBookings() {
       return response.json();
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: (query) => {
+      const list = query.state.data as any[];
+      const hasActive = Array.isArray(list) && list.some(b => !['completed', 'cancelled'].includes(b.status || ''));
+      return hasActive ? 3000 : false;
+    },
   });
 
   const { data: groceryOrders, isLoading: isLoadingOrders } = useQuery<GroceryOrder[]>({
@@ -173,6 +182,11 @@ export default function MyBookings() {
       return response.json();
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: (query) => {
+      const list = query.state.data as any[];
+      const hasActive = Array.isArray(list) && list.some(o => !['delivered', 'cancelled', 'declined'].includes(o.status || ''));
+      return hasActive ? 3000 : false;
+    },
   });
 
   const { data: restaurantOrders, isLoading: isLoadingRestaurantOrders } = useQuery<RestaurantOrder[]>({
@@ -182,6 +196,11 @@ export default function MyBookings() {
       return response.data;
     },
     enabled: !!user && isAuthenticated,
+    refetchInterval: (query) => {
+      const list = query.state.data as any[];
+      const hasActive = Array.isArray(list) && list.some(o => !['delivered', 'cancelled', 'declined'].includes(o.status || ''));
+      return hasActive ? 3000 : false;
+    },
   });
 
   const getStatusInfo = (status: string) => {

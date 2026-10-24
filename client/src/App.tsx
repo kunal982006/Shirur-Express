@@ -12,6 +12,7 @@ import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import { Loader2 } from "lucide-react";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
@@ -93,6 +94,11 @@ function FacebookPixelTracker() {
 
 function AnalyticsTracker() {
   useAnalyticsTracker();
+  return null;
+}
+
+function LiveOrderSync() {
+  useLiveOrderTracking();
   return null;
 }
 
@@ -184,6 +190,7 @@ function App() {
           <TooltipProvider>
             <FacebookPixelTracker />
             <AnalyticsTracker />
+            <LiveOrderSync />
             <div className="min-h-screen bg-background text-foreground flex flex-col">
               <Header />
               <main className="flex-1 pb-16 md:pb-0">

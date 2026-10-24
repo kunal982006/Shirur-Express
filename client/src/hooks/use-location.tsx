@@ -57,10 +57,8 @@ export function useLocation(): UseLocationReturn {
     );
   };
 
-  useEffect(() => {
-    // Automatically get location on mount
-    getCurrentLocation();
-  }, []);
+  // Location is requested only on user action or specific page requirements
+  // (Removed automatic getCurrentLocation() on mount)
 
   return {
     location,

@@ -98,6 +98,10 @@ export default function ProviderOnboarding() {
         title: "Profile Created!",
         description: "Your service provider profile is now active.",
       });
+      // Trigger notification and full screen intent permissions only when user becomes a provider
+      if (typeof window !== "undefined" && window.AndroidApp?.requestSystemPermissions) {
+        window.AndroidApp.requestSystemPermissions();
+      }
       setLocation("/provider/dashboard");
     },
     onError: (error: any) => {

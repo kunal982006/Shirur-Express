@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import api from "@/lib/api";
+import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,9 @@ export default function OrderTracking() {
     const [, params] = useRoute("/order/:orderId/track");
     const orderId = params?.orderId;
 
+    // Connect to SSE stream for instantaneous status changes
+    useLiveOrderTracking(orderId);
+
     const { data: trackingInfo, isLoading, error, refetch } = useQuery({
         queryKey: ["orderTracking", orderId],
         queryFn: async () => {
@@ -28,16 +32,16 @@ export default function OrderTracking() {
             return res.data;
         },
         enabled: !!orderId,
-        refetchInterval: 10000, // Poll every 10 seconds
+        refetchInterval: (query) => {
+            const status = query.state.data?.order?.status;
+            // Stop polling once order reaches terminal status
+            if (status === 'delivered' || status === 'cancelled' || status === 'declined') {
+                return false;
+            }
+            // Rapid polling (2.5 seconds) so progress updates live without reload
+            return 2500;
+        },
     });
-
-    useEffect(() => {
-        // More frequent polling when order is out for delivery
-        if (trackingInfo?.order?.status === 'out_for_delivery') {
-            const interval = setInterval(refetch, 5000);
-            return () => clearInterval(interval);
-        }
-    }, [trackingInfo?.order?.status, refetch]);
 
     if (isLoading) {
         return (

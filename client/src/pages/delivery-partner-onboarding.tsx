@@ -59,6 +59,10 @@ export default function DeliveryPartnerOnboarding() {
                 title: "Profile Created!",
                 description: "Your delivery partner profile is now active. Start earning!",
             });
+            // Trigger notification permissions only when user becomes a delivery partner
+            if (typeof window !== "undefined" && window.AndroidApp?.requestSystemPermissions) {
+                window.AndroidApp.requestSystemPermissions();
+            }
             queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
             setLocation("/delivery-partner/dashboard");
         },
