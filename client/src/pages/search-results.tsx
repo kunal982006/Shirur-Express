@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list";
 import { useTrackEvent } from "@/hooks/use-analytics";
+import { GroceryClosedModal } from "@/components/grocery-closed-modal";
 
 // Helper for query params
 const useQueryParams = () => {
@@ -23,6 +24,7 @@ export default function SearchResults() {
     const [searchTerm, setSearchTerm] = useState(initialTerm);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [showBeautyPopup, setShowBeautyPopup] = useState(false);
+    const [showGroceryClosedModal, setShowGroceryClosedModal] = useState(false);
     
     // Autocomplete state
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -42,6 +44,17 @@ export default function SearchResults() {
         },
         enabled: searchTerm.length > 0,
     });
+
+    // Check if user explicitly searched for grocery or results are primarily grocery
+    useEffect(() => {
+        if (!isLoading && results) {
+            const lowerTerm = (searchTerm || "").toLowerCase().trim();
+            const isGroceryQuery = ["grocery", "kirana", "gmart", "supermarket", "groceries", "veggie", "vegetable"].some(kw => lowerTerm.includes(kw));
+            if (isGroceryQuery || (results.grocery && results.grocery.length > 0 && !results.restaurants?.length && !results.streetFood?.length && !results.menuItems?.length)) {
+                setShowGroceryClosedModal(true);
+            }
+        }
+    }, [results, isLoading, searchTerm]);
 
     // Update internal state if URL changes
     useEffect(() => {
@@ -469,17 +482,26 @@ export default function SearchResults() {
                         {/* Grocery */}
                         {grocery.length > 0 && (
                             <section>
-                                <h2 className="text-lg font-bold mb-3 px-1">Grocery Items</h2>
+                                <div className="flex items-center justify-between mb-3 px-1">
+                                    <h2 className="text-lg font-bold">Grocery Items</h2>
+                                    <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                        Temporarily Closed
+                                    </span>
+                                </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     {grocery.map((item: any) => {
                                         const fallbackGrocery = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=60";
                                         return (
-                                            <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer">
+                                            <div 
+                                                key={item.id} 
+                                                onClick={() => setShowGroceryClosedModal(true)} 
+                                                className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer relative group hover:border-amber-300 transition-colors"
+                                            >
                                                 <div
-                                                    className="w-full h-24 mb-2 overflow-hidden flex items-center justify-center cursor-pointer"
+                                                    className="w-full h-24 mb-2 overflow-hidden flex items-center justify-center cursor-pointer relative"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectedImage(item.imageUrl || fallbackGrocery);
+                                                        setShowGroceryClosedModal(true);
                                                     }}
                                                 >
                                                     <img 
@@ -488,12 +510,20 @@ export default function SearchResults() {
                                                             e.currentTarget.onerror = null;
                                                             e.currentTarget.src = fallbackGrocery;
                                                         }}
-                                                        className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" 
+                                                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 opacity-90" 
                                                         alt={item.name} 
                                                     />
+                                                    <div className="absolute top-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-xs font-medium">
+                                                        Paused
+                                                    </div>
                                                 </div>
                                                 <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
-                                                <p className="text-sm font-bold mt-1">₹{item.price}</p>
+                                                <div className="flex items-center justify-between mt-1">
+                                                    <p className="text-sm font-bold">₹{item.price}</p>
+                                                    <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">
+                                                        Restocking
+                                                    </span>
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -595,6 +625,11 @@ export default function SearchResults() {
                 </div>
             )}
             
+            {/* Grocery Closed Popup Modal */}
+            <GroceryClosedModal
+                isOpen={showGroceryClosedModal}
+                onClose={() => setShowGroceryClosedModal(false)}
+            />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 // client/src/pages/Grocery.tsx (MODIFIED FOR providerId)
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useInfiniteQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/api";
 
@@ -11,6 +11,7 @@ import ProductCard from "@/components/grocery/product-card";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
 
+import { GroceryClosedModal } from "@/components/grocery-closed-modal";
 import {
   ArrowLeft,
   Search,
@@ -25,6 +26,7 @@ import {
   Sparkles,
   Loader2, // Loader icon add kiya
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import type { ServiceProvider, User, ServiceCategory, GroceryProduct } from "@shared/schema"; // Types import kiye
 import {
@@ -126,6 +128,7 @@ export default function Grocery() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showClosedModal, setShowClosedModal] = useState(false);
 
   // --- STEP 1: GMart Provider ko fetch karo ---
   const { data: gmartProvider, isLoading: isLoadingProvider } = useQuery({
@@ -135,6 +138,29 @@ export default function Grocery() {
   });
 
   const gmartProviderId = gmartProvider?.id;
+
+  // --- Platform status check for grocery availability ---
+  const { data: platformStatus } = useQuery<{ servicesEnabled?: boolean; groceryEnabled?: boolean }>({
+    queryKey: ["/api/platform-status"],
+    queryFn: async () => {
+      const res = await fetch("/api/platform-status");
+      if (!res.ok) return { servicesEnabled: true, groceryEnabled: false };
+      return res.json();
+    },
+  });
+
+  // Grocery is closed if explicit groceryEnabled === false or provider isAvailable === false
+  // Default to closed as requested by user
+  const isGroceryClosed = platformStatus?.groceryEnabled === false || (gmartProvider ? !gmartProvider.isAvailable : true);
+
+  // Automatically trigger popup on page load if grocery is closed
+  useEffect(() => {
+    // Show popup once on mount when closed
+    const timer = setTimeout(() => {
+      setShowClosedModal(true);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   // --- STEP 2: Use Infinite Query for Pagination ---
   const {
@@ -195,6 +221,11 @@ export default function Grocery() {
   };
 
   const handleAddToCart = (product: GroceryProduct) => {
+    if (isGroceryClosed) {
+      setShowClosedModal(true);
+      return;
+    }
+
     const existingItem = items.find(item => item.id === product.id);
     if (existingItem) {
       updateQuantity(product.id, 1);
@@ -255,12 +286,47 @@ export default function Grocery() {
           <span>Back to Services</span>
         </Button>
 
+        {/* Grocery Service Closed Notice Banner */}
+        {isGroceryClosed && (
+          <div 
+            onClick={() => setShowClosedModal(true)}
+            className="mb-6 p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-between cursor-pointer hover:bg-amber-500/15 transition-all shadow-sm group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-amber-950 text-sm sm:text-base flex items-center gap-2">
+                  Grocery Service Temporarily Closed
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider">
+                    Restocking
+                  </span>
+                </h4>
+                <p className="text-xs text-amber-800/90 mt-0.5">
+                  We are updating inventory. Orders are temporarily paused — click here for details.
+                </p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="hidden sm:inline-flex border-amber-400 text-amber-900 group-hover:bg-amber-100 font-semibold rounded-lg text-xs">
+              View Info
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-8">
           <div>
             {/* Ab provider ka naam dikha sakte hain */}
-            <h2 className="text-3xl font-bold mb-2">
-              {gmartProvider ? gmartProvider.businessName : "GMart Grocery"}
-            </h2>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-bold">
+                {gmartProvider ? gmartProvider.businessName : "GMart Grocery"}
+              </h2>
+              {isGroceryClosed && (
+                <Badge variant="destructive" className="bg-red-600 font-semibold text-xs px-2.5 py-0.5">
+                  Temporarily Closed
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">
               {gmartProvider ? gmartProvider.description : "Order fresh groceries with fast home delivery 🥦🍎"}
             </p>
@@ -475,6 +541,12 @@ export default function Grocery() {
             </div>
           </div>
         )}
+
+        {/* Grocery Closed Popup Modal */}
+        <GroceryClosedModal
+          isOpen={showClosedModal}
+          onClose={() => setShowClosedModal(false)}
+        />
       </div>
     </div>
   );

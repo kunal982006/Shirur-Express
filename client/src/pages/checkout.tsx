@@ -86,7 +86,7 @@ export default function Checkout() {
   };
 
   const timeSlots = generateTimeSlots();
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "online" | "cod">("upi");
   const [codConfirmed, setCodConfirmed] = useState(false);
 
   // --- LOCATION & FEE STATE ---
@@ -324,7 +324,7 @@ export default function Checkout() {
           totalAmount: total.toFixed(2), // Schema expects totalAmount
           deliveryAddress: values.deliveryAddress,
           providerId: items[0]?.providerId || "unknown", // Both restaurant and street food need it at root
-          paymentMethod, // NEW
+          paymentMethod: paymentMethod === "cod" ? "cod" : "online",
           deliveryMode: finalDeliveryMode,
           scheduledDeliveryTime: finalDeliveryMode === "scheduled" ? finalScheduledTime : undefined,
           // runnerId will be assigned by backend
@@ -345,7 +345,7 @@ export default function Checkout() {
           total: total.toFixed(2),
           deliveryAddress: values.deliveryAddress,
           providerId: items[0]?.providerId || null,
-          paymentMethod, // NEW
+          paymentMethod: paymentMethod === "cod" ? "cod" : "online",
           deliveryMode: finalDeliveryMode,
           scheduledDeliveryTime: finalDeliveryMode === "scheduled" ? finalScheduledTime : undefined,
         };
@@ -454,22 +454,24 @@ export default function Checkout() {
           name: user.username,
           email: user.email,
           contact: user.phone,
+          ...(paymentMethod === "upi" ? { method: "upi" } : {}),
         },
         notes: {
           address: values.deliveryAddress,
           databaseOrderId: databaseOrderId,
+          paymentPreference: paymentMethod,
         },
         theme: {
-          color: "#3399cc",
+          color: paymentMethod === "upi" ? "#059669" : "#3399cc",
         },
         // UPI-first display: Show UPI apps (Intent + QR) as the primary payment option
         config: {
           display: {
             blocks: {
               upi: {
-                name: "Pay via UPI",
+                name: "Pay via UPI (GPay, PhonePe, Paytm, QR)",
                 instruments: [
-                  { method: "upi", flows: ["intent", "qr"] }
+                  { method: "upi" }
                 ],
               },
             },
@@ -857,31 +859,95 @@ export default function Checkout() {
 
               {/* Right Column: Price Summary & Pay Button */}
               <div>
-                <Card className="mb-3">
-                  <CardHeader className="p-3 pb-1">
-                    <CardTitle className="text-lg">Payment Method</CardTitle>
+                <Card className="mb-3 border-emerald-500/30">
+                  <CardHeader className="p-3 pb-2">
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      <span>Payment Method</span>
+                      <Badge variant="outline" className="text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 font-normal">
+                        🔒 100% Secure
+                      </Badge>
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant={paymentMethod === "online" ? "default" : "outline"}
-                        className="flex-1"
-                        onClick={() => setPaymentMethod("online")}
-                      >
-                        💳 Pay Online
-                      </Button>
-                      <div className="flex-1 flex flex-col gap-1">
-                        <Button
-                          type="button"
-                          variant={paymentMethod === "cod" ? "default" : "outline"}
-                          className="w-full"
-                          onClick={() => {
-                            setPaymentMethod("cod");
-                          }}
-                        >
-                          💵 Cash on Delivery
-                        </Button>
+                  <CardContent className="p-3 pt-0 space-y-2">
+                    {/* UPI Option */}
+                    <div
+                      onClick={() => setPaymentMethod("upi")}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        paymentMethod === "upi"
+                          ? "border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-sm"
+                          : "border-gray-200 dark:border-gray-800 hover:border-emerald-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${paymentMethod === "upi" ? "border-emerald-600 bg-emerald-600" : "border-gray-400"}`}>
+                            {paymentMethod === "upi" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-sm">⚡ Pay via UPI</span>
+                              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] px-1.5 py-0 h-4">
+                                Recommended
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Google Pay, PhonePe, Paytm, CRED & UPI QR
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-gray-800 border text-blue-600">GPay</span>
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-gray-800 border text-purple-600">PhonePe</span>
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-gray-800 border text-sky-600">Paytm</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cards / Netbanking / Wallets */}
+                    <div
+                      onClick={() => setPaymentMethod("online")}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        paymentMethod === "online"
+                          ? "border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-sm"
+                          : "border-gray-200 dark:border-gray-800 hover:border-emerald-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${paymentMethod === "online" ? "border-emerald-600 bg-emerald-600" : "border-gray-400"}`}>
+                            {paymentMethod === "online" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-sm">💳 Cards / Net Banking / Wallets</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Debit/Credit Cards, Net Banking & Wallets
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cash on Delivery */}
+                    <div
+                      onClick={() => setPaymentMethod("cod")}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        paymentMethod === "cod"
+                          ? "border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-sm"
+                          : "border-gray-200 dark:border-gray-800 hover:border-emerald-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${paymentMethod === "cod" ? "border-emerald-600 bg-emerald-600" : "border-gray-400"}`}>
+                            {paymentMethod === "cod" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-sm">💵 Cash on Delivery (COD)</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Pay cash at doorstep when order arrives
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -964,6 +1030,8 @@ export default function Checkout() {
                         "Detect Location to Pay"
                       ) : paymentMethod === "cod" ? (
                         `Confirm COD Order (₹${total.toFixed(2)})`
+                      ) : paymentMethod === "upi" ? (
+                        `⚡ Pay via UPI (₹${total.toFixed(2)})`
                       ) : (
                         `Pay Securely (₹${total.toFixed(2)})`
                       )}

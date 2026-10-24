@@ -192,12 +192,18 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
+                try {
+                    if (url != null) razorpayInstance?.onPageStarted(view, url)
+                } catch (e: Exception) { }
                 progressBar.visibility = View.VISIBLE
                 errorView.visibility = View.GONE
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                try {
+                    if (url != null) razorpayInstance?.onPageFinished(view, url)
+                } catch (e: Exception) { }
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false
                 injectCustomCSS()
@@ -209,17 +215,43 @@ class MainActivity : AppCompatActivity() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url?.toString() ?: return false
-                if (url.contains("shirur-express.onrender.com") || url.contains("razorpay.com")) return false
                 
+                // 1. Let Razorpay Custom UI / UPI SDK intercept payment flows and launch UPI intent apps
+                try {
+                    if (razorpayInstance?.shouldOverrideUrlLoading(view, url) == true) {
+                        return true
+                    }
+                } catch (e: Exception) {
+                    Log.e("Razorpay", "Error in razorpayInstance shouldOverrideUrlLoading", e)
+                }
+
+                // 2. Direct UPI schemes (GPay tez, PhonePe, Paytm, BHIM, upi://)
                 if (url.startsWith("upi:") || url.startsWith("intent:") || url.startsWith("paytmmp:") || url.startsWith("phonepe:") || url.startsWith("tez:")) {
                     try {
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                         if (intent != null) {
-                            startActivity(intent)
-                            return true
+                            intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                            intent.component = null
+                            if (intent.resolveActivity(packageManager) != null) {
+                                startActivity(intent)
+                                return true
+                            }
+                            // Fallback URL if target UPI app is not installed
+                            val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                            if (!fallbackUrl.isNullOrEmpty()) {
+                                view?.loadUrl(fallbackUrl)
+                                return true
+                            }
                         }
-                    } catch (e: Exception) { }
+                    } catch (e: Exception) {
+                        Log.e("UPIIntent", "Failed to launch UPI Intent: $url", e)
+                    }
                     return true
+                }
+
+                // 3. Keep internal Shirur Express web pages inside WebView
+                if (url.contains("shirur-express.onrender.com") || url.contains("api.razorpay.com")) {
+                    return false
                 }
                 
                 if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:") || url.contains("whatsapp.com")) {
