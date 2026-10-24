@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OffersManager } from "@/components/offers/OffersManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Store, Utensils, ChevronRight, Image as ImageIcon, Loader2, ArrowLeft, Edit2, Trash2 } from "lucide-react";
+import { Plus, Store, Utensils, ChevronRight, Image as ImageIcon, Loader2, ArrowLeft, Edit2, Trash2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -628,7 +628,11 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                             <div className="p-4">
                                 <div className="flex justify-between items-start mb-1 gap-2">
                                     <h4 className="font-semibold text-[15px] truncate">{item.name}</h4>
-                                    <span className="font-bold text-orange-500 shrink-0">₹{item.price}</span>
+                                    <StreetFoodQuickPrice 
+                                        vendorId={vendor.id} 
+                                        itemId={item.id} 
+                                        currentPrice={item.price} 
+                                    />
                                 </div>
                                 <div className="flex gap-2 mb-2 break-words">
                                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 border border-white/5 shrink-0">
@@ -652,6 +656,111 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     />
                 </TabsContent>
             </Tabs>
+        </div>
+    );
+}
+
+// ─── Instant Inline Price Editor for Street Food Card ───────────────
+function StreetFoodQuickPrice({
+    vendorId,
+    itemId,
+    currentPrice
+}: {
+    vendorId: string;
+    itemId: string;
+    currentPrice: string;
+}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [val, setVal] = useState(currentPrice);
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        setVal(currentPrice);
+    }, [currentPrice]);
+
+    const updatePriceM = useMutation({
+        mutationFn: (newPrice: string) =>
+            api.patch(`/admin/restaurants/${vendorId}/menu/${itemId}/price`, {
+                price: newPrice,
+                categorySlug: "street-food"
+            }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [`/api/admin/street-food/vendors/${vendorId}/menu`]
+            });
+            toast({ title: "Price Updated! ⚡", description: `Updated to ₹${val}` });
+            setIsEditing(false);
+        },
+        onError: (err: any) => {
+            toast({
+                title: "Error",
+                description: err.response?.data?.message || err.message,
+                variant: "destructive"
+            });
+        }
+    });
+
+    if (!isEditing) {
+        return (
+            <span
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditing(true);
+                }}
+                className="font-bold text-orange-500 shrink-0 cursor-pointer hover:bg-orange-500/15 px-1.5 py-0.5 rounded transition-all flex items-center gap-1 group/p border border-transparent hover:border-orange-500/30"
+                title="Click to instantly edit price"
+            >
+                ₹{currentPrice}
+                <span className="text-[10px] opacity-0 group-hover/p:opacity-100 text-gray-400">✏️</span>
+            </span>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <span className="text-xs text-orange-500 font-bold">₹</span>
+            <Input
+                type="number"
+                min="0"
+                autoFocus
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") updatePriceM.mutate(val);
+                    if (e.key === "Escape") {
+                        setVal(currentPrice);
+                        setIsEditing(false);
+                    }
+                }}
+                className="h-7 w-16 px-1 text-xs font-bold bg-white/10 border-orange-500 text-white"
+            />
+            <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => updatePriceM.mutate(val)}
+                disabled={updatePriceM.isPending}
+                className="h-6 w-6 text-green-400 hover:bg-green-500/20"
+                title="Save (Enter)"
+            >
+                {updatePriceM.isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                    <Check className="h-3 w-3" />
+                )}
+            </Button>
+            <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                    setVal(currentPrice);
+                    setIsEditing(false);
+                }}
+                className="h-6 w-6 text-gray-400 hover:bg-white/10"
+                title="Cancel (Esc)"
+            >
+                <X className="h-3 w-3" />
+            </Button>
         </div>
     );
 }

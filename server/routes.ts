@@ -2919,6 +2919,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk Price Adjustment for Provider / Restaurant Owner
+  app.post("/api/provider/menu-items/:categorySlug/bulk-price-adjust", isProvider, async (req: CustomRequest, res: Response) => {
+    try {
+      const providerId = req.provider!.id;
+      const { categorySlug } = req.params;
+      const { mode, value, roundToNearest, categoryFilter } = req.body;
+
+      if (!mode || typeof value !== 'number' || isNaN(value)) {
+        return res.status(400).json({ message: "Invalid adjustment parameters: mode and numeric value are required" });
+      }
+
+      const result = await storage.bulkAdjustMenuItemPrices(providerId, categorySlug, {
+        mode,
+        value,
+        roundToNearest: roundToNearest ? parseInt(roundToNearest, 10) : 1,
+        categoryFilter: categoryFilter || 'all'
+      });
+
+      res.json({
+        message: `Successfully updated prices for ${result.updatedCount} items`,
+        updatedCount: result.updatedCount
+      });
+    } catch (error: any) {
+      console.error("Bulk price adjustment error:", error);
+      res.status(500).json({ message: error.message || "Failed to bulk adjust prices" });
+    }
+  });
+
+  // --- ADMIN RESTAURANT PRICING & QUICK UPDATE ROUTES ---
+  app.get("/api/admin/restaurants-pricing", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const foodCategories = await db.query.serviceCategories.findMany({
+        where: or(
+          eq(serviceCategories.slug, "restaurants"),
+          eq(serviceCategories.slug, "street-food")
+        )
+      });
+      const catIds = foodCategories.map(c => c.id);
+
+      const providers = await db.query.serviceProviders.findMany({
+        where: inArray(serviceProviders.categoryId, catIds),
+        with: {
+          category: true,
+          restaurantMenuItems: true,
+          streetFoodItems: true
+        },
+        orderBy: [asc(serviceProviders.businessName)]
+      });
+
+      const formatted = providers.map(p => {
+        const isStreetFood = p.category?.slug === 'street-food';
+        const items = isStreetFood ? p.streetFoodItems : p.restaurantMenuItems;
+        return {
+          id: p.id,
+          businessName: p.businessName,
+          categorySlug: p.category?.slug,
+          categoryName: p.category?.name,
+          profileImageUrl: p.profileImageUrl,
+          itemCount: items?.length || 0,
+          items: items || []
+        };
+      });
+
+      res.json(formatted);
+    } catch (error: any) {
+      console.error("Get restaurants pricing error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch restaurants pricing data" });
+    }
+  });
+
+  app.patch("/api/admin/restaurants/:providerId/menu/:itemId/price", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { providerId, itemId } = req.params;
+      const { price, categorySlug } = req.body;
+
+      if (price === undefined || price === null || price === '') {
+        return res.status(400).json({ message: "Price is required" });
+      }
+
+      let targetCategorySlug = categorySlug;
+      if (!targetCategorySlug) {
+        const provider = await storage.getServiceProvider(providerId);
+        targetCategorySlug = provider?.category?.slug || "restaurants";
+      }
+
+      const updated = await storage.adminUpdateMenuItemPrice(itemId, targetCategorySlug, price.toString());
+      if (!updated) {
+        return res.status(404).json({ message: "Menu item not found" });
+      }
+
+      res.json({ message: "Price updated successfully", item: updated });
+    } catch (error: any) {
+      console.error("Admin update price error:", error);
+      res.status(500).json({ message: error.message || "Failed to update price" });
+    }
+  });
+
+  app.post("/api/admin/restaurants/:providerId/bulk-price-adjust", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { providerId } = req.params;
+      const { mode, value, roundToNearest, categoryFilter } = req.body;
+
+      if (!mode || typeof value !== 'number' || isNaN(value)) {
+        return res.status(400).json({ message: "mode and numeric value required" });
+      }
+
+      const provider = await storage.getServiceProvider(providerId);
+      const categorySlug = provider?.category?.slug || "restaurants";
+
+      const result = await storage.bulkAdjustMenuItemPrices(providerId, categorySlug, {
+        mode,
+        value,
+        roundToNearest: roundToNearest ? parseInt(roundToNearest, 10) : 1,
+        categoryFilter: categoryFilter || 'all'
+      });
+
+      res.json({
+        message: `Successfully updated ${result.updatedCount} items for ${provider?.businessName || 'restaurant'}`,
+        updatedCount: result.updatedCount
+      });
+    } catch (error: any) {
+      console.error("Admin restaurant bulk price adjust error:", error);
+      res.status(500).json({ message: error.message || "Failed to adjust prices" });
+    }
+  });
+
+  app.post("/api/admin/restaurants/all/bulk-price-adjust", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { mode, value, roundToNearest } = req.body;
+
+      if (!mode || typeof value !== 'number' || isNaN(value)) {
+        return res.status(400).json({ message: "mode and numeric value required" });
+      }
+
+      const foodCategories = await db.query.serviceCategories.findMany({
+        where: or(
+          eq(serviceCategories.slug, "restaurants"),
+          eq(serviceCategories.slug, "street-food")
+        )
+      });
+      const catIds = foodCategories.map(c => c.id);
+      const providers = await db.query.serviceProviders.findMany({
+        where: inArray(serviceProviders.categoryId, catIds),
+        with: { category: true }
+      });
+
+      let totalUpdated = 0;
+      for (const p of providers) {
+        const catSlug = p.category?.slug || "restaurants";
+        const res = await storage.bulkAdjustMenuItemPrices(p.id, catSlug, {
+          mode,
+          value,
+          roundToNearest: roundToNearest ? parseInt(roundToNearest, 10) : 1,
+          categoryFilter: 'all'
+        });
+        totalUpdated += res.updatedCount;
+      }
+
+      res.json({
+        message: `Successfully updated ${totalUpdated} items across ${providers.length} restaurants!`,
+        totalUpdated
+      });
+    } catch (error: any) {
+      console.error("Admin all restaurants bulk price adjust error:", error);
+      res.status(500).json({ message: error.message || "Failed to adjust prices across all restaurants" });
+    }
+  });
+
   // --- ADMIN BULK TOGGLE ROUTE ---
   app.post("/api/admin/toggle-category-status", async (req: Request, res: Response) => {
     try {

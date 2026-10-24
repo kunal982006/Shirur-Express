@@ -277,6 +277,21 @@ export interface IStorage {
     providerId: string,
     categorySlug: string,
   ): Promise<any[]>;
+  bulkAdjustMenuItemPrices(
+    providerId: string,
+    categorySlug: string,
+    options: {
+      categoryFilter?: string;
+      mode: 'percentage' | 'fixed';
+      value: number;
+      roundToNearest?: number;
+    }
+  ): Promise<{ updatedCount: number; updatedItems: any[] }>;
+  adminUpdateMenuItemPrice(
+    itemId: string,
+    categorySlug: string,
+    price: string,
+  ): Promise<any | null>;
 
   // Street Food Orders
   createStreetFoodOrder(order: InsertStreetFoodOrder & { userId: string }): Promise<StreetFoodOrder>;
@@ -1576,6 +1591,67 @@ export class DatabaseStorage implements IStorage {
       .returning({ id: idField });
     return deletedItem;
   }
+
+  async bulkAdjustMenuItemPrices(
+    providerId: string,
+    categorySlug: string,
+    options: {
+      categoryFilter?: string;
+      mode: 'percentage' | 'fixed';
+      value: number;
+      roundToNearest?: number;
+    }
+  ): Promise<{ updatedCount: number; updatedItems: any[] }> {
+    const { table, idField, providerIdField } = this.getMenuTableInfo(categorySlug);
+    let items = await db.select().from(table).where(eq(providerIdField, providerId));
+    if (options.categoryFilter && options.categoryFilter !== 'all') {
+      items = items.filter((item: any) => (item.category || '').trim().toLowerCase() === options.categoryFilter!.trim().toLowerCase());
+    }
+
+    const updatedItems: any[] = [];
+    for (const item of items) {
+      const currentPrice = parseFloat((item as any).price || "0");
+      if (isNaN(currentPrice) || currentPrice <= 0) continue;
+
+      let newPrice: number;
+      if (options.mode === 'percentage') {
+        newPrice = currentPrice * (1 + options.value / 100);
+      } else {
+        newPrice = currentPrice + options.value;
+      }
+      newPrice = Math.max(1, newPrice);
+
+      if (options.roundToNearest && options.roundToNearest > 1) {
+        newPrice = Math.round(newPrice / options.roundToNearest) * options.roundToNearest;
+      } else {
+        newPrice = Math.round(newPrice);
+      }
+
+      const [updated] = await db
+        .update(table)
+        .set({ price: newPrice.toString() })
+        .where(eq(idField, (item as any).id))
+        .returning();
+
+      if (updated) updatedItems.push(updated);
+    }
+
+    return { updatedCount: updatedItems.length, updatedItems };
+  }
+
+  async adminUpdateMenuItemPrice(
+    itemId: string,
+    categorySlug: string,
+    price: string,
+  ): Promise<any | null> {
+    const { table, idField } = this.getMenuTableInfo(categorySlug);
+    const [updatedItem] = await db
+      .update(table)
+      .set({ price: price.toString() })
+      .where(eq(idField, itemId))
+      .returning();
+    return updatedItem || null;
+  }
   async getProviderMenuItems(
     providerId: string,
     categorySlug: string,
@@ -2827,6 +2903,17 @@ export class DatabaseStorage implements IStorage {
           )`,
           eq(serviceProviders.isAvailable, true)
         ),
+        with: {
+          category: true,
+          streetFoodItems: {
+            limit: 1,
+            columns: { imageUrl: true }
+          },
+          restaurantMenuItems: {
+            limit: 1,
+            columns: { imageUrl: true }
+          }
+        },
         limit: 8
       }),
 
@@ -2910,8 +2997,18 @@ export class DatabaseStorage implements IStorage {
         .limit(8)
     ]);
 
+    const mappedRestaurants = (restaurants as any[]).map(r => {
+      const fallbackImage = r.streetFoodItems?.[0]?.imageUrl || r.restaurantMenuItems?.[0]?.imageUrl || r.galleryImages?.[0] || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60";
+      return {
+        ...r,
+        categorySlug: r.category?.slug,
+        categoryName: r.category?.name,
+        profileImageUrl: r.profileImageUrl || fallbackImage
+      };
+    });
+
     return {
-      services, restaurants, streetFood, menuItems, cakes, grocery, rentals,
+      services, restaurants: mappedRestaurants, streetFood, menuItems, cakes, grocery, rentals,
       didYouMean
     };
   }

@@ -92,6 +92,7 @@ import AdminStreetFood from "@/components/admin/admin-street-food";
 import AdminProperties from "@/components/admin/admin-properties";
 import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
+import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -669,6 +670,7 @@ export default function AdminDashboard() {
         { id: "users", label: "Users", icon: Users },
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
+        { id: "restaurant_pricing", label: "⚡ Restaurant Pricing", icon: UtensilsCrossed },
         { id: "properties", label: "Properties", icon: Home },
         { id: "phone_listings", label: "Phone Listings", icon: Smartphone },
         { id: "street_food", label: "Street Food", icon: Sandwich },
@@ -2208,6 +2210,11 @@ export default function AdminDashboard() {
                                 )}
                         </div>
                     </div>
+                )}
+
+                {/* ═══ RESTAURANT PRICING TAB ═══ */}
+                {activeTab === "restaurant_pricing" && (
+                     <AdminRestaurantPricing />
                 )}
 
                 {/* ═══ STREET FOOD TAB ═══ */}

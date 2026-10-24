@@ -272,25 +272,51 @@ export default function SearchResults() {
                             </section>
                         )}
 
-                        {/* Restaurants */}
+                        {/* Restaurants & Street Food Vendors */}
                         {restaurants.length > 0 && (
                             <section>
-                                <h2 className="text-lg font-bold mb-3 px-1">Restaurants</h2>
-                                {restaurants.map((repo: any) => (
-                                    <div key={repo.id} onClick={() => setLocation(`/restaurants/${repo.id}`)} className="bg-white p-3 rounded-xl shadow-sm mb-3 flex gap-3 cursor-pointer">
-                                        <img src={repo.profileImageUrl || "/placeholder-restaurant.jpg"} className="w-20 h-20 rounded-lg object-cover bg-gray-200" alt={repo.businessName} />
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-gray-900">{repo.businessName}</h3>
-                                            <p className="text-xs text-gray-500 line-clamp-1">{repo.address}</p>
-                                            <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
-                                                <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                    4.2 <Star className="h-3 w-3 fill-current" />
-                                                </span>
-                                                <span>• {repo.isAvailable ? 'Open' : 'Closed'}</span>
+                                <h2 className="text-lg font-bold mb-3 px-1">Restaurants & Food Vendors</h2>
+                                {restaurants.map((repo: any) => {
+                                    const isStreetFood = repo.categorySlug === 'street-food';
+                                    const targetUrl = isStreetFood ? `/street-food/${repo.id}` : `/restaurants/${repo.id}`;
+                                    const fallbackImg = isStreetFood
+                                        ? "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=60"
+                                        : "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60";
+                                    return (
+                                        <div 
+                                            key={repo.id} 
+                                            onClick={() => setLocation(targetUrl)} 
+                                            className="bg-white p-3 rounded-xl shadow-sm mb-3 flex gap-3 cursor-pointer hover:border-primary/40 border border-transparent transition-all"
+                                        >
+                                            <img 
+                                                src={repo.profileImageUrl || fallbackImg} 
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.src = fallbackImg;
+                                                }}
+                                                className="w-20 h-20 rounded-lg object-cover bg-gray-100 flex-shrink-0" 
+                                                alt={repo.businessName} 
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                                        isStreetFood ? "bg-orange-100 text-orange-700" : "bg-rose-100 text-rose-700"
+                                                    }`}>
+                                                        {repo.categoryName || (isStreetFood ? "Street Food" : "Restaurant")}
+                                                    </span>
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 truncate">{repo.businessName}</h3>
+                                                <p className="text-xs text-gray-500 line-clamp-1">{repo.address}</p>
+                                                <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                                                    <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                        {repo.rating ? parseFloat(repo.rating).toFixed(1) : "4.2"} <Star className="h-3 w-3 fill-current" />
+                                                    </span>
+                                                    <span>• {repo.isAvailable ? 'Open' : 'Closed'}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </section>
                         )}
 
@@ -304,9 +330,13 @@ export default function SearchResults() {
                                             <div className="flex-1">
                                                 <div className="flex items-start gap-2">
                                                     {/* Extreme Left: Restaurant Profile Image instead of Veg/Non-Veg */}
-                                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 mt-1">
+                                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 mt-1 bg-gray-100">
                                                         <img 
-                                                            src={item.providerImage || "/placeholder-restaurant.jpg"} 
+                                                            src={item.providerImage || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&auto=format&fit=crop&q=60"} 
+                                                            onError={(e) => {
+                                                                e.currentTarget.onerror = null;
+                                                                e.currentTarget.src = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&auto=format&fit=crop&q=60";
+                                                            }}
                                                             alt={item.providerName || "Restaurant"} 
                                                             className="w-full h-full object-cover"
                                                         />
@@ -373,20 +403,31 @@ export default function SearchResults() {
                                 items={streetFood}
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/street-food")}
-                                renderItem={(item: any) => (
-                                    <div className="cursor-pointer group w-36">
-                                        <div 
-                                            className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
-                                            onClick={() => setSelectedImage(item.imageUrl || "/placeholder-street-food.jpg")}
-                                        >
-                                            <img src={item.imageUrl || "/placeholder-street-food.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt={item.name} />
+                                renderItem={(item: any) => {
+                                    const fallbackStreet = "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=60";
+                                    return (
+                                        <div className="cursor-pointer group w-36">
+                                            <div 
+                                                className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
+                                                onClick={() => setSelectedImage(item.imageUrl || fallbackStreet)}
+                                            >
+                                                <img 
+                                                    src={item.imageUrl || fallbackStreet} 
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = fallbackStreet;
+                                                    }}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                                                    alt={item.name} 
+                                                />
+                                            </div>
+                                            <div onClick={() => setLocation(`/street-food?item=${item.id}`)}>
+                                                <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+                                                <p className="text-xs text-gray-500">₹{item.price}</p>
+                                            </div>
                                         </div>
-                                        <div onClick={() => setLocation(`/street-food?item=${item.id}`)}>
-                                            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-                                            <p className="text-xs text-gray-500">₹{item.price}</p>
-                                        </div>
-                                    </div>
-                                )}
+                                    );
+                                }}
                             />
                         )}
 
@@ -397,20 +438,31 @@ export default function SearchResults() {
                                 items={cakes}
                                 isLoading={false}
                                 onSeeAll={() => setLocation("/cake-shop")}
-                                renderItem={(item: any) => (
-                                    <div className="cursor-pointer group w-36">
-                                        <div 
-                                            className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
-                                            onClick={() => setSelectedImage(item.imageUrl || "/placeholder-cake.jpg")}
-                                        >
-                                            <img src={item.imageUrl || "/placeholder-cake.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt={item.name} />
+                                renderItem={(item: any) => {
+                                    const fallbackCake = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60";
+                                    return (
+                                        <div className="cursor-pointer group w-36">
+                                            <div 
+                                                className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
+                                                onClick={() => setSelectedImage(item.imageUrl || fallbackCake)}
+                                            >
+                                                <img 
+                                                    src={item.imageUrl || fallbackCake} 
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = fallbackCake;
+                                                    }}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                                                    alt={item.name} 
+                                                />
+                                            </div>
+                                            <div onClick={() => setLocation(`/cake-shop?item=${item.id}`)}>
+                                                <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
+                                                <p className="text-xs text-gray-500">₹{item.price}</p>
+                                            </div>
                                         </div>
-                                        <div onClick={() => setLocation(`/cake-shop?item=${item.id}`)}>
-                                            <h3 className="font-bold text-gray-800 text-sm truncate">{item.name}</h3>
-                                            <p className="text-xs text-gray-500">₹{item.price}</p>
-                                        </div>
-                                    </div>
-                                )}
+                                    );
+                                }}
                             />
                         )}
 
@@ -419,23 +471,32 @@ export default function SearchResults() {
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Grocery Items</h2>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {grocery.map((item: any) => (
-                                        <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer">
-                                            <div
-                                                className="w-full h-24 mb-2 overflow-hidden flex items-center justify-center cursor-pointer"
-                                                onClick={(e) => {
-                                                    if (item.imageUrl) {
+                                    {grocery.map((item: any) => {
+                                        const fallbackGrocery = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=60";
+                                        return (
+                                            <div key={item.id} onClick={() => setLocation("/grocery")} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 cursor-pointer">
+                                                <div
+                                                    className="w-full h-24 mb-2 overflow-hidden flex items-center justify-center cursor-pointer"
+                                                    onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectedImage(item.imageUrl);
-                                                    }
-                                                }}
-                                            >
-                                                <img src={item.imageUrl || "/placeholder-grocery.jpg"} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" alt={item.name} />
+                                                        setSelectedImage(item.imageUrl || fallbackGrocery);
+                                                    }}
+                                                >
+                                                    <img 
+                                                        src={item.imageUrl || fallbackGrocery} 
+                                                        onError={(e) => {
+                                                            e.currentTarget.onerror = null;
+                                                            e.currentTarget.src = fallbackGrocery;
+                                                        }}
+                                                        className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" 
+                                                        alt={item.name} 
+                                                    />
+                                                </div>
+                                                <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
+                                                <p className="text-sm font-bold mt-1">₹{item.price}</p>
                                             </div>
-                                            <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
-                                            <p className="text-sm font-bold mt-1">₹{item.price}</p>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}
@@ -445,20 +506,31 @@ export default function SearchResults() {
                             <section>
                                 <h2 className="text-lg font-bold mb-3 px-1">Rental Properties</h2>
                                 <div className="space-y-3">
-                                    {rentals.map((prop: any) => (
-                                        <div key={prop.id} onClick={() => setLocation(`/properties/${prop.id}`)} className="bg-white p-3 rounded-xl shadow-sm flex gap-3 cursor-pointer">
-                                            <img src={prop.images?.[0] || "/placeholder-house.jpg"} className="w-24 h-24 rounded-lg object-cover bg-gray-200" alt={prop.title} />
-                                            <div>
-                                                <h3 className="font-bold text-gray-900 line-clamp-1">{prop.title}</h3>
-                                                <p className="text-xs text-gray-500">{prop.locality}</p>
-                                                <p className="text-sm font-bold text-primary mt-1">₹{prop.rent}/month</p>
-                                                <div className="flex gap-2 mt-2">
-                                                    <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{prop.type}</span>
-                                                    <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{prop.bhk} BHK</span>
+                                    {rentals.map((prop: any) => {
+                                        const fallbackHouse = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60";
+                                        return (
+                                            <div key={prop.id} onClick={() => setLocation(`/properties/${prop.id}`)} className="bg-white p-3 rounded-xl shadow-sm flex gap-3 cursor-pointer">
+                                                <img 
+                                                    src={prop.images?.[0] || fallbackHouse} 
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = fallbackHouse;
+                                                    }}
+                                                    className="w-24 h-24 rounded-lg object-cover bg-gray-200" 
+                                                    alt={prop.title} 
+                                                />
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900 line-clamp-1">{prop.title}</h3>
+                                                    <p className="text-xs text-gray-500">{prop.locality}</p>
+                                                    <p className="text-sm font-bold text-primary mt-1">₹{prop.rent}/month</p>
+                                                    <div className="flex gap-2 mt-2">
+                                                        <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{prop.type}</span>
+                                                        <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{prop.bhk} BHK</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}

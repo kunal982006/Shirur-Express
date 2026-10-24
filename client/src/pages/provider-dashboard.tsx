@@ -41,6 +41,10 @@ import {
   Phone,
   ShoppingBag,
   MapPin,
+  TrendingUp,
+  Sparkles,
+  Percent,
+  Edit2,
 } from "lucide-react";
 import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import { Input } from "@/components/ui/input";
@@ -154,6 +158,374 @@ import {
   CommandSeparator,
 } from "@/components/ui/command"
 
+// --- INSTANT INLINE PRICE EDITOR COMPONENT ---
+const QuickPriceEditor: React.FC<{
+  item: any;
+  categorySlug: string;
+  onPriceUpdated?: () => void;
+}> = ({ item, categorySlug, onPriceUpdated }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [priceVal, setPriceVal] = useState(item.price?.toString() || "");
+  const [savedSuccess, setSavedSuccess] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setPriceVal(item.price?.toString() || "");
+  }, [item.price]);
+
+  const updatePriceMutation = useMutation({
+    mutationFn: (newPrice: string) =>
+      api.patch(`/provider/menu-items/${categorySlug}/${item.id}`, { price: newPrice }),
+    onSuccess: () => {
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2000);
+      setIsEditing(false);
+      toast({
+        title: "Price Updated! ⚡",
+        description: `${item.name} is now ₹${priceVal}`,
+        duration: 2000,
+      });
+      onPriceUpdated?.();
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Failed to update price",
+        description: err.response?.data?.message || err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSave = () => {
+    const num = parseFloat(priceVal);
+    if (isNaN(num) || num < 0) {
+      toast({ title: "Invalid Price", description: "Please enter a valid price", variant: "destructive" });
+      return;
+    }
+    updatePriceMutation.mutate(priceVal);
+  };
+
+  const handleAdjust = (delta: number) => {
+    const current = parseFloat(priceVal) || 0;
+    const next = Math.max(0, current + delta);
+    setPriceVal(next.toString());
+    updatePriceMutation.mutate(next.toString());
+  };
+
+  if (!isEditing) {
+    return (
+      <div className="flex items-center gap-1.5 group/price">
+        <span
+          onClick={() => setIsEditing(true)}
+          className={`font-bold cursor-pointer text-sm sm:text-base px-2 py-1 rounded-md transition-all hover:bg-orange-50 hover:text-orange-600 flex items-center gap-1 border border-transparent hover:border-orange-200 ${
+            savedSuccess ? "bg-green-100 text-green-700 font-extrabold ring-2 ring-green-400" : ""
+          }`}
+          title="Click to quickly edit price without opening modal"
+        >
+          ₹{item.price}
+          <span className="text-[10px] text-gray-400 opacity-0 group-hover/price:opacity-100 transition-opacity ml-1">
+            ✏️
+          </span>
+        </span>
+        <div className="hidden sm:flex items-center gap-0.5 opacity-0 group-hover/price:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={() => handleAdjust(10)}
+            disabled={updatePriceMutation.isPending}
+            className="text-[10px] font-bold px-1.5 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded border border-orange-200"
+            title="Instant +₹10"
+          >
+            +10
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAdjust(-10)}
+            disabled={updatePriceMutation.isPending || parseFloat(item.price) <= 10}
+            className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded border border-gray-200"
+            title="Instant -₹10"
+          >
+            -10
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1 min-w-[130px]" onClick={(e) => e.stopPropagation()}>
+      <div className="relative flex items-center">
+        <span className="absolute left-2 text-xs font-bold text-gray-500">₹</span>
+        <Input
+          type="number"
+          min="0"
+          autoFocus
+          value={priceVal}
+          onChange={(e) => setPriceVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSave();
+            if (e.key === "Escape") {
+              setPriceVal(item.price?.toString() || "");
+              setIsEditing(false);
+            }
+          }}
+          className="h-8 w-20 pl-5 pr-1 text-sm font-bold border-orange-400 focus-visible:ring-orange-400 bg-white"
+        />
+      </div>
+      <Button
+        size="icon"
+        variant="ghost"
+        disabled={updatePriceMutation.isPending}
+        onClick={handleSave}
+        className="h-8 w-8 text-green-600 hover:bg-green-50 hover:text-green-700"
+        title="Save price (Enter)"
+      >
+        {updatePriceMutation.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+        ) : (
+          <Check className="h-4 w-4 stroke-[3]" />
+        )}
+      </Button>
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => {
+          setPriceVal(item.price?.toString() || "");
+          setIsEditing(false);
+        }}
+        className="h-8 w-8 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+        title="Cancel (Esc)"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
+
+// --- BULK PRICE ADJUSTMENT DIALOG ---
+const BulkPriceDialog: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  categorySlug: string;
+  currentCategory: string | null;
+  items: any[];
+  onSuccess: () => void;
+}> = ({ isOpen, onClose, categorySlug, currentCategory, items, onSuccess }) => {
+  const { toast } = useToast();
+  const [scope, setScope] = useState<"category" | "all">(currentCategory ? "category" : "all");
+  const [mode, setMode] = useState<"percentage" | "fixed">("percentage");
+  const [value, setValue] = useState<number>(10);
+  const [roundToNearest, setRoundToNearest] = useState<number>(5);
+
+  useEffect(() => {
+    setScope(currentCategory ? "category" : "all");
+  }, [currentCategory, isOpen]);
+
+  const bulkMutation = useMutation({
+    mutationFn: async () => {
+      return api.post(`/provider/menu-items/${categorySlug}/bulk-price-adjust`, {
+        categoryFilter: scope === "category" ? currentCategory : "all",
+        mode,
+        value,
+        roundToNearest,
+      });
+    },
+    onSuccess: (res: any) => {
+      toast({
+        title: "Bulk Price Update Applied! ⚡",
+        description: res.data?.message || "Prices updated successfully",
+      });
+      onSuccess();
+      onClose();
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Bulk Update Failed",
+        description: err.response?.data?.message || err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const previewItems = React.useMemo(() => {
+    const targetItems =
+      scope === "category" && currentCategory
+        ? items.filter((i: any) => (i.category || "Uncategorized") === currentCategory)
+        : items;
+    return targetItems.slice(0, 4).map((i: any) => {
+      const cur = parseFloat(i.price || "0");
+      let next = mode === "percentage" ? cur * (1 + value / 100) : cur + value;
+      next = Math.max(1, next);
+      if (roundToNearest > 1) {
+        next = Math.round(next / roundToNearest) * roundToNearest;
+      } else {
+        next = Math.round(next);
+      }
+      return { name: i.name, oldPrice: cur, newPrice: next };
+    });
+  }, [items, scope, currentCategory, mode, value, roundToNearest]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            ⚡ Quick Bulk Price Update
+          </DialogTitle>
+          <DialogDescription>
+            Instantly adjust food prices across dishes without opening individual items.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {currentCategory && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase text-gray-500">Apply To</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={scope === "category" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setScope("category")}
+                  className={scope === "category" ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+                >
+                  Current: {currentCategory}
+                </Button>
+                <Button
+                  type="button"
+                  variant={scope === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setScope("all")}
+                  className={scope === "all" ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+                >
+                  All Menu Items
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase text-gray-500">Adjustment Type</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={mode === "percentage" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setMode("percentage")}
+                className={mode === "percentage" ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+              >
+                Percentage (%)
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "fixed" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setMode("fixed")}
+                className={mode === "fixed" ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+              >
+                Fixed Amount (₹)
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase text-gray-500">
+                {mode === "percentage" ? "Percentage Change" : "Rupee Amount Change"}
+              </Label>
+              <span className={`text-sm font-bold ${value >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {value >= 0 ? `+${value}` : value}
+                {mode === "percentage" ? "%" : " ₹"}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {(mode === "percentage" ? [5, 10, 15, 20, -5, -10] : [5, 10, 20, 50, -10, -20]).map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setValue(preset)}
+                  className={`text-xs px-2.5 py-1 rounded-md font-bold border transition-colors ${
+                    value === preset
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
+                  }`}
+                >
+                  {preset > 0 ? `+${preset}` : preset}
+                  {mode === "percentage" ? "%" : "₹"}
+                </button>
+              ))}
+            </div>
+
+            <Input
+              type="number"
+              value={value}
+              onChange={(e) => setValue(parseFloat(e.target.value) || 0)}
+              className="mt-2"
+              placeholder="Custom value"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase text-gray-500">Price Rounding</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Nearest ₹5", val: 5 },
+                { label: "Nearest ₹10", val: 10 },
+                { label: "Exact ₹1", val: 1 },
+              ].map((r) => (
+                <Button
+                  key={r.val}
+                  type="button"
+                  size="sm"
+                  variant={roundToNearest === r.val ? "default" : "outline"}
+                  onClick={() => setRoundToNearest(r.val)}
+                  className={roundToNearest === r.val ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
+                >
+                  {r.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {previewItems.length > 0 && (
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-1.5">
+              <span className="font-bold text-gray-700 block mb-1">Live Preview:</span>
+              {previewItems.map((p, idx) => (
+                <div key={idx} className="flex justify-between items-center text-gray-600">
+                  <span className="truncate max-w-[180px] font-medium">{p.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="line-through text-gray-400">₹{p.oldPrice}</span>
+                    <span className="text-orange-600 font-bold">➔ ₹{p.newPrice}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} disabled={bulkMutation.isPending}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => bulkMutation.mutate()}
+            disabled={bulkMutation.isPending}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
+          >
+            {bulkMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...
+              </>
+            ) : (
+              `Apply ${value >= 0 ? "+" : ""}${value}${mode === "percentage" ? "%" : "₹"} Update`
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const MenuItemsManager: React.FC<{
   providerProfile: ProviderProfileWithCategory;
 }> = ({ providerProfile }) => {
@@ -193,6 +565,7 @@ const MenuItemsManager: React.FC<{
   });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBulkPriceOpen, setIsBulkPriceOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -354,35 +727,44 @@ const MenuItemsManager: React.FC<{
               ' service.
             </CardDescription>
           </div>
-          <Dialog
-            open={isFormOpen}
-            onOpenChange={(isOpen) => {
-              setIsFormOpen(isOpen);
-              if (!isOpen) setEditingItem(null);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button onClick={() => setEditingItem(null)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px]">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingItem ? "Edit Item" : "Add New Item"}
-                </DialogTitle>
-                <DialogDescription>
-                  Fill in the details for your service or product.
-                </DialogDescription>
-              </DialogHeader>
-              <MenuItemForm
-                providerId={providerProfile.id}
-                categorySlug={providerCategorySlug}
-                initialData={editingItem}
-                onSuccess={handleFormSuccess}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkPriceOpen(true)}
+              className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 font-bold gap-1.5 shadow-sm"
+            >
+              <TrendingUp className="h-4 w-4" /> ⚡ Bulk Price Update
+            </Button>
+            <Dialog
+              open={isFormOpen}
+              onOpenChange={(isOpen) => {
+                setIsFormOpen(isOpen);
+                if (!isOpen) setEditingItem(null);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button onClick={() => setEditingItem(null)}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingItem ? "Edit Item" : "Add New Item"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Fill in the details for your service or product.
+                  </DialogDescription>
+                </DialogHeader>
+                <MenuItemForm
+                  providerId={providerProfile.id}
+                  categorySlug={providerCategorySlug}
+                  initialData={editingItem}
+                  onSuccess={handleFormSuccess}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* --- Search Bar with Autocomplete --- */}
@@ -457,12 +839,22 @@ const MenuItemsManager: React.FC<{
         ) : (
           // --- SELECTED CATEGORY ITEM LIST ---
           <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Button variant="outline" size="sm" onClick={() => setSelectedCategory(null)}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSelectedCategory(null)}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
+                </Button>
+                <h3 className="text-xl font-bold ml-2">{selectedCategory}</h3>
+                <Badge variant="secondary" className="ml-2">{filteredItems.length} Items</Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBulkPriceOpen(true)}
+                className="bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100 font-bold gap-1.5 shadow-sm"
+              >
+                <TrendingUp className="h-3.5 w-3.5" /> ⚡ Bulk Price Update ({selectedCategory})
               </Button>
-              <h3 className="text-xl font-bold ml-2">{selectedCategory}</h3>
-              <Badge variant="secondary" className="ml-2">{filteredItems.length} Items</Badge>
             </div>
 
             {isGrocery && isLoadingCategoryItems ? (
@@ -475,7 +867,9 @@ const MenuItemsManager: React.FC<{
                   <TableRow>
                     <TableHead className="w-[80px]">Image</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Price (₹)</TableHead>
+                    <TableHead className="min-w-[170px]">
+                      Price (₹) <span className="text-[10px] text-orange-500 font-semibold">(⚡ Instant Edit)</span>
+                    </TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -501,7 +895,20 @@ const MenuItemsManager: React.FC<{
                         <div>{item.name}</div>
                         <div className="text-xs text-muted-foreground">{item.description}</div>
                       </TableCell>
-                      <TableCell className="font-bold">₹{item.price}</TableCell>
+                      <TableCell>
+                        <QuickPriceEditor
+                          item={item}
+                          categorySlug={providerCategorySlug || ''}
+                          onPriceUpdated={() => {
+                            if (isGrocery) {
+                              queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+                              queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+                            } else {
+                              refetchMenuItems();
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <div className="flex items-center gap-1" title={item.isAvailable === false ? 'Sold Out' : 'Available'}>
@@ -545,6 +952,22 @@ const MenuItemsManager: React.FC<{
             )}
           </div>
         )}
+
+        <BulkPriceDialog
+          isOpen={isBulkPriceOpen}
+          onClose={() => setIsBulkPriceOpen(false)}
+          categorySlug={providerCategorySlug || ''}
+          currentCategory={selectedCategory}
+          items={menuItems || []}
+          onSuccess={() => {
+            if (isGrocery) {
+              queryClient.invalidateQueries({ queryKey: ["providerGroceryCategories"] });
+              queryClient.invalidateQueries({ queryKey: ["groceryCategoryItems", selectedCategory] });
+            } else {
+              refetchMenuItems();
+            }
+          }}
+        />
       </CardContent>
     </Card>
   );
