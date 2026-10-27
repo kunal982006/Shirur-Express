@@ -6,8 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
 interface LocationPickerProps {
-    onAddressSelect: (address: string) => void;
+    onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void;
     currentAddress?: string;
+    initialPosition?: { lat: number; lng: number };
+    autoLocate?: boolean; // Fetch GPS location as soon as the map is ready
+    mapHeight?: number;
 }
 
 declare global {
@@ -16,7 +19,7 @@ declare global {
     }
 }
 
-export function LocationPicker({ onAddressSelect, currentAddress }: LocationPickerProps) {
+export function LocationPicker({ onAddressSelect, currentAddress, initialPosition, autoLocate, mapHeight = 300 }: LocationPickerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,12 +33,16 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
     const geocoderRef = useRef<google.maps.Geocoder | null>(null);
     const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
 
+    const mapContainerRef = useRef<HTMLDivElement | null>(null);
+    // Map listeners are bound once, so read the latest callback through a ref
+    const onAddressSelectRef = useRef(onAddressSelect);
+    onAddressSelectRef.current = onAddressSelect;
+
     const { toast } = useToast();
-    const mapContainerId = "google-map-container";
 
     // Initialize map after script loads
     const initMap = useCallback(() => {
-        const mapElement = document.getElementById(mapContainerId);
+        const mapElement = mapContainerRef.current;
         if (!mapElement || !window.google?.maps) {
             console.warn("Map element or Google Maps not found");
             setIsLoading(false);
@@ -47,8 +54,8 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
             const defaultCenter = { lat: 18.8285, lng: 74.3734 };
 
             mapRef.current = new google.maps.Map(mapElement, {
-                center: defaultCenter,
-                zoom: 15,
+                center: initialPosition || defaultCenter,
+                zoom: initialPosition ? 17 : 15,
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: false,
@@ -161,11 +168,11 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
                     mapRef.current?.setZoom(17);
 
                     updateMarker(lat, lng);
-                    onAddressSelect(place.formatted_address || description);
+                    onAddressSelectRef.current(place.formatted_address || description, { lat, lng });
                 }
             }
         );
-    }, [onAddressSelect]);
+    }, []);
 
     // Reverse geocode to get address from coordinates
     const fetchAddress = useCallback((lat: number, lng: number) => {
@@ -182,7 +189,7 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
                 setIsLoadingAddress(false);
                 if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
                     const address = results[0].formatted_address;
-                    onAddressSelect(address);
+                    onAddressSelectRef.current(address, { lat, lng });
                     setSearchQuery(address);
                 } else {
                     toast({
@@ -193,7 +200,7 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
                 }
             }
         );
-    }, [onAddressSelect, toast]);
+    }, [toast]);
 
     // Update or create marker
     const updateMarker = useCallback((lat: number, lng: number) => {
@@ -263,6 +270,15 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
         );
     }, [updateMarker, fetchAddress, toast]);
 
+    // Show the saved pin, or locate the user straight away when asked to
+    useEffect(() => {
+        if (!mapLoaded) return;
+        if (initialPosition) updateMarker(initialPosition.lat, initialPosition.lng);
+        if (autoLocate) handleCurrentLocation();
+        if (currentAddress) setSearchQuery(currentAddress);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mapLoaded]);
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
@@ -317,8 +333,8 @@ export function LocationPicker({ onAddressSelect, currentAddress }: LocationPick
             {/* Map Container */}
             <div className="relative rounded-lg overflow-hidden border">
                 <div
-                    id={mapContainerId}
-                    style={{ width: '100%', height: '300px' }}
+                    ref={mapContainerRef}
+                    style={{ width: '100%', height: `${mapHeight}px` }}
                     className="bg-muted/20"
                 />
 

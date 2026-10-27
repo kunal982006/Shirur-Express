@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import type { ServiceProvider } from "@shared/schema";
+import { AddressChip } from "@/components/address/AddressChip";
 
 export default function RestaurantsIndex() {
     const [, setLocation] = useLocation();
@@ -28,6 +29,7 @@ export default function RestaurantsIndex() {
             {/* Sticky Search Header */}
             <div className="sticky top-0 z-40 bg-background shadow-sm">
                 <div className="p-4 flex flex-col gap-3">
+                    <AddressChip className="max-w-full" />
                     {/* Search Bar */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

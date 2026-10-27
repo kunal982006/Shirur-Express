@@ -93,6 +93,7 @@ import AdminProperties from "@/components/admin/admin-properties";
 import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
+import { ProviderLocationDialog } from "@/components/admin/ProviderLocationDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -1904,6 +1905,7 @@ export default function AdminDashboard() {
                                                             <ShieldCheck className="h-2.5 w-2.5" /> Verified
                                                         </span>
                                                     )}
+                                                    <ProviderLocationDialog provider={p} />
                                                 </div>
                                             </div>
                                         </div>

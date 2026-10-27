@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { reverseGeocode } from "@/lib/google-maps";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -18,7 +17,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/api"; // API client
 import { useAuth } from "@/hooks/use-auth"; // User details ke liye
-import { calculateDistance, calculateDeliveryFee } from "@/lib/location";
+import { calculateDistance, estimateDelivery, formatDistance } from "@/lib/location";
+import { formatFullAddress, shortAddress, useDeliveryAddress } from "@/hooks/use-delivery-address";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 // --- IMPORTS KHATAM ---
@@ -90,11 +90,10 @@ export default function Checkout() {
   const [codConfirmed, setCodConfirmed] = useState(false);
 
   // --- LOCATION & FEE STATE ---
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  // Saved delivery address (chosen once, reused until the customer changes it)
+  const { address: savedAddress, openSheet: openAddressSheet } = useDeliveryAddress();
+  const userLocation = savedAddress ? { lat: savedAddress.lat, lng: savedAddress.lng } : null;
   const [distanceInMeters, setDistanceInMeters] = useState<number | null>(null);
-  const [isLocating, setIsLocating] = useState(false);
-  const [useManualAddress, setUseManualAddress] = useState(false); // Manual address entry mode
 
   // Fetch Provider Details to get coordinates
   const { data: provider } = useQuery({
@@ -126,7 +125,8 @@ export default function Checkout() {
       );
       setDistanceInMeters(dist);
     }
-  }, [userLocation, provider]);
+  }, [userLocation?.lat, userLocation?.lng, provider]);
+  const deliveryEstimate = estimateDelivery(userLocation, provider);
 
   // Fees calculation
   const subtotal = getTotalPrice();
@@ -183,73 +183,21 @@ export default function Checkout() {
     }
   }, []); // Only fire once on mount
 
-  // Get User Location
-  const getUserLocation = () => {
-    setIsLocating(true);
-    setLocationError(null);
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser");
-      setIsLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        setUserLocation({
-          lat: latitude,
-          lng: longitude
-        });
-
-        // Attempt reverse geocoding via Google Maps API JS Client (client-side to respect Referrer restrictions)
-        try {
-          const address = await reverseGeocode(latitude, longitude);
-          if (address) {
-            form.setValue("deliveryAddress", address);
-            toast({ title: "📍 Address Found", description: "Your exact location address has been detected." });
-          } else {
-            toast({ title: "Location Detected", description: "Could not fetch street address. Please enter details." });
-          }
-        } catch (error) {
-          console.error("Geocoding failed:", error);
-          toast({ title: "Location Detected", description: "Geocoding failed, using coordinates instead." });
-        } finally {
-          setIsLocating(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        setLocationError("Unable to retrieve your location. Please allow location access.");
-        setIsLocating(false);
-      }
-    );
-  };
-
-  // Auto-detect location on mount if not set
+  // Prefill the delivery address from the saved address
   useEffect(() => {
-    getUserLocation();
-  }, []);
+    if (savedAddress) form.setValue("deliveryAddress", formatFullAddress(savedAddress), { shouldValidate: true });
+  }, [savedAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   // --- YEH FUNCTION POORA NAYA HAI ---
   const onSubmit = async (values: CheckoutFormValues) => {
-    // If using manual address, just validate the address field is filled
-    if (useManualAddress) {
-      if (!values.deliveryAddress || values.deliveryAddress.length < 10) {
-        toast({ title: "Address Required", description: "Please enter a complete delivery address (at least 10 characters).", variant: "destructive" });
-        return;
-      }
-    } else {
-      // If using GPS, require location
-      if (!userLocation) {
-        toast({ title: "Location Required", description: "Please enable location or switch to manual address entry.", variant: "destructive" });
-        return;
-      }
+    if (!userLocation) {
+      toast({ title: "Address Required", description: "Please select your delivery address.", variant: "destructive" });
+      openAddressSheet();
+      return;
     }
 
-    // Distance check only applies when GPS is used (already disabled for launch)
-    if (!useManualAddress && !isDeliverable) {
+    if (!isDeliverable) {
       toast({ title: "Not Deliverable", description: "Sorry, we do not deliver to this location (too far).", variant: "destructive" });
       return;
     }
@@ -561,88 +509,29 @@ export default function Checkout() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 p-3 pt-0">
-                    {/* Toggle between GPS and Manual */}
-                    <div className="flex gap-2 p-1 bg-muted rounded-lg">
-                      <Button
-                        type="button"
-                        variant={!useManualAddress ? "default" : "ghost"}
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => {
-                          setUseManualAddress(false);
-                          if (!userLocation) getUserLocation();
-                        }}
-                      >
-                        <MapPin className="mr-2 h-4 w-4" />
-                        Use GPS
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={useManualAddress ? "default" : "ghost"}
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setUseManualAddress(true)}
-                      >
-                        ✏️ Enter Manually
-                      </Button>
-                    </div>
-
-                    {/* GPS Mode */}
-                    {!useManualAddress && (
-                      <>
-                        {!userLocation ? (
-                          <div className="flex flex-col items-start gap-2">
-                            <p className="text-sm text-muted-foreground">
-                              Detect your current location automatically.
+                    {savedAddress ? (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold">{savedAddress.label} · {shortAddress(savedAddress)}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{formatFullAddress(savedAddress)}</p>
+                          {deliveryEstimate && (
+                            <p className="mt-1 flex items-center gap-1 text-sm font-medium text-green-700">
+                              <Clock className="h-3.5 w-3.5" />
+                              Delivery in ~{deliveryEstimate.minutes} mins · {formatDistance(deliveryEstimate.distanceKm)} away
                             </p>
-                            <Button
-                              type="button"
-                              onClick={getUserLocation}
-                              disabled={isLocating}
-                              variant="secondary"
-                            >
-                              {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
-                              Detect My Location
-                            </Button>
-                            {locationError && (
-                              <p className="text-sm text-destructive">{locationError}</p>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="flex items-center text-green-600 gap-2">
-                              <MapPin className="h-4 w-4" />
-                              <span className="text-sm font-medium">Location Detected ✓</span>
-                            </div>
-                            {distanceInMeters !== null && (
-                              <p className="text-sm text-muted-foreground">
-                                Distance to Vendor: <span className="font-medium text-foreground">{distanceInKm.toFixed(1)} km</span>
-                              </p>
-                            )}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={getUserLocation}
-                              disabled={isLocating}
-                            >
-                              {isLocating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                              Refresh Location
-                            </Button>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Manual Mode */}
-                    {useManualAddress && (
-                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                          ✏️ <strong>Manual Entry Mode</strong>
-                        </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                          Please type your complete delivery address in the field below. Include house number, street name, and landmark.
-                        </p>
+                          )}
+                        </div>
+                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={openAddressSheet}>
+                          Change
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-start gap-2">
+                        <p className="text-sm text-muted-foreground">Select where we should deliver your order.</p>
+                        <Button type="button" variant="secondary" onClick={openAddressSheet}>
+                          <MapPin className="mr-2 h-4 w-4" />
+                          Select Delivery Address
+                        </Button>
                       </div>
                     )}
                   </CardContent>
@@ -1015,7 +904,7 @@ export default function Checkout() {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || servicesClosed || (!useManualAddress && (!isDeliverable || !userLocation)) || (paymentMethod === "cod" && !codConfirmed)}
+                      disabled={items.length === 0 || isPlacingOrder || isBelowMinOrder || servicesClosed || !isDeliverable || !userLocation || (paymentMethod === "cod" && !codConfirmed)}
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
@@ -1024,10 +913,10 @@ export default function Checkout() {
                         `Add ₹${(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more`
                       ) : servicesClosed ? (
                         "Services Closed"
-                      ) : !useManualAddress && !isDeliverable ? (
+                      ) : !isDeliverable ? (
                         "Not Deliverable"
-                      ) : !useManualAddress && !userLocation ? (
-                        "Detect Location to Pay"
+                      ) : !userLocation ? (
+                        "Select Address to Pay"
                       ) : paymentMethod === "cod" ? (
                         `Confirm COD Order (₹${total.toFixed(2)})`
                       ) : paymentMethod === "upi" ? (

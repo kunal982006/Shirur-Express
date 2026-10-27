@@ -1,6 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import type { ServiceProvider } from "@shared/schema";
+import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
+import { formatDistance } from "@/lib/location";
 
 interface RestaurantCardProps {
     restaurant: ServiceProvider;
@@ -11,6 +13,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
     // Parsing generic fields for display
     const rating = restaurant.rating ? parseFloat(restaurant.rating.toString()).toFixed(1) : "New";
     const specializations = restaurant.specializations || [];
+    const estimate = useDeliveryEstimate(restaurant);
     const image = restaurant.profileImageUrl || restaurant.galleryImages?.[0] || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60";
 
     return (
@@ -25,7 +28,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-bold shadow-sm">
-                    30-40 min
+                    {estimate ? `${estimate.minutes} mins` : "30-40 min"}
                 </div>
                 {restaurant.isAvailable === false && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -47,6 +50,11 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
                     <p className="truncate w-2/3">{specializations.slice(0, 2).join(", ")}</p>
                     <p>₹200/2</p>
                 </div>
+                {estimate && (
+                    <p className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
+                        <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {formatDistance(estimate.distanceKm)} away
+                    </p>
+                )}
             </CardContent>
         </Card>
     );

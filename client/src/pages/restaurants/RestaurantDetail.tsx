@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator"; // Import Separator
 import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed, SlidersHorizontal, Check, ChevronDown } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { useCartStore } from "@/hooks/use-cart-store";
+import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
+import { formatDistance } from "@/lib/location";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 import type { RestaurantMenuItem, ServiceProvider } from "@shared/schema";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -66,6 +68,8 @@ export default function RestaurantDetail() {
         queryFn: () => apiRequest("GET", `/api/service-providers/${id}`).then(res => res.json()),
         enabled: !!id
     });
+
+    const deliveryEstimate = useDeliveryEstimate(restaurant);
 
     const { data: menuItems, isLoading: loadingMenu } = useQuery<RestaurantMenuItem[]>({
         queryKey: ["restaurantMenu", id],
@@ -298,10 +302,15 @@ export default function RestaurantDetail() {
                                         Currently Closed
                                     </span>
                                 ) : (
-                                    <span className="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">
-                                        <Clock className="h-3 w-3" />
-                                        34 mins
-                                    </span>
+                                    <>
+                                        <span className="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">
+                                            <Clock className="h-3 w-3" />
+                                            {deliveryEstimate ? `${deliveryEstimate.minutes} mins` : "30-40 mins"}
+                                        </span>
+                                        {deliveryEstimate && (
+                                            <span className="font-medium">{formatDistance(deliveryEstimate.distanceKm)} away</span>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>

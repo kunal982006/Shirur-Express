@@ -24,3 +24,46 @@ export function calculateDeliveryFee(distanceInMeters: number): number {
     // Updated as per user request "delivery charge should be 9rs per km"
     return Math.ceil(distanceInKm) * 9;
 }
+
+// Delivery time = fixed preparation time + travel time per km.
+// e.g. a restaurant 2 km away → 15 + 2 × 5 = 25 minutes.
+export const PREPARATION_TIME_MINUTES = 15;
+export const MINUTES_PER_KM = 5;
+
+export interface Coordinates {
+    lat: number;
+    lng: number;
+}
+
+export interface DeliveryEstimate {
+    distanceKm: number;
+    minutes: number;
+}
+
+type ProviderCoordinates = {
+    latitude?: string | number | null;
+    longitude?: string | number | null;
+};
+
+export function getProviderCoordinates(provider?: ProviderCoordinates | null): Coordinates | null {
+    if (!provider || provider.latitude == null || provider.longitude == null) return null;
+    const lat = Number(provider.latitude);
+    const lng = Number(provider.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng };
+}
+
+export function estimateDelivery(from: Coordinates | null, provider?: ProviderCoordinates | null): DeliveryEstimate | null {
+    const to = getProviderCoordinates(provider);
+    if (!from || !to) return null;
+    const distanceKm = calculateDistance(from.lat, from.lng, to.lat, to.lng) / 1000;
+    return {
+        distanceKm,
+        minutes: Math.round(PREPARATION_TIME_MINUTES + distanceKm * MINUTES_PER_KM),
+    };
+}
+
+export function formatDistance(distanceKm: number): string {
+    if (distanceKm < 1) return `${Math.max(100, Math.round(distanceKm * 10) * 100)} m`;
+    return `${distanceKm.toFixed(1).replace(/\.0$/, "")} km`;
+}

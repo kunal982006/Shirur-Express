@@ -31,7 +31,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LocationPicker } from "@/components/location-picker";
+import { formatFullAddress, shortAddress, useDeliveryAddress } from "@/hooks/use-delivery-address";
 import { Loader2, ArrowLeft, Save, User as UserIcon, Mail, Phone, MapPin, Trash2 } from "lucide-react";
 
 // Schema for profile updates
@@ -39,7 +39,6 @@ const profileSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
     email: z.string().email("Invalid email address"),
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
-    address: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -51,6 +50,7 @@ export default function Settings() {
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { address: deliveryAddress, openSheet: openAddressSheet } = useDeliveryAddress();
 
     // Initialize form with default values from user
     const form = useForm<ProfileFormValues>({
@@ -59,7 +59,6 @@ export default function Settings() {
             username: user?.username || "",
             email: user?.email || "",
             phone: user?.phone || "",
-            address: user?.address || "",
         },
     });
 
@@ -74,7 +73,6 @@ export default function Settings() {
                 username: user.username,
                 email: user.email,
                 phone: phone,
-                address: user.address || "",
             });
         }
     }, [user, form]);
@@ -225,35 +223,28 @@ export default function Settings() {
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="address"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Address</FormLabel>
-                                            <FormControl>
-                                                <div className="space-y-4">
-                                                    <div className="relative">
-                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                        <Input
-                                                            placeholder="Select location on map..."
-                                                            {...field}
-                                                            className="pl-10"
-                                                        />
-                                                    </div>
-                                                    <LocationPicker
-                                                        onAddressSelect={(address) => form.setValue("address", address)}
-                                                        currentAddress={field.value}
-                                                    />
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium">Delivery Address</p>
+                                    <div className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                                        <div className="flex min-w-0 items-start gap-2">
+                                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                            {deliveryAddress ? (
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold">{deliveryAddress.label} · {shortAddress(deliveryAddress)}</p>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2">{formatFullAddress(deliveryAddress)}</p>
                                                 </div>
-                                            </FormControl>
-                                            <FormDescription>
-                                                Pin your location on the map to set your address.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">No delivery address selected yet.</p>
+                                            )}
+                                        </div>
+                                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={openAddressSheet}>
+                                            {deliveryAddress ? "Change" : "Select"}
+                                        </Button>
+                                    </div>
+                                    <p className="text-[0.8rem] text-muted-foreground">
+                                        Used to show restaurant distance, delivery time and as your default checkout address.
+                                    </p>
+                                </div>
 
                                 <div className="flex justify-end pt-4">
                                     <Button type="submit" disabled={isSaving} className="min-w-[120px]">

@@ -4548,6 +4548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         businessName: serviceProviders.businessName,
         categoryId: serviceProviders.categoryId,
         address: serviceProviders.address,
+        latitude: serviceProviders.latitude,
+        longitude: serviceProviders.longitude,
         rating: serviceProviders.rating,
         reviewCount: serviceProviders.reviewCount,
         isVerified: serviceProviders.isVerified,
@@ -4568,6 +4570,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(enriched);
     } catch (error: any) {
       console.error("Admin providers error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Set a provider's map location (used for distance & delivery time estimates)
+  app.patch("/api/admin/providers/:id/location", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const latitude = Number(req.body.latitude);
+      const longitude = Number(req.body.longitude);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+        return res.status(400).json({ message: "Valid latitude and longitude are required" });
+      }
+      const [updated] = await db.update(serviceProviders)
+        .set({ latitude: latitude.toFixed(8), longitude: longitude.toFixed(8) })
+        .where(eq(serviceProviders.id, req.params.id))
+        .returning({ id: serviceProviders.id, latitude: serviceProviders.latitude, longitude: serviceProviders.longitude });
+      if (!updated) return res.status(404).json({ message: "Provider not found" });
+      apiCache.delete('homepage_popular');
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Update provider location error:", error);
       res.status(500).json({ message: error.message });
     }
   });

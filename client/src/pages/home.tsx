@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Bell, Cake, ChevronRight, Home as HomeIcon, MapPin, Minus, Package, Plus,
+  Bell, Cake, ChevronRight, Home as HomeIcon, Minus, Package, Plus,
   RefreshCw, Scissors, Search, Shield, ShoppingBag, ShoppingBasket, Smartphone,
   Sparkles, UtensilsCrossed, Wrench, Zap, Sandwich, Heart, User as UserIcon, Settings as SettingsIcon, HelpCircle, Info, LogOut
 } from "lucide-react";
@@ -20,6 +20,9 @@ import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 import { motion, AnimatePresence } from "framer-motion";
 import { HomeHeroBanner } from "@/components/HomeHeroBanner";
 import { HeroPromoCarousel } from "@/components/HeroPromoCarousel";
+import { AddressChip } from "@/components/address/AddressChip";
+import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
+import { formatDistance } from "@/lib/location";
 
 const services = [
   { name: "Food", slug: "restaurants", icon: UtensilsCrossed, tone: "bg-orange-50 text-orange-600" },
@@ -122,6 +125,23 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
   );
 }
 
+function TopPlaceCard({ provider, onClick }: { provider: any; onClick: () => void }) {
+  const estimate = useDeliveryEstimate(provider);
+  const rating = provider.rating ? Number(provider.rating).toFixed(1) : "4.2";
+  return (
+    <article className="app-place-card" onClick={onClick}>
+      <div className="relative">
+        <img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" />
+        <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">★ {rating}{estimate ? ` · ${estimate.minutes} mins` : ""}</span>
+      </div>
+      <div className="p-2">
+        <p className="truncate text-xs sm:text-sm font-bold text-slate-900">{provider.businessName}</p>
+        <p className="truncate text-[10.5px] text-slate-500">{estimate ? `${formatDistance(estimate.distanceKm)} away` : provider.address || "Shirur"}</p>
+      </div>
+    </article>
+  );
+}
+
 export default function Home() {
   const [, navigate] = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -204,10 +224,12 @@ export default function Home() {
       <header className="app-home__top relative overflow-hidden">
         <HomeHeroBanner />
         <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-          <button className="flex min-w-0 items-center gap-2 text-left" onClick={() => navigate("/")} aria-label="Shirur Express home">
-            <img src="/shirur-express-logo.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-cover shadow-sm" />
-            <span className="min-w-0"><span className="block truncate text-sm sm:text-[15px] font-extrabold tracking-tight text-white">Shirur Express</span><span className="flex items-center gap-1 text-[10.5px] font-medium text-white/65"><MapPin className="h-3 w-3" /> Shirur, Maharashtra</span></span>
-          </button>
+          <div className="flex min-w-0 items-center gap-2">
+            <button className="shrink-0" onClick={() => navigate("/")} aria-label="Shirur Express home">
+              <img src="/shirur-express-logo.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-cover shadow-sm" />
+            </button>
+            <span className="min-w-0"><span className="block truncate text-sm sm:text-[15px] font-extrabold tracking-tight text-white">Shirur Express</span><AddressChip variant="light" className="max-w-full" /></span>
+          </div>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-white hover:bg-white/10 hover:text-white" onClick={() => navigate("/notifications")} aria-label="Notifications"><Bell className="h-4 w-4" /></Button>
             
@@ -393,7 +415,7 @@ export default function Home() {
             />
           )}
         />
-        <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <article className="app-place-card" onClick={() => navigate(`/restaurants/${provider.id}`)}><div className="relative"><img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" /><span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">★ 4.2 · 25m</span></div><div className="p-2"><p className="truncate text-xs sm:text-sm font-bold text-slate-900">{provider.businessName}</p><p className="truncate text-[10.5px] text-slate-500">{provider.address || "Shirur"}</p></div></article>} />
+        <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <TopPlaceCard provider={provider} onClick={() => navigate(`/restaurants/${provider.id}`)} />} />
       </main>
 
       {items.length > 0 && <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 mx-auto max-w-md"><Button className="h-14 w-full justify-between rounded-xl bg-slate-900 px-4 text-white shadow-xl hover:bg-slate-800" onClick={() => navigate("/checkout")}><span className="text-left"><span className="block text-[10px] font-semibold uppercase tracking-wider text-white/70">{cartCount} item{cartCount !== 1 ? "s" : ""}</span><span className="text-sm font-bold">₹{getTotalPrice().toFixed(2)}</span></span><span className="flex items-center gap-1 text-sm font-semibold">View cart <ChevronRight className="h-4 w-4" /></span></Button></div>}

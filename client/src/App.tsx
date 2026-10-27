@@ -10,6 +10,7 @@ import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
+import { AddressSheet } from "@/components/address/AddressSheet";
 import { Loader2 } from "lucide-react";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
@@ -198,6 +199,7 @@ function App() {
               </main>
 
             </div>
+            <AddressSheet />
             <SwipeBackGesture />
             <OrderNotificationPopup />
             <Toaster />
