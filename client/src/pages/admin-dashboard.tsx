@@ -94,6 +94,7 @@ import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
 import { ProviderLocationDialog } from "@/components/admin/ProviderLocationDialog";
+import { ProviderPhoneDialog } from "@/components/admin/ProviderPhoneDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -1898,7 +1899,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-base text-gray-100">{p.businessName}</h4>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex flex-wrap items-center gap-2 mt-1">
                                                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{p.categoryName}</span>
                                                     {p.isVerified && (
                                                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-1">
@@ -1906,6 +1907,7 @@ export default function AdminDashboard() {
                                                         </span>
                                                     )}
                                                     <ProviderLocationDialog provider={p} />
+                                                    <ProviderPhoneDialog provider={p} />
                                                 </div>
                                             </div>
                                         </div>

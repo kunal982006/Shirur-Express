@@ -1,9 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation, useParams } from "wouter";
-import { Loader2 } from "lucide-react";
-import api from "@/lib/api";
+import { useLocation } from "wouter";
 
 // ─── Static Menu Data (matches salon menu with our price & market price) ─────
 interface Variant { label: string; marketPrice: number | null; ourPrice: number; }
@@ -24,6 +21,7 @@ interface MenuItem {
 interface MenuSection {
   id: string;
   title: string;
+  short: string; // label on the category pill
   subtitle: string;
   icon: string;
   badgeColor: string;
@@ -32,9 +30,10 @@ interface MenuSection {
 
 const INITIAL_MENU: MenuSection[] = [
   {
-    id: "sec-hair-women",
-    title: "Hair Cut (Women)",
-    subtitle: "HAIR • Classic, layered & designer cuts",
+    id: "sec-hair-styling",
+    title: "Hair Care & Styling",
+    short: "Haircuts",
+    subtitle: "HAIR • All haircuts — women, kids & hair color",
     icon: "✂️",
     badgeColor: "bg-rose-100 text-rose-700",
     items: [
@@ -53,51 +52,25 @@ const INITIAL_MENU: MenuSection[] = [
       { id: "hw-13", name: "Voluminous Feather Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "बारीक किंवा विरळ केसांसाठी हेवी व्हॉल्युम देणारा कट.", tag: "Advanced" },
       { id: "hw-14", name: "Long Hair Step Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "केसांची लांबी न कमी करता दिलेला स्टायलिश स्टेप लूक." },
       { id: "hw-15", name: "Long Layer Cut", marketPrice: 389, ourPrice: 349, time: "45 mins", desc: "लांब केसांसाठी स्मूथ आणि सुंदर फ्लो देणारे लेअर्स." },
-    ],
-  },
-  {
-    id: "sec-kids-hair",
-    title: "Kids Hair Cut",
-    subtitle: "HAIR • Gentle & cute styles for little ones",
-    icon: "👶",
-    badgeColor: "bg-amber-100 text-amber-800",
-    items: [
       { id: "kh-1", name: "Little Round Cut", marketPrice: 149, ourPrice: 99, time: "20 mins", desc: "लहान मुलांसाठी क्यूट, सोपा आणि नीटनेटका कट." },
       { id: "kh-2", name: "Apple Cut", marketPrice: 189, ourPrice: 149, time: "25 mins", desc: "गोड चेहऱ्यावर उठून दिसणारा गोल बाऊन्सी कट." },
       { id: "kh-3", name: "Mushroom Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "मुलांसाठी सांभाळायला सोपा आणि क्लासिक मशरूम शेप." },
       { id: "kh-4", name: "Baby Bob Cut", marketPrice: 199, ourPrice: 149, time: "25 mins", desc: "लहान मुलींसाठी एकदम गोड आणि मॉडर्न बॉब कट." },
-    ],
-  },
-  {
-    id: "sec-hair-color",
-    title: "Hair Color",
-    subtitle: "HAIR • Root touchups, global shades & highlights",
-    icon: "🎨",
-    badgeColor: "bg-purple-100 text-purple-800",
-    items: [
       { id: "hc-1", name: "Root Touch-Up", marketPrice: 699, ourPrice: 499, time: "45 mins", desc: "पांढरे केस आणि मुळांमधील वाढ लपवण्यासाठी झटपट कलर." },
       { id: "hc-2", name: "Full Hair Color (Global)", marketPrice: null, ourPrice: 799, startsFrom: true, time: "90 mins", desc: "मुळांपासून टोकापर्यंत एकसारखा, रिच आणि चमकदार रंग.", tag: "Advanced", note: "Starting from ₹799 • Final price depends upon hair length" },
       { id: "hc-3", name: "Hair Highlights", marketPrice: null, ourPrice: 199, perStrip: true, time: "30 mins", desc: "केसांना मॉडर्न आणि फॅशनेबल लूक देण्यासाठी हायलाइट स्ट्रिप्स.", tag: "Advanced", note: "₹199 per strip • Depends upon customer requirement & highlight color type" },
     ],
   },
   {
-    id: "sec-hair-care",
-    title: "Hair Care & Dandruff",
-    subtitle: "HAIR • Scalp care & hair regrowth therapy",
-    icon: "🌿",
-    badgeColor: "bg-emerald-100 text-emerald-800",
-    items: [
-      { id: "hcd-1", name: "Anti-Dandruff Treatment", marketPrice: 1299, ourPrice: 999, time: "60 mins", desc: "कोंड्याचा मुळापासून नायनाट आणि टाळूची (Scalp) खोलवर स्वच्छता." },
-      { id: "hcd-2", name: "Hair Regrowth Therapy", marketPrice: 399, ourPrice: 299, time: "45 mins", desc: "केस गळती रोखण्यासाठी आणि मुळे मजबूत करण्यासाठी खास उपचार.", tag: "Advanced" },
-    ],
-  },
-  {
-    id: "sec-hair-straight",
-    title: "Hair Straightening & Smoothening",
-    subtitle: "HAIR • Keratin, Botox, Nanoplastia & more",
+    id: "sec-hair-treatments",
+    title: "Hair Treatments & Texture",
+    short: "Treatments",
+    subtitle: "HAIR • Scalp care, Keratin, Botox, Smoothening & more",
     icon: "✨",
     badgeColor: "bg-pink-100 text-pink-700",
     items: [
+      { id: "hcd-1", name: "Anti-Dandruff Treatment", marketPrice: 1299, ourPrice: 999, time: "60 mins", desc: "कोंड्याचा मुळापासून नायनाट आणि टाळूची (Scalp) खोलवर स्वच्छता." },
+      { id: "hcd-2", name: "Hair Regrowth Therapy", marketPrice: 399, ourPrice: 299, time: "45 mins", desc: "केस गळती रोखण्यासाठी आणि मुळे मजबूत करण्यासाठी खास उपचार.", tag: "Advanced" },
       { id: "hs-1", name: "Hair Straightening", marketPrice: null, ourPrice: 3499, startsFrom: true, time: "2.5–3 hrs", desc: "कुरळे केस कायमस्वरूपी एकदम सरळ आणि स्लीक करण्यासाठी.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
       { id: "hs-2", name: "Hair Smoothening", marketPrice: null, ourPrice: 4599, startsFrom: true, time: "2.5–3 hrs", desc: "केसांचा कोरडेपणा घालवून मिळणारा मऊ, रेशमी आणि नॅचरल लूक.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
       { id: "hs-3", name: "Keratin Treatment", marketPrice: null, ourPrice: 3999, startsFrom: true, time: "2.5 hrs", desc: "केसांना आवश्यक प्रोटीन देऊन फ्रिझिनेस (रुखेपणा) घालवण्यासाठी.", tag: "Advanced", note: "टीप: केसांची लांबी व घनतेनुसार अंतिम दर ठरवले जातील, ब्युटिशियन प्रत्यक्ष पाहणी करतील." },
@@ -107,38 +80,26 @@ const INITIAL_MENU: MenuSection[] = [
     ],
   },
   {
-    id: "sec-hands-feet",
-    title: "Hands & Feet Care",
-    subtitle: "SKINCARE • Manicure & Pedicure services",
-    icon: "💅",
-    badgeColor: "bg-sky-100 text-sky-800",
-    items: [
-      { id: "hf-1", name: "Basic Manicure", marketPrice: 349, ourPrice: 299, time: "35 mins", desc: "हातांची मूलभूत स्वच्छता, नखांचा शेप आणि हलका मसाज." },
-      { id: "hf-2", name: "Spa Glow Manicure", marketPrice: 699, ourPrice: 599, time: "45 mins", desc: "टॅनिंग घालवणारा स्क्रब, पॅक आणि हातांना ग्लो देणारा डीप मसाज.", tag: "Advanced" },
-      { id: "hf-3", name: "Basic Pedicure", marketPrice: 599, ourPrice: 499, time: "45 mins", desc: "पायांची स्वच्छता, टाचांची काळजी आणि रिलॅक्सिंग मसाज." },
-      { id: "hf-4", name: "Spa Glow Pedicure", marketPrice: 899, ourPrice: 799, time: "60 mins", desc: "मृत त्वचा काढून भेगा भरण्यासाठी आणि पायांना मऊ करण्यासाठी खास स्पा.", tag: "Advanced" },
-    ],
+    id: "sec-facials",
+    title: "Facials",
+    short: "Facials",
+    subtitle: "SKIN • Glow, cleanup & facial treatments",
+    icon: "🧖‍♀️",
+    badgeColor: "bg-emerald-100 text-emerald-800",
+    items: [],
   },
   {
-    id: "sec-face-wax",
-    title: "Face Waxing",
-    subtitle: "WAX • चेहऱ्यासाठी gentle facial waxing",
-    icon: "🌸",
-    badgeColor: "bg-rose-100 text-rose-800",
+    id: "sec-wax",
+    title: "Hair Removal (Wax)",
+    short: "Wax",
+    subtitle: "WAX • Face, hands & legs waxing",
+    icon: "🍯",
+    badgeColor: "bg-orange-100 text-orange-800",
     items: [
       { id: "fw-1", name: "Bean Wax (Full Face)", marketPrice: 499, ourPrice: 399, time: "25 mins", desc: "चेहऱ्यावरील बारीक लव आणि केस त्रास न होता सहज काढण्यासाठी पेनलेस वॅक्स.", tag: "Advanced" },
       { id: "fw-2", name: "Brazilian Face Wax", marketPrice: 399, ourPrice: 299, time: "20 mins", desc: "अतिशय नाजूक त्वचेसाठी सौम्य, सुरक्षित आणि विना-पट्टीची (Stripless) वॅक्स.", tag: "Advanced" },
       { id: "fw-3", name: "Microwave Face Wax", marketPrice: 549, ourPrice: 449, time: "25 mins", desc: "सेन्सिटिव्ह त्वचेसाठी झटपट वितळणारी, मऊ आणि सुरक्षित वॅक्स.", tag: "Advanced" },
       { id: "fw-4", name: "Paraffin Face Wax", marketPrice: 499, ourPrice: 399, time: "30 mins", desc: "टॅनिंग काढून चेहऱ्यावर नैसर्गिक ओलावा आणि चमक टिकवणारी वॅक्स.", tag: "Advanced" },
-    ],
-  },
-  {
-    id: "sec-body-wax",
-    title: "Body Waxing",
-    subtitle: "WAX • हात आणि पाय — Choose Hand or Leg",
-    icon: "🍯",
-    badgeColor: "bg-orange-100 text-orange-800",
-    items: [
       {
         id: "bw-1", name: "Regular Gel Wax", time: "25–40 mins",
         desc: "कमी खर्चात रोजच्या देखभालीसाठी सोपी आणि जलद जेल वॅक्सिंग.",
@@ -180,6 +141,20 @@ const INITIAL_MENU: MenuSection[] = [
       },
     ],
   },
+  {
+    id: "sec-makeup-studio",
+    title: "Makeup & Studio Services",
+    short: "Makeup",
+    subtitle: "STUDIO • Makeup, manicure & pedicure",
+    icon: "💄",
+    badgeColor: "bg-purple-100 text-purple-800",
+    items: [
+      { id: "hf-1", name: "Basic Manicure", marketPrice: 349, ourPrice: 299, time: "35 mins", desc: "हातांची मूलभूत स्वच्छता, नखांचा शेप आणि हलका मसाज." },
+      { id: "hf-2", name: "Spa Glow Manicure", marketPrice: 699, ourPrice: 599, time: "45 mins", desc: "टॅनिंग घालवणारा स्क्रब, पॅक आणि हातांना ग्लो देणारा डीप मसाज.", tag: "Advanced" },
+      { id: "hf-3", name: "Basic Pedicure", marketPrice: 599, ourPrice: 499, time: "45 mins", desc: "पायांची स्वच्छता, टाचांची काळजी आणि रिलॅक्सिंग मसाज." },
+      { id: "hf-4", name: "Spa Glow Pedicure", marketPrice: 899, ourPrice: 799, time: "60 mins", desc: "मृत त्वचा काढून भेगा भरण्यासाठी आणि पायांना मऊ करण्यासाठी खास स्पा.", tag: "Advanced" },
+    ],
+  },
 ];
 
 // ─── Cart key helper ───────────────────────────────────────────────────────────
@@ -198,7 +173,7 @@ interface CartEntry {
 }
 type CartMap = Record<string, CartEntry>;
 
-type MainTab = "home" | "bookings" | "admin" | "profile";
+type MainTab = "home" | "bookings";
 interface BookingRecord { id: string; services: string; total: number; market: number; time: string; mode: string; }
 
 // ─── Toast ─────────────────────────────────────────────────────────────────────
@@ -217,8 +192,12 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
   );
 }
 
+// ─── Makeup artist contact ─────────────────────────────────────────────────────
+const ARTIST = { name: "Sujata Kale", phone: "9665763204", altPhone: "9130113956" };
+const formatPhone = (p: string) => p.slice(0, 5) + " " + p.slice(5);
+
 // ─── Call Modal ────────────────────────────────────────────────────────────────
-function CallModal({ open, onClose, phone }: { open: boolean; onClose: () => void; phone: string }) {
+function CallModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <AnimatePresence>
       {open && (
@@ -237,16 +216,20 @@ function CallModal({ open, onClose, phone }: { open: boolean; onClose: () => voi
               <p className="text-xs text-slate-500 mt-1">For Hair Straightening, Smoothening, Keratin, Botox, Nanoplastia, Aqua Gold or Global Color length consultation, our expert beautician will guide you immediately.</p>
             </div>
             <div className="bg-rose-50 border border-rose-100 rounded-2xl p-3 text-left text-xs space-y-1">
-              <p className="font-bold text-slate-800">👩‍💼 Senior Stylist: Priya Didi</p>
-              <p className="text-slate-600">📞 Helpline: <strong>{phone}</strong></p>
+              <p className="font-bold text-slate-800">👩‍💼 Makeup Artist: {ARTIST.name}</p>
+              <p className="text-slate-600">📞 Primary: <strong>{formatPhone(ARTIST.phone)}</strong></p>
+              <p className="text-slate-600">📞 Alternate: <strong>{formatPhone(ARTIST.altPhone)}</strong></p>
               <p className="text-[11px] text-rose-600 font-medium">✨ Free consultation on hair length & highlight strips!</p>
             </div>
             <div className="flex gap-2">
               <button onClick={onClose} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Close</button>
-              <a href={"tel:" + phone} className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1">
+              <a href={"tel:+91" + ARTIST.phone} className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1">
                 📞 Call Now
               </a>
             </div>
+            <a href={"tel:+91" + ARTIST.altPhone} className="block text-[11px] text-rose-600 font-semibold underline">
+              Not reachable? Call alternate number {formatPhone(ARTIST.altPhone)}
+            </a>
           </motion.div>
         </motion.div>
       )}
@@ -494,8 +477,6 @@ function ServiceCard({ section, item, cart, onModify, onVariantChange, onCallMod
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function BeautyDetail() {
   const [, setLocation] = useLocation();
-  const params = useParams();
-  const parlorId = params.parlorId as string;
 
   // State
   const [menuData, setMenuData] = useState<MenuSection[]>(() =>
@@ -514,23 +495,9 @@ export default function BeautyDetail() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch parlor info (name/address/phone only)
-  const { data: parlorInfo, isLoading } = useQuery({
-    queryKey: ["parlor-info", parlorId],
-    queryFn: async () => {
-      const res = await api.get("/service-providers/" + parlorId);
-      const d = res.data;
-      return {
-        name: d?.businessName || "Shirur Express Salon",
-        address: d?.address || "Home & Studio Parlor • Shirur",
-        phone: d?.phoneNumber || "+917840940113",
-      };
-    },
-    enabled: !!parlorId,
-    retry: 1,
-  });
-
-  const info = parlorInfo ?? { name: "Shirur Express Salon", address: "Home & Studio Parlor • Shirur", phone: "+917840940113" };
+  // The partner parlor's name/address are deliberately not shown; customers see
+  // the Shirur Express Salon brand.
+  const info = { name: "Shirur Express Salon", address: "Home & Studio Parlor • Shirur" };
 
   // Toast helper
   const showToast = useCallback((msg: string) => {
@@ -665,16 +632,6 @@ export default function BeautyDetail() {
   const cartSavings = cartItems.reduce((s, i) => s + Math.max(0, i.marketPrice - i.ourPrice) * i.qty, 0);
   const totalItems = menuData.reduce((s, sec) => s + sec.items.length, 0);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF8FA]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 text-rose-500 animate-spin" />
-          <p className="text-sm text-slate-500 font-medium animate-pulse">Opening Beauty Parlor...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-[#FFF8FA] text-[#1E293B] min-h-screen font-sans antialiased flex flex-col">
@@ -700,9 +657,16 @@ export default function BeautyDetail() {
               <button onClick={() => setCallOpen(true)}
                 className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
               >📞 Help</button>
-              <button onClick={() => setActiveTab("profile")}
-                className="w-9 h-9 rounded-full bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs flex items-center justify-center shadow-sm"
-              >SK</button>
+              <button onClick={() => setActiveTab(activeTab === "home" ? "bookings" : "home")}
+                className="relative bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition shadow-sm"
+              >
+                {activeTab === "home" ? "📅 Bookings" : "✂️ Menu"}
+                {activeTab === "home" && bookings.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-400 text-slate-900 font-extrabold rounded-full text-[9px] flex items-center justify-center border border-white">
+                    {bookings.length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -754,10 +718,12 @@ export default function BeautyDetail() {
                       : "bg-rose-50/70 text-slate-700 hover:bg-rose-100 border-rose-100"
                   }`}
                 >
-                  {sec.icon} {sec.title.split(" ")[0]}
-                  <span className={`text-[10px] font-bold ${isSelected ? "text-white/90" : "text-rose-600"}`}>
-                    ({sec.items.length})
-                  </span>
+                  {sec.icon} {sec.short}
+                  {sec.items.length > 0 && (
+                    <span className={`text-[10px] font-bold ${isSelected ? "text-white/90" : "text-rose-600"}`}>
+                      ({sec.items.length})
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -822,12 +788,20 @@ export default function BeautyDetail() {
                         <p className="text-[11px] text-slate-500 font-medium">{sec.subtitle}</p>
                       </div>
                     </div>
-                    <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[11px] font-extrabold px-2.5 py-1 rounded-full">
-                      {sec.items.length} {sec.items.length === 1 ? "Item" : "Items"}
-                    </span>
+                    {sec.items.length > 0 && (
+                      <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[11px] font-extrabold px-2.5 py-1 rounded-full">
+                        {sec.items.length} {sec.items.length === 1 ? "Item" : "Items"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Items */}
+                  {sec.items.length === 0 && (
+                    <div className="bg-white border border-dashed border-rose-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                      <p className="text-xs text-slate-600">Call {ARTIST.name} for {sec.title.toLowerCase()} options & prices.</p>
+                      <button onClick={() => setCallOpen(true)} className="shrink-0 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3 py-2 rounded-xl">📞 Call</button>
+                    </div>
+                  )}
                   <div className="space-y-2.5">
                     {sec.items.map(item => (
                       <ServiceCard
@@ -852,7 +826,7 @@ export default function BeautyDetail() {
                 <div>
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-100 px-2 py-0.5 rounded-md">Direct Call Specialist</span>
                   <h4 className="text-xs font-extrabold text-slate-800 mt-1">Confused about Hair Length or Treatments?</h4>
-                  <p className="text-[11px] text-slate-600 mt-0.5">Hume call karein! Our head beautician will guide you on Keratin, Straightening & Color prices.</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">Hume call karein! Our makeup artist Sujata Kale will guide you on Keratin, Straightening & Color prices.</p>
                 </div>
               </div>
               <button onClick={() => setCallOpen(true)} className="shrink-0 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
@@ -905,123 +879,11 @@ export default function BeautyDetail() {
           </div>
         )}
 
-        {/* ── ADMIN TAB ── */}
-        {activeTab === "admin" && (
-          <div className="space-y-4">
-            <div className="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">Admin Mode</span>
-                  <h2 className="text-base font-extrabold text-slate-800 mt-1">Add New Parlor Service</h2>
-                  <p className="text-xs text-slate-500">Add a custom service directly into the live menu.</p>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-lg">✨</div>
-              </div>
-
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  const f = e.target;
-                  const catId = f.newCat.value;
-                  const name = f.newName.value.trim();
-                  const marketPr = parseInt(f.newMarket.value, 10);
-                  const ourPr = parseInt(f.newOur.value, 10);
-                  const note = f.newNote.value.trim() || "";
-                  setMenuData(prev => prev.map(sec => {
-                    if (sec.id !== catId) return sec;
-                    return {
-                      ...sec,
-                      items: [{ id: "custom-" + Date.now(), name, marketPrice: marketPr, ourPrice: ourPr, time: "30 mins", desc: note || "Custom service", tag: "New" }, ...sec.items],
-                    };
-                  }));
-                  f.reset();
-                  setActiveTab("home");
-                  showToast("✅ Added " + name + " at Our Price ₹" + ourPr + "!");
-                }}
-                className="mt-4 space-y-3 text-xs"
-              >
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Select Category Section</label>
-                  <select name="newCat" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400">
-                    {menuData.map(sec => <option key={sec.id} value={sec.id}>{sec.title}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Service Name</label>
-                  <input name="newName" required placeholder="e.g., Bridal Glow Facial" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Market Price (₹)</label>
-                    <input name="newMarket" type="number" required placeholder="e.g., 499" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400" />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Our Price (₹)</label>
-                    <input name="newOur" type="number" required placeholder="e.g., 349" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400" />
-                  </div>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Duration / Special Note</label>
-                  <input name="newNote" placeholder="e.g., 30 mins • Instant shine" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 outline-none focus:border-rose-400" />
-                </div>
-                <button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl shadow-md shadow-rose-200 transition">
-                  ➕ Publish to Live Menu
-                </button>
-              </form>
-            </div>
-
-            <div className="bg-rose-50/70 border border-rose-100 rounded-2xl p-3 space-y-2 text-xs">
-              <p className="font-bold text-slate-700">📊 Today's Summary</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white rounded-xl p-2.5 border border-rose-100 text-center">
-                  <p className="text-lg font-extrabold text-rose-600">{bookings.length}</p>
-                  <p className="text-[10px] text-slate-500">Bookings</p>
-                </div>
-                <div className="bg-white rounded-xl p-2.5 border border-rose-100 text-center">
-                  <p className="text-lg font-extrabold text-emerald-600">₹{bookings.reduce((s, b) => s + b.total, 0)}</p>
-                  <p className="text-[10px] text-slate-500">Revenue</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── PROFILE TAB ── */}
-        {activeTab === "profile" && (
-          <div className="space-y-4">
-            <div className="bg-white border border-rose-100 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 text-white flex items-center justify-center text-xl font-extrabold shadow-md shadow-rose-200">SK</div>
-              <div>
-                <span className="bg-rose-100 text-rose-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">GLAM VIP MEMBER</span>
-                <h3 className="font-extrabold text-base text-slate-800 mt-1">Snehal Kulkarni</h3>
-                <p className="text-xs text-slate-500">+91 98220 45120 • Shirur, Pune</p>
-              </div>
-            </div>
-            <div className="bg-white border border-rose-100 rounded-2xl divide-y divide-slate-100 overflow-hidden shadow-sm text-xs font-semibold text-slate-700">
-              <button onClick={() => showToast("🎁 You have ₹100 Parlor Cash ready to use!")} className="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
-                <span className="flex items-center gap-3">💰 Shirur Glam Wallet & Offers</span>
-                <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">₹100 Free</span>
-              </button>
-              <button onClick={() => showToast("🏠 Saved Address: Near Bus Stand, Shirur")} className="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
-                <span className="flex items-center gap-3">🏠 Saved Home Visit Address</span>
-                <span className="text-slate-400">›</span>
-              </button>
-              <button onClick={() => setCallOpen(true)} className="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
-                <span className="flex items-center gap-3">🎧 Speak to Head Beautician</span>
-                <span className="text-slate-400">›</span>
-              </button>
-              <button onClick={() => setLocation("/")} className="w-full p-4 flex items-center justify-between hover:bg-rose-50/50 transition">
-                <span className="flex items-center gap-3">🏠 Back to Home</span>
-                <span className="text-slate-400">›</span>
-              </button>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* ── FLOATING CART BAR (home only) ── */}
       {activeTab === "home" && (
-        <div className="fixed bottom-16 left-0 right-0 z-40 px-4 max-w-md mx-auto pointer-events-none">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 left-0 right-0 z-40 px-4 max-w-md mx-auto pointer-events-none">
           <div className="bg-white/95 backdrop-blur-md border-2 border-rose-200 rounded-2xl p-3 shadow-xl shadow-rose-200/60 flex items-center justify-between gap-2 pointer-events-auto">
             <div onClick={() => setCartOpen(true)} className="flex items-center space-x-3 cursor-pointer">
               <div className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold text-base relative shadow-md shadow-rose-200">
@@ -1052,27 +914,6 @@ export default function BeautyDetail() {
         </div>
       )}
 
-      {/* ── BOTTOM NAV ── */}
-      <nav className="bg-white border-t border-rose-100 fixed bottom-0 left-0 right-0 z-50 px-2 py-1.5 shadow-[0_-4px_12px_rgba(244,63,94,0.06)]">
-        <div className="max-w-md mx-auto grid grid-cols-4 gap-1 text-center">
-          {([
-            { id: "home", icon: "✂️", label: "Salon Menu" },
-            { id: "bookings", icon: "📅", label: "Bookings" },
-            { id: "admin", icon: "🪄", label: "Beautician+" },
-            { id: "profile", icon: "👤", label: "Profile" },
-          ] as { id: MainTab; icon: string; label: string }[]).map(nav => (
-            <button
-              key={nav.id}
-              onClick={() => setActiveTab(nav.id)}
-              className={"flex flex-col items-center justify-center py-1 transition " + (activeTab === nav.id ? "text-rose-600 font-bold" : "text-slate-400 font-medium hover:text-slate-700")}
-            >
-              <span className="text-base">{nav.icon}</span>
-              <span className="text-[10px] mt-0.5">{nav.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
       {/* ── MODALS & TOAST ── */}
       <CartDrawer
         open={cartOpen}
@@ -1081,7 +922,7 @@ export default function BeautyDetail() {
         onModify={modifyCartByKey}
         onConfirm={confirmBooking}
       />
-      <CallModal open={callOpen} onClose={() => setCallOpen(false)} phone={info.phone} />
+      <CallModal open={callOpen} onClose={() => setCallOpen(false)} />
       <Toast visible={toast.visible} message={toast.msg} />
     </div>
   );

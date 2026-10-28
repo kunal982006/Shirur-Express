@@ -4556,7 +4556,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAvailable: serviceProviders.isAvailable,
         createdAt: serviceProviders.createdAt,
         profileImageUrl: serviceProviders.profileImageUrl,
-      }).from(serviceProviders).orderBy(desc(serviceProviders.createdAt));
+        phone: users.phone,
+      }).from(serviceProviders)
+        .leftJoin(users, eq(users.id, serviceProviders.userId))
+        .orderBy(desc(serviceProviders.createdAt));
 
       // Get all categories for lookup
       const categories = await db.select().from(serviceCategories);
@@ -4591,6 +4594,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updated);
     } catch (error: any) {
       console.error("Update provider location error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Change a provider's phone number. It lives on the owner's user account, so it
+  // is also their login phone — must stay unique across users.
+  app.patch("/api/admin/providers/:id/phone", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const phone = String(req.body.phone ?? "").replace(/\D/g, "");
+      if (!/^\d{10}$/.test(phone)) {
+        return res.status(400).json({ message: "Phone number must be exactly 10 digits" });
+      }
+      const provider = await db.query.serviceProviders.findFirst({ where: eq(serviceProviders.id, req.params.id) });
+      if (!provider) return res.status(404).json({ message: "Provider not found" });
+
+      const existing = await storage.getUserByPhone(phone);
+      if (existing && existing.id !== provider.userId) {
+        return res.status(409).json({ message: "This phone number is already used by another account" });
+      }
+      const [updated] = await db.update(users)
+        .set({ phone })
+        .where(eq(users.id, provider.userId))
+        .returning({ id: users.id, phone: users.phone });
+      if (!updated) return res.status(404).json({ message: "Provider's user account not found" });
+      res.json({ id: provider.id, phone: updated.phone });
+    } catch (error: any) {
+      console.error("Update provider phone error:", error);
       res.status(500).json({ message: error.message });
     }
   });
