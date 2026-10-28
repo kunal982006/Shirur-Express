@@ -1,0 +1,14 @@
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448848/shirur-express/electrician/ac.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448849/shirur-express/electrician/microwave.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448851/shirur-express/electrician/others.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448852/shirur-express/electrician/refrigerator.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448854/shirur-express/electrician/tv.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448855/shirur-express/electrician/washing-machine.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448857/shirur-express/electrician/water-heater.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448858/shirur-express/plumber/basin-sink.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448860/shirur-express/plumber/geyser.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448861/shirur-express/plumber/leakage.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448863/shirur-express/plumber/motor.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448864/shirur-express/plumber/tap.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448866/shirur-express/plumber/toilet.jpg
+https://res.cloudinary.com/mlijtrrb/image/upload/v1772448869/shirur-express/plumber/water-tank.jpg

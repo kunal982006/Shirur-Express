@@ -7,6 +7,7 @@ import compression from "compression";
 import connectPgSimple from "connect-pg-simple";
 import { pool, checkDatabaseConnection } from "./db";
 import { registerRoutes } from "./routes"; // registerRoutes from server/routes.ts
+import { cloudinaryDeliveryMiddleware } from "./cloudinary-delivery";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -158,6 +159,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use(cloudinaryDeliveryMiddleware);
 
 (async () => {
   // Ensure DB is connected before starting server
