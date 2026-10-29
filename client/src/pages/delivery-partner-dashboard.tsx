@@ -10,6 +10,7 @@ import { Loader2, MapPin, Package, CheckCircle, Truck, Phone, User as UserIcon, 
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
+import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -173,9 +174,9 @@ export default function DeliveryPartnerDashboard() {
         },
     });
 
+    // Navigates to the exact pin the customer confirmed (falls back to the address text)
     const openGoogleMaps = (address: string) => {
-        const encoded = encodeURIComponent(address);
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}`, '_blank');
+        window.open(deliveryMapsUrl(address, 'directions'), '_blank');
     };
 
     const activeMyOrders = myOrders?.filter(o => !['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [];
@@ -376,7 +377,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 <div className="text-sm">
                     <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
                     <p className="text-slate-600 bg-slate-100 p-2 rounded flex items-center justify-between">
-                        <span>{order.deliveryAddress}</span>
+                        <span>{displayDeliveryAddress(order.deliveryAddress)}</span>
                         <Button
                             variant="ghost"
                             size="sm"

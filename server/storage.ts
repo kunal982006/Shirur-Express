@@ -359,6 +359,7 @@ export interface IStorage {
   }>;
   searchSuggestions(query: string): Promise<{ suggestions: string[]; didYouMean: string | null }>;
   getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
+  getAvailableRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
 
   // DISPLAY ORDER MANAGEMENT
   getProviderDisplayOrder(categorySlug: string): Promise<ServiceProvider[]>;
@@ -3086,6 +3087,26 @@ export class DatabaseStorage implements IStorage {
       didYouMean
     };
   }
+  // Every available menu item across all restaurant partners (used for cross-restaurant food collections).
+  async getAvailableRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]> {
+    const category = await db.query.serviceCategories.findFirst({
+      where: eq(serviceCategories.slug, 'restaurants')
+    });
+    if (!category) return [];
+
+    const records = await db.select({ item: restaurantMenuItems, provider: serviceProviders })
+      .from(restaurantMenuItems)
+      .innerJoin(serviceProviders, eq(restaurantMenuItems.providerId, serviceProviders.id))
+      .where(
+        and(
+          eq(restaurantMenuItems.isAvailable, true),
+          eq(serviceProviders.categoryId, category.id)
+        )
+      );
+
+    return records.map(({ item, provider }) => ({ ...item, provider }));
+  }
+
   async getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]> {
     // 1. Get all popular + available restaurant menu items with their provider
     const items = await db.query.restaurantMenuItems.findMany({

@@ -22,9 +22,10 @@ const categories: Category[] = [
     { id: "coffee", name: "Coffee", image: "https://images.unsplash.com/photo-1517244683847-7456b63c5969?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" },
 ];
 
-export function CategoryCarousel({ onSelect }: { onSelect: (id: string) => void }) {
+// className lets a page match its own side padding (default suits a px-4 page)
+export function CategoryCarousel({ onSelect, className = "-mx-4 px-4 mb-2" }: { onSelect: (id: string) => void; className?: string }) {
     return (
-        <div className="py-5 bg-muted/20 -mx-4 px-4 mb-2">
+        <div className={`py-5 bg-muted/20 ${className}`}>
             <h3 className="text-xl font-bold mb-4 text-foreground/90">Inspiration for your first order</h3>
             <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x">
                 {categories.map((cat) => (

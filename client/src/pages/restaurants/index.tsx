@@ -8,6 +8,7 @@ import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 import type { ServiceProvider } from "@shared/schema";
 import { AddressChip } from "@/components/address/AddressChip";
+import { FoodCollectionRows } from "@/components/restaurants/FoodCollectionRows";
 
 export default function RestaurantsIndex() {
     const [, setLocation] = useLocation();
@@ -46,6 +47,9 @@ export default function RestaurantsIndex() {
             <div className="max-w-4xl mx-auto px-4">
                 {/* Inspiration Carousel */}
                 <CategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
+
+                {/* Category rows: dishes from every partner restaurant, grouped by what you're craving */}
+                {!searchQuery && <FoodCollectionRows className="space-y-4 mb-6" />}
 
                 <h2 className="font-bold text-lg mb-3 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
 

@@ -95,6 +95,7 @@ import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
 import { ProviderLocationDialog } from "@/components/admin/ProviderLocationDialog";
 import { ProviderPhoneDialog } from "@/components/admin/ProviderPhoneDialog";
+import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -1170,14 +1171,14 @@ export default function AdminDashboard() {
                                             )}
                                             {o.deliveryAddress && (
                                                 <a
-                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.deliveryAddress)}`}
+                                                    href={deliveryMapsUrl(o.deliveryAddress)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="flex items-start gap-1.5 mt-1 text-xs text-gray-400 hover:text-blue-400 active:text-blue-300 transition-colors group/addr"
                                                 >
                                                     <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-gray-500 group-hover/addr:text-blue-400" />
-                                                    <span className="break-words leading-relaxed">{o.deliveryAddress}</span>
+                                                    <span className="break-words leading-relaxed">{displayDeliveryAddress(o.deliveryAddress)}</span>
                                                     <Navigation className="h-3 w-3 shrink-0 mt-0.5 opacity-0 group-hover/addr:opacity-100 transition-opacity" />
                                                 </a>
                                             )}

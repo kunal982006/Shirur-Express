@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HomeHeroBanner } from "@/components/HomeHeroBanner";
 import { HeroPromoCarousel } from "@/components/HeroPromoCarousel";
 import { AddressChip } from "@/components/address/AddressChip";
+import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
 import { formatDistance } from "@/lib/location";
 
@@ -415,6 +416,7 @@ export default function Home() {
             />
           )}
         />
+        <CategoryCarousel className="-mx-3 px-3 sm:-mx-6 sm:px-6" onSelect={(id) => navigate(`/search?term=${id}`)} />
         <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <TopPlaceCard provider={provider} onClick={() => navigate(`/restaurants/${provider.id}`)} />} />
       </main>
 

@@ -27,6 +27,7 @@ import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 import { apiRequest } from "@/lib/queryClient";
 import api from "@/lib/api";
 import { GroceryOrder, RestaurantOrder } from "@shared/schema";
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 type BookingWithDetails = {
   id: string;
@@ -627,7 +628,7 @@ export default function MyBookings() {
                         <div className="text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            <span>{order.deliveryAddress}</span>
+                            <span>{displayDeliveryAddress(order.deliveryAddress)}</span>
                           </div>
                         </div>
 
@@ -713,7 +714,7 @@ export default function MyBookings() {
                           <div className="flex items-center justify-between text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4" />
-                              <span>{order.deliveryAddress}</span>
+                              <span>{displayDeliveryAddress(order.deliveryAddress)}</span>
                             </div>
                             {order.paymentMethod && (
                               <Badge variant="outline" className="text-xs">

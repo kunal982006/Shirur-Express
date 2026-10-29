@@ -7,6 +7,8 @@ interface HorizontalScrollListProps<T> {
     items: T[];
     renderItem: (item: T) => React.ReactNode;
     onSeeAll?: () => void;
+    seeAllLabel?: string;
+    subtitle?: string;
     isLoading?: boolean;
     autoScroll?: boolean;
     autoScrollSpeed?: number;
@@ -17,6 +19,8 @@ export function HorizontalScrollList<T extends { id: string | number }>({
     items,
     renderItem,
     onSeeAll,
+    seeAllLabel = "See All",
+    subtitle,
     isLoading,
     autoScroll = false,
     autoScrollSpeed = 38,
@@ -128,10 +132,13 @@ export function HorizontalScrollList<T extends { id: string | number }>({
     return (
         <section className="py-0.5" aria-label={title}>
             <div className="mb-1.5 flex items-center justify-between">
-                <h2 className="text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">{title}</h2>
+                <div className="min-w-0">
+                    <h2 className="truncate text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">{title}</h2>
+                    {subtitle && <p className="truncate text-[11px] text-slate-500">{subtitle}</p>}
+                </div>
                 {onSeeAll && (
-                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-7 px-1 text-xs font-semibold text-primary hover:text-primary">
-                        See All <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+                    <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-7 shrink-0 px-1 text-xs font-semibold text-primary hover:text-primary">
+                        {seeAllLabel} <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
                     </Button>
                 )}
             </div>

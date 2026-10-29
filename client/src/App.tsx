@@ -32,6 +32,7 @@ import StreetFood from "@/pages/street-food";
 import StreetFoodDetail from "@/pages/StreetFoodDetail";
 import RestaurantsIndex from "@/pages/restaurants/index";
 import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
+import FoodCollection from "@/pages/restaurants/FoodCollection";
 import Checkout from "@/pages/checkout";
 import Settings from "@/pages/settings";
 import DeleteAccount from "@/pages/delete-account";
@@ -130,6 +131,7 @@ function RouterComponent() {
         <Route path="/edit-property/:id" component={EditPropertyForm} />
         <Route path="/street-food" component={StreetFood} />
         <Route path="/street-food/:vendorId" component={StreetFoodDetail} />
+        <Route path="/restaurants/collections/:slug" component={FoodCollection} />
         <Route path="/restaurants/:id" component={RestaurantDetail} />
         <Route path="/restaurants" component={RestaurantsIndex} />
         <Route path="/checkout" component={Checkout} />

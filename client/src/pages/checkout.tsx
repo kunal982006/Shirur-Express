@@ -6,28 +6,26 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShoppingCart, Truck, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle, Ban, Clock, CalendarClock, Zap } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Minus, Plus, Trash2, Loader2, MapPin, AlertCircle, Ban, Clock, CalendarClock, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 // --- NAYE IMPORTS ---
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import api from "@/lib/api"; // API client
 import { useAuth } from "@/hooks/use-auth"; // User details ke liye
 import { calculateDistance, estimateDelivery, formatDistance } from "@/lib/location";
 import { formatFullAddress, shortAddress, useDeliveryAddress } from "@/hooks/use-delivery-address";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CurrentLocationPrompt } from "@/components/address/CurrentLocationPrompt";
+import { withDeliveryPin } from "@shared/delivery-address";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 // --- IMPORTS KHATAM ---
 
 // Delivery Address ke liye Schema
 const checkoutSchema = z.object({
-  deliveryAddress: z.string().min(10, {
-    message: "Please enter a valid delivery address (min. 10 characters).",
-  }),
   deliveryMode: z.enum(["now", "scheduled"]).default("now"),
   scheduledDeliveryTime: z.string().optional(),
 });
@@ -130,7 +128,7 @@ export default function Checkout() {
 
   // Fees calculation
   const subtotal = getTotalPrice();
-  const platformFee = 0; // Platform fee removed as per request
+  const convenienceFee = 4.99; // Flat convenience fee on every order
 
 
   // Determine Delivery Fee directly based on item type
@@ -152,13 +150,12 @@ export default function Checkout() {
     // DISTANCE LIMIT DISABLED FOR LAUNCH - Previously: if (distanceInKm > 10) isDeliverable = false;
   }
 
-  const total = subtotal + platformFee + deliveryFee;
+  const total = subtotal + convenienceFee + deliveryFee;
 
   // Form setup
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      deliveryAddress: "",
       deliveryMode: "now",
       scheduledDeliveryTime: "",
     },
@@ -183,19 +180,15 @@ export default function Checkout() {
     }
   }, []); // Only fire once on mount
 
-  // Prefill the delivery address from the saved address
-  useEffect(() => {
-    if (savedAddress) form.setValue("deliveryAddress", formatFullAddress(savedAddress), { shouldValidate: true });
-  }, [savedAddress]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
   // --- YEH FUNCTION POORA NAYA HAI ---
   const onSubmit = async (values: CheckoutFormValues) => {
-    if (!userLocation) {
+    if (!savedAddress) {
       toast({ title: "Address Required", description: "Please select your delivery address.", variant: "destructive" });
       openAddressSheet();
       return;
     }
+    // Readable address for people, plus the exact map pin so admins/riders open the right spot
+    const deliveryAddress = withDeliveryPin(formatFullAddress(savedAddress), savedAddress);
 
     if (!isDeliverable) {
       toast({ title: "Not Deliverable", description: "Sorry, we do not deliver to this location (too far).", variant: "destructive" });
@@ -270,7 +263,7 @@ export default function Checkout() {
             name: item.name
           })),
           totalAmount: total.toFixed(2), // Schema expects totalAmount
-          deliveryAddress: values.deliveryAddress,
+          deliveryAddress,
           providerId: items[0]?.providerId || "unknown", // Both restaurant and street food need it at root
           paymentMethod: paymentMethod === "cod" ? "cod" : "online",
           deliveryMode: finalDeliveryMode,
@@ -288,10 +281,10 @@ export default function Checkout() {
             imageUrl: item.imageUrl // NEW: Support images for combos/products
           })),
           subtotal: subtotal.toFixed(2),
-          platformFee: platformFee.toFixed(2),
+          platformFee: convenienceFee.toFixed(2), // Stored in the platform_fee column
           deliveryFee: deliveryFee.toFixed(2),
           total: total.toFixed(2),
-          deliveryAddress: values.deliveryAddress,
+          deliveryAddress,
           providerId: items[0]?.providerId || null,
           paymentMethod: paymentMethod === "cod" ? "cod" : "online",
           deliveryMode: finalDeliveryMode,
@@ -405,7 +398,7 @@ export default function Checkout() {
           ...(paymentMethod === "upi" ? { method: "upi" } : {}),
         },
         notes: {
-          address: values.deliveryAddress,
+          address: formatFullAddress(savedAddress),
           databaseOrderId: databaseOrderId,
           paymentPreference: paymentMethod,
         },
@@ -479,6 +472,7 @@ export default function Checkout() {
         </Button>
 
         <h1 className="text-2xl font-bold mb-3">Checkout</h1>
+        <CurrentLocationPrompt />
 
         {/* --- SERVICES CLOSED BANNER --- */}
         {servicesClosed && (
@@ -521,50 +515,19 @@ export default function Checkout() {
                             </p>
                           )}
                         </div>
-                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={openAddressSheet}>
+                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => openAddressSheet()}>
                           Change
                         </Button>
                       </div>
                     ) : (
                       <div className="flex flex-col items-start gap-2">
                         <p className="text-sm text-muted-foreground">Select where we should deliver your order.</p>
-                        <Button type="button" variant="secondary" onClick={openAddressSheet}>
+                        <Button type="button" variant="secondary" onClick={() => openAddressSheet()}>
                           <MapPin className="mr-2 h-4 w-4" />
                           Select Delivery Address
                         </Button>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-
-                <Card className="mb-3">
-                  <CardHeader className="p-3 pb-1">
-                    <CardTitle className="flex items-center space-x-2 text-lg">
-                      <Truck className="h-5 w-5" />
-                      <span>Delivery Details</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    {/* --- YEH NAYA ADDRESS FORM FIELD HAI --- */}
-                    <FormField
-                      control={form.control}
-                      name="deliveryAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Delivery Address</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Enter your full address, including house number, street, and landmark..."
-                              className="resize-none"
-                              rows={4}
-                              {...field}
-                              data-testid="input-address"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </CardContent>
                 </Card>
 
@@ -882,6 +845,10 @@ export default function Checkout() {
                       <span className={deliveryFee === 0 ? "text-green-600 font-semibold" : ""}>
                         {deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee.toFixed(2)}`}
                       </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Convenience Fee</span>
+                      <span>₹{convenienceFee.toFixed(2)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold text-lg">

@@ -10,6 +10,7 @@ import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
+import { FOOD_COLLECTIONS, classifyMenuItem, getFoodCollection } from "@shared/food-collections";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
@@ -47,6 +48,7 @@ import {
   phoneListings, // PHONE LISTINGS
   type User,
 } from "@shared/schema";
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
 
@@ -2320,7 +2322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await sendPushNotification(deviceToken, {
               type: 'ORDER_REQUEST',
               title: `${orderLabel} Order — ₹${sfAmount} (COD/Paid)`,
-              body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
+              body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
               data: {
                 orderId: database_order_id,
                 orderType: orderType || 'street_food',
@@ -2363,7 +2365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await sendPushNotification(deviceToken, {
                 type: 'ORDER_REQUEST',
                 title: `${orderLabel} Order — ₹${orderAmount} (COD/Paid)`,
-                body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
+                body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Deliver Now'}`,
                 data: {
                   orderId: database_order_id,
                   orderType: orderType || 'grocery',
@@ -2400,7 +2402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : '';
       await notifyAdmin({
         title: `${adminOrderLabel} Order — ₹${adminAmount}`,
-        body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Now'}`,
+        body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A'}${updatedOrder?.deliveryMode === 'scheduled' && updatedOrder?.scheduledDeliveryTime ? ` • 📅 Deliver at ${updatedOrder.scheduledDeliveryTime}` : ' • ⚡ Now'}`,
         data: {
           orderId: database_order_id,
           orderType: orderType || 'grocery',
@@ -2496,7 +2498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 await sendPushNotification(deviceToken, {
                   type: 'ORDER_REQUEST',
                   title: `${orderLabel} Order — ₹${sfAmount}`,
-                  body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+                  body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}`,
                   data: {
                     orderId: database_order_id,
                     orderType: orderType || 'street_food',
@@ -2538,7 +2540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   await sendPushNotification(deviceToken, {
                     type: 'ORDER_REQUEST',
                     title: `${orderLabel} Order — ₹${orderAmount}`,
-                    body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${updatedOrder?.deliveryAddress || 'Check App'}`,
+                    body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}`,
                     data: {
                       orderId: database_order_id,
                       orderType: orderType || 'grocery',
@@ -2577,7 +2579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : '';
           await notifyAdmin({
             title: `${adminOrderLabel} Order — ₹${adminAmount}`,
-            body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${updatedOrder?.deliveryAddress || 'N/A'}`,
+            body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A'}`,
             data: {
               orderId: database_order_id,
               orderType: orderType || 'grocery',
@@ -2831,7 +2833,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `🌮 ${providerName} is Preparing!`,
-                body: `Street Food Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Street Food Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: updatedOrder.id,
                   orderType: 'street_food',
@@ -3390,7 +3392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `🍳 ${providerName} is Preparing!`,
-                body: `Order #${orderId.slice(0, 8)} • ₹${(order as any).totalAmount} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Order #${orderId.slice(0, 8)} • ₹${(order as any).totalAmount} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: order.id,
                   orderType: 'restaurant',
@@ -3468,7 +3470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const result = await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `📦 ${providerName} is Preparing!`,
-                body: `Grocery Order #${orderId.slice(0, 8)} • ₹${order.total} • ${order.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Grocery Order #${orderId.slice(0, 8)} • ₹${order.total} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: order.id,
                   orderType: 'grocery',
@@ -4287,7 +4289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await sendPushNotification(token, {
                 type: 'ORDER_REQUEST',
                 title: `${orderLabel} ${providerName} is Preparing!`,
-                body: `Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'} • ${updatedOrder.deliveryAddress?.slice(0, 40) || 'Check App'}`,
+                body: `Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
                 data: {
                   orderId: updatedOrder.id,
                   orderType: type,
@@ -4929,6 +4931,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get popular items error:", error);
       res.status(500).json({ message: error.message || "Error fetching popular items" });
+    }
+  });
+
+  // --- FOOD COLLECTIONS (cross-restaurant category rows on the food home screen) ---
+
+  const getFoodCollectionItems = () => getCachedOrFetch('food_collections', 2 * 60 * 1000, async () => {
+    const items = await storage.getAvailableRestaurantMenuItems();
+    const grouped = new Map<string, any[]>(FOOD_COLLECTIONS.map((c) => [c.slug, []]));
+
+    for (const item of items) {
+      const slug = classifyMenuItem(item);
+      if (!slug) continue;
+      const { provider } = item;
+      grouped.get(slug)!.push({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        isVeg: item.isVeg,
+        isPopular: item.isPopular,
+        providerId: item.providerId,
+        provider: {
+          id: provider.id,
+          businessName: provider.businessName,
+          isAvailable: provider.isAvailable,
+          latitude: provider.latitude,
+          longitude: provider.longitude,
+          rating: provider.rating,
+        },
+        _popularOrder: item.popularOrder || 0,
+        _displayOrder: provider.displayOrder || 0,
+      });
+    }
+
+    // Open restaurants first, then items marked popular, then the admin-set restaurant order.
+    const rank = (n: number) => (n === 0 ? 9999 : n);
+    for (const list of Array.from(grouped.values())) {
+      list.sort((a, b) =>
+        Number(b.provider.isAvailable !== false) - Number(a.provider.isAvailable !== false) ||
+        Number(!!b.isPopular) - Number(!!a.isPopular) ||
+        rank(a._popularOrder) - rank(b._popularOrder) ||
+        rank(a._displayOrder) - rank(b._displayOrder) ||
+        Number(b.provider.rating || 0) - Number(a.provider.rating || 0)
+      );
+      for (const entry of list) {
+        delete entry._popularOrder;
+        delete entry._displayOrder;
+      }
+    }
+    return grouped;
+  });
+
+  // Home screen rows: a preview of each collection, mixed across restaurants so one menu doesn't fill a row.
+  app.get("/api/food-collections", async (_req: Request, res: Response) => {
+    try {
+      const grouped = await getFoodCollectionItems();
+      const PREVIEW_SIZE = 12;
+      const collections = FOOD_COLLECTIONS.map((collection) => {
+        const items = grouped.get(collection.slug) || [];
+        const byProvider = new Map<string, any[]>();
+        for (const item of items) {
+          if (item.provider.isAvailable === false) continue;
+          if (!byProvider.has(item.providerId)) byProvider.set(item.providerId, []);
+          byProvider.get(item.providerId)!.push(item);
+        }
+        const queues = Array.from(byProvider.values());
+        const preview: any[] = [];
+        for (let i = 0; preview.length < PREVIEW_SIZE && queues.some((q) => i < q.length); i++) {
+          for (const queue of queues) {
+            if (i < queue.length && preview.length < PREVIEW_SIZE) preview.push(queue[i]);
+          }
+        }
+        return {
+          ...collection,
+          totalItems: items.length,
+          restaurantCount: new Set(items.map((item) => item.providerId)).size,
+          items: preview,
+        };
+      });
+      res.json(collections);
+    } catch (error: any) {
+      console.error("Get food collections error:", error);
+      res.status(500).json({ message: error.message || "Error fetching food collections" });
+    }
+  });
+
+  // "View All" master page: every matching dish from every partner restaurant.
+  app.get("/api/food-collections/:slug", async (req: Request, res: Response) => {
+    try {
+      const collection = getFoodCollection(req.params.slug);
+      if (!collection) {
+        return res.status(404).json({ message: "Collection not found" });
+      }
+      const grouped = await getFoodCollectionItems();
+      res.json({ ...collection, items: grouped.get(collection.slug) || [] });
+    } catch (error: any) {
+      console.error("Get food collection error:", error);
+      res.status(500).json({ message: error.message || "Error fetching food collection" });
     }
   });
 

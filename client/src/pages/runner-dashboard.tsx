@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MapPin, Package, CheckCircle, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -157,7 +158,7 @@ function OrderCard({ order, onUpdateStatus, isUpdating, readonly = false }: {
                 {/* Customer Address */}
                 <div className="flex items-start space-x-2 text-sm">
                     <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-                    <span className="text-gray-700">{order.deliveryAddress}</span>
+                    <span className="text-gray-700">{displayDeliveryAddress(order.deliveryAddress)}</span>
                 </div>
             </CardContent>
 

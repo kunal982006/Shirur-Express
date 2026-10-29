@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MapPin, Phone, User, Truck, CheckCircle, Clock, Package, ChefHat, Navigation } from "lucide-react";
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 const statusIcons: Record<string, React.ReactNode> = {
     pending: <Clock className="h-5 w-5" />,
@@ -193,7 +194,7 @@ export default function OrderTracking() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-gray-700">{order.deliveryAddress}</p>
+                        <p className="text-gray-700">{displayDeliveryAddress(order.deliveryAddress)}</p>
                     </CardContent>
                 </Card>
 

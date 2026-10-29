@@ -14,7 +14,7 @@ export function AddressChip({ variant = "dark", className = "" }: AddressChipPro
   return (
     <button
       type="button"
-      onClick={openSheet}
+      onClick={() => openSheet()}
       className={`flex min-w-0 items-center gap-1 text-left ${className}`}
       aria-label="Change delivery address"
     >

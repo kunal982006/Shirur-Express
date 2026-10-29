@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { loadGoogleMaps } from "@/lib/google-maps";
+import { getAccuratePosition, loadGoogleMaps, pickBestAddress } from "@/lib/google-maps";
 
 import { Loader2, MapPin, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
     const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
     const [showPredictions, setShowPredictions] = useState(false);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const [accuracy, setAccuracy] = useState<number | null>(null);
 
     const mapRef = useRef<google.maps.Map | null>(null);
     const markerRef = useRef<google.maps.Marker | null>(null);
@@ -79,6 +80,12 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
                 if (e.latLng) {
                     handleMapClick(e.latLng.lat(), e.latLng.lng());
                 }
+            });
+
+            // Panning the map moves the pin to the new centre
+            mapRef.current.addListener('dragend', () => {
+                const center = mapRef.current?.getCenter();
+                if (center) handleMapClick(center.lat(), center.lng());
             });
 
             setIsLoading(false);
@@ -188,7 +195,7 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
             (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
                 setIsLoadingAddress(false);
                 if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
-                    const address = results[0].formatted_address;
+                    const address = pickBestAddress(results);
                     onAddressSelectRef.current(address, { lat, lng });
                     setSearchQuery(address);
                 } else {
@@ -227,47 +234,37 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
 
     // Handle map click
     const handleMapClick = useCallback((lat: number, lng: number) => {
+        setAccuracy(null);
         updateMarker(lat, lng);
         fetchAddress(lat, lng);
     }, [updateMarker, fetchAddress]);
 
-    // Get current location
+    // Get current location, refining the pin as more accurate GPS fixes arrive
     const handleCurrentLocation = useCallback(() => {
         setIsLoadingAddress(true);
 
-        if (!navigator.geolocation) {
-            setIsLoadingAddress(false);
-            toast({
-                title: "Error",
-                description: "Geolocation not supported",
-                variant: "destructive"
-            });
-            return;
-        }
+        const showPosition = (position: GeolocationPosition) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            setAccuracy(Math.round(position.coords.accuracy));
+            mapRef.current?.setCenter({ lat, lng });
+            mapRef.current?.setZoom(18);
+            updateMarker(lat, lng);
+        };
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                mapRef.current?.setCenter({ lat, lng });
-                mapRef.current?.setZoom(17);
-
-                updateMarker(lat, lng);
-                fetchAddress(lat, lng);
-            },
-            (error) => {
+        getAccuratePosition(showPosition)
+            .then((position) => fetchAddress(position.coords.latitude, position.coords.longitude))
+            .catch((error: GeolocationPositionError | Error) => {
                 setIsLoadingAddress(false);
-                let msg = "Could not fetch location.";
-                if (error.code === 1) msg = "Location permission denied.";
+                let msg = "Could not fetch location. Please search or tap on the map.";
+                if ("code" in error && error.code === 1) msg = "Location permission denied. Please allow location access.";
+                if (!navigator.geolocation) msg = "Geolocation not supported";
                 toast({
                     title: "Error",
                     description: msg,
                     variant: "destructive"
                 });
-            },
-            { enableHighAccuracy: true }
-        );
+            });
     }, [updateMarker, fetchAddress, toast]);
 
     // Show the saved pin, or locate the user straight away when asked to
@@ -355,7 +352,9 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
             </div>
 
             <p className="text-xs text-muted-foreground">
-                Click on the map to refine your location if needed.
+                {accuracy !== null && accuracy > 50
+                    ? `Location is approximate (±${accuracy} m). Drag the map or pin to your exact door.`
+                    : "Drag the map or tap to move the pin to your exact door."}
             </p>
         </div>
     );

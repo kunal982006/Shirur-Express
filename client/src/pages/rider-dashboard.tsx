@@ -10,6 +10,7 @@ import { Loader2, MapPin, Package, CheckCircle, Truck, Phone, User as UserIcon }
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -241,7 +242,7 @@ const RiderOrderCard: React.FC<{
 
                 <div className="text-sm">
                     <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
-                    <p className="text-slate-600 bg-slate-100 p-2 rounded">{order.deliveryAddress}</p>
+                    <p className="text-slate-600 bg-slate-100 p-2 rounded">{displayDeliveryAddress(order.deliveryAddress)}</p>
                 </div>
             </CardContent>
 

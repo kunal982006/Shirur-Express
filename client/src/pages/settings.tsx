@@ -237,7 +237,7 @@ export default function Settings() {
                                                 <p className="text-sm text-muted-foreground">No delivery address selected yet.</p>
                                             )}
                                         </div>
-                                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={openAddressSheet}>
+                                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => openAddressSheet()}>
                                             {deliveryAddress ? "Change" : "Select"}
                                         </Button>
                                     </div>

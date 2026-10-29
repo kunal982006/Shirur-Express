@@ -157,6 +157,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
+import { displayDeliveryAddress } from "@shared/delivery-address";
 
 // --- INSTANT INLINE PRICE EDITOR COMPONENT ---
 const QuickPriceEditor: React.FC<{
@@ -1248,7 +1249,7 @@ const BookingsManager: React.FC<{
                     </div>
                   </div>
                   <p className="text-sm">
-                    <strong>Delivery Address:</strong> {order.deliveryAddress}
+                    <strong>Delivery Address:</strong> {displayDeliveryAddress(order.deliveryAddress)}
                   </p>
                   {/* Order Action Buttons */}
                   {(() => {
@@ -1315,7 +1316,7 @@ const BookingsManager: React.FC<{
                     </div>
                   </div>
                   <p className="text-sm">
-                    <strong>Delivery Address:</strong> {order.deliveryAddress}
+                    <strong>Delivery Address:</strong> {displayDeliveryAddress(order.deliveryAddress)}
                   </p>
                   {/* Grocery Order Action Buttons */}
                   {(() => {
@@ -2598,7 +2599,7 @@ const GroceryOrderCard: React.FC<{
         <div className="text-sm space-y-1 bg-blue-50/50 p-3 rounded-md border border-blue-100/50">
           <p className="flex items-start gap-2">
             <MapPin className="h-4 w-4 text-blue-500 mt-0.5" />
-            <span><strong>Delivery Address:</strong> {order.deliveryAddress}</span>
+            <span><strong>Delivery Address:</strong> {displayDeliveryAddress(order.deliveryAddress)}</span>
           </p>
         </div>
       </CardContent>
@@ -3027,7 +3028,7 @@ const RestaurantOrderCard: React.FC<{
           </div>
         </div>
         <div className="text-sm space-y-1">
-          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+          <p><strong>Address:</strong> {displayDeliveryAddress(order.deliveryAddress)}</p>
           {order.rider && (
             <p className="text-blue-600"><strong>Rider:</strong> {order.rider.username} ({order.rider.phone})</p>
           )}
@@ -3689,7 +3690,7 @@ const StreetFoodOrderCard: React.FC<{
           </div>
         </div>
         <div className="text-sm space-y-1">
-          <p><strong>Address:</strong> {order.deliveryAddress}</p>
+          <p><strong>Address:</strong> {displayDeliveryAddress(order.deliveryAddress)}</p>
           {order.rider && (
             <p className="text-blue-600"><strong>Rider:</strong> {order.rider.username} ({order.rider.phone})</p>
           )}
