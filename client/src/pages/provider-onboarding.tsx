@@ -47,7 +47,7 @@ export default function ProviderOnboarding() {
   const queryClient = useQueryClient();
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
 
-  const { data: categories, isLoading: categoriesLoading } = useQuery({
+  const { data: categories, isLoading: categoriesLoading } = useQuery<any[]>({
     queryKey: ["/api/service-categories"],
   });
 

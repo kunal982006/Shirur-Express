@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { db } from "./db";
 import { users, serviceProviders, cakeProducts, serviceCategories } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { crypto } from "crypto"; // Not used but available if we need to hash passwords
 
 // Generate a random password for the user
 const randomPassword = "CakeShop" + Math.floor(Math.random() * 10000);
@@ -151,7 +150,6 @@ async function seed() {
         userId: user.id,
         categoryId: category.id,
         businessName: BAKERY_DATA.businessName,
-        categorySlug: BAKERY_DATA.categorySlug,
         address: BAKERY_DATA.address,
         description: BAKERY_DATA.description,
         latitude: BAKERY_DATA.latitude,

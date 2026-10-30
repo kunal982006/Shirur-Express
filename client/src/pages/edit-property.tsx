@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { insertRentalPropertySchema, type InsertRentalProperty } from "@shared/schema";
+import { insertRentalPropertySchema, type InsertRentalProperty, type RentalProperty } from "@shared/schema";
 import { useLocation, useRoute } from "wouter";
 import { useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,7 +46,7 @@ export default function EditPropertyForm() {
     const [uploading, setUploading] = useState(false);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-    const { data: existingProperty, isLoading } = useQuery({
+    const { data: existingProperty, isLoading } = useQuery<RentalProperty>({
         queryKey: [`/api/rental-properties/${propertyId}`],
         enabled: !!propertyId,
     });
@@ -305,7 +305,7 @@ export default function EditPropertyForm() {
                                             <FormItem>
                                                 <FormLabel>Security Deposit (₹)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" {...field} />
+                                                    <Input type="number" {...field} value={field.value ?? ""} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -323,7 +323,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Area (sq ft)</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -336,7 +336,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Bedrooms</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -349,7 +349,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Bathrooms</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -361,7 +361,7 @@ export default function EditPropertyForm() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Furnishing</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select" />
@@ -388,7 +388,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Locality/Neighborhood</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="e.g. Indiranagar" {...field} />
+                                                <Input placeholder="e.g. Indiranagar" {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -418,7 +418,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Contact Phone</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter phone number..." {...field} />
+                                                <Input placeholder="Enter phone number..." {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -431,7 +431,7 @@ export default function EditPropertyForm() {
                                         <FormItem>
                                             <FormLabel>Contact Email</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="email@example.com" {...field} />
+                                                <Input placeholder="email@example.com" {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -451,6 +451,7 @@ export default function EditPropertyForm() {
                                                 placeholder="Describe unique features (e.g. near metro, park facing)..."
                                                 className="h-24"
                                                 {...field}
+                                                value={field.value ?? ""}
                                             />
                                         </FormControl>
                                         <FormMessage />

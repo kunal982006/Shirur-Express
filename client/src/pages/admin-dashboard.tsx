@@ -66,7 +66,6 @@ import {
     UserPlus,
     Eye,
     EyeOff,
-    Smartphone,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -118,7 +117,7 @@ interface Order {
     deliveryAddress: string;
     createdAt: string | null;
     user?: { username: string; phone: string | null };
-    provider?: { businessName: string };
+    provider?: { businessName: string; phone?: string | null };
     items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
     paymentMethod?: string | null;
     deliveryMode?: string | null;
@@ -153,6 +152,8 @@ interface Provider {
     reviewCount: number | null;
     isVerified: boolean | null;
     isAvailable: boolean | null;
+    isPopular?: boolean | null;
+    profileImageUrl?: string | null;
     createdAt: string | null;
 }
 
@@ -271,7 +272,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings">(
+    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings" | "restaurant_pricing">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -282,7 +283,7 @@ export default function AdminDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
 
     // Featured Tab State
-    const [featuredType, setFeaturedType] = useState<"restaurant" | "cake">("restaurant");
+    const [featuredType, setFeaturedType] = useState<"restaurant" | "cake" | "street_food_vendor">("restaurant");
     const [featuredSearch, setFeaturedSearch] = useState("");
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");

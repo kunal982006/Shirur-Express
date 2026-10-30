@@ -190,7 +190,7 @@ export default function MyBookings() {
     },
   });
 
-  const { data: restaurantOrders, isLoading: isLoadingRestaurantOrders } = useQuery<RestaurantOrder[]>({
+  const { data: restaurantOrders, isLoading: isLoadingRestaurantOrders } = useQuery<(RestaurantOrder & { orderCategory?: "restaurant" | "streetfood" })[]>({
     queryKey: ["/api/customer/restaurant-orders"],
     queryFn: async () => {
       const response = await api.get("/customer/restaurant-orders");

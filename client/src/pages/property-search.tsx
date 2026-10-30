@@ -316,8 +316,8 @@ export default function PropertySearch() {
     bathrooms: "1",
     furnishing: "Unfurnished",
     tenantPref: "Family / Working Bachelors",
-    ownerName: user?.name || "",
-    contactPhone: user?.phoneNumber || "",
+    ownerName: user?.username || "",
+    contactPhone: user?.phone || "",
     contactEmail: user?.email || "",
     ownerNote: "",
     address: "",
@@ -333,8 +333,8 @@ export default function PropertySearch() {
     if (user) {
       setPostForm((prev) => ({
         ...prev,
-        ownerName: prev.ownerName || user.name || "",
-        contactPhone: prev.contactPhone || user.phoneNumber || "",
+        ownerName: prev.ownerName || user.username || "",
+        contactPhone: prev.contactPhone || user.phone || "",
         contactEmail: prev.contactEmail || user.email || "",
       }));
     }
@@ -441,8 +441,8 @@ export default function PropertySearch() {
         bathrooms: "1",
         furnishing: "Unfurnished",
         tenantPref: "Family / Working Bachelors",
-        ownerName: user?.name || "",
-        contactPhone: user?.phoneNumber || "",
+        ownerName: user?.username || "",
+        contactPhone: user?.phone || "",
         contactEmail: user?.email || "",
         ownerNote: "",
         address: "",

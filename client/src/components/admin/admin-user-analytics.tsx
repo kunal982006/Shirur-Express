@@ -356,7 +356,7 @@ export default function AdminUserAnalytics() {
                           paddingAngle={4}
                           dataKey="value"
                         >
-                          {navigationMethods.map((entry, index) => (
+                          {navigationMethods.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -367,7 +367,7 @@ export default function AdminUserAnalytics() {
                     </ResponsiveContainer>
                   </div>
                   <div className="space-y-3">
-                    {navigationMethods.map((method, idx) => (
+                    {navigationMethods.map((method: any, idx: number) => (
                       <div key={idx} className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
                         <div className="flex items-center justify-between text-xs">
                           <span className="flex items-center gap-1.5 font-medium text-slate-200">
@@ -411,7 +411,7 @@ export default function AdminUserAnalytics() {
                           paddingAngle={4}
                           dataKey="value"
                         >
-                          {deviceBreakdown.map((entry, index) => (
+                          {deviceBreakdown.map((entry: any, index: number) => (
                             <Cell key={`dev-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -422,7 +422,7 @@ export default function AdminUserAnalytics() {
                     </ResponsiveContainer>
                   </div>
                   <div className="space-y-3">
-                    {deviceBreakdown.map((dev, idx) => {
+                    {deviceBreakdown.map((dev: any, idx: number) => {
                       const Icon = dev.name.includes("Mobile") ? Smartphone : dev.name.includes("Desktop") ? Laptop : Tablet;
                       return (
                         <div key={idx} className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">

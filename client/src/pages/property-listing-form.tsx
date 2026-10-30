@@ -270,7 +270,7 @@ export default function PropertyListingForm() {
                                             <FormItem>
                                                 <FormLabel>Security Deposit (₹)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" {...field} />
+                                                    <Input type="number" {...field} value={field.value ?? ""} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -288,7 +288,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Area (sq ft)</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -301,7 +301,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Bedrooms</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -314,7 +314,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Bathrooms</FormLabel>
                                             <FormControl>
-                                                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(parseInt(e.target.value))} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -326,7 +326,7 @@ export default function PropertyListingForm() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Furnishing</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select" />
@@ -353,7 +353,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Locality/Neighborhood</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="e.g. Indiranagar" {...field} />
+                                                <Input placeholder="e.g. Indiranagar" {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -383,7 +383,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Contact Phone</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter phone number..." {...field} />
+                                                <Input placeholder="Enter phone number..." {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -396,7 +396,7 @@ export default function PropertyListingForm() {
                                         <FormItem>
                                             <FormLabel>Contact Email</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="email@example.com" {...field} />
+                                                <Input placeholder="email@example.com" {...field} value={field.value ?? ""} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -416,6 +416,7 @@ export default function PropertyListingForm() {
                                                 placeholder="Describe unique features (e.g. near metro, park facing)..."
                                                 className="h-24"
                                                 {...field}
+                                                value={field.value ?? ""}
                                             />
                                         </FormControl>
                                         <FormMessage />

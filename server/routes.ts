@@ -3255,7 +3255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- ALL CAKES FOR CAKE SHOP MAIN PAGE ---
   app.get("/api/cakes", async (req: Request, res: Response) => {
     try {
-      const providerId = req.query.providerId ? parseInt(req.query.providerId as string, 10) : undefined;
+      const providerId = req.query.providerId ? (req.query.providerId as string) : undefined;
       
       // Fetch all active cakes for the main cake shop display
       let query = db.select({ cake: cakeProducts })

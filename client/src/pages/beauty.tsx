@@ -9,10 +9,7 @@ import api from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
-import api from "@/lib/api";
 
 export default function Beauty() {
   const [, setLocation] = useLocation();

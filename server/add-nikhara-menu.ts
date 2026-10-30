@@ -435,7 +435,7 @@ async function seedNikharaMenu() {
   console.log(`✅ Successfully seeded ${insertedCount} menu items for '${provider.businessName}'!`);
 
   // Print summary by category
-  const categories = [...new Set(menuItems.map(i => i.category))];
+  const categories = Array.from(new Set(menuItems.map(i => i.category)));
   console.log("\nSummary by Category:");
   for (const cat of categories) {
     const count = menuItems.filter(i => i.category === cat).length;

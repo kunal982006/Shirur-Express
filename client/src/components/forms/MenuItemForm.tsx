@@ -318,7 +318,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
               <FormItem>
                 <FormLabel>Description (Optional)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Describe the service/item" {...field} />
+                  <Textarea placeholder="Describe the service/item" {...field} value={field.value ?? ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -411,7 +411,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                   <FormItem>
                     <FormLabel>Duration (minutes)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 60" {...field} />
+                      <Input type="number" placeholder="e.g., 60" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -448,7 +448,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sub-Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a sub-category" />
@@ -524,7 +524,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                   <FormItem>
                     <FormLabel>Stock Quantity</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 100" {...field} />
+                      <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -599,7 +599,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Spicy Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select spicy level" />
@@ -627,7 +627,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                 <FormItem>
                   <FormLabel>Cuisine (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Indian, Chinese" {...field} />
+                    <Input placeholder="e.g., Indian, Chinese" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -668,7 +668,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                   <FormItem>
                     <FormLabel>Weight (e.g., 1kg, 500g)</FormLabel>
                     <FormControl>
-                      <Input placeholder="1kg" {...field} />
+                      <Input placeholder="1kg" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

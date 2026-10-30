@@ -725,6 +725,10 @@ export const groceryOrdersRelations = relations(groceryOrders, ({ one }) => ({
     fields: [groceryOrders.providerId],
     references: [serviceProviders.id],
   }),
+  rider: one(users, {
+    fields: [groceryOrders.riderId],
+    references: [users.id],
+  }),
 }));
 
 export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) => ({
