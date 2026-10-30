@@ -177,6 +177,14 @@ class MainActivity : AppCompatActivity() {
             setGeolocationEnabled(true)
         }
 
+        // Keep the login session cookie. Without an explicit flush, WebView only
+        // writes cookies to disk occasionally, so if Android kills the app in the
+        // background the session cookie is lost and the user appears logged out.
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
+        }
+
         webView.addJavascriptInterface(AndroidBridge(), "AndroidApp")
 
         webView.webViewClient = object : WebViewClient() {
@@ -197,6 +205,7 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false
                 injectCustomCSS()
+                CookieManager.getInstance().flush()
             }
 
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
@@ -387,9 +396,16 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         webView.onPause()
+        CookieManager.getInstance().flush()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        CookieManager.getInstance().flush()
     }
 
     override fun onDestroy() {
+        CookieManager.getInstance().flush()
         webView.destroy()
         super.onDestroy()
     }

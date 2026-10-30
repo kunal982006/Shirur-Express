@@ -21,28 +21,48 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LAST_USER_KEY = "shirur_last_user";
+
+function readLastUser(): User | null {
+  try {
+    const raw = localStorage.getItem(LAST_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["/api/auth/me"],
     queryFn: async () => {
       // Using fetch to get the current user
       const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" });
       if (!res.ok) {
-        // If the status is 401 (not authenticated), we don't throw an error,
-        // we just return null because it's an expected state.
-        if (res.status === 401) {
+        // 401/404 = server says there is no valid session: really logged out.
+        if (res.status === 401 || res.status === 404) {
+          localStorage.removeItem(LAST_USER_KEY);
           return null;
         }
         throw new Error("Failed to fetch user");
       }
-      return res.json();
+      const json = await res.json();
+      if (json?.user) localStorage.setItem(LAST_USER_KEY, JSON.stringify(json.user));
+      return json;
     },
-    retry: false, // Don't retry on failure
+    // Network drops (app resuming, Render waking up) or 5xx are NOT a logout:
+    // retry with backoff instead of bouncing providers to /login.
+    retry: 4,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // If the check still couldn't reach the server, keep showing the last known
+  // user. The session cookie is still sent, and the server still enforces auth.
+  const fallbackUser = isError && data === undefined ? readLastUser() : null;
 
   // 💥 BUG FIX #2 IS HERE 💥
   // This is the corrected logout mutation logic.
@@ -67,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       // On success, we manually set the user's data to 'null' in the client's cache.
       // This instantly updates the UI without causing a confusing refetch.
+      localStorage.removeItem(LAST_USER_KEY);
       queryClient.setQueryData(["/api/auth/me"], null);
     },
     onError: (error) => {
@@ -75,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const user = data?.user || null;
+  const user = data?.user || fallbackUser || null;
   const isAuthenticated = !!user;
 
   return (
