@@ -4,6 +4,7 @@ import { registerAnalyticsRoutes } from "./analytics-routes";
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcrypt";
+import { randomBytes } from "crypto";
 import { uploadToCloudinary } from './cloudinary';
 import multer from 'multer';
 
@@ -55,7 +56,7 @@ import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
 // NAYA IMPORT: z for validation
 import { z } from "zod";
 
-import { sendPushNotification } from "./firebase";
+import { sendPushNotification, verifyPhoneIdToken } from "./firebase";
 import { importGmartProducts } from "./import-gmart-products";
 import { trackLead, trackPurchase, isConversionsApiConfigured } from "./facebook-conversions";
 
@@ -358,102 +359,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/signup", async (req: Request, res: Response) => {
-    try {
-      const { email, password, phone, username: providedUsername } = req.body;
-      if (!email || !password || !phone) {
-        return res.status(400).json({ message: "Email, password, and phone are required." });
-      }
-      // Public signup always creates customer accounts
-      const role = "customer";
+  // Email/password signup is replaced by phone OTP signup (/api/auth/phone/*),
+  // so every new account has a verified phone number.
+  app.post("/api/auth/signup", (_req: Request, res: Response) => {
+    res.status(410).json({ message: "Please sign up with your phone number and OTP." });
+  });
 
-      // Check if phone already has 5 accounts (allow up to 5 per phone)
+  // =========================================
+  // PHONE + SMS OTP AUTH (Firebase Phone Auth)
+  // The client sends the SMS and checks the OTP via Firebase, then posts the
+  // resulting ID token here. The server verifies it with firebase-admin, so a
+  // phone number is only trusted once Google has confirmed it.
+  // =========================================
+  const VERIFIED_PHONE_TTL_MS = 10 * 60 * 1000;
+
+  const getRecentlyVerifiedPhone = (req: Request): string | null => {
+    const { verifiedPhone, verifiedPhoneAt } = req.session;
+    if (!verifiedPhone || !verifiedPhoneAt) return null;
+    if (Date.now() - verifiedPhoneAt > VERIFIED_PHONE_TTL_MS) return null;
+    return verifiedPhone;
+  };
+
+  const establishSession = async (req: Request, res: Response, user: User, status: number, message: string) => {
+    const deliveryPartner = await storage.getDeliveryPartnerByUserId(user.id);
+    req.session.userId = user.id;
+    req.session.userRole = user.role || 'customer';
+    delete req.session.verifiedPhone;
+    delete req.session.verifiedPhoneAt;
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error after phone auth:", err);
+        return res.status(500).json({ message: "Verified, but session could not be established." });
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(status).json({
+        status: "logged_in",
+        user: { ...userWithoutPassword, isDeliveryPartner: !!deliveryPartner },
+        message,
+      });
+    });
+  };
+
+  // Step 1: OTP verified on the client -> log in, or ask for signup details / account choice
+  app.post("/api/auth/phone/verify", async (req: Request, res: Response) => {
+    try {
+      const { idToken } = req.body;
+      if (!idToken || typeof idToken !== 'string') {
+        return res.status(400).json({ message: "Missing verification token." });
+      }
+
+      const result = await verifyPhoneIdToken(idToken);
+      if (!result.success) {
+        return res.status(401).json({ message: result.error });
+      }
+      const phone = result.phone;
+
+      const matchedUsers = await db.query.users.findMany({ where: eq(users.phone, phone) });
+
+      if (matchedUsers.length === 1) {
+        if (!matchedUsers[0].isVerified) {
+          await storage.updateUser(matchedUsers[0].id, { isVerified: true } as any);
+        }
+        return establishSession(req, res, matchedUsers[0], 200, "Logged in successfully!");
+      }
+
+      req.session.verifiedPhone = phone;
+      req.session.verifiedPhoneAt = Date.now();
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error after phone verify:", err);
+          return res.status(500).json({ message: "Could not continue. Please try again." });
+        }
+        if (matchedUsers.length === 0) {
+          return res.json({ status: "new_user", phone });
+        }
+        res.json({
+          status: "select_account",
+          phone,
+          accounts: matchedUsers.map((u) => ({ id: u.id, username: u.username, role: u.role || 'customer' })),
+        });
+      });
+    } catch (error: any) {
+      console.error("Phone verify error:", error);
+      res.status(500).json({ message: "Error verifying phone number." });
+    }
+  });
+
+  // Step 2a: new number -> create a customer account with just a name (email optional)
+  app.post("/api/auth/phone/complete-signup", async (req: Request, res: Response) => {
+    try {
+      const phone = getRecentlyVerifiedPhone(req);
+      if (!phone) {
+        return res.status(401).json({ message: "Phone verification expired. Please request a new OTP." });
+      }
+
+      const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+      const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+      if (name.length < 2) {
+        return res.status(400).json({ message: "Name must be at least 2 characters." });
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ message: "Invalid email address." });
+      }
+
       const phoneCount = await storage.countUsersByPhone(phone);
       if (phoneCount >= 5) {
         return res.status(400).json({ message: "This phone number already has 5 accounts. Cannot create more." });
       }
 
-      // Check if email already has 5 accounts (allow up to 5 per email)
-      const emailCount = await storage.countUsersByEmail(email);
-      if (emailCount >= 5) {
-        return res.status(400).json({ message: "This email already has 5 accounts. Cannot create more." });
+      // email is required + unique in the schema; phone-only users get a
+      // non-deliverable placeholder (.invalid is a reserved TLD).
+      let finalEmail = email || `phone_${phone}_${randomBytes(3).toString('hex')}@shirurexpress.invalid`;
+      if (email && await storage.getUserByEmail(email)) {
+        return res.status(400).json({ message: "This email is already used by another account. Leave it empty or use a different one." });
       }
 
-      // If email already exists in DB, create a suffixed version to satisfy unique constraint
-      let finalEmail = email;
-      const existingEmail = await storage.getUserByEmail(email);
-      if (existingEmail) {
-        // Find next available suffix: user@email.com -> user+2@email.com, user+3@email.com, etc.
-        const baseEmail = email.replace(/\+\d+@/, '@'); // normalize
-        const [localPart, domain] = baseEmail.split('@');
-        for (let i = 2; i <= 6; i++) {
-          const candidateEmail = `${localPart}+${i}@${domain}`;
-          const taken = await storage.getUserByEmail(candidateEmail);
-          if (!taken) {
-            finalEmail = candidateEmail;
-            break;
-          }
-        }
+      let username = name;
+      if (await storage.getUserByUsername(username)) {
+        username = `${name}_${randomBytes(2).toString('hex')}`;
       }
 
-      // Auto-generate username from provided name or phone number
-      const baseUsername = providedUsername || `user_${phone}`;
-      const username = phoneCount > 0 ? `${baseUsername}_${Math.random().toString(36).slice(2, 6)}` : baseUsername;
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        // If username conflicts, append random chars (keep the real name)
-        const fallbackUsername = `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await storage.createUser({
-          username: fallbackUsername,
-          email: finalEmail,
-          password: hashedPassword,
-          role: role || "customer",
-          phone,
-        });
-        req.session.userId = user.id;
-        req.session.userRole = user.role || 'customer';
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error after signup:", err);
-            return res.status(500).json({ message: "Signup successful, but session could not be established." });
-          }
-          const { password: _, ...userWithoutPassword } = user;
-          res.status(201).json({ user: userWithoutPassword, message: "Signed up and logged in successfully!" });
+      // Phone users never type a password; store an unguessable one so the
+      // NOT NULL column is satisfied and password login can't be used.
+      const hashedPassword = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
 
-          // Track Lead event server-side for Meta Ads
-          trackLead({
-            email: user.email || undefined,
-            phone: user.phone || undefined,
-            externalId: user.id,
-            clientIpAddress: req.ip,
-            clientUserAgent: req.headers['user-agent'],
-          }).catch(() => {}); // Fire and forget
-        });
-        return;
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
       const user = await storage.createUser({
         username,
         email: finalEmail,
         password: hashedPassword,
-        role: role || "customer",
+        role: "customer",
         phone,
       });
-      req.session.userId = user.id;
-      req.session.userRole = user.role || 'customer';
-      req.session.save((err) => {
-        if (err) {
-          console.error("Session save error after signup:", err);
-          return res.status(500).json({ message: "Signup successful, but session could not be established." });
-        }
-        const { password: _, ...userWithoutPassword } = user;
-        res.status(201).json({ user: userWithoutPassword, message: "Signed up and logged in successfully!" });
-      });
+      await storage.updateUser(user.id, { isVerified: true } as any);
+
+      trackLead({
+        email: email || undefined,
+        phone,
+        externalId: user.id,
+        clientIpAddress: req.ip,
+        clientUserAgent: req.headers['user-agent'],
+      }).catch(() => {});
+
+      return establishSession(req, res, { ...user, isVerified: true }, 201, "Account created successfully!");
     } catch (error: any) {
-      console.error("Signup error:", error);
-      res.status(500).json({ message: error.message || "Error during signup" });
+      console.error("Phone signup error:", error);
+      res.status(500).json({ message: error.message || "Error creating account." });
+    }
+  });
+
+  // Step 2b: number has several accounts -> log into the chosen one
+  app.post("/api/auth/phone/select-account", async (req: Request, res: Response) => {
+    try {
+      const phone = getRecentlyVerifiedPhone(req);
+      if (!phone) {
+        return res.status(401).json({ message: "Phone verification expired. Please request a new OTP." });
+      }
+      const { userId } = req.body;
+      const user = userId ? await storage.getUser(userId) : undefined;
+      if (!user || user.phone !== phone) {
+        return res.status(403).json({ message: "This account does not belong to the verified phone number." });
+      }
+      return establishSession(req, res, user, 200, "Logged in successfully!");
+    } catch (error: any) {
+      console.error("Phone select-account error:", error);
+      res.status(500).json({ message: "Error logging in." });
     }
   });
 

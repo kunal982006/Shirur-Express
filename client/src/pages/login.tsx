@@ -19,6 +19,7 @@ import {
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { PhoneOtpAuth } from '@/components/phone-otp-auth';
 
 const loginSchema = z.object({
   username: z.string().min(1, { message: "Phone Number or Email is required." }),
@@ -32,6 +33,7 @@ const Login: React.FC = () => {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
+  const [usePassword, setUsePassword] = useState(false);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -91,6 +93,15 @@ const Login: React.FC = () => {
     <div className="flex items-center justify-center min-h-[calc(100vh-theme(spacing.16))]">
       <div className="w-full max-w-md p-8 space-y-6 bg-card text-card-foreground rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center">Login</h2>
+        {!usePassword ? (
+          <>
+            <PhoneOtpAuth />
+            <Button type="button" variant="link" className="w-full" onClick={() => setUsePassword(true)}>
+              Login with password instead
+            </Button>
+          </>
+        ) : (
+        <>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
             <FormField
@@ -148,6 +159,11 @@ const Login: React.FC = () => {
             </Button>
           </form>
         </Form>
+        <Button type="button" variant="link" className="w-full" onClick={() => setUsePassword(false)}>
+          Login with OTP instead
+        </Button>
+        </>
+        )}
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />

@@ -131,3 +131,26 @@ export async function sendPushNotification(fcmToken: string, payload: {
         return { success: false, error: error.message };
     }
 }
+
+// Verifies a Firebase Auth ID token (issued after the user enters the SMS OTP)
+// and returns the verified 10-digit Indian phone number.
+export async function verifyPhoneIdToken(idToken: string): Promise<{ success: true; phone: string } | { success: false; error: string }> {
+    if (!isInitialized) {
+        return { success: false, error: "Phone verification is not configured on the server." };
+    }
+
+    try {
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        const phoneNumber = decoded.phone_number;
+        if (!phoneNumber) {
+            return { success: false, error: "Token does not contain a verified phone number." };
+        }
+        // Firebase returns E.164 (+919876543210); the users table stores 10 digits.
+        const digits = phoneNumber.replace(/\D/g, '');
+        const phone = digits.length > 10 ? digits.slice(-10) : digits;
+        return { success: true, phone };
+    } catch (error: any) {
+        console.error('❌ Firebase ID token verification failed:', error.message);
+        return { success: false, error: "OTP verification expired or invalid. Please try again." };
+    }
+}

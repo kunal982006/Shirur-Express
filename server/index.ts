@@ -79,6 +79,9 @@ declare module 'express-session' {
   interface SessionData {
     userId?: string;
     userRole?: string;
+    // Set after a successful Firebase SMS OTP check, used to finish signup / pick an account
+    verifiedPhone?: string;
+    verifiedPhoneAt?: number;
   }
 }
 
@@ -120,6 +123,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth/login", rateLimit(15 * 60 * 1000, 10));
 app.use("/api/auth/register", rateLimit(60 * 60 * 1000, 10));
+app.use("/api/auth/phone", rateLimit(15 * 60 * 1000, 20));
 app.use("/api/payment", rateLimit(10 * 60 * 1000, 30));
 
 app.use(

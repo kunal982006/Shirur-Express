@@ -63,7 +63,6 @@ dependencies {
     implementation("com.razorpay:customui:3.9.22")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
     
     // Facebook SDK for Meta Ads
