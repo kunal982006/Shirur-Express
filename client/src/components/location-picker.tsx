@@ -38,6 +38,10 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
     // Map listeners are bound once, so read the latest callback through a ref
     const onAddressSelectRef = useRef(onAddressSelect);
     onAddressSelectRef.current = onAddressSelect;
+    // Once the customer places the pin themselves, late GPS fixes must not move it back
+    const userPlacedPinRef = useRef(false);
+    // Only the latest reverse-geocode request may update the address
+    const geocodeSeqRef = useRef(0);
 
     const { toast } = useToast();
 
@@ -170,6 +174,8 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
                 if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
                     const lat = place.geometry.location.lat();
                     const lng = place.geometry.location.lng();
+                    userPlacedPinRef.current = true;
+                    geocodeSeqRef.current++; // drop any pending reverse-geocode result
 
                     mapRef.current?.setCenter({ lat, lng });
                     mapRef.current?.setZoom(17);
@@ -183,6 +189,10 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
 
     // Reverse geocode to get address from coordinates
     const fetchAddress = useCallback((lat: number, lng: number) => {
+        const seq = ++geocodeSeqRef.current;
+        // Report the new spot right away so what gets saved always matches the pin on
+        // screen, even if the address lookup is slow or fails.
+        onAddressSelectRef.current(`Pinned location (${lat.toFixed(5)}, ${lng.toFixed(5)})`, { lat, lng });
         setIsLoadingAddress(true);
 
         if (!geocoderRef.current) {
@@ -193,6 +203,7 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
         geocoderRef.current.geocode(
             { location: { lat, lng } },
             (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+                if (seq !== geocodeSeqRef.current) return; // pin moved again since
                 setIsLoadingAddress(false);
                 if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
                     const address = pickBestAddress(results);
@@ -226,6 +237,7 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
             markerRef.current.addListener('dragend', () => {
                 const newPosition = markerRef.current?.getPosition();
                 if (newPosition) {
+                    userPlacedPinRef.current = true;
                     fetchAddress(newPosition.lat(), newPosition.lng());
                 }
             });
@@ -234,6 +246,7 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
 
     // Handle map click
     const handleMapClick = useCallback((lat: number, lng: number) => {
+        userPlacedPinRef.current = true;
         setAccuracy(null);
         updateMarker(lat, lng);
         fetchAddress(lat, lng);
@@ -241,9 +254,11 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
 
     // Get current location, refining the pin as more accurate GPS fixes arrive
     const handleCurrentLocation = useCallback(() => {
+        userPlacedPinRef.current = false; // customer asked for GPS: let it place the pin
         setIsLoadingAddress(true);
 
         const showPosition = (position: GeolocationPosition) => {
+            if (userPlacedPinRef.current) return;
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             setAccuracy(Math.round(position.coords.accuracy));
@@ -253,9 +268,13 @@ export function LocationPicker({ onAddressSelect, currentAddress, initialPositio
         };
 
         getAccuratePosition(showPosition)
-            .then((position) => fetchAddress(position.coords.latitude, position.coords.longitude))
+            .then((position) => {
+                if (userPlacedPinRef.current) return;
+                fetchAddress(position.coords.latitude, position.coords.longitude);
+            })
             .catch((error: GeolocationPositionError | Error) => {
                 setIsLoadingAddress(false);
+                if (userPlacedPinRef.current) return;
                 let msg = "Could not fetch location. Please search or tap on the map.";
                 if ("code" in error && error.code === 1) msg = "Location permission denied. Please allow location access.";
                 if (!navigator.geolocation) msg = "Geolocation not supported";

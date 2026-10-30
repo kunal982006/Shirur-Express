@@ -2399,7 +2399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 customerPhone: sfPhone,
                 amount: sfAmount,
                 itemsSummary: sfItemsSummary || 'Street food order',
-                dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
                 navigateTo: '/provider/dashboard'
               }
             });
@@ -2442,7 +2442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   customerPhone: orderPhone,
                   amount: orderAmount,
                   itemsSummary: itemsSummary || `${orderLabel} order`,
-                  dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                  dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
                   navigateTo: '/provider/dashboard'
                 }
               });
@@ -2478,7 +2478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           providerName: adminProviderName,
           amount: adminAmount,
           itemsSummary: adminItems || `${adminOrderLabel} order`,
-          dropAddress: updatedOrder?.deliveryAddress || 'N/A',
+          dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A',
         }
       });
     } catch (adminErr) {
@@ -2575,7 +2575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     customerPhone: sfPhone,
                     amount: sfAmount,
                     itemsSummary: sfItemsSummary || 'Street food order',
-                    dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                    dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
                     navigateTo: '/provider/dashboard'
                   }
                 });
@@ -2617,7 +2617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       customerPhone: orderPhone,
                       amount: orderAmount,
                       itemsSummary: itemsSummary || `${orderLabel} order`,
-                      dropAddress: updatedOrder?.deliveryAddress || 'Check App',
+                      dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
                       navigateTo: '/provider/dashboard'
                     }
                   });
@@ -2655,7 +2655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               providerName: adminProviderName,
               amount: adminAmount,
               itemsSummary: adminItems || `${adminOrderLabel} order`,
-              dropAddress: updatedOrder?.deliveryAddress || 'N/A',
+              dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A',
             }
           });
         } catch (adminErr) {
@@ -2909,7 +2909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   customerName: 'Customer',
                   amount: String((updatedOrder as any).totalAmount || '0'),
                   pickupAddress: provider?.address || 'Check App',
-                  dropAddress: updatedOrder.deliveryAddress || 'Check App',
+                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
                 }
               });
@@ -3468,7 +3468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   customerName: 'Customer',
                   amount: String((order as any).totalAmount || '0'),
                   pickupAddress: provider?.address || 'Check App',
-                  dropAddress: order.deliveryAddress || 'Check App',
+                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
                 }
               });
@@ -3546,7 +3546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   customerName: 'Customer',
                   amount: String(order.total || '0'),
                   pickupAddress: provider?.address || 'Check App',
-                  dropAddress: order.deliveryAddress || 'Check App',
+                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
                 }
               });
@@ -4365,7 +4365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   customerName: 'Customer',
                   amount: String((updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'),
                   pickupAddress: providerAddress,
-                  dropAddress: updatedOrder.deliveryAddress || 'Check App',
+                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
                   navigateTo: '/delivery-partner/dashboard',
                 }
               });
