@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Navy brand gradient behind the splash, matching the logo's blue -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="@color/splash_top"
+        android:centerColor="@color/splash_center"
+        android:endColor="@color/splash_bottom"
+        android:type="linear" />
+</shape>

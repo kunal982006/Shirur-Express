@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Shirur Express</string>
+    <string name="splash_tagline">Everything Shirur needs, at your doorstep</string>
     <string name="default_notification_channel_id">fcm_default_channel</string>
     <string name="incoming_order_channel_id">incoming_orders_channel_v2</string>
     <!-- Facebook SDK Configuration (Replace with your actual values from developers.facebook.com) -->

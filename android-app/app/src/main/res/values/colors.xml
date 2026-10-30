@@ -13,6 +13,12 @@
     <color name="background_dark">#1A1A2E</color>
     <color name="background_darker">#16213E</color>
     
+    <!-- Splash Screen (navy, matches the logo) -->
+    <color name="splash_top">#1E4A9E</color>
+    <color name="splash_center">#143275</color>
+    <color name="splash_bottom">#0A1838</color>
+    <color name="splash_tagline">#BFD3FF</color>
+
     <!-- Text Colors -->
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#A1A1AA</color>
