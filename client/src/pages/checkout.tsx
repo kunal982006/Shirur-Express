@@ -423,7 +423,7 @@ export default function Checkout() {
           },
         },
         modal: {
-          ondismiss: async () => {
+          ondismiss: async (failureReason?: string) => {
             // Cancel the payment_pending order since user dismissed payment
             try {
               await api.post("/payment/cancel-order", {
@@ -433,13 +433,33 @@ export default function Checkout() {
             } catch (cancelErr) {
               console.error("Failed to cancel abandoned order:", cancelErr);
             }
-            toast({ title: "Payment Cancelled", description: "Your order was not placed.", variant: "destructive" });
+            toast({
+              title: failureReason ? "Payment Failed" : "Payment Cancelled",
+              description: failureReason ? `${failureReason} Your order was not placed.` : "Your order was not placed.",
+              variant: "destructive",
+            });
             setIsPlacingOrder(false);
           },
         },
       };
 
-      // 7. Razorpay Popup Kholo
+      // 7a. Inside the Android app, use native Razorpay Checkout: checkout.js in a
+      // WebView can't open UPI apps, so it hides UPI. Older app versions lack this bridge.
+      const nativeApp = (window as any).AndroidApp;
+      if (nativeApp?.startRazorpayPayment) {
+        (window as any).__onNativePaymentResult = (result: any) => {
+          delete (window as any).__onNativePaymentResult;
+          if (result?.status === "success") {
+            options.handler(result);
+          } else {
+            options.modal.ondismiss(result?.status === "error" ? result.description : undefined);
+          }
+        };
+        nativeApp.startRazorpayPayment(JSON.stringify(options));
+        return;
+      }
+
+      // 7b. Razorpay Popup Kholo
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
 

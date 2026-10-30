@@ -25,21 +25,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.File
-import com.razorpay.Razorpay
+import com.razorpay.Checkout
+import com.razorpay.PaymentData
+import com.razorpay.PaymentResultWithDataListener
+import org.json.JSONObject
 import androidx.activity.enableEdgeToEdge
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsLogger
 import com.shirurexpress.app.BuildConfig
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
 
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var errorView: View
     
-    // Razorpay WebView SDK for UPI Intent
-    private var razorpayInstance: Razorpay? = null
     
     // Facebook SDK App Events Logger
     private lateinit var fbLogger: AppEventsLogger
@@ -110,11 +111,11 @@ class MainActivity : AppCompatActivity() {
             webView.reload()
         }
 
+        // Warm up native Razorpay Checkout so it opens quickly when the customer pays
         try {
-            razorpayInstance = Razorpay(this, "rzp_live_T1RpMaRRbOqLuO")
-            razorpayInstance?.setWebView(webView)
+            Checkout.preload(applicationContext)
         } catch (e: Exception) {
-            Log.e("RazorpayInit", "Failed to initialize Razorpay WebView SDK", e)
+            Log.e("RazorpayInit", "Failed to preload Razorpay Checkout", e)
         }
 
         try {
@@ -190,18 +191,12 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                try {
-                    if (url != null) razorpayInstance?.onPageStarted(view, url)
-                } catch (e: Exception) { }
                 progressBar.visibility = View.VISIBLE
                 errorView.visibility = View.GONE
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                try {
-                    if (url != null) razorpayInstance?.onPageFinished(view, url)
-                } catch (e: Exception) { }
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false
                 injectCustomCSS()
@@ -215,16 +210,7 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url?.toString() ?: return false
                 
-                // 1. Let Razorpay Custom UI / UPI SDK intercept payment flows and launch UPI intent apps
-                try {
-                    if (razorpayInstance?.shouldOverrideUrlLoading(view, url) == true) {
-                        return true
-                    }
-                } catch (e: Exception) {
-                    Log.e("Razorpay", "Error in razorpayInstance shouldOverrideUrlLoading", e)
-                }
-
-                // 2. Direct UPI schemes (GPay tez, PhonePe, Paytm, BHIM, upi://)
+                // 1. Direct UPI schemes (GPay tez, PhonePe, Paytm, BHIM, upi://)
                 if (url.startsWith("upi:") || url.startsWith("intent:") || url.startsWith("paytmmp:") || url.startsWith("phonepe:") || url.startsWith("tez:")) {
                     try {
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
@@ -415,6 +401,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     inner class AndroidBridge {
+        // Opens native Razorpay Checkout (supports UPI apps). The website calls this
+        // instead of checkout.js when running inside the app; the result comes back
+        // through window.__onNativePaymentResult.
+        @android.webkit.JavascriptInterface
+        fun startRazorpayPayment(optionsJson: String) {
+            runOnUiThread {
+                try {
+                    val options = JSONObject(optionsJson)
+                    val checkout = Checkout()
+                    checkout.setKeyID(options.getString("key"))
+                    checkout.open(this@MainActivity, options)
+                } catch (e: Exception) {
+                    Log.e("RazorpayCheckout", "Failed to open native checkout", e)
+                    sendPaymentResultToWeb(JSONObject().apply {
+                        put("status", "error")
+                        put("description", "Could not open payment. Please try again.")
+                    })
+                }
+            }
+        }
+
         @android.webkit.JavascriptInterface
         fun getFcmToken(): String {
             val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -507,8 +514,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        razorpayInstance?.onActivityResult(requestCode, resultCode, data)
+    // --- Native Razorpay Checkout results, forwarded to the website ---
+    override fun onPaymentSuccess(razorpayPaymentId: String?, paymentData: PaymentData?) {
+        sendPaymentResultToWeb(JSONObject().apply {
+            put("status", "success")
+            put("razorpay_payment_id", paymentData?.paymentId ?: razorpayPaymentId ?: "")
+            put("razorpay_order_id", paymentData?.orderId ?: "")
+            put("razorpay_signature", paymentData?.signature ?: "")
+        })
+    }
+
+    override fun onPaymentError(code: Int, response: String?, paymentData: PaymentData?) {
+        var description = "Payment failed. Please try again."
+        try {
+            val error = JSONObject(response ?: "{}").optJSONObject("error")
+            error?.optString("description")?.takeIf { it.isNotBlank() }?.let { description = it }
+        } catch (e: Exception) { }
+        sendPaymentResultToWeb(JSONObject().apply {
+            put("status", if (code == Checkout.PAYMENT_CANCELED) "cancelled" else "error")
+            put("code", code)
+            put("description", description)
+        })
+    }
+
+    private fun sendPaymentResultToWeb(result: JSONObject) {
+        runOnUiThread {
+            webView.evaluateJavascript(
+                "window.__onNativePaymentResult && window.__onNativePaymentResult($result);",
+                null
+            )
+        }
     }
 }
