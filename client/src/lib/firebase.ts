@@ -49,7 +49,16 @@ function resetRecaptcha() {
 export async function sendOtp(phone10: string, containerId: string): Promise<ConfirmationResult> {
   const firebaseAuth = getFirebaseAuth();
   resetRecaptcha();
-  recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, containerId, { size: "invisible" });
+
+  // grecaptcha refuses to render twice into the same element, even after clear(),
+  // so every send (including Resend OTP) gets a brand-new host element.
+  const container = document.getElementById(containerId);
+  if (!container) throw new Error("Something went wrong. Please refresh and try again.");
+  container.innerHTML = "";
+  const host = document.createElement("div");
+  container.appendChild(host);
+
+  recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, host, { size: "invisible" });
 
   try {
     return await signInWithPhoneNumber(firebaseAuth, `+91${phone10}`, recaptchaVerifier);
