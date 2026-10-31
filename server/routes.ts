@@ -268,9 +268,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "OK", timestamp: new Date() });
   });
 
-  // --- DIGITAL ASSET LINKS FOR ANDROID TWA ---
+  // --- DIGITAL ASSET LINKS (Android App Links) ---
+  // ANDROID_SHA256_FINGERPRINTS: comma-separated SHA-256 certs for com.shirurexpress.app
+  // (Play Console → App integrity → App signing key certificate).
   app.get("/.well-known/assetlinks.json", (_req: Request, res: Response) => {
+    const appFingerprints = (process.env.ANDROID_SHA256_FINGERPRINTS || "")
+      .split(",")
+      .map((f) => f.trim().toUpperCase())
+      .filter(Boolean);
     const assetlinks = [
+      ...(appFingerprints.length
+        ? [{
+            relation: ["delegate_permission/common.handle_all_urls"],
+            target: {
+              namespace: "android_app",
+              package_name: "com.shirurexpress.app",
+              sha256_cert_fingerprints: appFingerprints
+            }
+          }]
+        : []),
       {
         relation: ["delegate_permission/common.handle_all_urls"],
         target: {
