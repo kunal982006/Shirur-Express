@@ -53,6 +53,8 @@ const loadRazorpayScript = () => {
 };
 
 
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.shirurexpress.app";
+
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { user } = useAuth(); // Logged in user ko get karo
@@ -85,6 +87,8 @@ export default function Checkout() {
 
   const timeSlots = generateTimeSlots();
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "online" | "cod">("upi");
+  // Android app versions before native Razorpay Checkout can't show UPI apps
+  const isOutdatedApp = !!(window as any).AndroidApp && !(window as any).AndroidApp.startRazorpayPayment;
   const [codConfirmed, setCodConfirmed] = useState(false);
 
   // --- LOCATION & FEE STATE ---
@@ -182,6 +186,14 @@ export default function Checkout() {
 
   // --- YEH FUNCTION POORA NAYA HAI ---
   const onSubmit = async (values: CheckoutFormValues) => {
+    if (paymentMethod === "upi" && isOutdatedApp) {
+      toast({
+        title: "Update the app for UPI",
+        description: "Please update Shirur Express from the Play Store to pay with UPI, or choose Cards / Cash on Delivery.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!savedAddress) {
       toast({ title: "Address Required", description: "Please select your delivery address.", variant: "destructive" });
       openAddressSheet();
@@ -774,6 +786,25 @@ export default function Checkout() {
                         </div>
                       </div>
                     </div>
+
+                    {paymentMethod === "upi" && isOutdatedApp && (
+                      <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-300 dark:border-amber-800 space-y-2">
+                        <p className="text-sm text-amber-900 dark:text-amber-200 font-medium flex items-start gap-2">
+                          <AlertCircle className="h-5 w-5 shrink-0" />
+                          For UPI payment, please update the app. Update Shirur Express from the Play Store to pay with Google Pay, PhonePe or Paytm.
+                        </p>
+                        <p className="text-xs text-amber-800 dark:text-amber-300 pl-7">
+                          UPI साठी कृपया ॲप अपडेट करा. Or pay with Cards / Net Banking or Cash on Delivery below.
+                        </p>
+                        <a
+                          href={PLAY_STORE_URL}
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-7 inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
+                        >
+                          Update App
+                        </a>
+                      </div>
+                    )}
 
                     {/* Cards / Netbanking / Wallets */}
                     <div
