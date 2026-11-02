@@ -43,6 +43,7 @@ import {
     Clock,
     Truck,
     LogOut,
+    ReceiptText,
     Smartphone,
     ChevronRight,
     ChevronDown,
@@ -717,6 +718,10 @@ export default function AdminDashboard() {
                             <Signal className="h-3 w-3 text-emerald-400" />
                             <span className="text-xs text-emerald-400 font-medium">Live</span>
                         </div>
+                        <button onClick={() => setLocation("/billing")} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 text-blue-300 hover:text-white transition-colors text-sm">
+                            <ReceiptText className="h-4 w-4" />
+                            <span>Print Bill</span>
+                        </button>
                         <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors text-sm">
                             <LogOut className="h-4 w-4" />
                             <span className="hidden sm:inline">Logout</span>

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { SALON_MENU_IMAGES } from "@/data/salonMenuImages";
 
 // ─── Static Menu Data (matches salon menu with our price & market price) ─────
 interface Variant { label: string; marketPrice: number | null; ourPrice: number; }
@@ -373,6 +374,15 @@ function ServiceCard({ section, item, cart, onModify, onVariantChange, onCallMod
   return (
     <div className={"bg-white border rounded-2xl p-3.5 shadow-sm transition relative overflow-hidden " + (qtyInCart > 0 ? "border-rose-300" : "border-rose-100/90 hover:border-rose-300")}>
       <div className="flex justify-between items-start gap-3">
+        {/* Thumbnail */}
+        {SALON_MENU_IMAGES[item.id] && (
+          <img
+            src={SALON_MENU_IMAGES[item.id]}
+            alt={item.name}
+            loading="lazy"
+            className="w-20 h-20 rounded-xl object-cover shrink-0 bg-rose-50"
+          />
+        )}
         {/* Left */}
         <div className="space-y-1 flex-1 min-w-0">
           {/* Badges row */}

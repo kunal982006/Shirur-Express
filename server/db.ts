@@ -86,6 +86,30 @@ export async function checkDatabaseConnection(): Promise<boolean> {
           CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON user_analytics_events(event_type);
           CREATE INDEX IF NOT EXISTS idx_analytics_page ON user_analytics_events(page);
           CREATE INDEX IF NOT EXISTS idx_analytics_session_id ON user_analytics_events(session_id);
+
+          CREATE TABLE IF NOT EXISTS delivery_bills (
+            id TEXT PRIMARY KEY,
+            bill_number SERIAL NOT NULL UNIQUE,
+            order_ref TEXT,
+            customer_name TEXT,
+            customer_phone TEXT,
+            customer_address TEXT,
+            items JSONB NOT NULL,
+            subtotal DECIMAL(10,2) NOT NULL,
+            delivery_charge DECIMAL(10,2) NOT NULL DEFAULT 0,
+            discount DECIMAL(10,2) NOT NULL DEFAULT 0,
+            total DECIMAL(10,2) NOT NULL,
+            payment_mode TEXT NOT NULL DEFAULT 'cash',
+            note TEXT,
+            created_by_user_id VARCHAR NOT NULL,
+            created_by_name TEXT,
+            created_by_role TEXT NOT NULL,
+            print_count INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
+          );
+
+          CREATE INDEX IF NOT EXISTS idx_delivery_bills_created_at ON delivery_bills(created_at);
+          CREATE INDEX IF NOT EXISTS idx_delivery_bills_created_by ON delivery_bills(created_by_user_id);
         `);
         console.log("✅ [DB] User analytics tables ensured.");
       } catch (trgmErr: any) {

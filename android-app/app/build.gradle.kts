@@ -12,8 +12,8 @@ android {
         applicationId = "com.shirurexpress.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.2.1"
+        versionCode = 15
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -60,7 +60,10 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     // tez-client-api (Google Pay) is excluded: Razorpay Checkout bundles it via com.razorpay:gpay
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"), "exclude" to listOf("tez-client-api-*.aar"))))
+    implementation(fileTree("libs") {
+        include("*.jar", "*.aar")
+        exclude("tez-client-api-*.aar")
+    })
     // Native Razorpay Standard Checkout: shows UPI apps (GPay, PhonePe, Paytm) inside the app
     implementation("com.razorpay:checkout:1.6.41")
     // Firebase

@@ -1,4 +1,5 @@
 import { registerAnalyticsRoutes } from "./analytics-routes";
+import { registerBillRoutes } from "./bill-routes";
 // server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
@@ -266,6 +267,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // --- HEALTH CHECK ROUTE ---
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ status: "OK", timestamp: new Date() });
+  });
+
+  // --- ANDROID APP UPDATE POPUP ---
+  // Set these on Render only AFTER that version is live on the Play Store (0 = popup off).
+  // latest: older apps see a dismissible popup; min: older apps get a popup without "Later".
+  app.get("/api/app-version", (_req, res) => {
+    res.json({
+      latestVersionCode: Number(process.env.ANDROID_LATEST_VERSION_CODE) || 0,
+      minVersionCode: Number(process.env.ANDROID_MIN_VERSION_CODE) || 0,
+    });
   });
 
   // --- DIGITAL ASSET LINKS (Android App Links) ---
@@ -6096,6 +6107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Register User Analytics & Behavior Routes
   registerAnalyticsRoutes(app, isAdmin);
+  registerBillRoutes(app);
 
   return httpServer;
 }

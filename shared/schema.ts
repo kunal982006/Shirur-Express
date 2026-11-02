@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, integer, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, serial, decimal, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -814,4 +814,32 @@ export const userSessionsRelations = relations(userSessions, ({ one }) => ({
     fields: [userSessions.userId],
     references: [users.id],
   }),
-}));
+}));
+// =========================================
+// DELIVERY BILLS (printed on the Bluetooth thermal printer)
+// =========================================
+
+export type BillItem = { name: string; quantity: number; price: number };
+
+export const deliveryBills = pgTable("delivery_bills", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  billNumber: serial("bill_number").notNull().unique(), // Running number printed as SE-000123
+  orderRef: text("order_ref"), // Optional link to an app order
+  customerName: text("customer_name"),
+  customerPhone: text("customer_phone"),
+  customerAddress: text("customer_address"),
+  items: jsonb("items").$type<BillItem[]>().notNull(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  deliveryCharge: decimal("delivery_charge", { precision: 10, scale: 2 }).notNull().default("0"),
+  discount: decimal("discount", { precision: 10, scale: 2 }).notNull().default("0"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  paymentMode: text("payment_mode").notNull().default("cash"), // cash, upi, online, pending
+  note: text("note"),
+  createdByUserId: varchar("created_by_user_id").notNull(),
+  createdByName: text("created_by_name"),
+  createdByRole: text("created_by_role").notNull(), // admin, delivery_partner
+  printCount: integer("print_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type DeliveryBill = typeof deliveryBills.$inferSelect;

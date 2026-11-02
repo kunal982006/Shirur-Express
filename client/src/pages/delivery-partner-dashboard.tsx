@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, MapPin, Package, CheckCircle, Truck, Phone, User as UserIcon, Navigation, Power, Clock } from "lucide-react";
+import { Loader2, MapPin, Package, CheckCircle, Truck, Phone, User as UserIcon, Navigation, Power, Clock, ReceiptText } from "lucide-react";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
@@ -35,6 +36,7 @@ export default function DeliveryPartnerDashboard() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const { user } = useAuth();
+    const [, setLocation] = useLocation();
     const [isOnline, setIsOnline] = useState(false);
 
     // Fetch delivery partner profile
@@ -220,6 +222,9 @@ export default function DeliveryPartnerDashboard() {
                             </span>
                         </div>
                     )}
+                    <Button className="mt-4 w-full" onClick={() => setLocation("/billing")}>
+                        <ReceiptText className="h-4 w-4 mr-2" /> Print Bill
+                    </Button>
                 </header>
 
                 <Tabs defaultValue="available" className="w-full">

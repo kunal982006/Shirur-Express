@@ -9,6 +9,7 @@ import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
 import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
+import AppUpdatePopup from "@/components/AppUpdatePopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import { AddressSheet } from "@/components/address/AddressSheet";
 import { Loader2 } from "lucide-react";
@@ -54,6 +55,7 @@ import MyProperties from "@/pages/my-properties";
 import EditPropertyForm from "@/pages/edit-property";
 import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
 import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
+import PrintBill from "@/pages/print-bill";
 import OrderTracking from "@/pages/order-tracking";
 import OfferDetailsPage from "@/pages/offer-details";
 import NotificationsPage from "@/pages/notifications";
@@ -165,6 +167,7 @@ function RouterComponent() {
         {/* Delivery Partner Routes */}
         <Route path="/delivery-partner/onboarding" component={DeliveryPartnerOnboarding} />
         <Route path="/delivery-partner/dashboard" component={DeliveryPartnerDashboard} />
+        <Route path="/billing" component={PrintBill} />
         <Route path="/order/:orderId/track" component={OrderTracking} />
 
         {/* Offer Details Route */}
@@ -204,6 +207,7 @@ function App() {
             <AddressSheet />
             <SwipeBackGesture />
             <OrderNotificationPopup />
+            <AppUpdatePopup />
             <Toaster />
           </TooltipProvider>
         </LocationProvider>

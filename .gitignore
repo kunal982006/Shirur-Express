@@ -19,3 +19,4 @@ local.properties
 *.class
 .idea/
 *.iml
+generated-images/

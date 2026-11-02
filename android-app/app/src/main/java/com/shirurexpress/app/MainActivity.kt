@@ -45,6 +45,11 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
     // Facebook SDK App Events Logger
     private lateinit var fbLogger: AppEventsLogger
 
+    // Bluetooth thermal printer for delivery bills
+    private val printerManager by lazy { PrinterManager(this) }
+    // Runs once the Bluetooth permission dialog is answered (true = granted)
+    private var pendingBluetoothAction: ((Boolean) -> Unit)? = null
+
     // File upload callback for WebView file chooser
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private var geolocationCallback: GeolocationPermissions.Callback? = null
@@ -144,6 +149,45 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         geolocationCallback = null
         geolocationOrigin = null
     }
+
+    private val bluetoothPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val action = pendingBluetoothAction
+        pendingBluetoothAction = null
+        action?.invoke(granted)
+    }
+
+    private fun hasBluetoothPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+    /** Runs [action] with true once Bluetooth permission is available, asking for it if needed. */
+    private fun withBluetoothPermission(action: (Boolean) -> Unit) {
+        runOnUiThread {
+            if (hasBluetoothPermission()) {
+                action(true)
+            } else {
+                // A newer request replaces an unanswered one; tell the old caller it did not run.
+                pendingBluetoothAction?.invoke(false)
+                pendingBluetoothAction = action
+                bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+        }
+    }
+
+    private fun sendPrinterResultToWeb(requestId: String, result: JSONObject) {
+        val safeId = JSONObject.quote(requestId)
+        runOnUiThread {
+            webView.evaluateJavascript(
+                "window.__onPrinterResult && window.__onPrinterResult($safeId, $result);",
+                null
+            )
+        }
+    }
+
+    private fun printerError(code: String, message: String) =
+        JSONObject().put("ok", false).put("code", code).put("message", message)
 
     private fun checkAllPermissions() {
         val permissionsToRequest = mutableListOf<String>()
@@ -422,6 +466,62 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
             }
         }
 
+        // ---- Bluetooth thermal printer (delivery bills) ----
+        // Async calls answer through window.__onPrinterResult(requestId, result).
+
+        @android.webkit.JavascriptInterface
+        fun isPrinterSupported(): Boolean = true
+
+        @android.webkit.JavascriptInterface
+        fun getSavedPrinter(): String = printerManager.savedPrinter()?.toString() ?: ""
+
+        @android.webkit.JavascriptInterface
+        fun savePrinter(address: String, name: String) = printerManager.savePrinter(address, name)
+
+        @android.webkit.JavascriptInterface
+        fun clearPrinter() = printerManager.clearPrinter()
+
+        @android.webkit.JavascriptInterface
+        fun listPairedPrinters(requestId: String) {
+            withBluetoothPermission { granted ->
+                if (!granted) {
+                    sendPrinterResultToWeb(requestId, printerError("PERMISSION_DENIED", "Allow 'Nearby devices' permission to use the printer."))
+                    return@withBluetoothPermission
+                }
+                val result = try {
+                    JSONObject().put("ok", true).put("devices", printerManager.pairedDevices())
+                } catch (e: PrinterManager.PrinterException) {
+                    printerError(e.code, e.message ?: "Bluetooth error")
+                } catch (e: Exception) {
+                    Log.e("Printer", "Could not list paired devices", e)
+                    printerError("LIST_FAILED", "Could not read paired Bluetooth devices.")
+                }
+                sendPrinterResultToWeb(requestId, result)
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun printReceipt(requestId: String, payloadJson: String) {
+            withBluetoothPermission { granted ->
+                if (!granted) {
+                    sendPrinterResultToWeb(requestId, printerError("PERMISSION_DENIED", "Allow 'Nearby devices' permission to use the printer."))
+                    return@withBluetoothPermission
+                }
+                printerManager.print(payloadJson) { result -> sendPrinterResultToWeb(requestId, result) }
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun openBluetoothSettings() {
+            runOnUiThread {
+                try {
+                    startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                } catch (e: Exception) {
+                    Log.e("Printer", "Could not open Bluetooth settings", e)
+                }
+            }
+        }
+
         @android.webkit.JavascriptInterface
         fun getFcmToken(): String {
             val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -430,6 +530,10 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
 
         @android.webkit.JavascriptInterface
         fun isNativeApp(): Boolean = true
+
+        // The website compares this with the latest Play Store version to show the update popup.
+        @android.webkit.JavascriptInterface
+        fun getAppVersionCode(): Int = BuildConfig.VERSION_CODE
 
         @android.webkit.JavascriptInterface
         fun showToast(message: String) {
