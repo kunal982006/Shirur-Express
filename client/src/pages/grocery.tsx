@@ -274,7 +274,7 @@ export default function Grocery() {
   const isLoading = isLoadingProvider || isLoadingProducts;
 
   return (
-    <div className="py-16 bg-background">
+    <div className="pt-16 pb-28 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Button
@@ -509,7 +509,7 @@ export default function Grocery() {
 
         {/* Cart Summary (neeche waala bar) */}
         {items.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-card p-4 shadow-lg border-t z-50 animate-slide-up-fast">
+          <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 bg-card p-4 shadow-lg border-t z-40 animate-slide-up-fast">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
               <div>
                 <p className="text-sm text-muted-foreground">{items.reduce((total, item) => total + item.quantity, 0)} Items</p>

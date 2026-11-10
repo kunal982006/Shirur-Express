@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Navigation } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
@@ -8,11 +8,15 @@ import confetti from "canvas-confetti";
 export default function OrderSuccess() {
   const searchParams = new URLSearchParams(window.location.search);
   const type = searchParams.get("type") || "orders";
+  const orderId = searchParams.get("orderId");
+  const payment = searchParams.get("payment");
 
   useEffect(() => {
-    // Fire confetti from the center of the screen
-    const duration = 3000;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const duration = 2000;
     const end = Date.now() + duration;
+    let frameId = 0;
 
     const frame = () => {
       confetti({
@@ -31,27 +35,47 @@ export default function OrderSuccess() {
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        frameId = requestAnimationFrame(frame);
       }
     };
     frame();
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+    <div className="max-w-md mx-auto py-10 px-4 text-center">
       <Card>
-        <CardContent className="p-8 md:p-12">
-          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-6 animate-pulse" />
-          <h1 className="text-3xl md:text-4xl font-bold">Order Placed Successfully!</h1>
-          <p className="text-muted-foreground mt-4 mb-8">
-            Thank you for your order. You will receive a confirmation and delivery updates shortly.
+        <CardContent className="p-6 md:p-8">
+          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold">Order placed!</h1>
+          {orderId && (
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              Order #{orderId.slice(-6).toUpperCase()}
+            </p>
+          )}
+          <p className="text-muted-foreground mt-3 mb-6 text-sm">
+            {payment === "cod"
+              ? "Please keep cash ready for the delivery partner. "
+              : payment === "online"
+                ? "Payment received. "
+                : ""}
+            We'll notify you as your order moves.
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col gap-2">
+            {orderId ? (
+              <Link href={`/order/${orderId}/track`}>
+                <Button className="w-full">
+                  <Navigation className="mr-2 h-4 w-4" />
+                  Track order live
+                </Button>
+              </Link>
+            ) : (
+              <Link href={`/my-bookings?tab=${type}`}>
+                <Button className="w-full">View your orders</Button>
+              </Link>
+            )}
             <Link href="/">
-              <Button>Go to Homepage</Button>
-            </Link>
-            <Link href={`/my-bookings?tab=${type}`}>
-              <Button variant="outline">Track Your Order</Button>
+              <Button variant="outline" className="w-full">Back to home</Button>
             </Link>
           </div>
         </CardContent>

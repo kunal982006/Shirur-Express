@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
 import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
@@ -91,6 +91,28 @@ function FacebookPixelTracker() {
 
   useEffect(() => {
     trackPageView();
+  }, [location]);
+
+  return null;
+}
+
+/**
+ * Start every newly opened page at the top. Back/forward navigation is left
+ * alone so the browser can put the customer back where they were in a list.
+ */
+function ScrollToTop() {
+  const [location] = useLocation();
+  const lastPopAt = useRef(0);
+
+  useEffect(() => {
+    const onPop = () => { lastPopAt.current = Date.now(); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  useEffect(() => {
+    if (Date.now() - lastPopAt.current < 400) return;
+    window.scrollTo(0, 0);
   }, [location]);
 
   return null;
@@ -194,6 +216,7 @@ function App() {
       <AuthProvider> {/* Correctly using AuthProvider */}
         <LocationProvider>
           <TooltipProvider>
+            <ScrollToTop />
             <FacebookPixelTracker />
             <AnalyticsTracker />
             <LiveOrderSync />

@@ -163,7 +163,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (items.length === 0 && !isPlacingOrder) {
-      setLocation('/street-food'); // Ya grocery, jahan se user aaya
+      setLocation('/', { replace: true });
     }
   }, [items.length, setLocation, isPlacingOrder]);
 
@@ -312,8 +312,7 @@ export default function Checkout() {
       console.log("DB Order Response:", dbOrder);
 
       if (!dbOrder || !dbOrder.id) {
-        alert("DEBUG: Order created but ID missing! " + JSON.stringify(dbOrder));
-        throw new Error("Order ID missing from server response");
+        throw new Error("We couldn't confirm your order. Please check My Bookings before trying again.");
       }
 
       const databaseOrderId = dbOrder.id;
@@ -333,7 +332,7 @@ export default function Checkout() {
         });
         clearCart();
         const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
-        setLocation(`/order-success?type=${orderTypeQuery}`);
+        setLocation(`/order-success?type=${orderTypeQuery}&orderId=${databaseOrderId}&payment=cod`, { replace: true });
         return;
       }
 
@@ -381,7 +380,7 @@ export default function Checkout() {
               });
               clearCart();
               const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
-              setLocation(`/order-success?type=${orderTypeQuery}`); // Success page par bhejo
+              setLocation(`/order-success?type=${orderTypeQuery}&orderId=${databaseOrderId}&payment=online`, { replace: true }); // Success page par bhejo
             } else {
               throw new Error("Payment verification failed");
             }
@@ -483,12 +482,12 @@ export default function Checkout() {
         <Button
           variant="ghost"
           className="mb-2 flex items-center space-x-2 h-8"
-          onClick={() => setLocation("/street-food")} // TODO: Isko dynamic bana sakte ho
+          onClick={() => (window.history.length > 1 ? window.history.back() : setLocation("/"))}
           data-testid="button-back"
           disabled={isPlacingOrder}
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Shopping</span>
+          <span>Add more items</span>
         </Button>
 
         <h1 className="text-2xl font-bold mb-3">Checkout</h1>
@@ -679,23 +678,23 @@ export default function Checkout() {
                   </CardHeader>
                   <CardContent className="space-y-2 p-3 pt-0">
                     {/* Items List */}
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                    <div className="space-y-2">
                       {items.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center space-x-3">
+                        <div key={item.id} className="flex items-center justify-between gap-2 p-3 border rounded-lg">
+                          <div className="flex min-w-0 items-center space-x-3">
                             {item.imageUrl && (
                               <img
                                 src={item.imageUrl}
-                                alt={item.name}
-                                className="w-10 h-10 rounded object-cover"
+                                alt=""
+                                className="w-10 h-10 shrink-0 rounded object-cover"
                               />
                             )}
-                            <div>
-                              <p className="font-medium">{item.name}</p>
+                            <div className="min-w-0">
+                              <p className="font-medium line-clamp-2">{item.name}</p>
                               <p className="text-sm text-muted-foreground">₹{item.price.toFixed(2)} / item</p>
                             </div>
                           </div>
-                          <div className="text-right flex items-center space-x-2">
+                          <div className="flex shrink-0 items-center space-x-2">
                             <Button
                               variant="outline" size="icon" className="h-7 w-7"
                               onClick={() => updateQuantity(item.id, -1)}
@@ -895,7 +894,10 @@ export default function Checkout() {
                       data-testid="button-place-order"
                     >
                       {isPlacingOrder ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {paymentMethod === "cod" ? "Placing your order…" : "Opening payment…"}
+                        </>
                       ) : isBelowMinOrder ? (
                         `Add ₹${(GROCERY_MIN_ORDER - subtotal).toFixed(2)} more`
                       ) : servicesClosed ? (
@@ -904,6 +906,8 @@ export default function Checkout() {
                         "Not Deliverable"
                       ) : !userLocation ? (
                         "Select Address to Pay"
+                      ) : paymentMethod === "cod" && !codConfirmed ? (
+                        "Tick the COD confirmation above"
                       ) : paymentMethod === "cod" ? (
                         `Confirm COD Order (₹${total.toFixed(2)})`
                       ) : paymentMethod === "upi" ? (

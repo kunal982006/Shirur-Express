@@ -543,7 +543,7 @@ export default function RestaurantDetail() {
 
                         {/* Floating Mobile Quick Menu Button */}
                         {sortedCategoryEntries.length > 0 && items.length === 0 && (
-                            <div className="fixed bottom-6 right-4 z-30 md:hidden animate-in fade-in zoom-in duration-200">
+                            <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 md:hidden animate-in fade-in zoom-in duration-200">
                                 <Button
                                     onClick={() => setIsMenuSheetOpen(true)}
                                     className="rounded-full bg-slate-950/90 text-white hover:bg-slate-900 shadow-2xl backdrop-blur-md border border-white/20 px-4 h-11 flex items-center gap-2 font-bold text-xs"
@@ -610,12 +610,12 @@ export default function RestaurantDetail() {
 
             {/* Floating Cart Button */}
             {items.length > 0 && (
-                <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-8 md:bottom-8 md:w-96">
+                <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-4 right-4 z-40 md:left-auto md:right-8 md:bottom-8 md:w-96">
                     <Link href="/checkout">
                         <Button className="w-full h-14 rounded-xl shadow-2xl bg-green-600 hover:bg-green-700 text-white flex justify-between items-center px-4 animate-in slide-in-from-bottom-5">
                             <div className="flex flex-col items-start">
-                                <span className="text-xs font-medium uppercase tracking-wider">{items.length} ITEMS</span>
-                                <span className="font-bold text-lg">₹{items.reduce((a, b) => a + b.price * b.quantity, 0)} plus taxes</span>
+                                <span className="text-xs font-medium uppercase tracking-wider">{items.reduce((a, b) => a + b.quantity, 0)} {items.reduce((a, b) => a + b.quantity, 0) === 1 ? "ITEM" : "ITEMS"}</span>
+                                <span className="font-bold text-lg">₹{items.reduce((a, b) => a + b.price * b.quantity, 0)}</span>
                             </div>
                             <span className="font-bold flex items-center gap-2">
                                 View Cart <ArrowLeft className="h-4 w-4 rotate-180" />

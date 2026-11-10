@@ -528,7 +528,7 @@ export default function OfferDetailsPage() {
 
             {/* Floating Cart Bar */}
             {items.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-lg border-t z-50 animate-slide-up-fast">
+                <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 bg-white p-4 shadow-lg border-t z-40 animate-slide-up-fast">
                     <div className="max-w-4xl mx-auto flex justify-between items-center">
                         <div>
                             <p className="text-sm text-muted-foreground">

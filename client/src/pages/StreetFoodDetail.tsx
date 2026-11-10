@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRoute } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -142,6 +142,7 @@ function useScrollSound() {
 export default function StreetFoodDetail() {
   const [, params] = useRoute("/street-food/:vendorId");
   const vendorId = params?.vendorId;
+  const [, navigate] = useLocation();
   const { addItem, items, removeItem } = useCartStore();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -268,9 +269,9 @@ export default function StreetFoodDetail() {
 
       {/* Cart floating bar */}
       {items.length > 0 && vendorId === items[0].providerId && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-50">
+        <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 p-4 bg-background border-t z-40">
           <div className="max-w-4xl mx-auto">
-            <Button className="w-full h-12 text-lg font-bold flex justify-between items-center" onClick={() => window.location.href = '/checkout'}>
+            <Button className="w-full h-12 text-lg font-bold flex justify-between items-center" onClick={() => navigate('/checkout')}>
               <span>{items.reduce((a, b) => a + b.quantity, 0)} items | ₹{items.reduce((a, b) => a + (b.price * b.quantity), 0)}</span>
               <span>View Cart</span>
             </Button>
