@@ -821,6 +821,15 @@ export const userSessionsRelations = relations(userSessions, ({ one }) => ({
 
 export type BillItem = { name: string; quantity: number; price: number };
 
+// Extra receipt info for bills made from an app order or service booking.
+export type BillDetails = {
+  orderLabel?: string; // "Food Delivery", "Electrician Service", ...
+  storeName?: string; // restaurant / shop / technician
+  orderedAt?: string;
+  completedAt?: string;
+  chargesLabel?: string; // what the extra charge line is called
+};
+
 export const deliveryBills = pgTable("delivery_bills", {
   id: text("id").$defaultFn(() => createId()).primaryKey(),
   billNumber: serial("bill_number").notNull().unique(), // Running number printed as SE-000123
@@ -839,6 +848,10 @@ export const deliveryBills = pgTable("delivery_bills", {
   createdByName: text("created_by_name"),
   createdByRole: text("created_by_role").notNull(), // admin, delivery_partner
   printCount: integer("print_count").notNull().default(0),
+  // Set when the bill was generated from an app order: one bill per order.
+  sourceType: text("source_type"), // grocery, restaurant, street_food, booking
+  sourceId: text("source_id"),
+  details: jsonb("details").$type<BillDetails>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

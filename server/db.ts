@@ -110,6 +110,12 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 
           CREATE INDEX IF NOT EXISTS idx_delivery_bills_created_at ON delivery_bills(created_at);
           CREATE INDEX IF NOT EXISTS idx_delivery_bills_created_by ON delivery_bills(created_by_user_id);
+
+          ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS source_type TEXT;
+          ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS source_id TEXT;
+          ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS details JSONB;
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_bills_source
+            ON delivery_bills(source_type, source_id) WHERE source_id IS NOT NULL;
         `);
         console.log("✅ [DB] User analytics tables ensured.");
       } catch (trgmErr: any) {

@@ -21,6 +21,7 @@ import type {
   QrOrder,
 } from "@shared/schema";
 import { Button } from "@/components/ui/button";
+import { PrintOrderBillButton } from "@/components/print-order-bill-button";
 import {
   PlusCircle,
   Loader2,
@@ -1501,7 +1502,7 @@ const ProviderBookingActions: React.FC<{
     onSuccess: () => {
       toast({
         title: "Bill Created!",
-        description: "Waiting for customer to complete payment.",
+        description: "Tap Print Bill to print it for the customer.",
       });
       queryClient.invalidateQueries({ queryKey: ["providerBookings"] });
       setIsBillOpen(false);
@@ -1601,12 +1602,21 @@ const ProviderBookingActions: React.FC<{
   if (booking.status === "awaiting_billing") {
     return (
       <>
-        <Button
-          onClick={() => setIsBillOpen(true)}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <FileText className="mr-2 h-4 w-4" /> Create Final Bill
-        </Button>
+        <div className="flex gap-2 flex-wrap items-start">
+          <Button
+            onClick={() => setIsBillOpen(true)}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <FileText className="mr-2 h-4 w-4" /> Create Final Bill
+          </Button>
+          <PrintOrderBillButton
+            orderType="booking"
+            orderId={booking.id}
+            disabled
+            disabledHint="Turns on after the final bill is created"
+            variant="outline"
+          />
+        </div>
         <CreateBillDialog
           isOpen={isBillOpen}
           onOpenChange={setIsBillOpen}
@@ -1619,16 +1629,18 @@ const ProviderBookingActions: React.FC<{
 
   if (booking.status === "pending_payment") {
     return (
-      <Badge variant="secondary" className="p-2 text-base">
-        <DollarSign className="mr-2 h-4 w-4" />
-        Waiting for Customer Payment
-      </Badge>
+      <div className="flex gap-2 flex-wrap items-center">
+        <Badge variant="secondary" className="p-2 text-base">
+          <DollarSign className="mr-2 h-4 w-4" />
+          Waiting for Customer Payment
+        </Badge>
+        <PrintOrderBillButton orderType="booking" orderId={booking.id} />
+      </div>
     )
   }
 
   if (booking.status === "completed") {
-    // TODO: "View Invoice" ka button bana sakte hain
-    return null;
+    return <PrintOrderBillButton orderType="booking" orderId={booking.id} variant="outline" />;
   }
 
   if (booking.status === "cancelled") {

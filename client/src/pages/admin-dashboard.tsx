@@ -71,6 +71,7 @@ import {
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
+import { PrintOrderBillButton } from "@/components/print-order-bill-button";
 import {
     Dialog,
     DialogContent,
@@ -1305,6 +1306,25 @@ export default function AdminDashboard() {
                                                 ) : null;
                                             })()}
 
+                                            {/* ─── Print Bill (Bluetooth printer) ─── */}
+                                            {o.status !== 'cancelled' && (
+                                                <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3 flex-wrap">
+                                                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                                                        <ReceiptText className="h-4 w-4 text-blue-400" />
+                                                        {o.status === 'delivered'
+                                                            ? 'Delivered: print the customer bill'
+                                                            : 'Print Bill turns on once the order is delivered'}
+                                                    </div>
+                                                    <PrintOrderBillButton
+                                                        orderType={o.orderType}
+                                                        orderId={o.id}
+                                                        disabled={o.status !== 'delivered'}
+                                                        size="sm"
+                                                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-8 text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            )}
+
                                             {!o.items || o.items.length === 0 ? (
                                                 <p className="text-sm text-gray-500 italic">No items details available.</p>
                                             ) : (
@@ -1638,6 +1658,22 @@ export default function AdminDashboard() {
                                                             </div>
                                                         );
                                                     })()}
+
+                                                    {/* ─── Print Bill (after the job is billed / completed) ─── */}
+                                                    {(b.status === 'pending_payment' || b.status === 'completed') && (
+                                                        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-3 flex-wrap">
+                                                            <span className="text-xs text-gray-400 flex items-center gap-2">
+                                                                <ReceiptText className="h-4 w-4 text-blue-400" />
+                                                                {b.status === 'completed' ? 'Job completed: print the customer bill' : 'Final bill created: print it for the customer'}
+                                                            </span>
+                                                            <PrintOrderBillButton
+                                                                orderType="booking"
+                                                                orderId={b.id}
+                                                                size="sm"
+                                                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-8 text-xs font-semibold"
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {/* ─── Admin Confirm Payment Button (for QR payments) ─── */}
                                                     {b.status === 'pending_payment' && b.invoice && b.invoice.paymentStatus === 'awaiting_confirmation' && (

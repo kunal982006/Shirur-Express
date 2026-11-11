@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
+import { PrintOrderBillButton } from "@/components/print-order-bill-button";
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -38,6 +39,7 @@ export default function DeliveryPartnerDashboard() {
     const { user } = useAuth();
     const [, setLocation] = useLocation();
     const [isOnline, setIsOnline] = useState(false);
+    const [tab, setTab] = useState("available");
 
     // Fetch delivery partner profile
     const { data: profile } = useQuery({
@@ -164,7 +166,9 @@ export default function DeliveryPartnerDashboard() {
         mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
             api.post(`/rider/orders/${orderId}/verify-delivery`, { orderType }),
         onSuccess: () => {
-            toast({ title: "✅ Delivery Complete!", description: "Great job! Order delivered successfully." });
+            toast({ title: "✅ Delivery Complete!", description: "Tap Print Bill to print the customer's bill." });
+            // Delivered orders move to History, where Print Bill is now enabled.
+            setTab("history");
             queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
         },
         onError: (error: any) => {
@@ -182,7 +186,10 @@ export default function DeliveryPartnerDashboard() {
     };
 
     const activeMyOrders = myOrders?.filter(o => !['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [];
-    const historyMyOrders = myOrders?.filter(o => ['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [];
+    // Latest delivery first, so the order just delivered is on top with its Print Bill button.
+    const finishedAt = (o: any) => new Date(o.deliveredAt || o.createdAt || 0).getTime();
+    const historyMyOrders = (myOrders?.filter(o => ['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [])
+        .sort((a, b) => finishedAt(b) - finishedAt(a));
 
     if (isLoadingMyOrders) {
         return <div className="flex justify-center py-20"><Loader2 className="animate-spin h-8 w-8" /></div>;
@@ -227,7 +234,7 @@ export default function DeliveryPartnerDashboard() {
                     </Button>
                 </header>
 
-                <Tabs defaultValue="available" className="w-full">
+                <Tabs value={tab} onValueChange={setTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3 mb-6">
                         <TabsTrigger value="available" disabled={!isOnline}>
                             Available ({availableOrders?.length || 0})
@@ -394,8 +401,18 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </CardContent>
 
+            {type === 'history' && order.status === 'delivered' && (
+                <CardFooter className="bg-slate-50 pt-3 pb-3 border-t">
+                    <PrintOrderBillButton
+                        orderType={orderType}
+                        orderId={order.id}
+                        className="w-full bg-slate-900 hover:bg-slate-800"
+                    />
+                </CardFooter>
+            )}
+
             {type !== 'history' && (
-                <CardFooter className="bg-slate-50 pt-3 pb-3 flex gap-2 justify-end border-t">
+                <CardFooter className="bg-slate-50 pt-3 pb-3 flex flex-wrap gap-2 justify-end border-t">
                     {type === 'available' && (
                         <Button
                             className="w-full bg-blue-600 hover:bg-blue-700"
@@ -444,6 +461,19 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 >
                                     <CheckCircle className="mr-2 h-4 w-4" /> Mark Delivered
                                 </Button>
+                            )}
+
+                            {order.status === 'out_for_delivery' && (
+                                <div className="w-full">
+                                    <PrintOrderBillButton
+                                        orderType={orderType}
+                                        orderId={order.id}
+                                        disabled
+                                        disabledHint="Print Bill turns on after you mark the order delivered"
+                                        variant="outline"
+                                        className="w-full"
+                                    />
+                                </div>
                             )}
 
                             {['pending', 'accepted', 'preparing', 'ready_for_pickup'].includes(order.status || '') && (

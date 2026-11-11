@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
@@ -95,9 +96,11 @@ class PrinterManager(context: Context) {
                 val payload = JSONObject(payloadJson)
                 val address = payload.optString("address").ifBlank { prefs.getString(KEY_ADDRESS, null) }
                     ?: throw PrinterException("NO_PRINTER", "No printer selected. Please select your printer first.")
-                val bytes = buildEscPos(payload.getJSONArray("lines"), payload.optInt("feed", 4))
+                val lines = payload.getJSONArray("lines")
+                val bytes = buildEscPos(lines, payload.optInt("feed", 4))
                 val copies = payload.optInt("copies", 1).coerceIn(1, 3)
-                sendToPrinter(address, bytes, copies)
+                val hasImage = (0 until lines.length()).any { lines.optJSONObject(it)?.has("image") == true }
+                sendToPrinter(address, bytes, copies, slow = hasImage)
                 JSONObject().put("ok", true)
             } catch (e: PrinterException) {
                 Log.w(TAG, "Print failed: ${e.code} ${e.message}")
@@ -114,12 +117,21 @@ class PrinterManager(context: Context) {
     /**
      * Each line: { text, align: left|center|right, bold, size: normal|tall|wide|large }
      * Text must already be plain ASCII (the website does that); anything else prints as '?'.
+     *
+     * An image line instead carries { image: { data, width, height } }: a 1-bit raster
+     * (1 = black, rows packed MSB first, ceil(width/8) bytes per row) as base64.
+     * The website does the resizing and black/white conversion.
      */
     private fun buildEscPos(lines: JSONArray, feed: Int): ByteArray {
         val out = ByteArrayOutputStream()
         out.write(ESC_INIT)
         for (i in 0 until lines.length()) {
             val line = lines.optJSONObject(i) ?: continue
+            val image = line.optJSONObject("image")
+            if (image != null) {
+                writeRasterImage(out, image)
+                continue
+            }
             out.write(escAlign(when (line.optString("align")) { "center" -> 1; "right" -> 2; else -> 0 }))
             out.write(escBold(line.optBoolean("bold", false)))
             out.write(gsSize(when (line.optString("size")) { "tall" -> 0x01; "wide" -> 0x10; "large" -> 0x11; else -> 0x00 }))
@@ -133,8 +145,38 @@ class PrinterManager(context: Context) {
         return out.toByteArray()
     }
 
+    /** GS v 0 raster, sent in bands so small printer buffers are not overrun. */
+    private fun writeRasterImage(out: ByteArrayOutputStream, image: JSONObject) {
+        val width = image.optInt("width")
+        val height = image.optInt("height")
+        if (width <= 0 || width > 576 || height <= 0 || height > 2000) return
+        val widthBytes = (width + 7) / 8
+        val data = try {
+            Base64.decode(image.optString("data"), Base64.DEFAULT)
+        } catch (e: IllegalArgumentException) {
+            return
+        }
+        if (data.size < widthBytes * height) return
+
+        out.write(escAlign(1))
+        var row = 0
+        while (row < height) {
+            val rows = minOf(32, height - row)
+            out.write(
+                byteArrayOf(
+                    0x1D, 0x76, 0x30, 0x00,
+                    (widthBytes and 0xFF).toByte(), ((widthBytes shr 8) and 0xFF).toByte(),
+                    (rows and 0xFF).toByte(), ((rows shr 8) and 0xFF).toByte(),
+                )
+            )
+            out.write(data, row * widthBytes, rows * widthBytes)
+            row += rows
+        }
+        out.write(escAlign(0))
+    }
+
     @SuppressLint("MissingPermission")
-    private fun sendToPrinter(address: String, data: ByteArray, copies: Int) {
+    private fun sendToPrinter(address: String, data: ByteArray, copies: Int, slow: Boolean = false) {
         val a = requireAdapter()
         val device = try {
             a.getRemoteDevice(address)
@@ -154,11 +196,12 @@ class PrinterManager(context: Context) {
                     stream.write(data, offset, len)
                     stream.flush()
                     offset += len
-                    Thread.sleep(20)
+                    // Images print slower than text arrives; give the printer time to keep up.
+                    Thread.sleep(if (slow) 60 else 20)
                 }
             }
             // Closing right after the write can cut off the end of the bill.
-            Thread.sleep(1200L + data.size * copies / 20)
+            Thread.sleep(1200L + data.size * copies / (if (slow) 10 else 20))
         } catch (e: IOException) {
             throw PrinterException("PRINT_FAILED", "Connection to the printer was lost while printing. Please try again.")
         } finally {

@@ -7,16 +7,23 @@ export const RECEIPT_WIDTH = 32; // characters per line on 58mm paper (normal fo
 export const BUSINESS = {
   name: "SHIRUR EXPRESS",
   tagline: "Shirur's Super App",
-  footer: "Thank you! Order again on the Shirur Express app",
+  services: "Food | Grocery | Home Services",
+  city: "Shirur, Pune, Maharashtra",
+  helpline: "78409 40113",
+  email: "support@shirurexpress.com",
+  footer: "Order again on the Shirur Express app",
+  logoUrl: "/shirur-express-logo.png",
 };
 
 export type PrinterDevice = { address: string; name: string; likelyPrinter?: boolean };
 
-type ReceiptLine = {
+export type ReceiptLine = {
   text: string;
   align?: "left" | "center" | "right";
   bold?: boolean;
   size?: "normal" | "tall" | "wide" | "large";
+  /** 1-bit raster (MSB first, base64). Needs app 1.4.0+; older apps print an empty line. */
+  image?: { data: string; width: number; height: number };
 };
 
 export type PrintableBill = {
@@ -34,6 +41,14 @@ export type PrintableBill = {
   paymentMode: string;
   note?: string | null;
   createdByName?: string | null;
+  createdByRole?: string | null;
+  details?: {
+    orderLabel?: string;
+    storeName?: string;
+    orderedAt?: string;
+    completedAt?: string;
+    chargesLabel?: string;
+  } | null;
 };
 
 export class PrinterError extends Error {
@@ -50,6 +65,15 @@ function bridge(): any {
 export function isPrinterAvailable(): boolean {
   try {
     return !!bridge()?.isPrinterSupported?.();
+  } catch {
+    return false;
+  }
+}
+
+/** App 1.4.0+ can print the logo. */
+export function canPrintImages(): boolean {
+  try {
+    return !!bridge()?.printerSupportsImages?.();
   } catch {
     return false;
   }
@@ -131,6 +155,95 @@ export async function printLines(lines: ReceiptLine[], opts: { copies?: number }
   await callAsync("printReceipt", [JSON.stringify({ lines, feed: 4, copies: opts.copies ?? 1 })], 90_000);
 }
 
+// ---- logo ----
+
+/** Dots across 58mm paper. The logo uses the full width so it prints large. */
+const PAPER_DOTS = 384;
+let logoLine: Promise<ReceiptLine | null> | null = null;
+
+/** The app logo as a black/white raster line, cropped to its edges. Cached. */
+export function loadLogoLine(): Promise<ReceiptLine | null> {
+  if (!logoLine) {
+    logoLine = rasterizeLogo().catch((e) => {
+      console.warn("[Printer] Logo not available:", e);
+      logoLine = null; // try again next print
+      return null;
+    });
+  }
+  return logoLine;
+}
+
+async function rasterizeLogo(): Promise<ReceiptLine> {
+  const img = new Image();
+  img.src = BUSINESS.logoUrl;
+  await img.decode();
+
+  // 1. Find the logo's edges (the PNG has a wide white border).
+  const src = document.createElement("canvas");
+  src.width = img.naturalWidth;
+  src.height = img.naturalHeight;
+  const sctx = src.getContext("2d", { willReadFrequently: true })!;
+  sctx.fillStyle = "#fff";
+  sctx.fillRect(0, 0, src.width, src.height);
+  sctx.drawImage(img, 0, 0);
+  const px = sctx.getImageData(0, 0, src.width, src.height).data;
+  let minX = src.width, minY = src.height, maxX = -1, maxY = -1;
+  for (let y = 0; y < src.height; y += 2) {
+    for (let x = 0; x < src.width; x += 2) {
+      const i = (y * src.width + x) * 4;
+      if (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 200) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) throw new Error("Logo is blank");
+  const cropW = maxX - minX + 1;
+  const cropH = maxY - minY + 1;
+
+  // 2. Scale to paper width.
+  const width = PAPER_DOTS;
+  const height = Math.min(600, Math.round((cropH * width) / cropW));
+  const dst = document.createElement("canvas");
+  dst.width = width;
+  dst.height = height;
+  const dctx = dst.getContext("2d", { willReadFrequently: true })!;
+  dctx.fillStyle = "#fff";
+  dctx.fillRect(0, 0, width, height);
+  dctx.imageSmoothingQuality = "high";
+  dctx.drawImage(src, minX, minY, cropW, cropH, 0, 0, width, height);
+  const d = dctx.getImageData(0, 0, width, height).data;
+
+  // 3. Threshold to 1-bit: the blue and black print solid, the white text stays white.
+  const rowBytes = width / 8;
+  const bits = new Uint8Array(rowBytes * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const lum = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+      if (lum < 150) bits[y * rowBytes + (x >> 3)] |= 0x80 >> (x & 7);
+    }
+  }
+  let binary = "";
+  for (let i = 0; i < bits.length; i++) binary += String.fromCharCode(bits[i]);
+  return { text: "", align: "center", image: { data: btoa(binary), width, height } };
+}
+
+/**
+ * Prints a bill with the logo on top (when the app supports images).
+ * Duplicate copies are marked automatically from printCount.
+ */
+export async function printBillOnPrinter(bill: PrintableBill & { printCount?: number }) {
+  const lines = buildReceiptLines(bill, { reprint: (bill.printCount ?? 0) > 0 });
+  if (canPrintImages()) {
+    const logo = await loadLogoLine();
+    if (logo) lines.unshift(logo, { text: "" });
+  }
+  await printLines(lines);
+}
+
 // ---- receipt layout ----
 
 /** Cheap printers only know ASCII: swap common symbols, drop the rest. */
@@ -209,58 +322,124 @@ function formatDate(d: string | Date | null): string {
 
 export function buildReceiptLines(bill: PrintableBill, opts: { reprint?: boolean } = {}): ReceiptLine[] {
   const dash = "-".repeat(RECEIPT_WIDTH);
+  const double = "=".repeat(RECEIPT_WIDTH);
   const lines: ReceiptLine[] = [];
   const add = (text: string, extra: Omit<ReceiptLine, "text"> = {}) => lines.push({ text, ...extra });
+  const blank = () => add("");
+  const details = bill.details || {};
 
+  // ---- header ----
   add(BUSINESS.name, { align: "center", bold: true, size: "large" });
-  add(BUSINESS.tagline, { align: "center" });
+  add(BUSINESS.tagline, { align: "center", bold: true });
+  add(BUSINESS.services, { align: "center" });
+  add(BUSINESS.city, { align: "center" });
+  add(`Helpline: ${BUSINESS.helpline}`, { align: "center" });
+  add(double);
+  add(details.orderLabel ? "ORDER BILL" : "BILL / RECEIPT", { align: "center", bold: true, size: "tall" });
   if (opts.reprint) add("** DUPLICATE COPY **", { align: "center", bold: true });
+  add(double);
+
+  // ---- bill info ----
+  add(twoCol("Bill No:", bill.billNo), { bold: true });
+  add(twoCol("Date:", formatDate(bill.createdAt)));
+  if (bill.orderRef) add(twoCol("Order ID:", bill.orderRef));
+  if (details.orderLabel) add(twoCol("Type:", details.orderLabel));
+  if (details.orderedAt) add(twoCol("Ordered:", formatDate(details.orderedAt)));
+  if (details.completedAt) {
+    add(twoCol(details.orderLabel?.includes("Service") ? "Completed:" : "Delivered:", formatDate(details.completedAt)));
+  }
+  if (details.storeName) {
+    add(dash);
+    add(details.orderLabel?.includes("Service") ? "SERVICE BY" : "ORDERED FROM", { bold: true });
+    wrap(details.storeName).forEach((l) => add(l));
+  }
+
+  // ---- customer ----
+  if (bill.customerName || bill.customerPhone || bill.customerAddress) {
+    add(dash);
+    add("CUSTOMER DETAILS", { bold: true });
+    if (bill.customerName) wrap(`Name: ${bill.customerName}`).forEach((l) => add(l));
+    if (bill.customerPhone) add(`Phone: ${toPrintable(bill.customerPhone)}`);
+    if (bill.customerAddress) wrap(`Address: ${bill.customerAddress}`).forEach((l) => add(l));
+  }
+
+  // ---- items ----
+  add(double);
+  add(twoCol("ITEM", "AMOUNT"), { bold: true });
   add(dash);
-  add(twoCol(`Bill: ${bill.billNo}`, formatDate(bill.createdAt)), { bold: true });
-  if (bill.orderRef) add(`Order: ${toPrintable(bill.orderRef)}`);
-  if (bill.customerName) wrap(`Customer: ${bill.customerName}`).forEach((l) => add(l));
-  if (bill.customerPhone) add(`Phone: ${toPrintable(bill.customerPhone)}`);
-  if (bill.customerAddress) wrap(`Address: ${bill.customerAddress}`).forEach((l) => add(l));
-  add(dash);
-  add(twoCol("Item", "Amount"), { bold: true });
-  for (const item of bill.items) {
+  let totalQty = 0;
+  bill.items.forEach((item, index) => {
+    totalQty += item.quantity;
     const amount = formatAmount(item.quantity * item.price);
-    const nameLines = wrap(item.name);
+    const nameLines = wrap(`${index + 1}. ${item.name}`);
     if (item.quantity === 1) {
-      // "Groceries                450.00"
+      // "1. Groceries              450.00"
       nameLines.slice(0, -1).forEach((l) => add(l));
       add(twoCol(nameLines[nameLines.length - 1] || "", amount));
     } else {
-      // "Milk 1L"
-      // "  2 x 30.00               60.00"
+      // "2. Milk 1L"
+      // "   2 x 30.00               60.00"
       nameLines.forEach((l) => add(l));
-      add(twoCol(`  ${qtyText(item.quantity)} x ${formatAmount(item.price)}`, amount));
+      add(twoCol(`   ${qtyText(item.quantity)} x ${formatAmount(item.price)}`, amount));
     }
-  }
+  });
   add(dash);
+  add(twoCol(`Items: ${bill.items.length}`, `Qty: ${qtyText(totalQty)}`));
+  add(dash);
+
+  // ---- totals ----
   const deliveryCharge = num(bill.deliveryCharge);
   const discount = num(bill.discount);
-  if (deliveryCharge > 0 || discount > 0) {
-    add(twoCol("Subtotal", formatAmount(bill.subtotal)));
-    if (deliveryCharge > 0) add(twoCol("Delivery", formatAmount(deliveryCharge)));
-    if (discount > 0) add(twoCol("Discount", `-${formatAmount(discount)}`));
-  }
+  add(twoCol("Subtotal", formatAmount(bill.subtotal)));
+  if (deliveryCharge > 0) add(twoCol(details.chargesLabel || "Delivery", formatAmount(deliveryCharge)));
+  if (discount > 0) add(twoCol("Discount", `-${formatAmount(discount)}`));
+  add(double);
   // Double height keeps 32 columns, so the total stays aligned but stands out.
   add(twoCol("TOTAL", `Rs. ${formatAmount(bill.total)}`), { bold: true, size: "tall" });
-  add(twoCol("Payment", PAYMENT_LABELS[bill.paymentMode] || bill.paymentMode), { bold: bill.paymentMode === "pending" });
+  add(double);
+  if (discount > 0) {
+    wrap(`You saved Rs. ${formatAmount(discount)} on this order!`).forEach((l) => add(l, { align: "center", bold: true }));
+  }
+  add(twoCol("Payment Mode", PAYMENT_LABELS[bill.paymentMode] || bill.paymentMode), { bold: true });
+  add(twoCol("Payment Status", bill.paymentMode === "pending" ? "TO BE COLLECTED" : "PAID"), { bold: true });
+
   if (bill.note) {
     add(dash);
+    add("NOTE", { bold: true });
     wrap(bill.note).forEach((l) => add(l));
   }
+
+  // ---- footer ----
   add(dash);
-  if (bill.createdByName) add(`Billed by: ${toPrintable(bill.createdByName)}`.slice(0, RECEIPT_WIDTH));
+  if (bill.createdByName) {
+    const who = bill.createdByRole === "delivery_partner" ? "Delivered by" : bill.createdByRole === "provider" ? "Served by" : "Billed by";
+    wrap(`${who}: ${bill.createdByName}`).forEach((l) => add(l));
+  }
+  blank();
+  add("THANK YOU!", { align: "center", bold: true, size: "large" });
   wrap(BUSINESS.footer).forEach((l) => add(l, { align: "center" }));
+  blank();
+  wrap("Food, grocery, electrician, plumber & more in one app").forEach((l) => add(l, { align: "center" }));
+  add("Download from Play Store:", { align: "center" });
+  add('"Shirur Express"', { align: "center", bold: true });
+  blank();
+  add("Help & Support", { align: "center", bold: true });
+  add(`Call/WhatsApp: ${BUSINESS.helpline}`, { align: "center" });
+  add(BUSINESS.email, { align: "center" });
+  blank();
+  wrap("Please check your items at delivery. For any issue, contact us within 24 hours.").forEach((l) =>
+    add(l, { align: "center" }),
+  );
+  add(dash);
+  add("* * * Visit Again * * *", { align: "center", bold: true });
+  add("Computer generated bill", { align: "center" });
   return lines;
 }
 
 /** Plain-text version for preview, WhatsApp sharing and the browser fallback. */
 export function receiptAsText(bill: PrintableBill, opts: { reprint?: boolean } = {}): string {
   return buildReceiptLines(bill, opts)
+    .filter((l) => !l.image)
     .map((l) => {
       if (l.align === "center") {
         const pad = Math.max(0, Math.floor((RECEIPT_WIDTH - l.text.length) / 2));

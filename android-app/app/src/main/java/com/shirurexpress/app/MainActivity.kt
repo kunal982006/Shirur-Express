@@ -472,6 +472,10 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         @android.webkit.JavascriptInterface
         fun isPrinterSupported(): Boolean = true
 
+        // Since 1.4.0: receipts can carry a raster image (the logo).
+        @android.webkit.JavascriptInterface
+        fun printerSupportsImages(): Boolean = true
+
         @android.webkit.JavascriptInterface
         fun getSavedPrinter(): String = printerManager.savedPrinter()?.toString() ?: ""
 

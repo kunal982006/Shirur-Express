@@ -6,6 +6,7 @@ import {
   ArrowLeft, Bluetooth, CheckCircle2, Loader2, Plus, Printer, RefreshCw,
   Settings2, Share2, Trash2, AlertTriangle, ReceiptText,
 } from "lucide-react";
+import { PrinterPickerDialog, printerErrorToast, shareOnWhatsApp, type Bill } from "@/components/print-order-bill-button";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -16,15 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  buildReceiptLines, clearPrinter, formatAmount, getSavedPrinter, isOldAppVersion,
-  isPrinterAvailable, listPairedPrinters, openBluetoothSettings, printLines,
-  PrinterError, receiptAsText, savePrinter, type PrintableBill, type PrinterDevice,
+  formatAmount, getSavedPrinter, isOldAppVersion, isPrinterAvailable, printBillOnPrinter,
+  printLines, PrinterError, receiptAsText, type PrinterDevice,
 } from "@/lib/thermal-printer";
-
-type Bill = PrintableBill & { id: string; printCount: number };
 
 type ItemRow = { name: string; quantity: string; price: string };
 
@@ -42,16 +37,6 @@ const toNumber = (v: string) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-function shareOnWhatsApp(bill: Bill) {
-  const text = "```\n" + receiptAsText(bill) + "\n```";
-  const digits = (bill.customerPhone || "").replace(/\D/g, "");
-  const phone = digits.length === 10 ? `91${digits}` : digits.length === 12 && digits.startsWith("91") ? digits : "";
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-  // Inside the app the WebView hands external links to WhatsApp; in a browser open a new tab.
-  if ((window as any).AndroidApp) window.location.href = url;
-  else window.open(url, "_blank");
-}
-
 export default function PrintBillPage() {
   const [, setLocation] = useLocation();
   const { user, isLoading: authLoading } = useAuth();
@@ -64,8 +49,6 @@ export default function PrintBillPage() {
   // ---- printer ----
   const [printer, setPrinter] = useState<PrinterDevice | null>(() => getSavedPrinter());
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [devices, setDevices] = useState<PrinterDevice[]>([]);
-  const [loadingDevices, setLoadingDevices] = useState(false);
   const [printingId, setPrintingId] = useState<string | null>(null);
 
   // ---- form ----
@@ -98,34 +81,11 @@ export default function PrintBillPage() {
   }, [items, deliveryCharge, discount]);
 
   const showPrinterError = (e: unknown) => {
-    const err = e as PrinterError;
-    toast({
-      title: err.code === "BLUETOOTH_OFF" ? "Bluetooth is off" : "Printer problem",
-      description: err.message || "Could not print.",
-      variant: "destructive",
-    });
-    if (err.code === "NO_PRINTER") openPicker();
+    toast(printerErrorToast(e));
+    if ((e as PrinterError).code === "NO_PRINTER") openPicker();
   };
 
-  async function openPicker() {
-    setPickerOpen(true);
-    setLoadingDevices(true);
-    try {
-      setDevices(await listPairedPrinters());
-    } catch (e) {
-      setPickerOpen(false);
-      showPrinterError(e);
-    } finally {
-      setLoadingDevices(false);
-    }
-  }
-
-  function choosePrinter(device: PrinterDevice) {
-    savePrinter(device);
-    setPrinter(device);
-    setPickerOpen(false);
-    toast({ title: "Printer selected", description: device.name });
-  }
+  const openPicker = () => setPickerOpen(true);
 
   async function testPrint() {
     setPrintingId("test");
@@ -153,7 +113,7 @@ export default function PrintBillPage() {
     }
     setPrintingId(bill.id);
     try {
-      await printLines(buildReceiptLines(bill, { reprint: bill.printCount > 0 }));
+      await printBillOnPrinter(bill);
       try {
         const updated: Bill = (await api.post(`/bills/${bill.id}/printed`)).data;
         setLastBill((cur) => (cur?.id === updated.id ? updated : cur));
@@ -450,46 +410,12 @@ export default function PrintBillPage() {
       </div>
 
       {/* ---------- Printer picker ---------- */}
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Select printer</DialogTitle>
-            <DialogDescription>
-              Switch the printer on. If it's not listed, pair it first in Bluetooth settings (PIN is usually 0000 or 1234).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 max-h-72 overflow-y-auto">
-            {loadingDevices && <Loader2 className="h-5 w-5 animate-spin mx-auto" />}
-            {!loadingDevices && devices.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-3">No paired Bluetooth devices</p>
-            )}
-            {devices.map((d) => (
-              <button key={d.address} onClick={() => choosePrinter(d)}
-                className={`w-full text-left border rounded-lg p-3 hover:bg-gray-50 ${printer?.address === d.address ? "border-green-500 bg-green-50" : ""}`}>
-                <p className="font-medium flex items-center gap-2">
-                  {d.likelyPrinter && <Printer className="h-4 w-4 text-green-600" />}
-                  {d.name}
-                </p>
-                <p className="text-xs text-gray-500">{d.address}</p>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => openBluetoothSettings()}>
-              <Bluetooth className="h-4 w-4 mr-1" /> Pair new
-            </Button>
-            <Button variant="outline" className="flex-1" onClick={openPicker} disabled={loadingDevices}>
-              <RefreshCw className="h-4 w-4 mr-1" /> Refresh
-            </Button>
-          </div>
-          {printer && (
-            <Button variant="ghost" size="sm" className="text-red-600"
-              onClick={() => { clearPrinter(); setPrinter(null); setPickerOpen(false); }}>
-              Forget saved printer
-            </Button>
-          )}
-        </DialogContent>
-      </Dialog>
+      <PrinterPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelected={(device: PrinterDevice) => setPrinter(device)}
+        onForget={() => setPrinter(null)}
+      />
     </div>
   );
 }
