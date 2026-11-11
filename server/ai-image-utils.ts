@@ -14,14 +14,14 @@ export class QuotaError extends Error {}
 
 export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-export async function generateImage(prompt: string): Promise<Buffer> {
+export async function generateImage(prompt: string, steps: number = STEPS): Promise<Buffer> {
   if (!CF_ACCOUNT_ID || !CF_AI_TOKEN) throw new Error('Missing Cloudflare_Account_ID or CLOUDFLARE_AI_TOKEN in .env');
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${MODEL}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${CF_AI_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, steps: STEPS }),
+      body: JSON.stringify({ prompt, steps }),
     });
     const text = await res.text();
     if (res.ok) {
