@@ -58,19 +58,19 @@ const ITEMS: Record<string, string | { reuse: string }> = {
   'hc-2': HAIR('back view, long hair freshly coloured in rich glossy burgundy brown global hair colour'),
   'hc-3': HAIR('back view, long black hair with caramel blonde highlight streaks'),
   // Treatments
-  'hcd-1': `Close-up of beautician applying anti-dandruff treatment cream to the scalp of an Indian woman, hair parted in sections, ${SALON_STYLE}`,
+  'hcd-1': `Back view of an Indian woman in a salon chair, beautician with gloved hands applying white scalp treatment cream along her hair parting with a tint brush, ${SALON_STYLE}`,
   'hcd-2': `Close-up of beautician applying hair regrowth serum with a dropper to the scalp of an Indian woman, scalp massage, ${SALON_STYLE}`,
   'hs-1': `Hairstylist using a flat iron straightener on an Indian woman's long hair, perfectly straight sleek hair, ${SALON_STYLE}`,
   'hs-2': `Indian woman with soft silky smooth frizz-free long hair after hair smoothening, stylist combing her hair, ${SALON_STYLE}`,
   'hs-3': { reuse: 'keratin-treatment' },
   'hs-4': `Hairstylist applying hair botox treatment cream with a brush on an Indian woman's long hair sections, ${SALON_STYLE}`,
   'hs-5': `Indian woman with mirror-like glossy shiny straight long hair after nanoplastia treatment, hair reflecting light, ${SALON_STYLE}`,
-  'hs-6': `Luxury hair treatment, stylist applying golden shimmering hair mask to an Indian woman's long hair, gold tones, ${SALON_STYLE}`,
+  'hs-6': `Back view of an Indian woman with very long glossy golden-brown shiny smooth hair after a luxury hair spa treatment, hair gleaming under warm light, face not visible, ${SALON_STYLE}`,
   // Face wax
   'fw-1': { reuse: 'face-wax' }, // close match from first batch
   'fw-2': { reuse: 'upper-lip-wax' }, // close match from first batch
   'fw-3': { reuse: 'forehead-wax' }, // close match from first batch
-  'fw-4': `Close-up of beautician applying warm white paraffin wax on an Indian woman's face with a brush, glowing skin, ${SALON_STYLE}`,
+  'fw-4': `Indian woman lying on a salon bed with eyes closed, a smooth even layer of white paraffin wax mask covering her cheeks and forehead, towel on her hair, ${SALON_STYLE}`,
   // Body wax
   'bw-1': { reuse: 'full-arms-half-arms-waxing' }, // close match from first batch
   'bw-2': { reuse: 'hand-wax' }, // close match from first batch
@@ -79,8 +79,8 @@ const ITEMS: Record<string, string | { reuse: string }> = {
   // Manicure / pedicure
   'hf-1': `Close-up of manicure, beautician filing and shaping an Indian woman's nails, hands on a towel, ${SALON_STYLE}`,
   'hf-2': `Close-up of spa manicure, Indian woman's hands soaking in a bowl of water with rose petals, scrub and hand cream nearby, ${SALON_STYLE}`,
-  'hf-3': `Close-up of pedicure, beautician cleaning and trimming an Indian woman's toenails, feet on a towel, ${SALON_STYLE}`,
-  'hf-4': `Close-up of spa pedicure, Indian woman's feet in a foot spa tub with flower petals and foam, beautician massaging feet, ${SALON_STYLE}`,
+  'hf-3': `Top view of two clean feet with neatly trimmed natural toenails resting on a folded white towel, pedicure tools and nail file beside them, salon pedicure, ${SALON_STYLE}`,
+  'hf-4': `Two feet soaking in a round pedicure foot spa bowl filled with warm soapy water and pink rose petals, seen from above, white towel beside, ${SALON_STYLE}`,
 };
 
 // ---------- Cloudinary helpers ----------
