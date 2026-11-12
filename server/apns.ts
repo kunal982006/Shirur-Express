@@ -25,9 +25,10 @@ const HOSTS = {
 } as const;
 type ApnsEnv = keyof typeof HOSTS;
 
-// An APNs device token is 32 bytes = 64 hex chars. FCM tokens are longer and contain ':'.
+// APNs device tokens are pure hex. Apple says not to assume a fixed length: devices usually give
+// 64 hex chars, simulators give longer ones. FCM tokens always contain ':' / '-' / '_', never pure hex.
 export function isApnsToken(token: string): boolean {
-  return /^[0-9a-f]{64}$/i.test(token);
+  return /^[0-9a-f]{64,}$/i.test(token);
 }
 
 export const isApnsConfigured = Boolean(KEY_ID && KEY_P8);
