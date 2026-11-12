@@ -45,13 +45,7 @@ export default function RestaurantsIndex() {
             </div>
 
             <div className="max-w-4xl mx-auto px-4">
-                {/* Inspiration Carousel */}
-                <CategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
-
-                {/* Category rows: dishes from every partner restaurant, grouped by what you're craving */}
-                {!searchQuery && <FoodCollectionRows className="space-y-4 mb-6" />}
-
-                <h2 className="font-bold text-lg mb-3 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
+                <h2 className="font-bold text-lg mt-4 mb-3 text-foreground/90">{filteredRestaurants.length} restaurants around you</h2>
 
                 {isLoading ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -70,6 +64,14 @@ export default function RestaurantsIndex() {
                         ))}
                     </div>
                 )}
+
+                {/* Inspiration Carousel */}
+                <div className="mt-6">
+                    <CategoryCarousel onSelect={(id) => setLocation(`/search?term=${id}`)} />
+                </div>
+
+                {/* Category rows: dishes from every partner restaurant, grouped by what you're craving */}
+                {!searchQuery && <FoodCollectionRows className="space-y-4 mb-6" />}
             </div>
         </div>
     );
