@@ -3,6 +3,7 @@
 
 import admin from 'firebase-admin';
 import { isApnsToken, sendApnsNotification } from './apns';
+import { scheduleRepeatRing } from './ring-repeat';
 
 let isInitialized = false;
 
@@ -86,7 +87,12 @@ export async function sendPushNotification(fcmToken: string, payload: {
 
     // iOS devices register raw APNs tokens; deliver those directly through Apple.
     if (fcmToken && isApnsToken(fcmToken)) {
-        return sendApnsNotification(fcmToken, payload);
+        const result = await sendApnsNotification(fcmToken, payload);
+        // iOS plays the ring once (max 30s); keep re-ringing until the order is accepted or the app is opened.
+        if (result.success && payload.type === 'ORDER_REQUEST') {
+            scheduleRepeatRing(fcmToken, payload).catch(() => {});
+        }
+        return result;
     }
 
     if (!isInitialized) {

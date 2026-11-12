@@ -58,6 +58,7 @@ import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
 import { z } from "zod";
 
 import { sendPushNotification, verifyPhoneIdToken } from "./firebase";
+import { setOrderStateResolver, stopRingsForToken } from "./ring-repeat";
 import { importGmartProducts } from "./import-gmart-products";
 import { trackLead, trackPurchase, isConversionsApiConfigured } from "./facebook-conversions";
 
@@ -224,6 +225,18 @@ async function getCommerceOrder(orderType: CommerceOrderType, orderId: string) {
   if (orderType === "restaurant") return storage.getRestaurantOrder(orderId);
   return storage.getGroceryOrder(orderId);
 }
+
+// Lets ring-repeat.ts tell whether an order is still waiting: the iPhone keeps ringing while
+// this fingerprint (status + assigned rider) stays the same as when the first ring went out.
+setOrderStateResolver(async (orderType, orderId) => {
+  let order: any;
+  if (isCommerceOrderType(orderType)) order = await getCommerceOrder(orderType, orderId);
+  else if (orderType === "service") order = await storage.getBooking(orderId);
+  else if (orderType === "qr_walkin") order = await storage.getQrOrder(orderId);
+  else return null;
+  if (!order) return null;
+  return `${order.status ?? ""}|${order.riderId ?? ""}`;
+});
 
 // ===== PLATFORM SERVICES TOGGLE (in-memory for fast checks) =====
 let servicesEnabled = true;
@@ -735,6 +748,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("FCM Token save error:", error);
       res.status(500).json({ message: "Error saving FCM token" });
+    }
+  });
+
+  // iOS app was opened on this device: stop re-ringing it (see server/ring-repeat.ts).
+  app.post("/api/users/push-ack", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { token } = req.body;
+      if (typeof token !== "string" || !token) return res.status(400).json({ message: "Token is required" });
+      const user = await storage.getUser(req.userId!);
+      const owned = user?.fcmToken === token || (Array.isArray(user?.fcmTokens) && user!.fcmTokens!.includes(token));
+      if (!owned) return res.status(403).json({ message: "Token does not belong to this user" });
+      res.json({ stopped: stopRingsForToken(token) });
+    } catch (error: any) {
+      console.error("Push ack error:", error);
+      res.status(500).json({ message: "Error acknowledging push" });
     }
   });
 

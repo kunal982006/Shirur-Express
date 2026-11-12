@@ -99,6 +99,7 @@ export async function sendApnsNotification(deviceToken: string, payload: {
   title?: string;
   body?: string;
   data?: Record<string, string>;
+  repeat?: number; // set by ring-repeat.ts for the 2nd, 3rd... ring of the same order
 }): Promise<{ success: boolean; messageId?: string; error?: any }> {
   if (!isApnsConfigured) {
     console.warn(`[APNs Mock] Push to ${deviceToken.substring(0, 12)}...:`, payload.type);
@@ -128,7 +129,12 @@ export async function sendApnsNotification(deviceToken: string, payload: {
     // A new order is useless after a few minutes; don't deliver stale rings.
     "apns-expiration": String(Math.floor(Date.now() / 1000) + (isRing ? 300 : 3600)),
   };
-  if (payload.data?.orderId) headers["apns-collapse-id"] = payload.data.orderId.slice(0, 64);
+  // Each repeat ring gets its own id so iOS shows it as a new alert and plays the sound again
+  // (all rings stay grouped under the "incoming-orders" thread).
+  if (payload.data?.orderId) {
+    const suffix = payload.repeat ? `-r${payload.repeat}` : "";
+    headers["apns-collapse-id"] = (payload.data.orderId.slice(0, 56) + suffix).slice(0, 64);
+  }
 
   try {
     const first: ApnsEnv = tokenEnv.get(deviceToken) || "production";

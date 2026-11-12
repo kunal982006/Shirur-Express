@@ -10,18 +10,37 @@ import api from "@/lib/api";
 
 const isIosApp = () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
 
+// This device's APNs token, once registered. Used to tell the server "the app is open, stop
+// re-ringing this phone" (the server repeats rings every 30s until the order is accepted).
+let deviceToken: string | null = null;
+function ackRings() {
+  if (!deviceToken) return;
+  api.post("/users/push-ack", { token: deviceToken }).catch(() => {});
+}
+
 export function IosPushSync() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
   // Tapping a notification opens the dashboard the server asked for (navigateTo).
+  // Tapping it, receiving a ring while the app is open, or bringing the app to the front all
+  // count as "seen", so the server stops re-ringing this phone.
   useEffect(() => {
     if (!isIosApp()) return;
-    const handle = PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
-      const target = action.notification?.data?.navigateTo;
-      if (typeof target === "string" && target.startsWith("/")) setLocation(target);
-    });
-    return () => { handle.then((h) => h.remove()); };
+    const handles = [
+      PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        ackRings();
+        const target = action.notification?.data?.navigateTo;
+        if (typeof target === "string" && target.startsWith("/")) setLocation(target);
+      }),
+      PushNotifications.addListener("pushNotificationReceived", () => ackRings()),
+    ];
+    const onVisible = () => { if (document.visibilityState === "visible") ackRings(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      handles.forEach((h) => h.then((x) => x.remove()));
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [setLocation]);
 
   // Only staff accounts need order rings; don't prompt customers.
@@ -33,6 +52,7 @@ export function IosPushSync() {
     const listeners = [
       PushNotifications.addListener("registration", async ({ value }) => {
         if (cancelled || !value) return;
+        deviceToken = value;
         try {
           await api.post("/users/fcm-token", { token: value });
           console.log("[iOS Push] Token saved:", value.substring(0, 12) + "...");
