@@ -157,8 +157,11 @@ export async function printLines(lines: ReceiptLine[], opts: { copies?: number }
 
 // ---- logo ----
 
-/** Dots across 58mm paper. The logo uses the full width so it prints large. */
+/** Dots across 58mm paper. */
 const PAPER_DOTS = 384;
+/** The logo is printed smaller than the paper, centered, to keep the header compact. */
+const LOGO_DOTS = 224;
+const LOGO_MAX_HEIGHT = 160;
 let logoLine: Promise<ReceiptLine | null> | null = null;
 
 /** The app logo as a black/white raster line, cropped to its edges. Cached. */
@@ -203,9 +206,16 @@ async function rasterizeLogo(): Promise<ReceiptLine> {
   const cropW = maxX - minX + 1;
   const cropH = maxY - minY + 1;
 
-  // 2. Scale to paper width.
+  // 2. Scale down to a compact size and center it on a full-width strip
+  //    (so it stays centered even if the printer ignores image alignment).
   const width = PAPER_DOTS;
-  const height = Math.min(600, Math.round((cropH * width) / cropW));
+  let logoW = LOGO_DOTS;
+  let logoH = Math.round((cropH * logoW) / cropW);
+  if (logoH > LOGO_MAX_HEIGHT) {
+    logoH = LOGO_MAX_HEIGHT;
+    logoW = Math.round((cropW * logoH) / cropH);
+  }
+  const height = logoH;
   const dst = document.createElement("canvas");
   dst.width = width;
   dst.height = height;
@@ -213,7 +223,7 @@ async function rasterizeLogo(): Promise<ReceiptLine> {
   dctx.fillStyle = "#fff";
   dctx.fillRect(0, 0, width, height);
   dctx.imageSmoothingQuality = "high";
-  dctx.drawImage(src, minX, minY, cropW, cropH, 0, 0, width, height);
+  dctx.drawImage(src, minX, minY, cropW, cropH, Math.round((width - logoW) / 2), 0, logoW, logoH);
   const d = dctx.getImageData(0, 0, width, height).data;
 
   // 3. Threshold to 1-bit: the blue and black print solid, the white text stays white.
@@ -420,19 +430,23 @@ export function buildReceiptLines(bill: PrintableBill, opts: { reprint?: boolean
   wrap(BUSINESS.footer).forEach((l) => add(l, { align: "center" }));
   blank();
   wrap("Food, grocery, electrician, plumber & more in one app").forEach((l) => add(l, { align: "center" }));
-  add("Download from Play Store:", { align: "center" });
+  add("Available on Play Store", { align: "center" });
+  add("and App Store:", { align: "center" });
   add('"Shirur Express"', { align: "center", bold: true });
   blank();
   add("Help & Support", { align: "center", bold: true });
   add(`Call/WhatsApp: ${BUSINESS.helpline}`, { align: "center" });
   add(BUSINESS.email, { align: "center" });
   blank();
-  wrap("Please check your items at delivery. For any issue, contact us within 24 hours.").forEach((l) =>
+  wrap("Please check your items at delivery. For any issue, contact us instantly.").forEach((l) =>
     add(l, { align: "center" }),
   );
   add(dash);
-  add("* * * Visit Again * * *", { align: "center", bold: true });
+  add("Order again anytime on the app!", { align: "center", bold: true });
   add("Computer generated bill", { align: "center" });
+  add(double);
+  wrap("Your trust is our responsibility.").forEach((l) => add(l, { align: "center", bold: true, size: "tall" }));
+  add(double);
   return lines;
 }
 
