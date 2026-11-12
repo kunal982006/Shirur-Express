@@ -70,6 +70,7 @@ import { eq, ne, and, sql, desc, asc, gt, lt, gte, lte, or, ilike } from "drizzl
 // NAYE IMPORTS
 import { sendPushNotification } from "./firebase";
 import { razorpayInstance } from "./razorpay-client";
+import { defaultFoodImage } from "./default-food-image";
 
 export interface IStorage {
   // User operations
@@ -1539,6 +1540,10 @@ export class DatabaseStorage implements IStorage {
     categorySlug: string,
   ): Promise<any> {
     const { table } = this.getMenuTableInfo(categorySlug);
+    // Restaurant items added without a photo get a matching default food image.
+    if (categorySlug === "restaurants" && !itemData?.imageUrl?.trim?.() && itemData?.name) {
+      itemData = { ...itemData, imageUrl: defaultFoodImage(itemData.name, itemData.category) };
+    }
     const [newItem] = await db
       .insert(table)
       .values({ ...itemData, providerId })

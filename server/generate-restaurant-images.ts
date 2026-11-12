@@ -9,6 +9,7 @@
  *   --all            include items that already have an image (default: only items with no image)
  *   --only "text"    only dishes whose name contains this text
  *   --force          regenerate even if a preview file exists
+ *   --veg            pure-veg restaurant: vegetarian prompts only (never chicken/egg)
  *   --clear-images   back up the current image URLs to old-image-urls.json, then remove them from the DB
  *
  * (Full)/(Half)/(Plate) variants and spelling variants (Gost/Gosht, Chilly/Chilli…) share one image.
@@ -20,6 +21,7 @@ import * as path from 'path';
 import { pool } from './db';
 import { v2 as cloudinary } from 'cloudinary';
 import { QuotaError, generateImage, slugify } from './ai-image-utils';
+import { describeVeg } from './veg-dish-prompts';
 
 const args = process.argv.slice(2);
 const arg = (f: string) => (args.includes(f) ? args[args.indexOf(f) + 1] : null);
@@ -28,6 +30,7 @@ const APPLY = args.includes('--apply');
 const ALL = args.includes('--all');
 const FORCE = args.includes('--force');
 const CLEAR = args.includes('--clear-images');
+const VEG = args.includes('--veg');
 const PROVIDER = arg('--provider');
 const ONLY = arg('--only')?.toLowerCase() ?? null;
 const STEPS = 4;
@@ -38,7 +41,7 @@ const STYLE =
 
 // ---------- Name normalisation: variants that should share one image ----------
 function dishKey(name: string): string {
-  let n = name.toLowerCase().replace(/\((full|half|plate)\)/g, ' ');
+  let n = name.toLowerCase().replace(/\((full|half|plate)\)/g, ' ').replace(/\(\d+\s*("|in|inch)?\)/g, ' ');
   const fixes: [RegExp, string][] = [
     [/\bgost\b|\bgosh\b/g, 'gosht'], [/chilly/g, 'chilli'], [/pulav/g, 'pulao'], [/sukha/g, 'sukka'],
     [/lahsuni/g, 'lasuni'], [/khichadi/g, 'khichdi'], [/moghlai/g, 'moglai'], [/seekh/g, 'seek'],
@@ -195,7 +198,7 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const { rows } = await pool.query(
-    `SELECT id, name, category, image_url FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
+    `SELECT id, name, category, description, image_url FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
 
   if (CLEAR) {
     const backup = path.join(OUT_DIR, 'old-image-urls.json');
@@ -229,8 +232,10 @@ async function main() {
 
   let generated = 0, applied = 0, skipped = 0, failed = 0, fallbacks = 0;
   for (const [key, group] of Array.from(groups)) {
-    const { text, fallback } = describe(group[0].name);
-    const prompt = `${text}, ${STYLE}`;
+    const { text, fallback } = VEG
+      ? describeVeg(group[0].name, group[0].category, group[0].description)
+      : describe(group[0].name);
+    const prompt = `${text}, ${VEG ? 'pure vegetarian food, ' : ''}${STYLE}`;
     const file = path.join(OUT_DIR, `${key}.jpg`);
     if (fallback) fallbacks++;
 
