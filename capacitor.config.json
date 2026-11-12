@@ -8,5 +8,14 @@
         "allowNavigation": [
             "shirur-express.onrender.com"
         ]
+    },
+    "plugins": {
+        "PushNotifications": {
+            "presentationOptions": [
+                "badge",
+                "sound",
+                "alert"
+            ]
+        }
     }
 }

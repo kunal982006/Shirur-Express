@@ -2,6 +2,7 @@
 // Firebase Admin SDK initialization - SAFE: Never crashes the server
 
 import admin from 'firebase-admin';
+import { isApnsToken, sendApnsNotification } from './apns';
 
 let isInitialized = false;
 
@@ -82,6 +83,11 @@ export async function sendPushNotification(fcmToken: string, payload: {
     body?: string;
     data?: Record<string, string>;
 }): Promise<{ success: boolean; messageId?: string; error?: any }> {
+
+    // iOS devices register raw APNs tokens; deliver those directly through Apple.
+    if (fcmToken && isApnsToken(fcmToken)) {
+        return sendApnsNotification(fcmToken, payload);
+    }
 
     if (!isInitialized) {
         console.warn(`[FCM Mock] Push to ${fcmToken?.substring(0, 20)}...:`, payload.type);

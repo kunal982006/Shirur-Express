@@ -9,5 +9,16 @@
 			"shirur-express.onrender.com"
 		]
 	},
-	"packageClassList": []
+	"packageClassList": [
+		"PushNotificationsPlugin"
+	],
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	}
 }

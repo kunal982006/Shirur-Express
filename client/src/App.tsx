@@ -9,6 +9,7 @@ import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
 import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
+import { IosPushSync } from "@/components/IosPushSync";
 import AppUpdatePopup from "@/components/AppUpdatePopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import { AddressSheet } from "@/components/address/AddressSheet";
@@ -230,6 +231,7 @@ function App() {
             <AddressSheet />
             <SwipeBackGesture />
             <OrderNotificationPopup />
+            <IosPushSync />
             <AppUpdatePopup />
             <Toaster />
           </TooltipProvider>
