@@ -7,6 +7,7 @@
  *
  * Options:
  *   --all            include items that already have an image (default: only items with no image)
+ *   --stock          also include items using a bundled stock photo (/images/...), but not AI/Cloudinary ones
  *   --only "text"    only dishes whose name contains this text
  *   --force          regenerate even if a preview file exists
  *   --veg            pure-veg restaurant: vegetarian prompts only (never chicken/egg)
@@ -22,12 +23,14 @@ import { pool } from './db';
 import { v2 as cloudinary } from 'cloudinary';
 import { QuotaError, generateImage, slugify } from './ai-image-utils';
 import { describeVeg } from './veg-dish-prompts';
+import { describeExtra } from './extra-dish-prompts';
 
 const args = process.argv.slice(2);
 const arg = (f: string) => (args.includes(f) ? args[args.indexOf(f) + 1] : null);
 const DRY_RUN = args.includes('--dry-run');
 const APPLY = args.includes('--apply');
 const ALL = args.includes('--all');
+const STOCK = args.includes('--stock');
 const FORCE = args.includes('--force');
 const CLEAR = args.includes('--clear-images');
 const VEG = args.includes('--veg');
@@ -41,7 +44,8 @@ const STYLE =
 
 // ---------- Name normalisation: variants that should share one image ----------
 function dishKey(name: string): string {
-  let n = name.toLowerCase().replace(/\((full|half|plate)\)/g, ' ').replace(/\(\d+\s*("|in|inch)?\)/g, ' ');
+  let n = name.toLowerCase().replace(/\((full|half|plate)\)/g, ' ')
+    .replace(/\([^)]*(person|piece|family pack|kilogram|grams|kg)[^)]*\)/g, ' ').replace(/\(\d+\s*("|in|inch)?\)/g, ' ');
   const fixes: [RegExp, string][] = [
     [/\bgost\b|\bgosh\b/g, 'gosht'], [/chilly/g, 'chilli'], [/pulav/g, 'pulao'], [/sukha/g, 'sukka'],
     [/lahsuni/g, 'lasuni'], [/khichadi/g, 'khichdi'], [/moghlai/g, 'moglai'], [/seekh/g, 'seek'],
@@ -198,7 +202,7 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const { rows } = await pool.query(
-    `SELECT id, name, category, description, image_url FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
+    `SELECT id, name, category, description, image_url, is_veg FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
 
   if (CLEAR) {
     const backup = path.join(OUT_DIR, 'old-image-urls.json');
@@ -210,7 +214,7 @@ async function main() {
     return;
   }
 
-  let items = rows.filter((r: any) => ALL || !r.image_url || r.image_url.trim() === '');
+  let items = rows.filter((r: any) => ALL || !r.image_url || r.image_url.trim() === '' || (STOCK && r.image_url.startsWith('/images/')));
   if (ONLY) items = items.filter((r: any) => r.name.toLowerCase().includes(ONLY));
 
   const groups = new Map<string, any[]>();
@@ -232,10 +236,21 @@ async function main() {
 
   let generated = 0, applied = 0, skipped = 0, failed = 0, fallbacks = 0;
   for (const [key, group] of Array.from(groups)) {
-    const { text, fallback } = VEG
-      ? describeVeg(group[0].name, group[0].category, group[0].description)
-      : describe(group[0].name);
-    const prompt = `${text}, ${VEG ? 'pure vegetarian food, ' : ''}${STYLE}`;
+    // Veg items (whole restaurant with --veg, or items flagged is_veg) use the vegetarian prompt builder,
+    // so a "Veg Fried Rice" is never drawn with chicken.
+    const vegItem = VEG || group.every((g: any) => g.is_veg);
+    const extra = describeExtra(key.replace(/-/g, ' '));
+    const extraOk = extra && !(vegItem && /chicken|mutton|fish|prawn|egg|meat/.test(extra));
+    let { text, fallback } = extraOk
+      ? { text: extra!, fallback: false }
+      : vegItem
+        ? describeVeg(group[0].name, group[0].category, group[0].description)
+        : describe(group[0].name);
+    if (/boneless/i.test(group[0].name)) {
+      text = text.replace(/bone-in chicken pieces/g, 'boneless chicken pieces')
+        .replace(/tender dark mutton \(goat meat\) pieces on the bone/g, 'tender boneless mutton (goat meat) pieces');
+    }
+    const prompt = `${text}, ${vegItem ? 'pure vegetarian food, ' : ''}${STYLE}`;
     const file = path.join(OUT_DIR, `${key}.jpg`);
     if (fallback) fallbacks++;
 
