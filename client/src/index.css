@@ -145,14 +145,28 @@
     @apply flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border border-border bg-card px-1 py-1.5 text-center text-[10.5px] font-semibold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md sm:min-h-[72px] sm:text-xs;
   }
 
+  /* Home-screen food and place cards: every card in a row has the same image ratio,
+     the same body padding, and the price/button row pinned to the bottom. */
   .app-product-card,
   .app-place-card {
-    @apply cursor-pointer overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md;
+    @apply flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md;
   }
 
   .app-product-card img,
   .app-place-card img {
-    @apply h-20 w-full object-cover sm:h-24;
+    @apply aspect-[4/3] w-full shrink-0 object-cover;
+  }
+
+  .app-product-card__body {
+    @apply flex min-w-0 flex-1 flex-col p-2.5;
+  }
+
+  .app-product-card__footer {
+    @apply mt-auto flex items-center justify-between gap-1.5 pt-2;
+  }
+
+  .app-card-badge {
+    @apply absolute left-1.5 top-1.5 max-w-[calc(100%-0.75rem)] truncate rounded-md bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold leading-tight text-white backdrop-blur-xs;
   }
 }
 

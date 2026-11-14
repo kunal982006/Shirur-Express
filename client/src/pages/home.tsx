@@ -101,25 +101,29 @@ function QuantityControl({ item, add, update }: { item: any; add: () => void; up
   );
 }
 
+const FALLBACK_FOOD_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
+const FALLBACK_PLACE_IMAGE = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60";
+
 function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () => void; onAdd: () => void; onUpdate: (change: number) => void }) {
+  const estimate = useDeliveryEstimate(item.provider);
+  const rating = item.provider?.rating ? Number(item.provider.rating).toFixed(1) : null;
+  const badge = [rating && `★ ${rating}`, estimate && `${estimate.minutes} mins`].filter(Boolean).join(" · ");
   return (
     <article className="app-product-card" onClick={onOpen}>
       <div className="relative">
         <img
-          src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"}
+          src={item.imageUrl || FALLBACK_FOOD_IMAGE}
           alt={item.name}
           loading="lazy"
-          onError={(event) => { event.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60"; }}
+          onError={(event) => { event.currentTarget.src = FALLBACK_FOOD_IMAGE; }}
         />
-        <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">
-          ★ 4.2 · 25m
-        </span>
+        {badge && <span className="app-card-badge">{badge}</span>}
       </div>
-      <div className="min-w-0 p-2">
-        <p className="truncate text-xs sm:text-sm font-bold text-slate-900">{item.name}</p>
+      <div className="app-product-card__body">
+        <p className="truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{item.name}</p>
         <p className="truncate text-[10.5px] text-slate-500">{item.provider?.businessName || item.category || "Local favourite"}</p>
-        <div className="mt-1.5 flex items-center justify-between gap-1">
-          <span className="text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>
+        <div className="app-product-card__footer">
+          <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>
           <QuantityControl item={item} add={onAdd} update={onUpdate} />
         </div>
       </div>
@@ -129,15 +133,16 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
 
 function TopPlaceCard({ provider, onClick }: { provider: any; onClick: () => void }) {
   const estimate = useDeliveryEstimate(provider);
-  const rating = provider.rating ? Number(provider.rating).toFixed(1) : "4.2";
+  const rating = provider.rating ? Number(provider.rating).toFixed(1) : null;
+  const badge = [rating && `★ ${rating}`, estimate && `${estimate.minutes} mins`].filter(Boolean).join(" · ");
   return (
     <article className="app-place-card" onClick={onClick}>
       <div className="relative">
-        <img src={provider.profileImageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60"} alt={provider.businessName} loading="lazy" />
-        <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1.5 py-0.5 text-[9.5px] font-bold text-white backdrop-blur-xs">★ {rating}{estimate ? ` · ${estimate.minutes} mins` : ""}</span>
+        <img src={provider.profileImageUrl || FALLBACK_PLACE_IMAGE} alt={provider.businessName} loading="lazy" />
+        {badge && <span className="app-card-badge">{badge}</span>}
       </div>
-      <div className="p-2">
-        <p className="truncate text-xs sm:text-sm font-bold text-slate-900">{provider.businessName}</p>
+      <div className="app-product-card__body">
+        <p className="truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{provider.businessName}</p>
         <p className="truncate text-[10.5px] text-slate-500">{estimate ? `${formatDistance(estimate.distanceKm)} away` : provider.address || "Shirur"}</p>
       </div>
     </article>

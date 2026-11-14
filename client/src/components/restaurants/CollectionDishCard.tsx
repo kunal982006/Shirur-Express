@@ -49,14 +49,14 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                 loading="lazy"
                 onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
             />
-            <div className="min-w-0 p-2">
-                <div className="flex items-center gap-1">
+            <div className="app-product-card__body">
+                <div className="flex min-w-0 items-center gap-1.5">
                     <VegMark isVeg={dish.isVeg} />
-                    <p className="truncate text-xs sm:text-sm font-bold text-slate-900">{dish.name}</p>
+                    <p className="min-w-0 truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{dish.name}</p>
                 </div>
                 <p className="truncate text-[10.5px] text-slate-500">{dish.provider.businessName}</p>
-                <div className="mt-1.5 flex items-center justify-between gap-1">
-                    <span className="text-xs sm:text-sm font-extrabold text-slate-900">₹{Number(dish.price)}</span>
+                <div className="app-product-card__footer">
+                    <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{Number(dish.price)}</span>
                     <DishQuantityControl dish={dish} {...control} />
                 </div>
             </div>
