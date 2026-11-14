@@ -105,9 +105,6 @@ const FALLBACK_FOOD_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599
 const FALLBACK_PLACE_IMAGE = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=60";
 
 function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () => void; onAdd: () => void; onUpdate: (change: number) => void }) {
-  const estimate = useDeliveryEstimate(item.provider);
-  const rating = item.provider?.rating ? Number(item.provider.rating).toFixed(1) : null;
-  const badge = [rating && `★ ${rating}`, estimate && `${estimate.minutes} mins`].filter(Boolean).join(" · ");
   return (
     <article className="app-product-card" onClick={onOpen}>
       <div className="relative">
@@ -117,10 +114,10 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
           loading="lazy"
           onError={(event) => { event.currentTarget.src = FALLBACK_FOOD_IMAGE; }}
         />
-        {badge && <span className="app-card-badge">{badge}</span>}
+        <span className="app-card-badge">★ 4.2 · 25m</span>
       </div>
       <div className="app-product-card__body">
-        <p className="truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{item.name}</p>
+        <p className="line-clamp-2 min-h-[2.6em] text-xs sm:text-sm font-bold leading-snug text-slate-900 break-words">{item.name}</p>
         <p className="truncate text-[10.5px] text-slate-500">{item.provider?.businessName || item.category || "Local favourite"}</p>
         <div className="app-product-card__footer">
           <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>
@@ -133,16 +130,15 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
 
 function TopPlaceCard({ provider, onClick }: { provider: any; onClick: () => void }) {
   const estimate = useDeliveryEstimate(provider);
-  const rating = provider.rating ? Number(provider.rating).toFixed(1) : null;
-  const badge = [rating && `★ ${rating}`, estimate && `${estimate.minutes} mins`].filter(Boolean).join(" · ");
+  const rating = provider.rating ? Number(provider.rating).toFixed(1) : "4.2";
   return (
     <article className="app-place-card" onClick={onClick}>
       <div className="relative">
         <img src={provider.profileImageUrl || FALLBACK_PLACE_IMAGE} alt={provider.businessName} loading="lazy" />
-        {badge && <span className="app-card-badge">{badge}</span>}
+        <span className="app-card-badge">★ {rating}{estimate ? ` · ${estimate.minutes} mins` : ""}</span>
       </div>
       <div className="app-product-card__body">
-        <p className="truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{provider.businessName}</p>
+        <p className="line-clamp-2 min-h-[2.6em] text-xs sm:text-sm font-bold leading-snug text-slate-900 break-words">{provider.businessName}</p>
         <p className="truncate text-[10.5px] text-slate-500">{estimate ? `${formatDistance(estimate.distanceKm)} away` : provider.address || "Shirur"}</p>
       </div>
     </article>

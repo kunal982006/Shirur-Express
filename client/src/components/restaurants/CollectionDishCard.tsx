@@ -50,9 +50,9 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                 onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
             />
             <div className="app-product-card__body">
-                <div className="flex min-w-0 items-center gap-1.5">
-                    <VegMark isVeg={dish.isVeg} />
-                    <p className="min-w-0 truncate text-xs sm:text-sm font-bold leading-snug text-slate-900">{dish.name}</p>
+                <div className="flex min-w-0 items-start gap-1.5">
+                    <span className="mt-[3px]"><VegMark isVeg={dish.isVeg} /></span>
+                    <p className="line-clamp-2 min-h-[2.6em] min-w-0 flex-1 break-words text-xs sm:text-sm font-bold leading-snug text-slate-900">{dish.name}</p>
                 </div>
                 <p className="truncate text-[10.5px] text-slate-500">{dish.provider.businessName}</p>
                 <div className="app-product-card__footer">
