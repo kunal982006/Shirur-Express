@@ -9,6 +9,7 @@ import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
 
 export interface CollectionDish {
     id: string;
+    itemType?: "restaurant" | "street_food";
     name: string;
     description?: string | null;
     category?: string | null;
@@ -27,6 +28,10 @@ export interface CollectionDish {
     };
 }
 
+// Menu page of the restaurant or street food vendor that sells a dish.
+export const dishProviderPath = (dish: CollectionDish) =>
+    `${dish.itemType === "street_food" ? "/street-food" : "/restaurants"}/${dish.providerId}`;
+
 // Collections mix dishes from many restaurants, but the cart holds one restaurant at a time
 // (addItem silently empties it otherwise), so ask before replacing an existing cart.
 export function useCollectionCart() {
@@ -41,7 +46,7 @@ export function useCollectionCart() {
             price: Number(dish.price),
             imageUrl: dish.imageUrl || undefined,
             providerId: dish.providerId,
-            itemType: "restaurant",
+            itemType: dish.itemType || "restaurant",
         });
         trackEvent(FacebookStandardEvent.AddToCart, {
             content_name: dish.name,

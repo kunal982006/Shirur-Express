@@ -361,6 +361,7 @@ export interface IStorage {
   searchSuggestions(query: string): Promise<{ suggestions: string[]; didYouMean: string | null }>;
   getPopularRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
   getAvailableRestaurantMenuItems(): Promise<(RestaurantMenuItem & { provider: ServiceProvider })[]>;
+  getAvailableStreetFoodItems(): Promise<(StreetFoodItem & { provider: ServiceProvider })[]>;
 
   // DISPLAY ORDER MANAGEMENT
   getProviderDisplayOrder(categorySlug: string): Promise<ServiceProvider[]>;
@@ -3108,6 +3109,15 @@ export class DatabaseStorage implements IStorage {
           eq(serviceProviders.categoryId, category.id)
         )
       );
+
+    return records.map(({ item, provider }) => ({ ...item, provider }));
+  }
+
+  async getAvailableStreetFoodItems(): Promise<(StreetFoodItem & { provider: ServiceProvider })[]> {
+    const records = await db.select({ item: streetFoodItems, provider: serviceProviders })
+      .from(streetFoodItems)
+      .innerJoin(serviceProviders, eq(streetFoodItems.providerId, serviceProviders.id))
+      .where(eq(streetFoodItems.isAvailable, true));
 
     return records.map(({ item, provider }) => ({ ...item, provider }));
   }

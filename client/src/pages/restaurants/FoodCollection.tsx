@@ -9,7 +9,7 @@ import { useCartStore } from "@/hooks/use-cart-store";
 import { useDeliveryAddress } from "@/hooks/use-delivery-address";
 import { estimateDelivery, formatDistance } from "@/lib/location";
 import { DishQuantityControl, VegMark, DISH_FALLBACK_IMAGE } from "@/components/restaurants/CollectionDishCard";
-import { useCollectionCart, type CollectionDish } from "@/components/restaurants/use-collection-cart";
+import { dishProviderPath, useCollectionCart, type CollectionDish } from "@/components/restaurants/use-collection-cart";
 import type { FoodCollection as FoodCollectionInfo } from "@shared/food-collections";
 
 type SortOption = "recommended" | "price-asc" | "price-desc" | "nearest";
@@ -59,7 +59,7 @@ export default function FoodCollection() {
             if (query && !`${dish.name} ${dish.provider.businessName} ${dish.category || ""}`.toLowerCase().includes(query)) return false;
             return true;
         });
-        // "recommended" keeps the server order (open restaurants and popular dishes first).
+        // "recommended" keeps the server order (prioritized dishes on top, then the mixed feed).
         if (sort === "recommended") return filtered;
         const isOpen = (dish: CollectionDish) => Number(dish.provider.isAvailable !== false);
         return [...filtered].sort((a, b) => {
@@ -162,7 +162,7 @@ export default function FoodCollection() {
                                         <button
                                             type="button"
                                             className="flex max-w-full items-center gap-0.5 text-xs font-semibold text-primary"
-                                            onClick={() => setLocation(`/restaurants/${dish.providerId}`)}
+                                            onClick={() => setLocation(dishProviderPath(dish))}
                                         >
                                             <span className="truncate">{dish.provider.businessName}</span>
                                             {dish.estimate && <span className="shrink-0 font-normal text-muted-foreground">· {formatDistance(dish.estimate.distanceKm)} · {dish.estimate.minutes} mins</span>}

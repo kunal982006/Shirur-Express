@@ -12,7 +12,7 @@ import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
-import { FOOD_COLLECTIONS, classifyMenuItem, getFoodCollection } from "@shared/food-collections";
+import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, orderFoodCollectionFeed } from "@shared/food-collections";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
@@ -5058,82 +5058,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // --- FOOD COLLECTIONS (cross-restaurant category rows on the food home screen) ---
+  // --- FOOD COLLECTIONS (time-of-day category feeds on the food home screen) ---
 
   const getFoodCollectionItems = () => getCachedOrFetch('food_collections', 2 * 60 * 1000, async () => {
-    const items = await storage.getAvailableRestaurantMenuItems();
-    const grouped = new Map<string, any[]>(FOOD_COLLECTIONS.map((c) => [c.slug, []]));
+    const [menuItems, streetItems] = await Promise.all([
+      storage.getAvailableRestaurantMenuItems(),
+      storage.getAvailableStreetFoodItems(),
+    ]);
+    const dishes = [
+      ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
+      ...streetItems.map((item) => ({ item, itemType: "street_food" as const })),
+    ].map(({ item, itemType }) => ({
+      id: item.id,
+      itemType,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      isVeg: item.isVeg,
+      isPopular: item.isPopular,
+      providerId: item.providerId,
+      provider: {
+        id: item.provider.id,
+        businessName: item.provider.businessName,
+        isAvailable: item.provider.isAvailable,
+        latitude: item.provider.latitude,
+        longitude: item.provider.longitude,
+        rating: item.provider.rating,
+      },
+      _popularOrder: item.popularOrder || 0,
+      _displayOrder: item.provider.displayOrder || 0,
+    }));
 
-    for (const item of items) {
-      const slug = classifyMenuItem(item);
-      if (!slug) continue;
-      const { provider } = item;
-      grouped.get(slug)!.push({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        category: item.category,
-        price: item.price,
-        imageUrl: item.imageUrl,
-        isVeg: item.isVeg,
-        isPopular: item.isPopular,
-        providerId: item.providerId,
-        provider: {
-          id: provider.id,
-          businessName: provider.businessName,
-          isAvailable: provider.isAvailable,
-          latitude: provider.latitude,
-          longitude: provider.longitude,
-          rating: provider.rating,
-        },
-        _popularOrder: item.popularOrder || 0,
-        _displayOrder: provider.displayOrder || 0,
-      });
-    }
-
-    // Open restaurants first, then items marked popular, then the admin-set restaurant order.
+    // Best-first within each restaurant: items marked popular, then the admin-set restaurant order.
     const rank = (n: number) => (n === 0 ? 9999 : n);
-    for (const list of Array.from(grouped.values())) {
-      list.sort((a, b) =>
-        Number(b.provider.isAvailable !== false) - Number(a.provider.isAvailable !== false) ||
-        Number(!!b.isPopular) - Number(!!a.isPopular) ||
-        rank(a._popularOrder) - rank(b._popularOrder) ||
-        rank(a._displayOrder) - rank(b._displayOrder) ||
-        Number(b.provider.rating || 0) - Number(a.provider.rating || 0)
-      );
-      for (const entry of list) {
-        delete entry._popularOrder;
-        delete entry._displayOrder;
-      }
+    dishes.sort((a, b) =>
+      Number(!!b.isPopular) - Number(!!a.isPopular) ||
+      rank(a._popularOrder) - rank(b._popularOrder) ||
+      rank(a._displayOrder) - rank(b._displayOrder) ||
+      Number(b.provider.rating || 0) - Number(a.provider.rating || 0)
+    );
+
+    const grouped = new Map<string, any[]>(FOOD_COLLECTIONS.map((c) => [c.slug, []]));
+    for (const { _popularOrder, _displayOrder, ...dish } of dishes) {
+      for (const slug of getFoodCollectionSlugs(dish)) grouped.get(slug)!.push(dish);
+    }
+    // Mix restaurants into one feed per category, with the prioritized dishes forced to the top.
+    for (const [slug, list] of Array.from(grouped.entries())) {
+      grouped.set(slug, orderFoodCollectionFeed(slug, list));
     }
     return grouped;
   });
 
-  // Home screen rows: a preview of each collection, mixed across restaurants so one menu doesn't fill a row.
+  // Home screen rows: the top of each category feed. The client shows the categories open at the current IST time.
   app.get("/api/food-collections", async (_req: Request, res: Response) => {
     try {
       const grouped = await getFoodCollectionItems();
       const PREVIEW_SIZE = 12;
       const collections = FOOD_COLLECTIONS.map((collection) => {
         const items = grouped.get(collection.slug) || [];
-        const byProvider = new Map<string, any[]>();
-        for (const item of items) {
-          if (item.provider.isAvailable === false) continue;
-          if (!byProvider.has(item.providerId)) byProvider.set(item.providerId, []);
-          byProvider.get(item.providerId)!.push(item);
-        }
-        const queues = Array.from(byProvider.values());
-        const preview: any[] = [];
-        for (let i = 0; preview.length < PREVIEW_SIZE && queues.some((q) => i < q.length); i++) {
-          for (const queue of queues) {
-            if (i < queue.length && preview.length < PREVIEW_SIZE) preview.push(queue[i]);
-          }
-        }
         return {
           ...collection,
           totalItems: items.length,
           restaurantCount: new Set(items.map((item) => item.providerId)).size,
-          items: preview,
+          items: items.filter((item) => item.provider.isAvailable !== false).slice(0, PREVIEW_SIZE),
         };
       });
       res.json(collections);
@@ -5143,7 +5132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // "View All" master page: every matching dish from every partner restaurant.
+  // "View All" master page: the full mixed feed for one category.
   app.get("/api/food-collections/:slug", async (req: Request, res: Response) => {
     try {
       const collection = getFoodCollection(req.params.slug);
