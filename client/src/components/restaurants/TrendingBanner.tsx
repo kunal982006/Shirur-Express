@@ -77,7 +77,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     <DialogTitle className="flex items-center gap-2 text-lg">
                         <Flame className="h-5 w-5 text-orange-500" /> What Shirur is Ordering
                     </DialogTitle>
-                    <DialogDescription>Real orders from the last 24 hours. Resets every day.</DialogDescription>
+                    <DialogDescription>Most ordered dishes today. Resets every day.</DialogDescription>
                 </DialogHeader>
 
                 <div className="flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide">

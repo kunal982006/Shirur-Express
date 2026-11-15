@@ -160,11 +160,11 @@ export function HorizontalScrollList<T extends { id: string | number }>({
                 >
                     {isLoading ? (
                         Array(5).fill(0).map((_, i) => (
-                            <div key={i} className="h-36 min-w-[136px] shrink-0 animate-pulse rounded-xl bg-muted snap-start sm:min-w-[160px]" />
+                            <div key={i} className="h-36 w-[150px] shrink-0 animate-pulse rounded-xl bg-muted snap-start sm:w-[170px]" />
                         ))
                     ) : (
                         displayItems.map((item, idx) => (
-                            <div key={`${item.id}-${idx}`} className="min-w-[136px] shrink-0 snap-start sm:min-w-[160px]">
+                            <div key={`${item.id}-${idx}`} className="w-[150px] shrink-0 snap-start sm:w-[170px]">
                                 {renderItem(item)}
                             </div>
                         ))
