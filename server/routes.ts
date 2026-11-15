@@ -5,7 +5,7 @@ import { registerBillRoutes } from "./bill-routes";
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcrypt";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 import { uploadToCloudinary } from './cloudinary';
 import multer from 'multer';
 
@@ -5062,21 +5062,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Seeded "ordered today" counts per dish. Deterministic for a given dish and IST date,
   // so the numbers stay steady during the day and reset with the date.
-  const seededOrderCounts = (dishIds: string[]): Map<string, number> => {
+  // Biryani and thali dishes are the best sellers: they get 22 to 24 orders.
+  // Other dishes get a random 1 to 24, and about a quarter of them get none.
+  const seededOrderCounts = (items: { id: string; name: string; category?: string | null }[]): Map<string, number> => {
     const istDay = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
-    const hash = (text: string) => {
-      let h = 2166136261;
-      for (let i = 0; i < text.length; i++) {
-        h ^= text.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return h >>> 0;
-    };
     const counts = new Map<string, number>();
-    for (const id of dishIds) {
-      const h = hash(`${istDay}:${id}`);
-      // About 35% of dishes have no orders today; the rest get 6 to 121.
-      counts.set(id, h % 100 < 35 ? 0 : 6 + ((h >>> 8) % 116));
+    for (const item of items) {
+      const digest = createHash("sha256").update(`${istDay}:${item.id}`).digest();
+      const roll = digest.readUInt32BE(0);
+      const spread = digest.readUInt32BE(4);
+      const isTopSeller = /biryani|thali/i.test(`${item.name} ${item.category || ""}`);
+      if (isTopSeller) {
+        counts.set(item.id, 22 + (spread % 3));
+      } else if (roll % 100 < 25) {
+        counts.set(item.id, 0);
+      } else {
+        counts.set(item.id, 1 + (spread % 24));
+      }
     }
     return counts;
   };
@@ -5086,7 +5088,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       storage.getAvailableRestaurantMenuItems(),
       storage.getAvailableStreetFoodItems(),
     ]);
-    const orderCounts = seededOrderCounts([...menuItems, ...streetItems].map((item) => item.id));
+    const orderCounts = seededOrderCounts([...menuItems, ...streetItems]);
     const dishes = [
       ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
       ...streetItems.map((item) => ({ item, itemType: "street_food" as const })),
