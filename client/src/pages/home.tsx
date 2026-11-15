@@ -23,6 +23,7 @@ import { HeroPromoCarousel } from "@/components/HeroPromoCarousel";
 import { AddressChip } from "@/components/address/AddressChip";
 import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { FoodCollectionRows } from "@/components/restaurants/FoodCollectionRows";
+import { TrendingBanner } from "@/components/restaurants/TrendingBanner";
 import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
 import { formatDistance } from "@/lib/location";
 
@@ -342,6 +343,8 @@ export default function Home() {
       </div>
 
       <main className="mx-auto max-w-6xl space-y-2.5 px-3 pt-2 sm:px-6 sm:pt-3">
+        <TrendingBanner />
+
         {/* Hero Promo Carousel: Biryani (Restaurants) & HomeCare (Electrician / Technicians) */}
         <HeroPromoCarousel />
 

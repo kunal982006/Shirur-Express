@@ -5060,10 +5060,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // --- FOOD COLLECTIONS (time-of-day category feeds on the food home screen) ---
 
-  const getFoodCollectionItems = () => getCachedOrFetch('food_collections', 2 * 60 * 1000, async () => {
-    const [menuItems, streetItems] = await Promise.all([
+  // Real order counts per dish over the last 24 hours (cancelled/declined orders excluded).
+  // Read straight from the order tables, so every new order shows up on the next refresh.
+  const getRecentOrderCounts = async (): Promise<Map<string, number>> => {
+    const rows = await db.execute(sql`
+      SELECT item->>'menuItemId' AS item_id, SUM((item->>'quantity')::int) AS total
+      FROM restaurant_orders, jsonb_array_elements(items) AS item
+      WHERE created_at > NOW() - INTERVAL '24 hours' AND status NOT IN ('cancelled', 'declined')
+      GROUP BY 1
+      UNION ALL
+      SELECT item->>'productId', SUM((item->>'quantity')::int)
+      FROM street_food_orders, jsonb_array_elements(items) AS item
+      WHERE created_at > NOW() - INTERVAL '24 hours' AND status NOT IN ('cancelled', 'declined')
+      GROUP BY 1
+    `);
+    const counts = new Map<string, number>();
+    for (const row of rows.rows as any[]) {
+      if (!row.item_id) continue;
+      counts.set(row.item_id, (counts.get(row.item_id) || 0) + Number(row.total));
+    }
+    return counts;
+  };
+
+  const getFoodCollectionItems = () => getCachedOrFetch('food_collections', 30 * 1000, async () => {
+    const [menuItems, streetItems, orderCounts] = await Promise.all([
       storage.getAvailableRestaurantMenuItems(),
       storage.getAvailableStreetFoodItems(),
+      getRecentOrderCounts(),
     ]);
     const dishes = [
       ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
@@ -5087,9 +5110,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         longitude: item.provider.longitude,
         rating: item.provider.rating,
       },
+      orderCount: orderCounts.get(item.id) || 0,
+      isMostlySelling: false,
       _popularOrder: item.popularOrder || 0,
       _displayOrder: item.provider.displayOrder || 0,
     }));
+
+    // The 10 most-ordered dishes in the last 24 hours get the "Mostly Selling" badge.
+    const topSellers = dishes
+      .filter((dish) => dish.orderCount > 0)
+      .sort((a, b) => b.orderCount - a.orderCount)
+      .slice(0, 10);
+    const topIds = new Set(topSellers.map((dish) => dish.id));
+    for (const dish of dishes) dish.isMostlySelling = topIds.has(dish.id);
 
     // Best-first within each restaurant: items marked popular, then the admin-set restaurant order.
     const rank = (n: number) => (n === 0 ? 9999 : n);
@@ -5144,6 +5177,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get food collection error:", error);
       res.status(500).json({ message: error.message || "Error fetching food collection" });
+    }
+  });
+
+  // "What Shirur is Ordering": the most-ordered dishes in the last 24 hours, across all categories.
+  app.get("/api/trending", async (_req: Request, res: Response) => {
+    try {
+      const grouped = await getFoodCollectionItems();
+      const seen = new Map<string, any>();
+      for (const list of Array.from(grouped.values())) {
+        for (const dish of list) {
+          if (dish.orderCount > 0 && !seen.has(dish.id)) seen.set(dish.id, dish);
+        }
+      }
+      const top = Array.from(seen.values()).sort((a, b) => b.orderCount - a.orderCount).slice(0, 30);
+      res.json(top);
+    } catch (error: any) {
+      console.error("Get trending error:", error);
+      res.status(500).json({ message: error.message || "Error fetching trending items" });
     }
   });
 

@@ -43,18 +43,24 @@ export function DishQuantityControl({ dish, quantity, onAdd, onUpdate }: DishQua
 export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityProps & { onOpen: () => void }) {
     return (
         <article className="app-product-card" onClick={onOpen}>
-            <img
-                src={dish.imageUrl || FALLBACK_IMAGE}
-                alt={dish.name}
-                loading="lazy"
-                onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
-            />
+            <div className="relative">
+                <img
+                    src={dish.imageUrl || FALLBACK_IMAGE}
+                    alt={dish.name}
+                    loading="lazy"
+                    onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
+                />
+                {dish.isMostlySelling && <span className="app-card-badge">🔥 Mostly Selling</span>}
+            </div>
             <div className="app-product-card__body">
                 <div className="flex min-w-0 items-start gap-1.5">
                     <span className="mt-[3px]"><VegMark isVeg={dish.isVeg} /></span>
                     <p className="line-clamp-2 min-h-[2.6em] min-w-0 flex-1 break-words text-xs sm:text-sm font-bold leading-snug text-slate-900">{dish.name}</p>
                 </div>
-                <p className="truncate text-[10.5px] text-slate-500">{dish.provider.businessName}</p>
+                <p className="truncate text-[10.5px] text-slate-500">
+                    {dish.provider.businessName}
+                    {(dish.orderCount ?? 0) > 0 && <span className="font-semibold text-orange-600"> · {dish.orderCount} ordered today</span>}
+                </p>
                 <div className="app-product-card__footer">
                     <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{Number(dish.price)}</span>
                     <DishQuantityControl dish={dish} {...control} />

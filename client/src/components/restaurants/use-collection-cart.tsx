@@ -17,6 +17,9 @@ export interface CollectionDish {
     imageUrl?: string | null;
     isVeg?: boolean | null;
     isPopular?: boolean | null;
+    // Real orders in the last 24 hours, and whether it is one of the top sellers.
+    orderCount?: number;
+    isMostlySelling?: boolean;
     providerId: string;
     provider: {
         id: string;
