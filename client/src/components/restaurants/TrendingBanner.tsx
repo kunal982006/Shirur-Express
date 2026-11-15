@@ -55,7 +55,11 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
     const { data, isLoading } = useQuery<CollectionDish[]>({
         queryKey: [current.path],
-        queryFn: () => apiRequest("GET", current.path).then((res) => res.json()),
+        // /api/trending returns a list; /api/food-collections/:slug returns { items: [...] }.
+        queryFn: async () => {
+            const body = await apiRequest("GET", current.path).then((res) => res.json());
+            return Array.isArray(body) ? body : (body?.items ?? []);
+        },
         enabled: open,
         refetchInterval: open ? 30 * 1000 : false,
     });
