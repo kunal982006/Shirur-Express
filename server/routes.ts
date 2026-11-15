@@ -5062,8 +5062,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Seeded "ordered today" counts per dish. Deterministic for a given dish and IST date,
   // so the numbers stay steady during the day and reset with the date.
-  // Biryani and thali dishes are the best sellers: they get 22 to 24 orders.
-  // Other dishes get a random 1 to 24, and about a quarter of them get none.
+  // Biryani and thali dishes are the best sellers: they get 21 to 24 orders.
+  // Other dishes: about a quarter get none, most get 1 to 18, and only about 1 in 10 gets 19 to 24,
+  // so the top of the list is mostly biryani and thali instead of a wall of 24s.
   const seededOrderCounts = (items: { id: string; name: string; category?: string | null }[]): Map<string, number> => {
     const istDay = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
     const counts = new Map<string, number>();
@@ -5073,11 +5074,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const spread = digest.readUInt32BE(4);
       const isTopSeller = /biryani|thali/i.test(`${item.name} ${item.category || ""}`);
       if (isTopSeller) {
-        counts.set(item.id, 22 + (spread % 3));
+        // 24 is rare (about 1 in 25) so the top of the banner is not all 24s.
+        counts.set(item.id, roll % 25 === 0 ? 24 : 21 + (spread % 3));
       } else if (roll % 100 < 25) {
         counts.set(item.id, 0);
+      } else if (roll % 100 < 35) {
+        counts.set(item.id, 19 + (spread % 5));
       } else {
-        counts.set(item.id, 1 + (spread % 24));
+        counts.set(item.id, 1 + (spread % 18));
       }
     }
     return counts;
