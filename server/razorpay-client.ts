@@ -33,7 +33,7 @@ export function verifyPaymentSignature(orderId: string, paymentId: string, signa
  * @param signature - The signature from 'X-Razorpay-Signature' header
  * @returns boolean
  */
-export function verifyWebhookSignature(rawBody: string, signature: string): boolean {
+export function verifyWebhookSignature(rawBody: string | Buffer, signature: string): boolean {
   if (!process.env.RAZORPAY_WEBHOOK_SECRET) {
     console.warn('RAZORPAY_WEBHOOK_SECRET not set. Webhook verification will fail.');
     return false;

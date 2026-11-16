@@ -343,6 +343,38 @@ export default function Checkout() {
       });
       const rzpOrder = await rzpOrderResponse.data;
 
+      const paymentOrderType = isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery');
+
+      // Order is confirmed (or the money is taken and the server is confirming it): finish up.
+      const finishPaidOrder = (description: string) => {
+        toast({ title: "✅ Order Placed!", description });
+        // Track Purchase for Meta Ads (Online Payment)
+        trackEvent(FacebookStandardEvent.Purchase, {
+          content_ids: items.map(item => String(item.id)),
+          content_type: 'product',
+          num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+          value: total,
+          currency: 'INR',
+        });
+        clearCart();
+        const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
+        setLocation(`/order-success?type=${orderTypeQuery}&orderId=${databaseOrderId}&payment=online`, { replace: true }); // Success page par bhejo
+      };
+
+      // Asks the server to check with Razorpay directly. true = paid, false = not paid,
+      // null = couldn't find out (no network etc.).
+      const checkPaidOnServer = async (): Promise<boolean | null> => {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const res = await api.post("/payment/reconcile", { orderId: databaseOrderId, orderType: paymentOrderType });
+            return res.data?.status === "paid";
+          } catch {
+            await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
+          }
+        }
+        return null;
+      };
+
       // 4. Razorpay Popup Options
       const options = {
         key: rzpOrder.razorpayKeyId,
@@ -361,33 +393,27 @@ export default function Checkout() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               database_order_id: databaseOrderId,
-              orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
+              orderType: paymentOrderType,
             });
 
             if (verificationResponse.data.status === 'success') {
               // 6. Success!
-              toast({
-                title: "✅ Order Placed!",
-                description: "Your payment was successful.",
-              });
-              // Track Purchase for Meta Ads (Online Payment)
-              trackEvent(FacebookStandardEvent.Purchase, {
-                content_ids: items.map(item => String(item.id)),
-                content_type: 'product',
-                num_items: items.reduce((sum, item) => sum + item.quantity, 0),
-                value: total,
-                currency: 'INR',
-              });
-              clearCart();
-              const orderTypeQuery = isStreetFood || isRestaurant ? 'orders' : 'grocery';
-              setLocation(`/order-success?type=${orderTypeQuery}&orderId=${databaseOrderId}&payment=online`, { replace: true }); // Success page par bhejo
-            } else {
-              throw new Error("Payment verification failed");
+              finishPaidOrder("Your payment was successful.");
+              return;
             }
-
+            throw new Error("Payment verification failed");
           } catch (verifyError) {
-            toast({ title: "Payment Failed", description: "Signature verification failed. Please contact support.", variant: "destructive" });
-            setIsPlacingOrder(false);
+            // Razorpay said the payment went through, so never tell the customer it failed
+            // just because our own confirmation call had a problem. Double-check with the server.
+            console.error("Payment verification call failed, re-checking:", verifyError);
+            const paid = await checkPaidOnServer();
+            if (paid === false) {
+              toast({ title: "Payment Not Confirmed", description: "We could not confirm your payment. If money was deducted, please contact support.", variant: "destructive" });
+              setIsPlacingOrder(false);
+            } else {
+              // paid, or we couldn't reach the server — it keeps checking with Razorpay on its own.
+              finishPaidOrder(paid ? "Your payment was successful." : "Payment received. We're confirming your order — check My Orders in a minute.");
+            }
           }
         },
         prefill: {
@@ -423,12 +449,17 @@ export default function Checkout() {
         },
         modal: {
           ondismiss: async (failureReason?: string) => {
-            // Cancel the payment_pending order since user dismissed payment
+            // Cancel the payment_pending order since user dismissed payment. The server first
+            // checks with Razorpay — if the money was actually taken, the order is kept.
             try {
-              await api.post("/payment/cancel-order", {
+              const cancelResponse = await api.post("/payment/cancel-order", {
                 orderId: databaseOrderId,
-                orderType: isStreetFood ? 'street_food' : (isRestaurant ? 'restaurant' : 'grocery'),
+                orderType: paymentOrderType,
               });
+              if (cancelResponse.data?.status === "paid") {
+                finishPaidOrder("Your payment was successful.");
+                return;
+              }
             } catch (cancelErr) {
               console.error("Failed to cancel abandoned order:", cancelErr);
             }

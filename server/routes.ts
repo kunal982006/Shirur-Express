@@ -15,7 +15,7 @@ import { storage } from "./storage";
 import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, isNonVegDish, orderFoodCollectionFeed } from "@shared/food-collections";
 import { PINNED_DISHES, PINNED_ROW_SLUGS, findPinnedIndex, findSpecialtyTag, isExtraFor, rotationRank } from "./food-highlights";
 import { db } from "./db";
-import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
+import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable, isNull, isNotNull } from "drizzle-orm";
 import {
   insertBookingSchema,
   insertGroceryOrderSchema,
@@ -53,7 +53,7 @@ import {
 } from "@shared/schema";
 import { displayDeliveryAddress } from "@shared/delivery-address";
 
-import { razorpayInstance, verifyPaymentSignature } from "./razorpay-client";
+import { razorpayInstance, verifyPaymentSignature, verifyWebhookSignature } from "./razorpay-client";
 
 // NAYA IMPORT: z for validation
 import { z } from "zod";
@@ -220,6 +220,18 @@ type CommerceOrderType = typeof commerceOrderTypes[number];
 function isCommerceOrderType(value: unknown): value is CommerceOrderType {
   return typeof value === "string" && commerceOrderTypes.includes(value as CommerceOrderType);
 }
+
+const commerceOrderTables = {
+  grocery: groceryOrders,
+  restaurant: restaurantOrders,
+  street_food: streetFoodOrders,
+} as const;
+
+// An online order that has not been matched to a payment yet is either still waiting
+// ("payment_pending") or was cancelled because the customer's app reported the payment as
+// dismissed/failed. Both can still turn out to be paid (a UPI payment that completes late,
+// an app that was closed before it could report back), so both stay eligible for confirmation.
+const UNSETTLED_PAYMENT_STATUSES = ["payment_pending", "cancelled"];
 
 async function getCommerceOrder(orderType: CommerceOrderType, orderId: string) {
   if (orderType === "street_food") return storage.getStreetFoodOrder(orderId);
@@ -2427,13 +2439,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // --- HELPER FUNCTION FOR ORDER NOTIFICATIONS ---
-  async function sendOrderNotifications(updatedOrder: any, orderType: string, database_order_id: string) {
+  async function sendOrderNotifications(updatedOrder: any, orderType: string, database_order_id: string, options: { adminOnly?: boolean } = {}) {
     try {
       const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
         : orderType === 'street_food' ? '🌮 Street Food'
           : '🛒 Grocery';
 
-      if (orderType === 'street_food') {
+      if (options.adminOnly) {
+        // Late-confirmed order: the admin decides what to do with it, the shop is not rung.
+      } else if (orderType === 'street_food') {
         const sfAdmin = await storage.getUserByUsername('streetfood_admin');
         if (sfAdmin) {
           console.log(`[FCM] New Order Notification! Sending Ring to streetfood_admin`);
@@ -2554,6 +2568,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // --- PAYMENT CONFIRMATION (shared by the app callback, the Razorpay webhook and the sweep) ---
+
+  // Orders confirmed this long after they were placed only alert the admin: ringing the shop
+  // for an order the customer placed hours ago would be confusing.
+  const LATE_PAYMENT_ADMIN_ONLY_MS = 2 * 60 * 60 * 1000;
+
+  // Marks an order paid exactly once. Returns the order when this call did the transition and
+  // null when it was already settled, so callers racing each other never double-notify.
+  async function markCommerceOrderPaid(
+    orderType: CommerceOrderType,
+    orderId: string,
+    rzpOrderId: string,
+    rzpPaymentId: string,
+    source: string,
+  ): Promise<any | null> {
+    const table: any = commerceOrderTables[orderType];
+    const [order] = await db
+      .update(table)
+      .set({ status: "paid", razorpayPaymentId: rzpPaymentId })
+      .where(and(
+        eq(table.id, orderId),
+        eq(table.razorpayOrderId, rzpOrderId),
+        isNull(table.razorpayPaymentId),
+        inArray(table.status, UNSETTLED_PAYMENT_STATUSES),
+      ))
+      .returning();
+    if (!order) return null;
+
+    console.log(`[Payment] ${orderType} order ${orderId} marked paid via ${source} (payment ${rzpPaymentId})`);
+    const ageMs = order.createdAt ? Date.now() - new Date(order.createdAt).getTime() : 0;
+    void sendOrderNotifications(order, orderType, orderId, { adminOnly: ageMs > LATE_PAYMENT_ADMIN_ONLY_MS });
+    return order;
+  }
+
+  // Asks Razorpay whether an unsettled order has in fact been paid, and confirms it if so.
+  async function reconcileCommerceOrderPayment(
+    orderType: CommerceOrderType,
+    orderId: string,
+    source: string,
+  ): Promise<{ paid: boolean; order: any | null }> {
+    const order: any = await getCommerceOrder(orderType, orderId);
+    if (!order) return { paid: false, order: null };
+    if (order.razorpayPaymentId) return { paid: true, order };
+    if (!order.razorpayOrderId || !UNSETTLED_PAYMENT_STATUSES.includes(order.status)) {
+      return { paid: false, order };
+    }
+
+    const payments: any = await razorpayInstance.orders.fetchPayments(order.razorpayOrderId);
+    const items: any[] = Array.isArray(payments?.items) ? payments.items : [];
+    const successful = items.find((p) => p.status === "captured") || items.find((p) => p.status === "authorized");
+    if (!successful) return { paid: false, order };
+
+    const updated = await markCommerceOrderPaid(orderType, orderId, order.razorpayOrderId, successful.id, source);
+    return { paid: true, order: updated || await getCommerceOrder(orderType, orderId) };
+  }
+
+  // Safety net: periodically re-check every recent online order that never got matched to a
+  // payment, so a paid order shows up for the admin even if the customer's app never reported
+  // back and no webhook arrived.
+  let paymentSweepRunning = false;
+  async function sweepUnsettledPayments(windowMs: number) {
+    if (paymentSweepRunning) return;
+    paymentSweepRunning = true;
+    try {
+      const since = new Date(Date.now() - windowMs);
+      for (const orderType of commerceOrderTypes) {
+        const table: any = commerceOrderTables[orderType];
+        const rows: { id: string }[] = await db
+          .select({ id: table.id })
+          .from(table)
+          .where(and(
+            isNotNull(table.razorpayOrderId),
+            isNull(table.razorpayPaymentId),
+            inArray(table.status, UNSETTLED_PAYMENT_STATUSES),
+            gte(table.createdAt, since),
+          ));
+        for (const row of rows) {
+          try {
+            await reconcileCommerceOrderPayment(orderType, row.id, "sweep");
+          } catch (err: any) {
+            console.error(`[Payment Sweep] Could not check ${orderType} order ${row.id}:`, err?.error?.description || err?.message || err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Payment Sweep] Failed:", err);
+    } finally {
+      paymentSweepRunning = false;
+    }
+  }
+
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    // On boot look back a full day (recovers orders that got stuck earlier), then keep
+    // watching the last few hours.
+    setTimeout(() => { void sweepUnsettledPayments(24 * 60 * 60 * 1000); }, 15 * 1000);
+    setInterval(() => { void sweepUnsettledPayments(3 * 60 * 60 * 1000); }, 2 * 60 * 1000);
+  }
+
+  // --- RAZORPAY WEBHOOK (server-to-server payment confirmation) ---
+  // Configure in Razorpay Dashboard → Settings → Webhooks with events payment.captured,
+  // payment.authorized and order.paid, using the secret in RAZORPAY_WEBHOOK_SECRET.
+  app.post("/api/webhooks/razorpay", async (req: Request, res: Response) => {
+    try {
+      const signature = req.get("x-razorpay-signature");
+      const rawBody = req.rawBody as Buffer | undefined;
+      if (!signature || !rawBody || !verifyWebhookSignature(rawBody, signature)) {
+        return res.status(400).json({ message: "Invalid webhook signature" });
+      }
+
+      const event = req.body?.event;
+      const payment = req.body?.payload?.payment?.entity;
+      if (["payment.captured", "payment.authorized", "order.paid"].includes(event) && payment?.id && payment?.order_id) {
+        for (const orderType of commerceOrderTypes) {
+          const table: any = commerceOrderTables[orderType];
+          const [match] = await db
+            .select({ id: table.id })
+            .from(table)
+            .where(eq(table.razorpayOrderId, payment.order_id))
+            .limit(1);
+          if (match) {
+            await markCommerceOrderPaid(orderType, match.id, payment.order_id, payment.id, `webhook ${event}`);
+            break;
+          }
+        }
+      }
+
+      res.json({ status: "ok" });
+    } catch (error: any) {
+      // A non-2xx reply makes Razorpay retry the delivery later.
+      console.error("Razorpay webhook error:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
   // --- PAYMENT VERIFICATION ROUTE (GENERIC) ---
   app.post("/api/payment/verify-signature", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
@@ -2567,35 +2715,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!dbOrder || dbOrder.userId !== req.userId) {
         return res.status(404).json({ message: "Order not found" });
       }
-      if (dbOrder.status !== "payment_pending") {
-        return res.status(409).json({ message: "This order is no longer awaiting payment." });
-      }
       if (dbOrder.razorpayOrderId !== razorpay_order_id) {
         return res.status(400).json({ message: "Payment does not match this order." });
       }
 
       const isValid = verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+      if (!isValid) {
+        return res.status(400).json({ status: "failure", message: "Invalid signature" });
+      }
 
-      if (isValid) {
-        // Update order status in DB
-        let updatedOrder;
-        if (orderType === 'street_food') {
-          updatedOrder = await storage.updateStreetFoodOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
-        } else if (orderType === 'restaurant') {
-          updatedOrder = await storage.updateRestaurantOrderStatus(database_order_id, "paid", null, razorpay_payment_id, razorpay_order_id);
-        } else {
-          updatedOrder = await storage.updateGroceryOrderStatus(database_order_id, "paid", razorpay_payment_id, razorpay_order_id);
+      let updatedOrder: any = await markCommerceOrderPaid(orderType, database_order_id, razorpay_order_id, razorpay_payment_id, "app callback");
+      const newlyPaid = Boolean(updatedOrder);
+      if (!updatedOrder) {
+        // The webhook or the sweep may have confirmed this payment before the app reported it.
+        const current: any = await getCommerceOrder(orderType, database_order_id);
+        if (!current?.razorpayPaymentId) {
+          return res.status(409).json({ message: "This order is no longer awaiting payment." });
         }
+        updatedOrder = current;
+      }
 
-        res.json({ status: "success", order: updatedOrder });
+      res.json({ status: "success", order: updatedOrder });
 
+      if (newlyPaid) {
         // Track Purchase event server-side for Meta Ads (fire and forget)
         try {
           const orderUser = await storage.getUser(req.session?.userId || '');
           const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
           const itemIds = orderItems.map((i: any) => String(i.productId || i.menuItemId || i.id || ''));
           const totalAmount = parseFloat((updatedOrder as any)?.totalAmount || (updatedOrder as any)?.total || '0');
-          
+
           trackPurchase({
             email: orderUser?.email || undefined,
             phone: orderUser?.phone || undefined,
@@ -2606,136 +2755,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (fbErr) {
           console.error('[FacebookConversions] Purchase tracking failed:', fbErr);
         }
-
-        // --- PUSH NOTIFICATION (RINGING) — Only after payment is verified! ---
-        try {
-          const orderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
-            : orderType === 'street_food' ? '🌮 Street Food'
-              : '🛒 Grocery';
-
-          if (orderType === 'street_food') {
-            const sfAdmin = await storage.getUserByUsername('streetfood_admin');
-            if (sfAdmin) {
-              console.log(`[FCM] Payment verified! Sending Ring to streetfood_admin`);
-              const allTokens: string[] = [];
-              if (sfAdmin.fcmTokens && Array.isArray(sfAdmin.fcmTokens)) {
-                allTokens.push(...sfAdmin.fcmTokens);
-              } else if (sfAdmin.fcmToken) {
-                allTokens.push(sfAdmin.fcmToken);
-              }
-              const uniqueTokens = Array.from(new Set(allTokens));
-              // Build items summary for street food
-              const sfItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
-              const sfItemsSummary = sfItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (sfItems.length > 3 ? ` +${sfItems.length - 3} more` : '');
-              const sfAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
-              const sfCustomer = await storage.getUser(updatedOrder?.userId);
-              const sfPhone = sfCustomer?.phone || 'N/A';
-
-              for (const deviceToken of uniqueTokens) {
-                await sendPushNotification(deviceToken, {
-                  type: 'ORDER_REQUEST',
-                  title: `${orderLabel} Order — ₹${sfAmount}`,
-                  body: `🛒 ${sfItemsSummary || 'New order'} • 📞 ${sfPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}`,
-                  data: {
-                    orderId: database_order_id,
-                    orderType: orderType || 'street_food',
-                    customerName: sfCustomer?.username || 'Customer',
-                    customerPhone: sfPhone,
-                    amount: sfAmount,
-                    itemsSummary: sfItemsSummary || 'Street food order',
-                    dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
-                    navigateTo: '/provider/dashboard'
-                  }
-                });
-              }
-            }
-          } else {
-            const providerId = updatedOrder?.providerId;
-            if (providerId) {
-              const provider = await storage.getServiceProvider(providerId);
-              if (provider && provider.user) {
-                console.log(`[FCM] Payment verified! Sending Ring to ${provider.businessName}`);
-
-                // Multi-device support: send to all tokens
-                const allTokens: string[] = [];
-                if (provider.user.fcmTokens && Array.isArray(provider.user.fcmTokens)) {
-                  allTokens.push(...provider.user.fcmTokens);
-                } else if (provider.user.fcmToken) {
-                  allTokens.push(provider.user.fcmToken);
-                }
-                const uniqueTokens = Array.from(new Set(allTokens));
-                console.log(`[FCM] Sending to ${uniqueTokens.length} device(s)`);
-
-                // Build items summary for restaurant/grocery
-                const orderItems = Array.isArray(updatedOrder?.items) ? updatedOrder.items : [];
-                const itemsSummary = orderItems.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (orderItems.length > 3 ? ` +${orderItems.length - 3} more` : '');
-                const orderAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
-                const orderCustomer = await storage.getUser(updatedOrder?.userId);
-                const orderPhone = orderCustomer?.phone || 'N/A';
-
-                for (const deviceToken of uniqueTokens) {
-                  await sendPushNotification(deviceToken, {
-                    type: 'ORDER_REQUEST',
-                    title: `${orderLabel} Order — ₹${orderAmount}`,
-                    body: `🛒 ${itemsSummary || 'New order'} • 📞 ${orderPhone} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App'}`,
-                    data: {
-                      orderId: database_order_id,
-                      orderType: orderType || 'grocery',
-                      customerName: orderCustomer?.username || 'Customer',
-                      customerPhone: orderPhone,
-                      amount: orderAmount,
-                      itemsSummary: itemsSummary || `${orderLabel} order`,
-                      dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'Check App',
-                      navigateTo: '/provider/dashboard'
-                    }
-                  });
-                }
-              }
-            }
-          }
-        } catch (fcmError) {
-          console.error('[FCM Error] Post-payment notification failed (non-critical):', fcmError);
-        }
-        // --- END PUSH NOTIFICATION ---
-
-        // --- ADMIN NOTIFICATION: Also alert admin (main_branch) ---
-        try {
-          const adminOrderLabel = orderType === 'restaurant' ? '🍽️ Restaurant'
-            : orderType === 'street_food' ? '🌮 Street Food'
-              : '🛒 Grocery';
-          let adminProviderName = 'N/A';
-          if (orderType === 'street_food') {
-            adminProviderName = 'Street Food Admin';
-          } else if (updatedOrder?.providerId) {
-            const prov = await storage.getServiceProvider(updatedOrder.providerId);
-            adminProviderName = prov?.businessName || 'Unknown';
-          }
-          const adminAmount = (updatedOrder as any)?.totalAmount?.toString() || (updatedOrder as any)?.total?.toString() || 'Check App';
-          const adminItems = Array.isArray(updatedOrder?.items)
-            ? updatedOrder.items.slice(0, 3).map((i: any) => `${i.quantity}x ${i.name}`).join(', ') + (updatedOrder.items.length > 3 ? ` +${updatedOrder.items.length - 3} more` : '')
-            : '';
-          await notifyAdmin({
-            title: `${adminOrderLabel} Order — ₹${adminAmount}`,
-            body: `Provider: ${adminProviderName} • 🛒 ${adminItems || 'New order'} • 📍 ${displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A'}`,
-            data: {
-              orderId: database_order_id,
-              orderType: orderType || 'grocery',
-              providerName: adminProviderName,
-              amount: adminAmount,
-              itemsSummary: adminItems || `${adminOrderLabel} order`,
-              dropAddress: displayDeliveryAddress(updatedOrder?.deliveryAddress) || 'N/A',
-            }
-          });
-        } catch (adminErr) {
-          console.error('[Admin Notif] Order admin alert failed:', adminErr);
-        }
-      } else {
-        res.status(400).json({ status: "failure", message: "Invalid signature" });
       }
-
     } catch (error: any) {
       console.error("Payment verification error:", error);
-      res.status(500).json({ message: error.message || "Error verifying payment" });
+      if (!res.headersSent) {
+        res.status(500).json({ message: error.message || "Error verifying payment" });
+      }
+    }
+  });
+
+  // --- PAYMENT RECONCILE ROUTE: the app asks "did my payment go through?" ---
+  app.post("/api/payment/reconcile", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, orderType } = req.body;
+      if (!orderId || !isCommerceOrderType(orderType)) {
+        return res.status(400).json({ message: "orderId and orderType required" });
+      }
+      const dbOrder = await getCommerceOrder(orderType, orderId);
+      if (!dbOrder || dbOrder.userId !== req.userId) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const result = await reconcileCommerceOrderPayment(orderType, orderId, "app reconcile");
+      res.json({ status: result.paid ? "paid" : "unpaid", order: result.order });
+    } catch (error: any) {
+      console.error("Payment reconcile error:", error);
+      res.status(500).json({ message: error?.error?.description || error.message || "Error checking payment" });
     }
   });
 
@@ -2820,25 +2865,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
 
+      // The checkout can report "dismissed"/"failed" even though the money was taken (e.g. the
+      // customer paid in a UPI app and came back the wrong way). Ask Razorpay before cancelling.
+      try {
+        const result = await reconcileCommerceOrderPayment(orderType, orderId, "cancel check");
+        if (result.paid) {
+          return res.json({ status: "paid", order: result.order });
+        }
+      } catch (checkErr: any) {
+        // If Razorpay can't be reached we still cancel; the sweep revives the order if it was paid.
+        console.error("[Payment Cancel] Could not check payment before cancelling:", checkErr?.error?.description || checkErr?.message || checkErr);
+      }
+
       // Only cancel orders that are still in payment_pending status
-      if (orderType === 'street_food') {
-        const order = await storage.getStreetFoodOrder(orderId);
-        if (order && order.status === 'payment_pending') {
-          await storage.updateStreetFoodOrderStatus(orderId, "cancelled");
-          console.log(`[Payment Cancel] Street food order ${orderId} cancelled (payment dismissed)`);
-        }
-      } else if (orderType === 'restaurant') {
-        const order = await storage.getRestaurantOrder(orderId);
-        if (order && order.status === 'payment_pending') {
-          await storage.updateRestaurantOrderStatus(orderId, "cancelled");
-          console.log(`[Payment Cancel] Restaurant order ${orderId} cancelled (payment dismissed)`);
-        }
-      } else {
-        const order = await storage.getGroceryOrder(orderId);
-        if (order && order.status === 'payment_pending') {
-          await storage.updateGroceryOrderStatus(orderId, "cancelled");
-          console.log(`[Payment Cancel] Grocery order ${orderId} cancelled (payment dismissed)`);
-        }
+      const table: any = commerceOrderTables[orderType];
+      const [cancelled] = await db
+        .update(table)
+        .set({ status: "cancelled" })
+        .where(and(eq(table.id, orderId), eq(table.status, "payment_pending")))
+        .returning({ id: table.id });
+      if (cancelled) {
+        console.log(`[Payment Cancel] ${orderType} order ${orderId} cancelled (payment dismissed)`);
       }
 
       res.json({ status: "cancelled" });
