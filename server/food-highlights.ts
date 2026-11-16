@@ -1,14 +1,15 @@
 import { createHash } from "crypto";
 
-// Featured dishes on the food home screen: their peak "ordered today" figure, the extras
+// Featured dishes on the food home screen: their "ordered in the last 24 hours" figure, the extras
 // offered when they are added to the cart, and any time limit or description override.
 // Dishes are matched against existing menu data; nothing here writes to the database.
 export interface PinnedDish {
   provider: RegExp;
   // Tested against the English part of the menu name, lower-cased (see englishName).
   name: RegExp;
-  // Figure the counter reaches by the end of the day.
-  peak: number;
+  // Orders in the last 24 hours as supplied by the business. Real orders placed through the
+  // app in the last 24 hours are added on top.
+  figure: number;
   // Row the dish leads: breakfast, the lunch/dinner rows ("meal"), or Veg Thalis.
   row: "breakfast" | "meal" | "thali";
   extras?: "pav" | "bread";
@@ -26,44 +27,44 @@ const RASSA = /rassa bhakri/i;
 
 export const PINNED_DISHES: PinnedDish[] = [
   // Breakfast
-  { provider: /davangiri/i, name: /^loni masala spanje dosa$/, row: "breakfast", peak: 38 },
-  { provider: ABHIRUCHI, name: /^pavbhaji$/, row: "breakfast", peak: 35, extras: "pav" },
-  { provider: SADGURU, name: /^kanda bhaji khekda$/, row: "breakfast", peak: 32, extras: "pav" },
-  { provider: /tumkur|turkum|tatt[ae]y/i, name: /^idli wada mix$/, row: "breakfast", peak: 28, untilMinute: 13 * 60 },
-  { provider: /davangiri/i, name: /^sadha loni dosa$/, row: "breakfast", peak: 24 },
-  { provider: SADGURU, name: /^vada pav$/, row: "breakfast", peak: 21 },
-  { provider: ABHIRUCHI, name: /^schezwan dosa$/, row: "breakfast", peak: 9 },
-  { provider: SADGURU, name: /^misal pav$/, row: "breakfast", peak: 9, extras: "pav" },
-  { provider: ABHIRUCHI, name: /^butter misal$/, row: "breakfast", peak: 4, extras: "pav" },
+  { provider: /davangiri/i, name: /^loni masala spanje dosa$/, row: "breakfast", figure: 38 },
+  { provider: ABHIRUCHI, name: /^pavbhaji$/, row: "breakfast", figure: 35, extras: "pav" },
+  { provider: SADGURU, name: /^kanda bhaji khekda$/, row: "breakfast", figure: 32, extras: "pav" },
+  { provider: /tumkur|turkum|tatt[ae]y/i, name: /idli.*(wada|vada)|(wada|vada).*idli/, row: "breakfast", figure: 28, untilMinute: 13 * 60 },
+  { provider: /davangiri/i, name: /^sadha loni dosa$/, row: "breakfast", figure: 24 },
+  { provider: SADGURU, name: /^vada pav$/, row: "breakfast", figure: 21 },
+  { provider: ABHIRUCHI, name: /^schezwan dosa$/, row: "breakfast", figure: 9 },
+  { provider: SADGURU, name: /^misal pav$/, row: "breakfast", figure: 9, extras: "pav" },
+  { provider: ABHIRUCHI, name: /^butter misal$/, row: "breakfast", figure: 4, extras: "pav" },
 
   // Veg thalis
-  { provider: /annapurna/i, name: /^veg thali$/, row: "thali", peak: 28 },
-  { provider: GANGA, name: /^veg thali$/, row: "thali", peak: 24, description: "Paneer Masala, Shev Bhaji, Matki Suki Bhaji, Papad, 2 Roti, Salad, Dal, Rice, Gulab Jamun" },
-  { provider: SWAD, name: /^special veg thali$/, row: "thali", peak: 9, description: "Paneer Masala, Mix Veg, Dal, Rice, 2 Roti and a Sweet" },
-  { provider: SWAD, name: /^veg thali$/, row: "thali", peak: 7, description: "Bengan Masala, Mix Veg Bhaji, 2 Roti, Dal, Rice" },
+  { provider: /annapurna/i, name: /^veg thali$/, row: "thali", figure: 28 },
+  { provider: GANGA, name: /^veg thali$/, row: "thali", figure: 24, description: "Paneer Masala, Shev Bhaji, Matki Suki Bhaji, Papad, 2 Roti, Salad, Dal, Rice, Gulab Jamun" },
+  { provider: SWAD, name: /^special veg thali$/, row: "thali", figure: 9, description: "Paneer Masala, Mix Veg, Dal, Rice, 2 Roti and a Sweet" },
+  { provider: SWAD, name: /^veg thali$/, row: "thali", figure: 7, description: "Bengan Masala, Mix Veg Bhaji, 2 Roti, Dal, Rice" },
 
   // Lunch and dinner bhajis
-  { provider: RASSA, name: /^paneer masala$/, row: "meal", peak: 12, extras: "bread" },
-  { provider: /radhika/i, name: /^shev bhaji$/, row: "meal", peak: 12, extras: "bread" },
-  { provider: SADGURU, name: /^green peas curry$/, row: "meal", peak: 8, extras: "bread" },
-  { provider: SADGURU, name: /^matki fry$/, row: "meal", peak: 12, extras: "bread" },
-  { provider: GANGA, name: /^lasooni palak$/, row: "meal", peak: 18, extras: "bread" },
-  { provider: GANGA, name: /^mix veg$/, row: "meal", peak: 12, extras: "bread" },
-  { provider: GANGA, name: /^shevga masala$/, row: "meal", peak: 24, extras: "bread" },
-  { provider: GANGA, name: /^veg kolhapuri$/, row: "meal", peak: 17, extras: "bread" },
-  { provider: SADGURU, name: /^paneer masala - black curry$/, row: "meal", peak: 24, extras: "bread" },
-  { provider: SADGURU, name: /^mushroom masala - black curry$/, row: "meal", peak: 18, extras: "bread" },
-  { provider: SADGURU, name: /^akkha masoor$/, row: "meal", peak: 14, extras: "bread" },
-  { provider: SWAD, name: /^mutter paneer$/, row: "meal", peak: 7, extras: "bread" },
-  { provider: SWAD, name: /^kaju curry$/, row: "meal", peak: 4, extras: "bread" },
-  { provider: SWAD, name: /^lasun methi$/, row: "meal", peak: 2, extras: "bread" },
-  { provider: SUMAN, name: /^kashmiri dum aloo$/, row: "meal", peak: 14, extras: "bread" },
-  { provider: SUMAN, name: /^paneer mumtaz$/, row: "meal", peak: 7, extras: "bread" },
-  { provider: SUMAN, name: /^paneer lababdar$/, row: "meal", peak: 7, extras: "bread" },
-  { provider: SUMAN, name: /^paneer chatpata$/, row: "meal", peak: 12, extras: "bread" },
-  { provider: SUMAN, name: /^paneer khurchand$/, row: "meal", peak: 11, extras: "bread" },
-  { provider: SUMAN, name: /^veg patiyala$/, row: "meal", peak: 4, extras: "bread" },
-  { provider: RASSA, name: /^kaju paneer masala$/, row: "meal", peak: 12, extras: "bread" },
+  { provider: RASSA, name: /^paneer masala$/, row: "meal", figure: 12, extras: "bread" },
+  { provider: /radhika/i, name: /^shev bhaji$/, row: "meal", figure: 12, extras: "bread" },
+  { provider: SADGURU, name: /^green peas curry$/, row: "meal", figure: 8, extras: "bread" },
+  { provider: SADGURU, name: /^matki fry$/, row: "meal", figure: 12, extras: "bread" },
+  { provider: GANGA, name: /^lasooni palak$/, row: "meal", figure: 18, extras: "bread" },
+  { provider: GANGA, name: /^mix veg$/, row: "meal", figure: 12, extras: "bread" },
+  { provider: GANGA, name: /^shevga masala$/, row: "meal", figure: 24, extras: "bread" },
+  { provider: GANGA, name: /^veg kolhapuri$/, row: "meal", figure: 17, extras: "bread" },
+  { provider: SADGURU, name: /^paneer masala - black curry$/, row: "meal", figure: 24, extras: "bread" },
+  { provider: SADGURU, name: /^mushroom masala - black curry$/, row: "meal", figure: 18, extras: "bread" },
+  { provider: SADGURU, name: /^akkha masoor$/, row: "meal", figure: 14, extras: "bread" },
+  { provider: SWAD, name: /^mutter paneer$/, row: "meal", figure: 7, extras: "bread" },
+  { provider: SWAD, name: /^kaju curry$/, row: "meal", figure: 4, extras: "bread" },
+  { provider: SWAD, name: /^lasun methi$/, row: "meal", figure: 2, extras: "bread" },
+  { provider: SUMAN, name: /^kashmiri dum aloo$/, row: "meal", figure: 14, extras: "bread" },
+  { provider: SUMAN, name: /^paneer mumtaz$/, row: "meal", figure: 7, extras: "bread" },
+  { provider: SUMAN, name: /^paneer lababdar$/, row: "meal", figure: 7, extras: "bread" },
+  { provider: SUMAN, name: /^paneer chatpata$/, row: "meal", figure: 12, extras: "bread" },
+  { provider: SUMAN, name: /^paneer khurchand$/, row: "meal", figure: 11, extras: "bread" },
+  { provider: SUMAN, name: /^veg patiyala$/, row: "meal", figure: 4, extras: "bread" },
+  { provider: RASSA, name: /^kaju paneer masala$/, row: "meal", figure: 12, extras: "bread" },
 ];
 
 // Menus are often bilingual ("मिसळ पाव (Misal Pav)"); keep the English part only.
@@ -79,6 +80,8 @@ export function findPinnedIndex(item: { name: string; provider: { businessName: 
 const isPlainPav = (name: string) => /\bpav\b/.test(name) && !/misal|vada|bhaji|masala|bhurji|cheese/.test(name);
 const isPlainBread = (name: string) =>
   /\b(roti|naan|chapati|chapatti|bhakri|kulcha|paratha|parotha)\b/.test(name) && !/aloo|paneer|cheese|methi|thecha|stuff|thali/.test(name);
+// Some restaurants list no breads at all; plain rice is what goes with a bhaji there.
+const isPlainRice = (name: string) => /\b(jeera|steam|steamed|plain) rice\b/.test(name);
 
 // Rows in which a pinned dish is moved to the front.
 export const PINNED_ROW_SLUGS: Record<PinnedDish["row"], string[]> = {
@@ -89,54 +92,95 @@ export const PINNED_ROW_SLUGS: Record<PinnedDish["row"], string[]> = {
 
 export function isExtraFor(kind: "pav" | "bread", itemName: string): boolean {
   const name = englishName(itemName);
-  return kind === "pav" ? isPlainPav(name) : isPlainBread(name);
+  return kind === "pav" ? isPlainPav(name) : isPlainBread(name) || isPlainRice(name);
 }
 
-// --- Order counters ---
+// --- Speciality tags ---
+// What each partner is known for. A matching dish carries the tag as its badge and leads the
+// Non-Veg Special, Biryani and cafe rows. `dish` is tested against "menu section + name".
 
-const istDayKey = () => new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
-
-// Day's peak for a dish that is not pinned. Deterministic per dish and IST date, so the
-// figures hold steady during the day and reshuffle at midnight. Biryani and thali lead (21-24).
-export function seededPeak(item: { id: string; name: string; category?: string | null }): number {
-  const digest = createHash("sha256").update(`${istDayKey()}:${item.id}`).digest();
-  const roll = digest.readUInt32BE(0);
-  const spread = digest.readUInt32BE(4);
-  if (/biryani|thali/i.test(`${item.name} ${item.category || ""}`)) {
-    return roll % 25 === 0 ? 24 : 21 + (spread % 3);
-  }
-  if (roll % 100 < 25) return 0;
-  if (roll % 100 < 35) return 19 + (spread % 5);
-  return 1 + (spread % 18);
+interface Specialty {
+  provider: RegExp;
+  dish: RegExp;
+  tag: string;
+  diet?: "veg" | "non-veg";
 }
 
-// Share of the day's peak reached by a given IST minute: [minute, share] points, joined by lines.
-type Curve = [number, number][];
-const CURVES: Record<"general" | "breakfast" | "evening", Curve> = {
-  // Low in the morning, steady through lunch, surging in the evening.
-  general: [[0, 0.05], [360, 0.08], [690, 0.25], [960, 0.55], [1140, 0.7], [1350, 0.97], [1440, 1]],
-  // Breakfast dishes sell out by early afternoon.
-  breakfast: [[0, 0.03], [360, 0.1], [690, 0.85], [780, 1], [1440, 1]],
-  // Street food stalls open in the evening.
-  evening: [[0, 0.03], [960, 0.1], [1320, 0.97], [1440, 1]],
-};
+const NIKHARA = /nikhara/i;
+const AFFAIR = /chicken affair/i;
+const BULLS = /bulls/i;
+const JOY = /cafe of joy/i;
+const AROMA = /aroma/i;
+const POCKET = /pocket/i;
+const ELITE = /elite/i;
 
-export function curveFor(slugs: string[]): keyof typeof CURVES {
-  if (slugs.includes("breakfast")) return "breakfast";
-  if (slugs.length > 0 && slugs.every((slug) => slug === "street-food")) return "evening";
-  return "general";
+const SPECIALTIES: Specialty[] = [
+  // Non-veg restaurants
+  { provider: /saniraje/i, dish: /thali/i, tag: "Famous for Thalis" },
+  { provider: NIKHARA, dish: /murg|mus+al+am|speciality/i, tag: "Nikhara Special", diet: "non-veg" },
+  { provider: NIKHARA, dish: /biry?ani|mandi|kepsa/i, tag: "Known for Biryani", diet: "non-veg" },
+  { provider: NIKHARA, dish: /tandoor|kebab|kabab|tikka/i, tag: "Tandoor Special", diet: "non-veg" },
+  { provider: /tiranga/i, dish: /main course|thali|biry?ani/i, tag: "Everyday Non-Veg", diet: "non-veg" },
+  { provider: GANGA, dish: /fish|surmai|paplet|rohu|chilapi|bangda|prawn/i, tag: "Known for Fish", diet: "non-veg" },
+  { provider: GANGA, dish: /tandoor|kebab|kabab|tikka/i, tag: "Tandoor Special", diet: "non-veg" },
+  { provider: GANGA, dish: /chicken/i, tag: "Chicken Special", diet: "non-veg" },
+  { provider: SWAD, dish: /biry?ani/i, tag: "Known for Biryani", diet: "non-veg" },
+  { provider: SWAD, dish: /chinese|starter|noodles|manchurian|chilli|lollipop/i, tag: "Chinese Special", diet: "non-veg" },
+  { provider: /yash biryani/i, dish: /biry?ani/i, tag: "Shirur's Favourite Biryani" },
+  { provider: RASSA, dish: /chicken biry?ani/i, tag: "Special Chicken Biryani" },
+  { provider: RASSA, dish: /lollipop|chilli/i, tag: "Chinese Starter", diet: "non-veg" },
+  { provider: RASSA, dish: /masala|handi|malvani|sukka|thali/i, tag: "Rassa Special", diet: "non-veg" },
+  { provider: /radhika/i, dish: /./, tag: "Home-Style Non-Veg", diet: "non-veg" },
+  { provider: AFFAIR, dish: /fried chicken|bucket/i, tag: "Known for Fried Chicken", diet: "non-veg" },
+  { provider: AFFAIR, dish: /burger/i, tag: "Known for Burgers", diet: "non-veg" },
+  { provider: AFFAIR, dish: /wrap|roll/i, tag: "Known for Wraps", diet: "non-veg" },
+  { provider: AFFAIR, dish: /pizza/i, tag: "Chicken Pizza", diet: "non-veg" },
+  { provider: AFFAIR, dish: /fries/i, tag: "Loaded Fries", diet: "non-veg" },
+  { provider: BULLS, dish: /pizza/i, tag: "Chicken Pizza", diet: "non-veg" },
+  { provider: BULLS, dish: /burger/i, tag: "Chicken Burger", diet: "non-veg" },
+
+  // Cafes
+  { provider: JOY, dish: /pasta/i, tag: "Known for Pasta" },
+  { provider: JOY, dish: /momo/i, tag: "Known for Momos" },
+  { provider: JOY, dish: /magg/i, tag: "Special Maggi" },
+  { provider: SUMAN, dish: /delhi chaat/i, tag: "Special Delhi Chaat" },
+  { provider: SUMAN, dish: /pizza/i, tag: "Known for Pizza" },
+  { provider: SUMAN, dish: /garlic bread/i, tag: "Known for Garlic Bread" },
+  { provider: SUMAN, dish: /sandwich/i, tag: "Known for Sandwiches" },
+  { provider: SUMAN, dish: /pasta/i, tag: "Known for Pasta" },
+  { provider: SUMAN, dish: /soya cha+p/i, tag: "Known for Soya Chaap" },
+  { provider: SUMAN, dish: /mojito|mocktail/i, tag: "Known for Mocktails" },
+  { provider: SUMAN, dish: /dessert|sundae|falooda/i, tag: "Known for Desserts" },
+  { provider: AROMA, dish: /burger/i, tag: "Known for Burgers" },
+  { provider: AROMA, dish: /shake/i, tag: "Known for Shakes" },
+  { provider: POCKET, dish: /pizza/i, tag: "Known for Pizza" },
+  { provider: POCKET, dish: /burger/i, tag: "Known for Burgers" },
+  { provider: POCKET, dish: /signature blend|thick shake|cold coffee|\b[ck]awa\b/i, tag: "Thick Cold Coffee" },
+  { provider: POCKET, dish: /lava|chocolate magic/i, tag: "Known for Lava Cake" },
+  { provider: POCKET, dish: /pasta|mac/i, tag: "Mac & Cheese Pasta" },
+  { provider: POCKET, dish: /mocktail/i, tag: "Known for Mocktails" },
+  { provider: BULLS, dish: /pizza/i, tag: "Known for Pizza" },
+  { provider: BULLS, dish: /sandwich/i, tag: "Known for Sandwiches" },
+  { provider: BULLS, dish: /cold coffee|hot coffee|latte|cappuccino|espresso|mocha|americano|frappe/i, tag: "Known for Coffee" },
+  { provider: ELITE, dish: /fresh juice|pulp/i, tag: "Fresh Juice Favourite" },
+  { provider: ELITE, dish: /shake|mastani/i, tag: "Known for Shakes" },
+  { provider: ELITE, dish: /sandwich|grill/i, tag: "Known for Sandwiches" },
+];
+
+export function findSpecialtyTag(item: { name: string; category?: string | null; isVeg?: boolean | null; provider: { businessName: string } }): string | null {
+  const text = `${(item.category || "").replace(/_/g, " ")} ${item.name}`;
+  const diet = item.isVeg === false ? "non-veg" : "veg";
+  const match = SPECIALTIES.find((specialty) =>
+    specialty.provider.test(item.provider.businessName) &&
+    (!specialty.diet || specialty.diet === diet) &&
+    specialty.dish.test(text));
+  return match ? match.tag : null;
 }
 
-export function countAtMinute(peak: number, curve: keyof typeof CURVES, istMinute: number): number {
-  const points = CURVES[curve];
-  let share = points[points.length - 1][1];
-  for (let i = 1; i < points.length; i++) {
-    const [m0, s0] = points[i - 1];
-    const [m1, s1] = points[i];
-    if (istMinute <= m1) {
-      share = s0 + ((s1 - s0) * (istMinute - m0)) / (m1 - m0);
-      break;
-    }
-  }
-  return Math.round(peak * share);
+// Position of a dish among its restaurant's speciality dishes. Reshuffles every three hours
+// (IST), so the themed rows open with different dishes from morning to night and day to day.
+export function rotationRank(id: string, now: Date = new Date()): number {
+  const ist = new Date(now.getTime() + 330 * 60 * 1000);
+  const slot = `${ist.toISOString().slice(0, 10)}:${Math.floor(ist.getUTCHours() / 3)}`;
+  return createHash("sha256").update(`${slot}:${id}`).digest().readUInt32BE(0);
 }

@@ -1,6 +1,7 @@
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CollectionDish } from "./use-collection-cart";
+import { badgeText, orderCountText } from "./dish-highlights";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
 
@@ -50,7 +51,7 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                     loading="lazy"
                     onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
                 />
-                <span className="app-card-badge">{dish.isMostlySelling ? "🔥 Mostly Selling" : "Trending in Shirur"}</span>
+                <span className="app-card-badge">{badgeText(dish) || "Trending in Shirur"}</span>
             </div>
             <div className="app-product-card__body">
                 <div className="flex min-w-0 items-start gap-1.5">
@@ -59,7 +60,7 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                 </div>
                 <p className="truncate text-[10.5px] text-slate-500">
                     {dish.provider.businessName}
-                    {(dish.orderCount ?? 0) > 0 && <span className="font-semibold text-orange-600"> · {dish.orderCount} ordered today</span>}
+                    {orderCountText(dish.orderCount) && <span className="font-semibold text-orange-600"> · {orderCountText(dish.orderCount)}</span>}
                 </p>
                 {dish.showDescription && dish.description && (
                     <p className="mt-0.5 line-clamp-3 text-[10px] leading-snug text-slate-500">{dish.description}</p>

@@ -15,13 +15,20 @@ export interface FoodCollection {
 const CAFE_ROWS: { slug: string; title: string; pattern: RegExp }[] = [
   { slug: "cafe-pizza", title: "Pizza", pattern: /pizza/i },
   { slug: "cafe-burgers", title: "Burgers", pattern: /burger/i },
-  { slug: "cafe-pasta", title: "Pasta, Momos & Maggi", pattern: /pasta|momo|magg(i|ie)|mac/i },
-  { slug: "cafe-sandwiches", title: "Sandwiches & Garlic Bread", pattern: /sandwich|garlic bread|grills?/i },
+  { slug: "cafe-pasta", title: "Pasta, Momos & Maggi", pattern: /pasta|momo|magg(i|ie)\b|mac\b/i },
+  { slug: "cafe-sandwiches", title: "Sandwiches & Garlic Bread", pattern: /sandwich|garlic bread|grills?\b/i },
+  { slug: "cafe-fries-wraps", title: "Fries, Wraps & Chaat", pattern: /fries|wraps?|rolls?|chaat|soya cha+p|fried chicken|bucket|wings/i },
   { slug: "cafe-drinks", title: "Shakes, Coffee & Mocktails", pattern: /shake|coffee|\b[ck]awa\b|juice|mojito|mocktail|mastani|signature blend/i },
+  { slug: "cafe-desserts", title: "Desserts", pattern: /dessert|lava|brownie|sundae|falooda|chocolate magic|ice-?cream/i },
 ];
-const CAFE_PARTNERS = /cafe of joy|suman|aroma|pocket|bulls|elite/i;
+const CAFE_PARTNERS = /cafe of joy|suman|aroma|pocket|bulls|elite|chicken affair/i;
 const NON_VEG_PARTNERS = /saniraje|nikhara|tiranga|ganga grand|swad|yash biryani|rassa bhakri|radhika|chicken affair|bulls/i;
-const NON_VEG_DISH = /(chicken|mutton|fish|egg|anda|prawns?|surmai|paplet|murg|kheema)/i;
+const NON_VEG_DISH = /\b(chicken|mutton|fish|eggs?|anda|prawns?|surmai|paplet|murg|kheema)\b/i;
+
+// Some menus mark every dish as veg (e.g. a chicken biryani); the name settles it.
+export function isNonVegDish(item: { name: string; isVeg?: boolean | null }): boolean {
+  return item.isVeg === false || (NON_VEG_DISH.test(item.name) && !/veg|paneer|soya|eggless/i.test(item.name));
+}
 
 export const FOOD_COLLECTIONS: FoodCollection[] = [
   { slug: "breakfast", title: "Breakfast", subtitle: "6:00 AM – 11:30 AM", startMinute: 6 * 60, endMinute: 11 * 60 + 30 },
@@ -29,6 +36,7 @@ export const FOOD_COLLECTIONS: FoodCollection[] = [
   { slug: "dinner", title: "Dinner", subtitle: "7:00 PM – 12:00 AM", startMinute: 19 * 60, endMinute: 24 * 60 },
   { slug: "veg-thali", title: "Veg Thalis", subtitle: "11:30 AM – 12:00 AM", startMinute: 11 * 60 + 30, endMinute: 24 * 60 },
   { slug: "non-veg", title: "Non-Veg Special", subtitle: "11:30 AM – 12:00 AM", startMinute: 11 * 60 + 30, endMinute: 24 * 60 },
+  { slug: "biryani", title: "Biryani", subtitle: "11:30 AM – 12:00 AM", startMinute: 11 * 60 + 30, endMinute: 24 * 60 },
   { slug: "street-food", title: "Street Food", subtitle: "4:00 PM – 10:00 PM", startMinute: 16 * 60, endMinute: 22 * 60 },
   { slug: "cafe", title: "Cafe Items", subtitle: "10:00 AM – 10:00 PM", startMinute: 10 * 60, endMinute: 22 * 60 },
   ...CAFE_ROWS.map((row) => ({ slug: row.slug, title: row.title, subtitle: "10:00 AM – 10:00 PM", startMinute: 10 * 60, endMinute: 22 * 60 })),
@@ -111,15 +119,15 @@ export function getFoodCollectionSlugs(item: ClassifiableDish): string[] {
   return [...getMealSlugs(item), ...getThemedSlugs(item)];
 }
 
-// Themed rows: Veg Thalis, Non-Veg Special, and the cafe sub-categories.
+// Themed rows: Veg Thalis, Non-Veg Special, Biryani, and the cafe sub-categories.
 function getThemedSlugs(item: ClassifiableDish): string[] {
-  if (item.itemType !== "restaurant") return [];
   const type = getDishType(item);
   if (!type) return [];
+  const slugs: string[] = /biry?ani/i.test(item.name) ? ["biryani"] : [];
+  if (item.itemType !== "restaurant") return slugs;
   const text = `${sectionOf(item)} ${item.name}`;
   const provider = item.provider.businessName;
-  const slugs: string[] = [];
-  const isNonVeg = item.isVeg === false || (NON_VEG_DISH.test(item.name) && !/(veg|paneer)/i.test(item.name));
+  const isNonVeg = isNonVegDish(item);
   if (/thali|थाळी/i.test(item.name) && !isNonVeg) slugs.push("veg-thali");
   if (isNonVeg && NON_VEG_PARTNERS.test(provider) && type !== "beverages" && type !== "desserts") slugs.push("non-veg");
   if (CAFE_PARTNERS.test(provider)) {
@@ -169,6 +177,14 @@ const SPOTLIGHTS: Record<string, Spotlight[]> = {
   ],
   lunch: MAIN_COURSE_SPOTLIGHTS,
   dinner: MAIN_COURSE_SPOTLIGHTS,
+  biryani: [
+    { provider: /yash biryani/i },
+    { provider: /rassa bhakri/i },
+    { provider: /nikhara/i },
+    { provider: /swad/i },
+    { provider: /annapurna/i },
+    { provider: /radhika/i },
+  ],
   cafe: [
     { provider: /cafe of joy/i, dish: /white sauce.*pasta/i },
     { provider: /aroma/i, dish: /burger/i },

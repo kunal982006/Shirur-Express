@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
+import { ProviderReviews } from "@/components/restaurants/ProviderReviews";
 import { useCartStore } from "@/hooks/use-cart-store";
 import type { StreetFoodItem, ServiceProvider, RestaurantMenuItem } from "@shared/schema";
 
@@ -264,6 +265,11 @@ export default function StreetFoodDetail() {
               Menu items loading or not available.
             </div>
           )}
+
+          <section aria-label="Ratings and reviews">
+            <h3 className="font-bold text-xl text-foreground">Ratings & Reviews</h3>
+            <ProviderReviews providerId={vendor.id} />
+          </section>
         </div>
       </div>
 
