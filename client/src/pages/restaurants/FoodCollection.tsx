@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { badgeText, orderCountText } from "@/components/restaurants/dish-highlights";
 import { Link, useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Search } from "lucide-react";
@@ -159,8 +160,7 @@ export default function FoodCollection() {
                                         </div>
                                         <p className="text-sm font-semibold">₹{Number(dish.price)}</p>
                                         <p className="text-[11px] font-semibold text-orange-600">
-                                            {dish.isMostlySelling ? "🔥 Mostly Selling" : "Trending in Shirur"}
-                                            {(dish.orderCount ?? 0) > 0 && ` · ${dish.orderCount} ordered today`}
+                                            {[badgeText(dish) || "Trending in Shirur", orderCountText(dish.orderCount)].filter(Boolean).join(" · ")}
                                         </p>
                                         {dish.description && <p className="line-clamp-2 text-xs text-muted-foreground">{dish.description}</p>}
                                         <button

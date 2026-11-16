@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"; // Import Input
 import { Separator } from "@/components/ui/separator"; // Import Separator
 import { ArrowLeft, Star, MapPin, Search, Clock, ShieldCheck, Share2, Heart, Info, X, UtensilsCrossed, SlidersHorizontal, Check, ChevronDown } from "lucide-react";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
+import { ProviderReviews } from "@/components/restaurants/ProviderReviews";
 import { useCartStore } from "@/hooks/use-cart-store";
 import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
 import { formatDistance } from "@/lib/location";
@@ -316,10 +317,10 @@ export default function RestaurantDetail() {
                         </div>
                         <div className="flex flex-col items-center bg-green-700/10 px-3 py-2 rounded-xl">
                             <span className="flex items-center gap-1 text-green-700 font-extrabold text-xl">
-                                {restaurant.rating || "4.2"}<Star className="h-4 w-4 fill-green-700 underline-offset-4" />
+                                {Number(restaurant.rating) > 0 ? Number(restaurant.rating).toFixed(1) : "New"}<Star className="h-4 w-4 fill-green-700 underline-offset-4" />
                             </span>
                             <div className="h-[1px] w-full bg-green-700/20 my-1" />
-                            <span className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">1K+ ratings</span>
+                            <span className="text-[10px] font-bold text-green-700 uppercase tracking-tighter">{restaurant.reviewCount ? `${restaurant.reviewCount} rating${restaurant.reviewCount > 1 ? "s" : ""}` : "No ratings yet"}</span>
                         </div>
                     </div>
                 </div>
@@ -562,11 +563,7 @@ export default function RestaurantDetail() {
                         <OverviewTab restaurant={restaurant} />
                     </TabsContent>
                     <TabsContent value="reviews">
-                        <div className="p-12 text-center text-muted-foreground border-2 border-dashed rounded-2xl m-4 bg-muted/5">
-                            <Star className="h-12 w-12 opacity-20 mx-auto mb-4" />
-                            <h3 className="font-bold text-lg text-foreground/80">Be the first to review</h3>
-                            <p className="text-sm max-w-[250px] mx-auto mt-1">Share your dining experience with others.</p>
-                        </div>
+                        <ProviderReviews providerId={restaurant.id} />
                     </TabsContent>
                     <TabsContent value="photos" className="m-0 p-4">
                         {(() => {

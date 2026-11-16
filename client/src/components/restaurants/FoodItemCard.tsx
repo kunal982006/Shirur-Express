@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Minus, Star } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import type { RestaurantMenuItem, RestaurantOrder } from "@shared/schema";
+import { useState } from "react";
+import type { RestaurantMenuItem } from "@shared/schema";
+import { badgeText, orderCountText, DishExtrasDialog, useDishHighlights } from "./dish-highlights";
 
 interface FoodItemCardProps {
     item: RestaurantMenuItem;
@@ -14,6 +16,15 @@ interface FoodItemCardProps {
 
 export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false }: FoodItemCardProps) {
     const isVeg = item.isVeg;
+    // Same badge, 24-hour counter and add-on popup as the home screen cards.
+    const highlight = useDishHighlights()[item.id];
+    const badge = highlight ? badgeText(highlight) : null;
+    const count = orderCountText(highlight?.orderCount);
+    const [offerExtras, setOfferExtras] = useState(false);
+    const handleAdd = () => {
+        if (quantity === 0 && highlight?.accompaniments?.length) setOfferExtras(true);
+        onAdd();
+    };
     const image = item.imageUrl || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=60";
 
     return (
@@ -27,18 +38,14 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
                         <h4 className="font-bold text-base text-foreground">{item.name}</h4>
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold">₹{item.price}</span>
-                            {Number(item.price) > 300 && <Badge variant="secondary" className="text-[10px] px-1 h-4">Bestseller</Badge>}
+                            {badge && <Badge variant="secondary" className="h-4 whitespace-nowrap bg-orange-100 px-1.5 text-[10px] text-orange-700">{badge}</Badge>}
                         </div>
                     </div>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                     {item.description || "A delicious preparation with authentic spices and fresh ingredients."}
                 </p>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                    <span className="text-yellow-600">4.2</span>
-                    <span>(104 votes)</span>
-                </div>
+                {count && <p className="text-xs font-semibold text-orange-600">{count}</p>}
             </div>
 
             <div className="relative w-32 min-w-[128px]">
@@ -68,7 +75,7 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
                             variant="ghost"
                             size="sm"
                             className="h-9 w-24 text-green-600 font-extrabold hover:text-green-700 hover:bg-green-50 uppercase tracking-wide bg-white"
-                            onClick={onAdd}
+                            onClick={handleAdd}
                         >
                             ADD
                         </Button>
@@ -78,13 +85,17 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
                                 <Minus className="h-3 w-3" />
                             </Button>
                             <span className="font-bold text-green-600 text-sm">{quantity}</span>
-                            <Button variant="ghost" size="icon" className="h-full w-8 text-green-600" onClick={onAdd}>
+                            <Button variant="ghost" size="icon" className="h-full w-8 text-green-600" onClick={handleAdd}>
                                 <Plus className="h-3 w-3" />
                             </Button>
                         </div>
                     )}
                 </div>
             </div>
+            <DishExtrasDialog
+                dish={offerExtras ? { name: item.name, accompaniments: highlight?.accompaniments } : null}
+                onClose={() => setOfferExtras(false)}
+            />
         </div>
     );
 }

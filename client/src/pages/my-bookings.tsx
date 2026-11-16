@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { RateOrderButton } from "@/components/restaurants/ProviderReviews";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -643,6 +644,7 @@ export default function MyBookings() {
                             Track Order
                           </Button>
                         )}
+                        {order.status === 'delivered' && <RateOrderButton providerId={order.providerId} />}
                       </div>
                     </CardContent>
                   </Card>

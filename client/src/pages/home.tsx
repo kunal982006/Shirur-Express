@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { badgeText, orderCountText } from "@/components/restaurants/dish-highlights";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -115,13 +116,15 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
           loading="lazy"
           onError={(event) => { event.currentTarget.src = FALLBACK_FOOD_IMAGE; }}
         />
-        <span className="app-card-badge">★ 4.2 · 25m</span>
+        {(badgeText(item) || Number(item.provider?.rating) > 0) && (
+          <span className="app-card-badge">{badgeText(item) || `★ ${Number(item.provider.rating).toFixed(1)}`}</span>
+        )}
       </div>
       <div className="app-product-card__body">
         <p className="line-clamp-2 min-h-[2.6em] text-xs sm:text-sm font-bold leading-snug text-slate-900 break-words">{item.name}</p>
         <p className="truncate text-[10.5px] text-slate-500">
           {item.provider?.businessName || item.category || "Local favourite"}
-          {(item.orderCount ?? 0) > 0 && <span className="font-semibold text-orange-600"> · {item.orderCount} ordered today</span>}
+          {orderCountText(item.orderCount) && <span className="font-semibold text-orange-600"> · {orderCountText(item.orderCount)}</span>}
         </p>
         <div className="app-product-card__footer">
           <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>

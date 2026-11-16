@@ -244,6 +244,8 @@ export interface IStorage {
     comment?: string;
   }): Promise<Review>;
   getProviderReviews(providerId: string): Promise<(Review & { user: User })[]>;
+  getUserReview(userId: string, providerId: string): Promise<Review | undefined>;
+  saveReview(review: { userId: string; providerId: string; rating: number; comment: string | null }): Promise<Review>;
   // Menu items
   getStreetFoodItems(
     providerId?: string,
@@ -1502,6 +1504,36 @@ export class DatabaseStorage implements IStorage {
       with: { user: true },
       orderBy: [desc(reviews.createdAt)],
     }) as any;
+  }
+
+  async getUserReview(userId: string, providerId: string): Promise<Review | undefined> {
+    const [review] = await db
+      .select()
+      .from(reviews)
+      .where(and(eq(reviews.userId, userId), eq(reviews.providerId, providerId)))
+      .orderBy(desc(reviews.createdAt))
+      .limit(1);
+    return review;
+  }
+
+  // One review per customer per provider: a second submission replaces the first. The
+  // provider's rating and review count are recalculated from its reviews.
+  async saveReview(review: { userId: string; providerId: string; rating: number; comment: string | null }): Promise<Review> {
+    const existing = await this.getUserReview(review.userId, review.providerId);
+    let saved: Review;
+    if (existing) {
+      [saved] = await db
+        .update(reviews)
+        .set({ rating: review.rating, comment: review.comment, createdAt: new Date() })
+        .where(eq(reviews.id, existing.id))
+        .returning();
+    } else {
+      [saved] = await db.insert(reviews).values(review).returning();
+    }
+    const providerReviews = await db.select({ rating: reviews.rating }).from(reviews).where(eq(reviews.providerId, review.providerId));
+    const average = providerReviews.reduce((sum, r) => sum + r.rating, 0) / providerReviews.length;
+    await this.updateProviderRating(review.providerId, average, providerReviews.length);
+    return saved;
   }
 
   private getMenuTableInfo(categorySlug: string) {
