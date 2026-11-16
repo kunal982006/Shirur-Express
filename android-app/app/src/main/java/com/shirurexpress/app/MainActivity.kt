@@ -445,6 +445,15 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
     }
 
     inner class AndroidBridge {
+        // The website turns swipe-to-refresh off while the finger is inside a popup or another
+        // inner scrolling list, where pulling down means "scroll up", not "reload".
+        @android.webkit.JavascriptInterface
+        fun setPullToRefreshEnabled(enabled: Boolean) {
+            runOnUiThread {
+                if (!swipeRefresh.isRefreshing) swipeRefresh.isEnabled = enabled
+            }
+        }
+
         // Opens native Razorpay Checkout (supports UPI apps). The website calls this
         // instead of checkout.js when running inside the app; the result comes back
         // through window.__onNativePaymentResult.

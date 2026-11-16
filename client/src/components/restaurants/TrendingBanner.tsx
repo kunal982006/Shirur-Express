@@ -73,6 +73,8 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
         if (!open) return;
         const root = document.documentElement;
         const previous = [root.style.overscrollBehaviorY, document.body.style.overscrollBehaviorY];
+        // The Android app's native swipe-to-refresh only fires with the page at its very top.
+        if (window.scrollY < 1) window.scrollTo(0, 1);
         root.style.overscrollBehaviorY = "contain";
         document.body.style.overscrollBehaviorY = "contain";
         return () => {
