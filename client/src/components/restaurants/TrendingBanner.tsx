@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Flame, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -7,6 +7,8 @@ import { DISH_FALLBACK_IMAGE, DishQuantityControl, VegMark } from "@/components/
 import { badgeText, orderCountText } from "@/components/restaurants/dish-highlights";
 import { dishProviderPath, useCollectionCart, type CollectionDish } from "@/components/restaurants/use-collection-cart";
 import { useLocation } from "wouter";
+import { useCartStore } from "@/hooks/use-cart-store";
+import { Button } from "@/components/ui/button";
 
 // Tabs of the Banner Insights view. Lunch and dinner share one list on the server.
 const TABS = [
@@ -62,6 +64,21 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
     const [, setLocation] = useLocation();
     const cart = useCollectionCart();
     const path = `/api/food-insights?tab=${tab}&diet=${diet}`;
+    const { items, getTotalPrice } = useCartStore();
+    const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+
+    // Scrolling the list back to its top must not carry on into the page behind, where the
+    // phone's pull-to-refresh would reload the app.
+    useEffect(() => {
+        if (!open) return;
+        const root = document.documentElement;
+        const previous = [root.style.overscrollBehaviorY, document.body.style.overscrollBehaviorY];
+        root.style.overscrollBehaviorY = "contain";
+        document.body.style.overscrollBehaviorY = "contain";
+        return () => {
+            [root.style.overscrollBehaviorY, document.body.style.overscrollBehaviorY] = previous;
+        };
+    }, [open]);
 
     // Ranked on the server: orders in the last 24 hours first, then each restaurant's specialities.
     const { data: dishes = [], isLoading } = useQuery<CollectionDish[]>({
@@ -73,7 +90,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[88vh] max-w-xl gap-0 overflow-hidden rounded-2xl p-0">
+            <DialogContent className="flex max-h-[88vh] max-w-xl flex-col gap-0 overflow-hidden overscroll-contain rounded-2xl p-0">
                 <DialogHeader className="px-5 pt-5">
                     <DialogTitle className="flex items-center gap-2 text-lg">
                         <Flame className="h-5 w-5 text-orange-500" /> What Shirur is Ordering
@@ -109,7 +126,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     ))}
                 </div>
 
-                <div className="max-h-[58vh] overflow-y-auto border-t px-5 pb-5">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t px-5 pb-5">
                     {isLoading ? (
                         <div className="space-y-3 pt-3">
                             {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />)}
@@ -158,6 +175,20 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                         </ol>
                     )}
                 </div>
+                {cartCount > 0 && (
+                    <div className="border-t bg-background p-3">
+                        <Button
+                            className="h-14 w-full justify-between rounded-xl bg-slate-900 px-4 text-white hover:bg-slate-800"
+                            onClick={() => { onOpenChange(false); setLocation("/checkout"); }}
+                        >
+                            <span className="text-left">
+                                <span className="block text-[10px] font-semibold uppercase tracking-wider text-white/70">{cartCount} item{cartCount !== 1 ? "s" : ""}</span>
+                                <span className="text-sm font-bold">₹{getTotalPrice().toFixed(2)}</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-sm font-semibold">View cart <ChevronRight className="h-4 w-4" /></span>
+                        </Button>
+                    </div>
+                )}
                 {cart.conflictDialog}
             </DialogContent>
         </Dialog>
