@@ -12,6 +12,7 @@ import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import { IosPushSync } from "@/components/IosPushSync";
 import AppUpdatePopup from "@/components/AppUpdatePopup";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
+import PullToRefreshGuard from "@/components/PullToRefreshGuard";
 import { AddressSheet } from "@/components/address/AddressSheet";
 import { Loader2 } from "lucide-react";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -230,6 +231,7 @@ function App() {
             </div>
             <AddressSheet />
             <SwipeBackGesture />
+            <PullToRefreshGuard />
             <OrderNotificationPopup />
             <IosPushSync />
             <AppUpdatePopup />

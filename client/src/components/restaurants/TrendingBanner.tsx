@@ -73,6 +73,8 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
         if (!open) return;
         const root = document.documentElement;
         const previous = [root.style.overscrollBehaviorY, document.body.style.overscrollBehaviorY];
+        // The Android app's native swipe-to-refresh only fires with the page at its very top.
+        if (window.scrollY < 1) window.scrollTo(0, 1);
         root.style.overscrollBehaviorY = "contain";
         document.body.style.overscrollBehaviorY = "contain";
         return () => {
@@ -91,14 +93,14 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex max-h-[88vh] max-w-xl flex-col gap-0 overflow-hidden overscroll-contain rounded-2xl p-0">
-                <DialogHeader className="px-5 pt-5">
+                <DialogHeader className="shrink-0 px-5 pt-5">
                     <DialogTitle className="flex items-center gap-2 text-lg">
                         <Flame className="h-5 w-5 text-orange-500" /> What Shirur is Ordering
                     </DialogTitle>
                     <DialogDescription>Orders in the last 24 hours, and what each place is known for.</DialogDescription>
                 </DialogHeader>
 
-                <div className="mt-3 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide">
+                <div className="mt-3 flex shrink-0 gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide">
                     {TABS.map((t) => (
                         <button
                             key={t.key}
@@ -111,7 +113,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     ))}
                 </div>
 
-                <div className="flex items-center gap-2 px-5 pb-2 pt-2">
+                <div className="flex shrink-0 items-center gap-2 px-5 pb-2 pt-2">
                     {DIETS.map((d) => (
                         <button
                             key={d.key}
@@ -176,7 +178,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     )}
                 </div>
                 {cartCount > 0 && (
-                    <div className="border-t bg-background p-3">
+                    <div className="shrink-0 border-t bg-background p-3">
                         <Button
                             className="h-14 w-full justify-between rounded-xl bg-slate-900 px-4 text-white hover:bg-slate-800"
                             onClick={() => { onOpenChange(false); setLocation("/checkout"); }}
