@@ -5,14 +5,15 @@ import { registerBillRoutes } from "./bill-routes";
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcrypt";
-import { randomBytes, createHash } from "crypto";
+import { randomBytes } from "crypto";
 import { uploadToCloudinary } from './cloudinary';
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
-import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, orderFoodCollectionFeed } from "@shared/food-collections";
+import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, orderFoodCollectionFeed } from "@shared/food-collections";
+import { PINNED_DISHES, PINNED_ROW_SLUGS, countAtMinute, curveFor, findPinnedIndex, isExtraFor, seededPeak } from "./food-highlights";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable } from "drizzle-orm";
 import {
@@ -378,6 +379,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate body
       const orderData = insertStreetFoodOrderSchema.parse(req.body);
 
+      // Dishes with a daily cut-off (e.g. Idli Wada Mix until 1 PM) cannot be ordered after it.
+      await getFoodCollectionItems();
+      const expired = ((orderData.items as any[]) || [])
+        .map((item) => timeLimitedDishes.get(item.productId))
+        .find((dish) => dish && getIstMinutes() >= dish.untilMinute);
+      if (expired) {
+        const hour = Math.floor(expired.untilMinute / 60);
+        const label = `${hour % 12 || 12}:${String(expired.untilMinute % 60).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
+        return res.status(400).json({ message: `${expired.name} is available only until ${label}.` });
+      }
+
       // Assign a static runner ID for MVP (e.g., "runner-1")
       const orderWithRunner = { ...orderData, runnerId: "runner-1" };
 
@@ -385,6 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
       const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId, status: initialStatus } as any);
       console.log("Created Street Food Order:", order); // DEBUG LOG
+      apiCache.delete('food_collections'); // counters pick up the new order on the next fetch
 
       // Ringing system for Street Food Admin and Main Admin
       if (orderData.paymentMethod === 'cod') {
@@ -2855,6 +2868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
       const order = await storage.createRestaurantOrder({ ...orderData, userId, status: initialStatus } as any);
       console.log("Created Restaurant Order:", order);
+      apiCache.delete('food_collections'); // counters pick up the new order on the next fetch
 
       if (orderData.paymentMethod === 'cod') {
         await sendOrderNotifications(order, 'restaurant', order.id);
@@ -5051,7 +5065,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]);
         return { streetFood, streetFoodProviders, restaurants, cakes, menuItems };
       });
-      res.json(data);
+      // Same "ordered today" counters as the category rows.
+      await getFoodCollectionItems();
+      const withCounter = (item: any) => ({ ...item, ...(dishCounters.get(item.id) || { orderCount: 0, isMostlySelling: false }) });
+      res.json({ ...data, streetFood: data.streetFood.map(withCounter), menuItems: data.menuItems.map(withCounter) });
     } catch (error: any) {
       console.error("Get popular items error:", error);
       res.status(500).json({ message: error.message || "Error fetching popular items" });
@@ -5060,74 +5077,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // --- FOOD COLLECTIONS (time-of-day category feeds on the food home screen) ---
 
-  // Seeded "ordered today" counts per dish. Deterministic for a given dish and IST date,
-  // so the numbers stay steady during the day and reset with the date.
-  // Biryani and thali dishes are the best sellers: they get 21 to 24 orders.
-  // Other dishes: about a quarter get none, most get 1 to 18, and only about 1 in 10 gets 19 to 24,
-  // so the top of the list is mostly biryani and thali instead of a wall of 24s.
-  const seededOrderCounts = (items: { id: string; name: string; category?: string | null }[]): Map<string, number> => {
-    const istDay = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
+  // Real orders placed since midnight IST, per dish. Added on top of the day's counter, so a
+  // new order moves the number as soon as it is placed.
+  const getOrdersToday = async (): Promise<Map<string, number>> => {
     const counts = new Map<string, number>();
-    for (const item of items) {
-      const digest = createHash("sha256").update(`${istDay}:${item.id}`).digest();
-      const roll = digest.readUInt32BE(0);
-      const spread = digest.readUInt32BE(4);
-      const isTopSeller = /biryani|thali/i.test(`${item.name} ${item.category || ""}`);
-      if (isTopSeller) {
-        // 24 is rare (about 1 in 25) so the top of the banner is not all 24s.
-        counts.set(item.id, roll % 25 === 0 ? 24 : 21 + (spread % 3));
-      } else if (roll % 100 < 25) {
-        counts.set(item.id, 0);
-      } else if (roll % 100 < 35) {
-        counts.set(item.id, 19 + (spread % 5));
-      } else {
-        counts.set(item.id, 1 + (spread % 18));
+    try {
+      const istNow = new Date(Date.now() + 330 * 60 * 1000);
+      const midnight = new Date(Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate()) - 330 * 60 * 1000).toISOString();
+      const rows = await db.execute(sql`
+        SELECT item->>'menuItemId' AS item_id, SUM((item->>'quantity')::int) AS total
+        FROM restaurant_orders, jsonb_array_elements(items) AS item
+        WHERE created_at >= ${midnight}::timestamptz AND status NOT IN ('cancelled', 'declined', 'payment_pending')
+        GROUP BY 1
+        UNION ALL
+        SELECT item->>'productId', SUM((item->>'quantity')::int)
+        FROM street_food_orders, jsonb_array_elements(items) AS item
+        WHERE created_at >= ${midnight}::timestamptz AND status NOT IN ('cancelled', 'declined', 'payment_pending')
+        GROUP BY 1
+      `);
+      for (const row of rows.rows as any[]) {
+        if (!row.item_id) continue;
+        counts.set(row.item_id, (counts.get(row.item_id) || 0) + Number(row.total));
       }
+    } catch (error) {
+      console.error("Orders-today count error:", error instanceof Error ? error.message : String(error));
     }
     return counts;
   };
 
+  // Lookups refreshed with the feed: the counter of every dish, and dishes with a time limit.
+  let dishCounters = new Map<string, { orderCount: number; isMostlySelling: boolean }>();
+  let timeLimitedDishes = new Map<string, { name: string; untilMinute: number }>();
+
+  // Dishes that are past their daily cut-off (e.g. Idli Wada Mix after 1 PM) are hidden.
+  const visibleNow = <T extends { availableUntilMinute?: number | null }>(list: T[]): T[] => {
+    const minute = getIstMinutes();
+    return list.filter((dish) => dish.availableUntilMinute == null || minute < dish.availableUntilMinute);
+  };
+
   const getFoodCollectionItems = () => getCachedOrFetch('food_collections', 30 * 1000, async () => {
-    const [menuItems, streetItems] = await Promise.all([
+    const [menuItems, streetItems, ordersToday] = await Promise.all([
       storage.getAvailableRestaurantMenuItems(),
       storage.getAvailableStreetFoodItems(),
+      getOrdersToday(),
     ]);
-    const orderCounts = seededOrderCounts([...menuItems, ...streetItems]);
+    const istMinute = getIstMinutes();
+    const pinIndex = new Map<string, number>();
     const dishes = [
       ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
       ...streetItems.map((item) => ({ item, itemType: "street_food" as const })),
-    ].map(({ item, itemType }) => ({
-      id: item.id,
-      itemType,
-      name: item.name,
-      description: item.description,
-      category: item.category,
-      price: item.price,
-      imageUrl: item.imageUrl,
-      isVeg: item.isVeg,
-      isPopular: item.isPopular,
-      providerId: item.providerId,
-      provider: {
-        id: item.provider.id,
-        businessName: item.provider.businessName,
-        isAvailable: item.provider.isAvailable,
-        latitude: item.provider.latitude,
-        longitude: item.provider.longitude,
-        rating: item.provider.rating,
-      },
-      orderCount: orderCounts.get(item.id) || 0,
-      isMostlySelling: false,
-      _popularOrder: item.popularOrder || 0,
-      _displayOrder: item.provider.displayOrder || 0,
-    }));
+    ].map(({ item, itemType }) => {
+      const index = findPinnedIndex(item);
+      const pinned = index >= 0 ? PINNED_DISHES[index] : undefined;
+      if (pinned) pinIndex.set(item.id, index);
+      const base = {
+        id: item.id,
+        itemType,
+        name: item.name,
+        description: pinned?.description || item.description,
+        showDescription: Boolean(pinned?.description),
+        category: item.category,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        isVeg: item.isVeg,
+        isPopular: item.isPopular,
+        providerId: item.providerId,
+        provider: {
+          id: item.provider.id,
+          businessName: item.provider.businessName,
+          isAvailable: item.provider.isAvailable,
+          latitude: item.provider.latitude,
+          longitude: item.provider.longitude,
+          rating: item.provider.rating,
+        },
+      };
+      const slugs = getFoodCollectionSlugs(base);
+      // Featured breakfast dishes belong in the Breakfast row whatever their menu section says.
+      if (pinned?.row === "breakfast" && !slugs.includes("breakfast")) slugs.unshift("breakfast");
+      // Time-of-day counter climbing to the dish's peak, plus real orders placed today.
+      const peak = pinned ? pinned.peak : seededPeak(item);
+      return {
+        ...base,
+        orderCount: countAtMinute(peak, curveFor(slugs), istMinute) + (ordersToday.get(item.id) || 0),
+        isMostlySelling: false,
+        availableUntilMinute: pinned?.untilMinute ?? null,
+        accompaniments: [] as any[],
+        _slugs: slugs,
+        _extras: pinned?.extras,
+        _popularOrder: item.popularOrder || 0,
+        _displayOrder: item.provider.displayOrder || 0,
+      };
+    });
 
-    // The 10 most-ordered dishes in the last 24 hours get the "Mostly Selling" badge.
+    // The 10 most-ordered dishes right now get "Mostly Selling"; every other dish shows "Trending in Shirur".
     const topSellers = dishes
       .filter((dish) => dish.orderCount > 0)
       .sort((a, b) => b.orderCount - a.orderCount)
       .slice(0, 10);
     const topIds = new Set(topSellers.map((dish) => dish.id));
     for (const dish of dishes) dish.isMostlySelling = topIds.has(dish.id);
+
+    dishCounters = new Map(dishes.map((dish) => [dish.id, { orderCount: dish.orderCount, isMostlySelling: dish.isMostlySelling }]));
+    timeLimitedDishes = new Map(dishes
+      .filter((dish) => dish.availableUntilMinute != null)
+      .map((dish) => [dish.id, { name: dish.name, untilMinute: dish.availableUntilMinute! }]));
+
+    // Extras offered in a popup when a featured dish is added: plain pav or breads from the same restaurant.
+    const byProvider = new Map<string, typeof dishes>();
+    for (const dish of dishes) {
+      if (!byProvider.has(dish.providerId)) byProvider.set(dish.providerId, []);
+      byProvider.get(dish.providerId)!.push(dish);
+    }
+    for (const dish of dishes) {
+      if (!dish._extras) continue;
+      dish.accompaniments = (byProvider.get(dish.providerId) || [])
+        .filter((other) => other.id !== dish.id && other.itemType === dish.itemType && isExtraFor(dish._extras!, other.name))
+        .sort((a, b) => Number(a.price) - Number(b.price))
+        .slice(0, 8)
+        .map(({ id, itemType, name, price, imageUrl, isVeg, providerId, provider }) => ({ id, itemType, name, price, imageUrl, isVeg, providerId, provider }));
+    }
 
     // Best-first within each restaurant: items marked popular, then the admin-set restaurant order.
     const rank = (n: number) => (n === 0 ? 9999 : n);
@@ -5139,12 +5207,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
 
     const grouped = new Map<string, any[]>(FOOD_COLLECTIONS.map((c) => [c.slug, []]));
-    for (const { _popularOrder, _displayOrder, ...dish } of dishes) {
-      for (const slug of getFoodCollectionSlugs(dish)) grouped.get(slug)!.push(dish);
+    for (const { _slugs, _extras, _popularOrder, _displayOrder, ...dish } of dishes) {
+      for (const slug of _slugs) grouped.get(slug)?.push(dish);
     }
-    // Mix restaurants into one feed per category, with the prioritized dishes forced to the top.
+    const isOpen = (dish: any) => dish.provider.isAvailable !== false;
     for (const [slug, list] of Array.from(grouped.entries())) {
-      grouped.set(slug, orderFoodCollectionFeed(slug, list));
+      // Themed rows (Non-Veg Special, cafe sub-categories) lead with each restaurant's top sellers of the day.
+      const themed = slug === "non-veg" || slug.startsWith("cafe-");
+      const source = themed ? [...list].sort((a, b) => b.orderCount - a.orderCount) : list;
+      // Mix restaurants into one feed per category, with the prioritized dishes forced to the top.
+      const feed = orderFoodCollectionFeed(slug, source);
+      // Featured dishes open the row, in the order they are listed.
+      const featured = feed
+        .filter((dish) => pinIndex.has(dish.id) && isOpen(dish) && PINNED_ROW_SLUGS[PINNED_DISHES[pinIndex.get(dish.id)!].row].includes(slug))
+        .sort((a, b) => pinIndex.get(a.id)! - pinIndex.get(b.id)!);
+      const featuredIds = new Set(featured.map((dish) => dish.id));
+      grouped.set(slug, [...featured, ...feed.filter((dish) => !featuredIds.has(dish.id))]);
     }
     return grouped;
   });
@@ -5155,7 +5233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const grouped = await getFoodCollectionItems();
       const PREVIEW_SIZE = 12;
       const collections = FOOD_COLLECTIONS.map((collection) => {
-        const items = grouped.get(collection.slug) || [];
+        const items = visibleNow(grouped.get(collection.slug) || []);
         return {
           ...collection,
           totalItems: items.length,
@@ -5178,20 +5256,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Collection not found" });
       }
       const grouped = await getFoodCollectionItems();
-      res.json({ ...collection, items: grouped.get(collection.slug) || [] });
+      res.json({ ...collection, items: visibleNow(grouped.get(collection.slug) || []) });
     } catch (error: any) {
       console.error("Get food collection error:", error);
       res.status(500).json({ message: error.message || "Error fetching food collection" });
     }
   });
 
-  // "What Shirur is Ordering": the most-ordered dishes in the last 24 hours, across all categories.
+  // "What Shirur is Ordering": the dishes with the highest counters today, across all categories.
   app.get("/api/trending", async (_req: Request, res: Response) => {
     try {
       const grouped = await getFoodCollectionItems();
       const seen = new Map<string, any>();
       for (const list of Array.from(grouped.values())) {
-        for (const dish of list) {
+        for (const dish of visibleNow(list)) {
           if (dish.orderCount > 0 && !seen.has(dish.id)) seen.set(dish.id, dish);
         }
       }

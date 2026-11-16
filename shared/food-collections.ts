@@ -11,12 +11,27 @@ export interface FoodCollection {
   endMinute: number;
 }
 
+// Cafe sub-category rows: dishes of one kind from the partner cafes.
+const CAFE_ROWS: { slug: string; title: string; pattern: RegExp }[] = [
+  { slug: "cafe-pizza", title: "Pizza", pattern: /pizza/i },
+  { slug: "cafe-burgers", title: "Burgers", pattern: /burger/i },
+  { slug: "cafe-pasta", title: "Pasta, Momos & Maggi", pattern: /pasta|momo|magg(i|ie)|mac/i },
+  { slug: "cafe-sandwiches", title: "Sandwiches & Garlic Bread", pattern: /sandwich|garlic bread|grills?/i },
+  { slug: "cafe-drinks", title: "Shakes, Coffee & Mocktails", pattern: /shake|coffee|\b[ck]awa\b|juice|mojito|mocktail|mastani|signature blend/i },
+];
+const CAFE_PARTNERS = /cafe of joy|suman|aroma|pocket|bulls|elite/i;
+const NON_VEG_PARTNERS = /saniraje|nikhara|tiranga|ganga grand|swad|yash biryani|rassa bhakri|radhika|chicken affair|bulls/i;
+const NON_VEG_DISH = /(chicken|mutton|fish|egg|anda|prawns?|surmai|paplet|murg|kheema)/i;
+
 export const FOOD_COLLECTIONS: FoodCollection[] = [
   { slug: "breakfast", title: "Breakfast", subtitle: "6:00 AM – 11:30 AM", startMinute: 6 * 60, endMinute: 11 * 60 + 30 },
   { slug: "lunch", title: "Lunch", subtitle: "11:30 AM – 4:00 PM", startMinute: 11 * 60 + 30, endMinute: 16 * 60 },
   { slug: "dinner", title: "Dinner", subtitle: "7:00 PM – 12:00 AM", startMinute: 19 * 60, endMinute: 24 * 60 },
+  { slug: "veg-thali", title: "Veg Thalis", subtitle: "11:30 AM – 12:00 AM", startMinute: 11 * 60 + 30, endMinute: 24 * 60 },
+  { slug: "non-veg", title: "Non-Veg Special", subtitle: "11:30 AM – 12:00 AM", startMinute: 11 * 60 + 30, endMinute: 24 * 60 },
   { slug: "street-food", title: "Street Food", subtitle: "4:00 PM – 10:00 PM", startMinute: 16 * 60, endMinute: 22 * 60 },
   { slug: "cafe", title: "Cafe Items", subtitle: "10:00 AM – 10:00 PM", startMinute: 10 * 60, endMinute: 22 * 60 },
+  ...CAFE_ROWS.map((row) => ({ slug: row.slug, title: row.title, subtitle: "10:00 AM – 10:00 PM", startMinute: 10 * 60, endMinute: 22 * 60 })),
 ];
 
 export function getFoodCollection(slug: string): FoodCollection | undefined {
@@ -59,6 +74,7 @@ const DISH_RULES: { type: DishType; pattern: RegExp }[] = [
 interface DishInfo {
   name: string;
   category?: string | null;
+  isVeg?: boolean | null;
 }
 
 const sectionOf = (item: DishInfo) => (item.category || "").replace(/_/g, " ").trim();
@@ -90,8 +106,32 @@ export interface ClassifiableDish extends DishInfo {
   provider: { businessName: string };
 }
 
-// The categories a dish belongs to. Lunch and dinner share the same main-course catalog.
+// The categories a dish belongs to: its time-of-day category plus any themed rows.
 export function getFoodCollectionSlugs(item: ClassifiableDish): string[] {
+  return [...getMealSlugs(item), ...getThemedSlugs(item)];
+}
+
+// Themed rows: Veg Thalis, Non-Veg Special, and the cafe sub-categories.
+function getThemedSlugs(item: ClassifiableDish): string[] {
+  if (item.itemType !== "restaurant") return [];
+  const type = getDishType(item);
+  if (!type) return [];
+  const text = `${sectionOf(item)} ${item.name}`;
+  const provider = item.provider.businessName;
+  const slugs: string[] = [];
+  const isNonVeg = item.isVeg === false || (NON_VEG_DISH.test(item.name) && !/(veg|paneer)/i.test(item.name));
+  if (/thali|थाळी/i.test(item.name) && !isNonVeg) slugs.push("veg-thali");
+  if (isNonVeg && NON_VEG_PARTNERS.test(provider) && type !== "beverages" && type !== "desserts") slugs.push("non-veg");
+  if (CAFE_PARTNERS.test(provider)) {
+    for (const row of CAFE_ROWS) {
+      if (row.pattern.test(text)) { slugs.push(row.slug); break; }
+    }
+  }
+  return slugs;
+}
+
+// Lunch and dinner share the same main-course catalog.
+function getMealSlugs(item: ClassifiableDish): string[] {
   if (item.itemType === "street_food") {
     return BREAKFAST_STREET_VENDOR.test(item.provider.businessName) ? ["breakfast", "street-food"] : ["street-food"];
   }

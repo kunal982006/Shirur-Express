@@ -50,7 +50,7 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                     loading="lazy"
                     onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
                 />
-                {dish.isMostlySelling && <span className="app-card-badge">🔥 Mostly Selling</span>}
+                <span className="app-card-badge">{dish.isMostlySelling ? "🔥 Mostly Selling" : "Trending in Shirur"}</span>
             </div>
             <div className="app-product-card__body">
                 <div className="flex min-w-0 items-start gap-1.5">
@@ -61,6 +61,9 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                     {dish.provider.businessName}
                     {(dish.orderCount ?? 0) > 0 && <span className="font-semibold text-orange-600"> · {dish.orderCount} ordered today</span>}
                 </p>
+                {dish.showDescription && dish.description && (
+                    <p className="mt-0.5 line-clamp-3 text-[10px] leading-snug text-slate-500">{dish.description}</p>
+                )}
                 <div className="app-product-card__footer">
                     <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{Number(dish.price)}</span>
                     <DishQuantityControl dish={dish} {...control} />

@@ -119,7 +119,10 @@ function ProductCard({ item, onOpen, onAdd, onUpdate }: { item: any; onOpen: () 
       </div>
       <div className="app-product-card__body">
         <p className="line-clamp-2 min-h-[2.6em] text-xs sm:text-sm font-bold leading-snug text-slate-900 break-words">{item.name}</p>
-        <p className="truncate text-[10.5px] text-slate-500">{item.provider?.businessName || item.category || "Local favourite"}</p>
+        <p className="truncate text-[10.5px] text-slate-500">
+          {item.provider?.businessName || item.category || "Local favourite"}
+          {(item.orderCount ?? 0) > 0 && <span className="font-semibold text-orange-600"> · {item.orderCount} ordered today</span>}
+        </p>
         <div className="app-product-card__footer">
           <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{item.price}</span>
           <QuantityControl item={item} add={onAdd} update={onUpdate} />

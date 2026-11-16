@@ -158,6 +158,10 @@ export default function FoodCollection() {
                                             <h3 className="truncate text-sm font-bold sm:text-base">{dish.name}</h3>
                                         </div>
                                         <p className="text-sm font-semibold">₹{Number(dish.price)}</p>
+                                        <p className="text-[11px] font-semibold text-orange-600">
+                                            {dish.isMostlySelling ? "🔥 Mostly Selling" : "Trending in Shirur"}
+                                            {(dish.orderCount ?? 0) > 0 && ` · ${dish.orderCount} ordered today`}
+                                        </p>
                                         {dish.description && <p className="line-clamp-2 text-xs text-muted-foreground">{dish.description}</p>}
                                         <button
                                             type="button"

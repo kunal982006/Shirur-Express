@@ -32,7 +32,9 @@ export function FoodCollectionRows({ className = "space-y-4" }: { className?: st
     const [, setLocation] = useLocation();
     const { data: collections, isLoading } = useQuery<FoodCollectionRow[]>({
         queryKey: ["/api/food-collections"],
-        queryFn: () => apiRequest("GET", "/api/food-collections").then(res => res.json())
+        queryFn: () => apiRequest("GET", "/api/food-collections").then(res => res.json()),
+        // Order counters move during the day and with every new order.
+        refetchInterval: 60 * 1000,
     });
     const cart = useCollectionCart();
     const activeSlugs = useActiveCollectionSlugs();
