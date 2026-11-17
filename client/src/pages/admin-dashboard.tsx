@@ -1333,7 +1333,7 @@ export default function AdminDashboard() {
                                                         <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
                                                             <div className="w-12 h-12 rounded-md bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10">
                                                                 {item.imageUrl ? (
-                                                                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                                                    <img loading="lazy" decoding="async" src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <ImageIcon className="h-5 w-5 text-gray-600" />
                                                                 )}
@@ -2385,7 +2385,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                 <div className="flex items-center gap-4 flex-1">
                     <div className="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center border border-white/10">
                         {provider.profileImageUrl ? (
-                            <img src={provider.profileImageUrl} alt="" className="w-full h-full object-cover" />
+                            <img loading="lazy" decoding="async" src={provider.profileImageUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                             <Store className="h-5 w-5 text-gray-500" />
                         )}
@@ -2437,7 +2437,7 @@ function ProviderFeaturedAccordion({ provider, type }: { provider: Provider, typ
                                     <div className="flex items-center gap-3 w-full pr-4">
                                         <div className="w-10 h-10 rounded-md bg-gray-800 overflow-hidden shrink-0">
                                             {(item.imageUrl || item.images?.[0]) ? (
-                                                <img src={item.imageUrl || item.images?.[0]} alt="" className="w-full h-full object-cover" />
+                                                <img loading="lazy" decoding="async" src={item.imageUrl || item.images?.[0]} alt="" className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-4 w-4 text-gray-600" /></div>
                                             )}
@@ -2681,7 +2681,7 @@ function DisplayOrderTab({
                                 {/* Provider Image */}
                                 <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 shrink-0">
                                     {provider.profileImageUrl ? (
-                                        <img
+                                        <img loading="lazy" decoding="async"
                                             src={provider.profileImageUrl}
                                             alt={provider.businessName}
                                             className="w-full h-full object-cover"

@@ -4,12 +4,17 @@ import { CheckCircle2, Navigation } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
+import { haptic } from "@/lib/native-app";
 
 export default function OrderSuccess() {
   const searchParams = new URLSearchParams(window.location.search);
   const type = searchParams.get("type") || "orders";
   const orderId = searchParams.get("orderId");
   const payment = searchParams.get("payment");
+
+  useEffect(() => {
+    haptic("success");
+  }, []);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

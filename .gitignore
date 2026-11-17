@@ -20,3 +20,6 @@ local.properties
 .idea/
 *.iml
 generated-images/
+
+# Website files copied into the Android app by `npm run android:bundle`
+android-app/app/src/main/assets/web/

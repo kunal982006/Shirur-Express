@@ -82,7 +82,7 @@ export default function BuyPhone() {
               <Card key={phone.id} className="overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
                 <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                   {phone.images && phone.images.length > 0 ? (
-                    <img 
+                    <img loading="lazy" decoding="async" 
                       src={phone.images[0]} 
                       alt={`${phone.brand} ${phone.model}`} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -144,7 +144,7 @@ export default function BuyPhone() {
                             <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
                               {phone.images.map((img, i) => (
                                 <div key={i} className="min-w-[80%] sm:min-w-[250px] aspect-square flex-shrink-0 snap-center rounded-lg overflow-hidden bg-gray-100 border">
-                                  <img src={img} alt={`${phone.model} - view ${i+1}`} className="w-full h-full object-cover" />
+                                  <img loading="lazy" decoding="async" src={img} alt={`${phone.model} - view ${i+1}`} className="w-full h-full object-cover" />
                                 </div>
                               ))}
                             </div>

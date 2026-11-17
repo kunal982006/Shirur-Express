@@ -277,7 +277,7 @@ export default function OfferDetailsPage() {
             {/* Hero Banner */}
             <div className="relative w-full aspect-video md:aspect-[21/9] max-w-4xl mx-auto px-4 z-10 mt-1">
                 <div className="w-full h-full rounded-2xl overflow-hidden shadow-xl relative border-4 border-white/10">
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={offer.imageUrl}
                         alt={offer.title}
                         className="w-full h-full object-cover"
@@ -311,7 +311,7 @@ export default function OfferDetailsPage() {
                     <div className="max-w-4xl mx-auto p-4 flex items-center gap-3">
                         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                             {offer.provider.profileImageUrl ? (
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={offer.provider.profileImageUrl}
                                     alt={offer.provider.businessName}
                                     className="h-full w-full object-cover"
@@ -447,7 +447,7 @@ export default function OfferDetailsPage() {
                                                 className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
                                                 onClick={() => product.imageUrl && setSelectedImage(product.imageUrl)}
                                             >
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={product.imageUrl}
                                                     alt={product.name}
                                                     className="w-full h-full object-cover"
@@ -561,7 +561,7 @@ export default function OfferDetailsPage() {
                         >
                             <X className="h-8 w-8" />
                         </Button>
-                        <img 
+                        <img loading="lazy" decoding="async" 
                             src={selectedImage} 
                             alt="Product details full screen" 
                             className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"

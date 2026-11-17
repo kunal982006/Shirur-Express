@@ -855,7 +855,7 @@ export default function PropertySearch() {
                     >
                       {/* Image & Badges */}
                       <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={coverImage}
                           alt={prop.title}
                           className="w-full h-full object-cover"
@@ -1608,7 +1608,7 @@ export default function PropertySearch() {
                           key={index}
                           className="relative aspect-4/3 rounded-xl overflow-hidden border border-slate-200 shadow-2xs group bg-slate-100"
                         >
-                          <img
+                          <img loading="lazy" decoding="async"
                             src={imgUrl}
                             alt={`Upload ${index + 1}`}
                             className="w-full h-full object-cover"

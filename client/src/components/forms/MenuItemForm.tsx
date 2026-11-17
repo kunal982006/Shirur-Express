@@ -357,7 +357,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ providerId, categorySlug, i
                         onClick={handleGalleryClick}
                       >
                         {field.value ? (
-                          <img src={field.value} alt="Preview" className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={field.value} alt="Preview" className="w-full h-full object-cover" />
                         ) : (
                           <ImageIcon className="text-muted-foreground w-8 h-8" />
                         )}

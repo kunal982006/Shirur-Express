@@ -57,21 +57,10 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="31">
         
-        <!-- Splash Screen - App Entry Point -->
-        <activity
-            android:name=".SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ShirurExpress.Splash"
-            android:noHistory="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.ShirurExpress.Splash"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
@@ -86,6 +75,20 @@
                     android:host="shirur-express.onrender.com" />
             </intent-filter>
         </activity>
+
+        <!-- App entry point. The splash is now drawn inside MainActivity while
+             the app loads underneath, so there is no separate splash screen to
+             wait on. The old name is kept as an alias so the home-screen icons
+             people already have keep working after the update. -->
+        <activity-alias
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".IncomingOrderActivity"

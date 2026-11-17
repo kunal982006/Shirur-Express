@@ -288,7 +288,7 @@ export default function BookBeauty() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-4">
-                                    <img src={parlor.profileImageUrl} alt={parlor.businessName} className="w-16 h-16 rounded-md object-cover" />
+                                    <img loading="lazy" decoding="async" src={parlor.profileImageUrl} alt={parlor.businessName} className="w-16 h-16 rounded-md object-cover" />
                                     <div>
                                         <h3 className="font-semibold">{parlor.businessName}</h3>
                                         <p className="text-sm text-muted-foreground">{parlor.address}</p>

@@ -301,7 +301,7 @@ export default function SearchResults() {
                                             onClick={() => setLocation(targetUrl)} 
                                             className="bg-white p-3 rounded-xl shadow-sm mb-3 flex gap-3 cursor-pointer hover:border-primary/40 border border-transparent transition-all"
                                         >
-                                            <img 
+                                            <img loading="lazy" decoding="async" 
                                                 src={repo.profileImageUrl || fallbackImg} 
                                                 onError={(e) => {
                                                     e.currentTarget.onerror = null;
@@ -344,7 +344,7 @@ export default function SearchResults() {
                                                 <div className="flex items-start gap-2">
                                                     {/* Extreme Left: Restaurant Profile Image instead of Veg/Non-Veg */}
                                                     <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 mt-1 bg-gray-100">
-                                                        <img 
+                                                        <img loading="lazy" decoding="async" 
                                                             src={item.providerImage || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&auto=format&fit=crop&q=60"} 
                                                             onError={(e) => {
                                                                 e.currentTarget.onerror = null;
@@ -383,7 +383,7 @@ export default function SearchResults() {
                                                         setSelectedImage(item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3");
                                                     }}
                                                 >
-                                                    <img 
+                                                    <img loading="lazy" decoding="async" 
                                                         src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
                                                         className="w-full h-full object-cover bg-gray-100 group-hover:scale-105 transition-transform duration-300" 
                                                         alt={item.name} 
@@ -424,7 +424,7 @@ export default function SearchResults() {
                                                 className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
                                                 onClick={() => setSelectedImage(item.imageUrl || fallbackStreet)}
                                             >
-                                                <img 
+                                                <img loading="lazy" decoding="async" 
                                                     src={item.imageUrl || fallbackStreet} 
                                                     onError={(e) => {
                                                         e.currentTarget.onerror = null;
@@ -459,7 +459,7 @@ export default function SearchResults() {
                                                 className="relative h-28 w-full rounded-xl overflow-hidden mb-2 bg-gray-100"
                                                 onClick={() => setSelectedImage(item.imageUrl || fallbackCake)}
                                             >
-                                                <img 
+                                                <img loading="lazy" decoding="async" 
                                                     src={item.imageUrl || fallbackCake} 
                                                     onError={(e) => {
                                                         e.currentTarget.onerror = null;
@@ -504,7 +504,7 @@ export default function SearchResults() {
                                                         setShowGroceryClosedModal(true);
                                                     }}
                                                 >
-                                                    <img 
+                                                    <img loading="lazy" decoding="async" 
                                                         src={item.imageUrl || fallbackGrocery} 
                                                         onError={(e) => {
                                                             e.currentTarget.onerror = null;
@@ -540,7 +540,7 @@ export default function SearchResults() {
                                         const fallbackHouse = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60";
                                         return (
                                             <div key={prop.id} onClick={() => setLocation(`/properties/${prop.id}`)} className="bg-white p-3 rounded-xl shadow-sm flex gap-3 cursor-pointer">
-                                                <img 
+                                                <img loading="lazy" decoding="async" 
                                                     src={prop.images?.[0] || fallbackHouse} 
                                                     onError={(e) => {
                                                         e.currentTarget.onerror = null;
@@ -615,7 +615,7 @@ export default function SearchResults() {
                         >
                             <X className="h-8 w-8" />
                         </Button>
-                        <img 
+                        <img loading="lazy" decoding="async" 
                             src={selectedImage} 
                             alt="Food details full screen" 
                             className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"

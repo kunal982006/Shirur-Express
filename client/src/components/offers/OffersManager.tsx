@@ -448,7 +448,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
                                 <Label>Offer Poster (Required)</Label>
                                 {imageUrl ? (
                                     <div className="relative">
-                                        <img src={imageUrl} alt="Poster" className="w-full h-40 object-cover rounded-lg" />
+                                        <img loading="lazy" decoding="async" src={imageUrl} alt="Poster" className="w-full h-40 object-cover rounded-lg" />
                                         <Button
                                             type="button"
                                             variant="destructive"
@@ -584,7 +584,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
                                                             onClick={() => addProduct(product)}
                                                         >
                                                             {product.imageUrl && (
-                                                                <img
+                                                                <img loading="lazy" decoding="async"
                                                                     src={product.imageUrl}
                                                                     alt={product.name}
                                                                     className="w-10 h-10 object-cover rounded"
@@ -742,7 +742,7 @@ export const OffersManager: React.FC<OffersManagerProps> = ({
                             {offers.map((offer) => (
                                 <TableRow key={offer.id}>
                                     <TableCell>
-                                        <img
+                                        <img loading="lazy" decoding="async"
                                             src={offer.imageUrl}
                                             alt={offer.title}
                                             className="w-20 h-12 object-cover rounded"

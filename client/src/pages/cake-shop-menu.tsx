@@ -11,7 +11,7 @@ function CakeCard({ cake, onAdd, quantity, onUpdateQuantity }: { cake: CakeProdu
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-none shadow-sm bg-card">
       <div className="relative h-48 w-full bg-muted">
-        <img 
+        <img loading="lazy" decoding="async" 
           src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"} 
           alt={cake.name} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -125,7 +125,7 @@ export default function CakeShopMenu() {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header Image & Info */}
       <div className="relative h-48 md:h-64 bg-slate-800">
-        <img 
+        <img loading="lazy" decoding="async" 
           src={provider.profileImageUrl || provider.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1"} 
           alt={provider.businessName}
           className="w-full h-full object-cover opacity-60"

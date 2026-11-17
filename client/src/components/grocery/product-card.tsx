@@ -169,7 +169,7 @@ export default function ProductCard({
             >
               <X className="h-8 w-8" />
             </Button>
-            <img
+            <img loading="lazy" decoding="async"
               src={product.imageUrl}
               alt={product.name}
               className="max-h-[85vh] max-w-[95vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"

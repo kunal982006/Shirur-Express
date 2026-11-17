@@ -1,9 +1,36 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import fs from "fs";
+
+// Writes the list of every built file next to them (asset-manifest.json).
+// `npm run android:bundle:live` reads it from the live site to copy exactly the
+// deployed files into the Android app.
+function assetManifest(): Plugin {
+  let outDir = "";
+  const walk = (dir: string, base: string): string[] =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      return entry.isDirectory() ? walk(full, base) : [path.relative(base, full).split(path.sep).join("/")];
+    });
+  return {
+    name: "asset-manifest",
+    apply: "build",
+    configResolved(config) {
+      outDir = config.build.outDir;
+    },
+    closeBundle() {
+      if (!fs.existsSync(outDir)) return;
+      const files = walk(outDir, outDir).filter((file) => file !== "asset-manifest.json").sort();
+      fs.writeFileSync(path.join(outDir, "asset-manifest.json"), JSON.stringify({ files }));
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
+    assetManifest(),
     ...(process.env.NODE_ENV !== "production" &&
       process.env.REPL_ID !== undefined
       ? [
@@ -64,8 +91,10 @@ export default defineConfig({
             '@radix-ui/react-scroll-area',
             '@radix-ui/react-separator',
           ],
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
-          'vendor-ui': ['framer-motion', 'recharts', 'lucide-react'],
+          // Charts (dashboards only) and 3D (cake designer only) are left out on
+          // purpose: Vite then puts them in files that load with those pages only,
+          // instead of in a file every customer downloads at startup.
+          'vendor-ui': ['framer-motion', 'lucide-react'],
         },
       },
     },

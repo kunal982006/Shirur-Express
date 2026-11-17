@@ -4,83 +4,79 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { initFacebookPixel, trackPageView } from "@/lib/facebook-pixel";
 import { useAnalyticsTracker } from "@/hooks/use-analytics";
 import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import { IosPushSync } from "@/components/IosPushSync";
 import AppUpdatePopup from "@/components/AppUpdatePopup";
+import OfflineBanner from "@/components/OfflineBanner";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import PullToRefreshGuard from "@/components/PullToRefreshGuard";
 import { AddressSheet } from "@/components/address/AddressSheet";
 import { Loader2 } from "lucide-react";
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { page, preloadPagesWhenIdle } from "@/lib/lazy-pages";
 import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 
 import Home from "@/pages/home";
-import NotFound from "@/pages/not-found";
-import Electrician from "@/pages/electrician";
-import ElectricianBook from "@/pages/electrician-detail";
-import PlumberBook from "@/pages/plumber-detail";
-import Plumber from "@/pages/plumber";
-import Beauty from "@/pages/beauty";
-import BeautyDetail from "@/pages/BeautyDetail";
-import BookBeauty from "@/pages/book-beauty";
-import CakeShop from "@/pages/cake-shop";
-import CakeShopMenu from "@/pages/cake-shop-menu";
-import Grocery from "@/pages/grocery";
-import Rental from "@/pages/rental";
-import StreetFood from "@/pages/street-food";
-import StreetFoodDetail from "@/pages/StreetFoodDetail";
-import RestaurantsIndex from "@/pages/restaurants/index";
-import RestaurantDetail from "@/pages/restaurants/RestaurantDetail";
-import FoodCollection from "@/pages/restaurants/FoodCollection";
-import Checkout from "@/pages/checkout";
-import Settings from "@/pages/settings";
-import DeleteAccount from "@/pages/delete-account";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import ProviderDashboard from "@/pages/provider-dashboard";
-import MyBookings from "@/pages/my-bookings";
-import InvoicePayment from "@/pages/invoice-payment";
-import Login from "@/pages/login";
-import Signup from "@/pages/signup";
-import ProviderOnboarding from "@/pages/provider-onboarding";
-import OrderSuccess from "@/pages/OrderSuccess";
-import RunnerDashboard from "@/pages/runner-dashboard";
-import RunnerManagement from "@/pages/runner-management";
-import RiderDashboard from "@/pages/rider-dashboard";
-import PropertySearch from "@/pages/property-search";
-import PropertyDetail from "@/pages/property-detail";
-import PropertyListingForm from "@/pages/property-listing-form";
-import MyProperties from "@/pages/my-properties";
-import EditPropertyForm from "@/pages/edit-property";
-import DeliveryPartnerOnboarding from "@/pages/delivery-partner-onboarding";
-import DeliveryPartnerDashboard from "@/pages/delivery-partner-dashboard";
-import PrintBill from "@/pages/print-bill";
-import OrderTracking from "@/pages/order-tracking";
-import OfferDetailsPage from "@/pages/offer-details";
-import NotificationsPage from "@/pages/notifications";
-import AdminDashboard from "@/pages/admin-dashboard";
-import SearchResults from "@/pages/search-results";
-import CafeOfJoyMenu from "@/pages/cafe-of-joy-menu";
-import BuyPhone from "@/pages/buy-phone";
-import SellPhone from "@/pages/sell-phone";
-import Wishlist from "@/pages/wishlist";
-import HelpSupport from "@/pages/help-support";
-import GeneralInfo from "@/pages/general-info";
-import EditProfile from "@/pages/edit-profile";
 
-// Fallback loader if ever needed again
+const NotFound = page(() => import("@/pages/not-found"));
+const Electrician = page(() => import("@/pages/electrician"), true);
+const ElectricianBook = page(() => import("@/pages/electrician-detail"));
+const PlumberBook = page(() => import("@/pages/plumber-detail"));
+const Plumber = page(() => import("@/pages/plumber"), true);
+const Beauty = page(() => import("@/pages/beauty"), true);
+const BeautyDetail = page(() => import("@/pages/BeautyDetail"));
+const BookBeauty = page(() => import("@/pages/book-beauty"));
+const CakeShop = page(() => import("@/pages/cake-shop"), true);
+const CakeShopMenu = page(() => import("@/pages/cake-shop-menu"));
+const Grocery = page(() => import("@/pages/grocery"), true);
+const StreetFood = page(() => import("@/pages/street-food"), true);
+const StreetFoodDetail = page(() => import("@/pages/StreetFoodDetail"), true);
+const RestaurantsIndex = page(() => import("@/pages/restaurants/index"), true);
+const RestaurantDetail = page(() => import("@/pages/restaurants/RestaurantDetail"), true);
+const FoodCollection = page(() => import("@/pages/restaurants/FoodCollection"), true);
+const Checkout = page(() => import("@/pages/checkout"), true);
+const Settings = page(() => import("@/pages/settings"), true);
+const DeleteAccount = page(() => import("@/pages/delete-account"));
+const PrivacyPolicy = page(() => import("@/pages/privacy-policy"));
+const ProviderDashboard = page(() => import("@/pages/provider-dashboard"));
+const MyBookings = page(() => import("@/pages/my-bookings"), true);
+const InvoicePayment = page(() => import("@/pages/invoice-payment"));
+const Login = page(() => import("@/pages/login"), true);
+const Signup = page(() => import("@/pages/signup"));
+const ProviderOnboarding = page(() => import("@/pages/provider-onboarding"));
+const OrderSuccess = page(() => import("@/pages/OrderSuccess"), true);
+const RunnerDashboard = page(() => import("@/pages/runner-dashboard"));
+const RunnerManagement = page(() => import("@/pages/runner-management"));
+const RiderDashboard = page(() => import("@/pages/rider-dashboard"));
+const PropertySearch = page(() => import("@/pages/property-search"));
+const PropertyDetail = page(() => import("@/pages/property-detail"));
+const PropertyListingForm = page(() => import("@/pages/property-listing-form"));
+const MyProperties = page(() => import("@/pages/my-properties"));
+const EditPropertyForm = page(() => import("@/pages/edit-property"));
+const DeliveryPartnerOnboarding = page(() => import("@/pages/delivery-partner-onboarding"));
+const DeliveryPartnerDashboard = page(() => import("@/pages/delivery-partner-dashboard"));
+const PrintBill = page(() => import("@/pages/print-bill"));
+const OrderTracking = page(() => import("@/pages/order-tracking"), true);
+const OfferDetailsPage = page(() => import("@/pages/offer-details"));
+const NotificationsPage = page(() => import("@/pages/notifications"), true);
+const AdminDashboard = page(() => import("@/pages/admin-dashboard"));
+const SearchResults = page(() => import("@/pages/search-results"), true);
+const CafeOfJoyMenu = page(() => import("@/pages/cafe-of-joy-menu"));
+const BuyPhone = page(() => import("@/pages/buy-phone"));
+const SellPhone = page(() => import("@/pages/sell-phone"));
+const Wishlist = page(() => import("@/pages/wishlist"));
+const HelpSupport = page(() => import("@/pages/help-support"));
+const GeneralInfo = page(() => import("@/pages/general-info"));
+const EditProfile = page(() => import("@/pages/edit-profile"));
+
+// Shown only if a page's code takes a moment to arrive; stays invisible for the
+// first 200ms so a fast load never flashes a spinner.
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="w-32 h-32">
-      <DotLottieReact
-        src="/loading.lottie"
-        loop
-        autoplay
-      />
-    </div>
+  <div className="page-loader flex items-center justify-center min-h-[60vh]">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
   </div>
 );
 
@@ -211,6 +207,7 @@ function App() {
   // Initialize Meta Pixel once on app mount
   useEffect(() => {
     initFacebookPixel();
+    preloadPagesWhenIdle();
   }, []);
 
   return (
@@ -235,6 +232,7 @@ function App() {
             <OrderNotificationPopup />
             <IosPushSync />
             <AppUpdatePopup />
+            <OfflineBanner />
             <Toaster />
           </TooltipProvider>
         </LocationProvider>

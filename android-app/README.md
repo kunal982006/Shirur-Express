@@ -1,6 +1,55 @@
-# Shirur Express - Android WebView App
+# Shirur Express - Android App
 
-A pure WebView-based Android app that wraps the Shirur Express website.
+A hybrid Android app: a native shell (splash, bottom tab bar, back button,
+haptics, push notifications, payments, printer) around the Shirur Express
+website, with the website's own files stored inside the APK so the app opens
+from the phone instead of downloading itself on every launch.
+
+## How the app loads (since 1.5.0)
+
+- The WebView still opens `https://shirur-express.onrender.com`, so the login
+  session, cart, payments and API calls work exactly as on the website.
+- Requests for the website's static files (HTML, JS, CSS, icons, banners) are
+  answered from `app/src/main/assets/web` inside the APK (`WebAppBundle.kt`).
+  API calls and menu photos still come from the server.
+- In the background the app asks the server for its current page. If the server
+  has a newer version of the website, the app saves it and uses it from the next
+  page load on. **A website deploy therefore still reaches app users without a
+  Play Store release.** Files of the new version that are not in the APK are
+  downloaded once and then kept in the WebView cache.
+- If the stored files ever fail to start, the app falls back to loading
+  everything from the server, like versions before 1.5.0.
+
+### Putting the website into the APK
+
+The `assets/web` folder is generated, not committed. Before building a release:
+
+```bash
+# 1. Deploy the website first (push to Render) and wait for it to go live.
+# 2. Copy exactly what is live into the app:
+npm run android:bundle:live
+# 3. Build the APK / bundle in Android Studio as usual.
+```
+
+For a quick test build from your working copy instead of the live site:
+
+```bash
+npm run android:bundle      # builds the website here and copies it in
+```
+
+If you skip this step the app still works; it just loads from the server.
+
+### What is native
+
+| Part | File |
+| --- | --- |
+| Splash that lifts as soon as the first screen is ready | `SplashOverlay.kt` |
+| Bottom tab bar (tabs, selection and colours come from the website) | `BottomNavBar.kt` |
+| Back button closes popups and sheets before leaving the page | `MainActivity.kt` |
+| Haptic feedback on cart changes, tabs and pull-to-refresh | `MainActivity.kt` |
+| Website files served from the APK, with update check | `WebAppBundle.kt` |
+
+The website side of each of these is in `client/src/lib/native-app.ts`.
 
 ## Features
 
@@ -85,8 +134,10 @@ android-app/
 ├── app/
 │   ├── src/main/
 │   │   ├── java/com/shirurexpress/app/
-│   │   │   ├── MainActivity.kt          # Main WebView activity
-│   │   │   ├── SplashActivity.kt        # Splash screen
+│   │   │   ├── MainActivity.kt          # Main WebView activity + JS bridge
+│   │   │   ├── WebAppBundle.kt          # Serves the website's files from the APK
+│   │   │   ├── SplashOverlay.kt         # Animated splash over the loading app
+│   │   │   ├── BottomNavBar.kt          # Native bottom tab bar
 │   │   │   ├── IncomingOrderActivity.kt # Incoming order notifications
 │   │   │   └── MyFirebaseMessagingService.kt # FCM service
 │   │   ├── res/

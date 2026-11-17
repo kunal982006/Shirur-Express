@@ -72,7 +72,7 @@ export function QuickImageUpload({
             />
             
             {currentImage ? (
-                <img src={currentImage} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
+                <img loading="lazy" decoding="async" src={currentImage} className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
             ) : (
                 <ImageIcon className="text-muted-foreground w-6 h-6 group-hover:opacity-50 transition-opacity" />
             )}

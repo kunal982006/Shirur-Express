@@ -64,7 +64,7 @@ export default function PropertyDetail() {
                                     property.images.map((img, index) => (
                                         <CarouselItem key={index}>
                                             <div className="aspect-video relative">
-                                                <img
+                                                <img loading="lazy" decoding="async"
                                                     src={img}
                                                     alt={`Property view ${index + 1}`}
                                                     className="w-full h-full object-cover rounded-lg"

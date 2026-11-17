@@ -714,7 +714,7 @@ export default function Checkout() {
                         <div key={item.id} className="flex items-center justify-between gap-2 p-3 border rounded-lg">
                           <div className="flex min-w-0 items-center space-x-3">
                             {item.imageUrl && (
-                              <img
+                              <img loading="lazy" decoding="async"
                                 src={item.imageUrl}
                                 alt=""
                                 className="w-10 h-10 shrink-0 rounded object-cover"

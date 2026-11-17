@@ -144,7 +144,7 @@ export default function AdminStreetFood() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 overflow-hidden">
                                         {vendor.profileImageUrl ? (
-                                            <img src={vendor.profileImageUrl} alt="Logo" className="w-full h-full object-cover" />
+                                            <img loading="lazy" decoding="async" src={vendor.profileImageUrl} alt="Logo" className="w-full h-full object-cover" />
                                         ) : (
                                             <Store className="h-6 w-6 text-orange-500" />
                                         )}
@@ -383,7 +383,7 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {vendor.galleryImages?.map((url, idx) => (
                                         <div key={idx} className="relative group rounded-xl overflow-hidden aspect-video bg-gray-800 border border-white/10">
-                                            <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                            <img loading="lazy" decoding="async" src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <Button
                                                     variant="destructive"
@@ -421,7 +421,7 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                                     <Label>Vendor Logo (Profile Image)</Label>
                                     <div className="flex items-center gap-4">
                                         {vendor.profileImageUrl && !vendorLogoEdit && (
-                                            <img src={vendor.profileImageUrl} alt="Logo" className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                                            <img loading="lazy" decoding="async" src={vendor.profileImageUrl} alt="Logo" className="w-12 h-12 rounded-full object-cover border border-white/10" />
                                         )}
                                         <Input
                                             type="file"
@@ -583,7 +583,7 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                         <div key={item.id} className="bg-[#111827] rounded-xl overflow-hidden border border-white/5 relative group hover:border-white/20 transition-all shadow-sm">
                             <div className="h-40 bg-gray-800 relative">
                                 {item.imageUrl ? (
-                                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                    <img loading="lazy" decoding="async" src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
                                         <ImageIcon className="h-8 w-8 text-gray-600" />

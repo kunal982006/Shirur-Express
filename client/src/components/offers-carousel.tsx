@@ -89,7 +89,7 @@ export function OffersCarousel({
 
                         const cardContent = (
                             <div className={`relative overflow-hidden group shadow-md hover:shadow-xl transition-all duration-300 w-full h-full ${variant === 'hero' ? 'aspect-square rounded-none' : 'aspect-[16/9] rounded-xl'}`}>
-                                <img
+                                <img loading="lazy" decoding="async"
                                     src={offer.imageUrl}
                                     alt={offer.title}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -191,7 +191,7 @@ export function OffersCarousel({
                                 }
                             }}
                         >
-                            <img 
+                            <img loading="lazy" decoding="async" 
                                 src={selectedPromo.popupImageUrl} 
                                 alt={selectedPromo.title} 
                                 className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]" 

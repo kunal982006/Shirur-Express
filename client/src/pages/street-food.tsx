@@ -22,7 +22,7 @@ function StreetVendorCard({ vendor, onClick }: { vendor: ServiceProvider; onClic
     >
       {/* Image Container */}
       <div className="relative h-28 sm:h-36 w-full overflow-hidden">
-        <img
+        <img loading="lazy" decoding="async"
           src={image}
           alt={vendor.businessName}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

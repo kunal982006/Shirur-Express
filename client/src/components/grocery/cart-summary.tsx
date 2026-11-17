@@ -61,7 +61,7 @@ export default function CartSummary({
                 <div key={item.id} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center space-x-3 flex-1">
                     {item.imageUrl && (
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={item.imageUrl}
                         alt={item.name}
                         className="w-10 h-10 rounded object-cover"

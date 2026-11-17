@@ -81,7 +81,7 @@ export default function MyProperties() {
                 <div key={property.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
                   <div className="flex items-center gap-4">
                     {property.images && property.images[0] ? (
-                      <img src={property.images[0]} alt={property.title} className="w-16 h-16 object-cover rounded" />
+                      <img loading="lazy" decoding="async" src={property.images[0]} alt={property.title} className="w-16 h-16 object-cover rounded" />
                     ) : (
                       <div className="w-16 h-16 bg-muted rounded flex items-center justify-center"><Home className="h-6 w-6 opacity-20" /></div>
                     )}

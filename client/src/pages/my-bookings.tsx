@@ -359,7 +359,7 @@ export default function MyBookings() {
                             {booking.provider && (
                               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg mb-4 border border-slate-100 dark:border-slate-800">
                                 {booking.provider.profileImageUrl ? (
-                                  <img 
+                                  <img loading="lazy" decoding="async" 
                                     src={booking.provider.profileImageUrl} 
                                     alt={booking.provider.businessName}
                                     className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"

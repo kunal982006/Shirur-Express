@@ -335,7 +335,7 @@ export default function SellPhone() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {previewUrls.map((url, index) => (
                       <div key={index} className="relative aspect-square rounded-md overflow-hidden border border-gray-200 group">
-                        <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}

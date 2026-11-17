@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { API_BASE_URL } from "./api";
+import { persistQueryCache, restoreQueryCache } from "./query-persist";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -56,3 +57,7 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Show the last known catalogue instantly on startup, then refresh it.
+restoreQueryCache(queryClient);
+persistQueryCache(queryClient);

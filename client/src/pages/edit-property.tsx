@@ -524,7 +524,7 @@ export default function EditPropertyForm() {
                                     <div className="grid grid-cols-3 gap-2 mt-2">
                                         {imageUrls.map((url, index) => (
                                             <div key={index} className="relative group">
-                                                <img src={url} alt={`Property ${index}`} className="h-20 w-full object-cover rounded" />
+                                                <img loading="lazy" decoding="async" src={url} alt={`Property ${index}`} className="h-20 w-full object-cover rounded" />
                                                 <button
                                                     type="button"
                                                     onClick={() => {
