@@ -45,12 +45,14 @@ const STYLE =
 // ---------- Name normalisation: variants that should share one image ----------
 function dishKey(name: string): string {
   let n = name.toLowerCase().replace(/\((full|half|plate)\)/g, ' ')
-    .replace(/\([^)]*(person|piece|family pack|kilogram|grams|kg)[^)]*\)/g, ' ').replace(/\(\d+\s*("|in|inch)?\)/g, ' ');
+    .replace(/\([^)]*(person|piece|family pack|kilogram|grams|\bkg\b)[^)]*\)/g, ' ')
+    .replace(/\s+(full|half)\s*$/, ' ').replace(/\(\d+\s*("|in|inch)?\)/g, ' ');
   const fixes: [RegExp, string][] = [
     [/\bgost\b|\bgosh\b/g, 'gosht'], [/chilly/g, 'chilli'], [/pulav/g, 'pulao'], [/sukha/g, 'sukka'],
     [/lahsuni/g, 'lasuni'], [/khichadi/g, 'khichdi'], [/moghlai/g, 'moglai'], [/seekh/g, 'seek'],
     [/tutti[- ]?frutt?i/g, 'tutti frutti'], [/malwar|malvan|malbar/g, 'malabar'], [/steak/g, 'stick'],
     [/thumbs up|thums up/g, 'thums up'],
+    [/kabab/g, 'kebab'], [/patiala/g, 'patiyala'], [/lasooni/g, 'lasuni'],
   ];
   for (const [re, to] of fixes) n = n.replace(re, to);
   return slugify(n);
@@ -203,6 +205,20 @@ async function main() {
 
   const { rows } = await pool.query(
     `SELECT id, name, category, description, image_url, is_veg FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
+  // Bilingual names like "चिकन मंचाव सूप (Chicken Manchow Soup)": prompt and group on the English part only.
+  for (const r of rows as any[]) {
+    const m = /[^\x00-\x7F]/.test(r.name) && r.name.match(/\(([A-Za-z].*)\)\s*$/);
+    if (m) r.name = m[1].trim();
+  }
+
+  if (ALL && APPLY && !DRY_RUN) {
+    const backup = path.join(OUT_DIR, 'old-image-urls-before-ai.json');
+    if (!fs.existsSync(backup)) {
+      const orig = await pool.query(`SELECT id, name, image_url FROM restaurant_menu_items WHERE provider_id = $1`, [providerId]);
+      fs.writeFileSync(backup, JSON.stringify(orig.rows, null, 2));
+      console.log(`💾 Old image links saved to ${path.relative(process.cwd(), backup)}`);
+    }
+  }
 
   if (CLEAR) {
     const backup = path.join(OUT_DIR, 'old-image-urls.json');
@@ -240,7 +256,7 @@ async function main() {
     // so a "Veg Fried Rice" is never drawn with chicken.
     const vegItem = VEG || group.every((g: any) => g.is_veg);
     const extra = describeExtra(key.replace(/-/g, ' '));
-    const extraOk = extra && !(vegItem && /chicken|mutton|fish|prawn|egg|meat/.test(extra));
+    const extraOk = extra && !(vegItem && /chicken|mutton|fish|prawn|\begg|meat/.test(extra));
     let { text, fallback } = extraOk
       ? { text: extra!, fallback: false }
       : vegItem
