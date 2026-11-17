@@ -7,6 +7,7 @@ import compression from "compression";
 import connectPgSimple from "connect-pg-simple";
 import { pool, checkDatabaseConnection } from "./db";
 import { registerRoutes } from "./routes"; // registerRoutes from server/routes.ts
+import { runDataMigrations } from "./data-migrations";
 import { cloudinaryDeliveryMiddleware } from "./cloudinary-delivery";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -169,6 +170,7 @@ app.use(cloudinaryDeliveryMiddleware);
 (async () => {
   // Ensure DB is connected before starting server
   await checkDatabaseConnection();
+  await runDataMigrations();
 
   const server = await registerRoutes(app);
 

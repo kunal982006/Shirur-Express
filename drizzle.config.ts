@@ -8,5 +8,5 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
-  tablesFilter: ["!session"],
+  tablesFilter: ["!session", "!app_data_migrations"],
 });
