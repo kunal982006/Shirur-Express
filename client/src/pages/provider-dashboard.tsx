@@ -795,7 +795,7 @@ const MenuItemsManager: React.FC<{
                       }}>
                         <div className="flex items-center gap-2 w-full cursor-pointer">
                           {item.imageUrl && (
-                            <img src={item.imageUrl} className="w-8 h-8 rounded-sm object-cover" />
+                            <img loading="lazy" decoding="async" src={item.imageUrl} className="w-8 h-8 rounded-sm object-cover" />
                           )}
                           <div className="flex flex-col">
                             <span className="font-medium">{item.name}</span>
@@ -1415,7 +1415,7 @@ const BookingList: React.FC<{
             <div className="flex flex-col md:flex-row gap-4 items-start">
               {booking.serviceOffering?.imageUrl && (
                 <div className="w-full md:w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 border bg-muted">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={booking.serviceOffering.imageUrl}
                     alt={booking.serviceOffering.name || "Service"}
                     className="w-full h-full object-cover"
@@ -2231,7 +2231,7 @@ const BeautyServiceSelector: React.FC<{
                           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                         ) : service.imageUrl ? (
                           <>
-                            <img src={service.imageUrl} alt="" className="w-full h-full object-cover" />
+                            <img loading="lazy" decoding="async" src={service.imageUrl} alt="" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                               <Upload className="h-3 w-3 text-white" />
                             </div>
@@ -2585,7 +2585,7 @@ const GroceryOrderCard: React.FC<{
               <div key={idx} className="flex items-center gap-3 p-3">
                 <div className="h-12 w-12 rounded-md bg-white border flex-shrink-0 overflow-hidden shadow-sm">
                   {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" />
+                    <img loading="lazy" decoding="async" src={item.imageUrl} alt={item.name} className="h-full w-full object-contain" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground">
                       <ShoppingBag className="h-6 w-6 opacity-20" />
@@ -3140,7 +3140,7 @@ const RentalManager: React.FC<{
               <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   {property.images && property.images[0] ? (
-                    <img src={property.images[0]} alt={property.title} className="w-16 h-16 object-cover rounded" />
+                    <img loading="lazy" decoding="async" src={property.images[0]} alt={property.title} className="w-16 h-16 object-cover rounded" />
                   ) : (
                     <div className="w-16 h-16 bg-muted rounded flex items-center justify-center"><Home className="h-6 w-6 opacity-20" /></div>
                   )}
@@ -3343,9 +3343,9 @@ const ProfileSettingsManager: React.FC<{
             <div className="w-full md:w-1/2">
               <div className="relative group rounded-xl overflow-hidden aspect-[16/9] md:aspect-square md:max-w-xs shadow-inner bg-muted transition-all duration-300">
                 {profileFile ? (
-                  <img src={URL.createObjectURL(profileFile)} alt="Preview" className="w-full h-full object-cover" />
+                  <img loading="lazy" decoding="async" src={URL.createObjectURL(profileFile)} alt="Preview" className="w-full h-full object-cover" />
                 ) : providerProfile.profileImageUrl ? (
-                  <img src={providerProfile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                  <img loading="lazy" decoding="async" src={providerProfile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
                     <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
@@ -3496,7 +3496,7 @@ const ProfileSettingsManager: React.FC<{
                     key={index}
                     className="group relative aspect-square bg-muted rounded-xl shadow-sm border border-border overflow-hidden hover:shadow-md transition-all"
                   >
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={url}
                       alt={`Gallery item ${index + 1}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

@@ -3,7 +3,8 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { cssColorToHex, hasNativeBottomNav, setNativeBottomNav, type NativeNavIcon, type NativeNavItem } from "@/lib/native-app";
 
 import {
   DropdownMenu,
@@ -24,6 +25,80 @@ const navItems = [
   // Settings link ko user-specific settings ke liye rakha hai
   // Provider Dashboard ka link alag se handle kiya gaya hai
 ];
+
+const TAB_ICONS: Record<NativeNavIcon, typeof Home> = {
+  home: Home,
+  bookings: Package,
+  deliveries: Truck,
+  dashboard: LayoutDashboard,
+  settings: Settings,
+  login: UserIcon,
+};
+
+/**
+ * Invisible stand-in for the bottom bar when the Android app draws the real one.
+ * It keeps the app told which tabs to show, which is selected, and whether a
+ * popup, sheet or a page's own bottom bar is currently covering this spot (the
+ * app's bar then steps aside, exactly as the website's bar would be covered).
+ */
+function NativeBottomNavSlot({ items, active }: { items: NativeNavItem[]; active: string | null }) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLSpanElement>(null);
+  const [location, setLocation] = useLocation();
+  const itemsKey = JSON.stringify(items);
+
+  useEffect(() => {
+    (window as any).__nativeNavigate = (href: string) => setLocation(href);
+    return () => { delete (window as any).__nativeNavigate; };
+  }, [setLocation]);
+
+  useEffect(() => {
+    const sync = () => {
+      const slot = slotRef.current;
+      const probe = probeRef.current;
+      if (!slot || !probe) return;
+      const top = document.elementFromPoint(window.innerWidth / 2, window.innerHeight - 24);
+      const probeStyle = getComputedStyle(probe);
+      setNativeBottomNav({
+        visible: !!top && slot.contains(top),
+        active,
+        items: JSON.parse(itemsKey),
+        colors: {
+          background: cssColorToHex(probeStyle.backgroundColor, "#ffffff"),
+          active: cssColorToHex(probeStyle.color, "#2563eb"),
+          border: cssColorToHex(probeStyle.borderTopColor, "#e2e8f0"),
+          inactive: cssColorToHex(getComputedStyle(slot).color, "#0f172a"),
+        },
+      });
+    };
+
+    // Popups and sheets are added straight under <body>; re-check as they animate in.
+    const timers = new Set<number>();
+    const burst = () => {
+      for (const delay of [0, 150, 350]) {
+        const id = window.setTimeout(() => { timers.delete(id); sync(); }, delay);
+        timers.add(id);
+      }
+    };
+    burst();
+    const observer = new MutationObserver(burst);
+    observer.observe(document.body, { childList: true });
+    const interval = window.setInterval(sync, 400);
+    window.addEventListener("resize", sync);
+    return () => {
+      observer.disconnect();
+      window.clearInterval(interval);
+      window.removeEventListener("resize", sync);
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [itemsKey, active, location]);
+
+  return (
+    <div ref={slotRef} className="fixed bottom-0 left-0 right-0 z-50 h-16 text-foreground md:hidden" aria-hidden="true">
+      <span ref={probeRef} className="hidden bg-background text-primary border-border" />
+    </div>
+  );
+}
 
 export default function Header() {
   const [location, setLocation] = useLocation();
@@ -82,6 +157,30 @@ export default function Header() {
   // Check if we're on the homepage - only hide top header, keep bottom nav
   const isHomePage = location === "/" || location === "";
   const hideTopHeader = isHomePage || location.startsWith("/admin") || location.startsWith("/search");
+
+  // One list of bottom tabs, drawn either by the website or by the Android app.
+  const bottomTabs: NativeNavItem[] = [
+    { href: "/", label: "Home", icon: "home" },
+    { href: "/my-bookings", label: "Bookings", icon: "bookings" },
+  ];
+  if (isDeliveryPartner) {
+    bottomTabs.push({ href: "/delivery-partner/dashboard", label: "Deliveries", icon: "deliveries" });
+  }
+  if ((user?.role === 'provider' || user?.username === 'streetfood_admin') && !isDeliveryPartner) {
+    bottomTabs.push({ href: "/provider/dashboard", label: user?.username === 'streetfood_admin' ? 'Orders' : 'Dashboard', icon: "dashboard" });
+  }
+  if (user?.role === 'admin' && user?.username === 'streetfood_admin') {
+    bottomTabs.push({ href: "/admin", label: "Vendors", icon: "dashboard" });
+  }
+  if (user) {
+    bottomTabs.push({ href: "/settings", label: "Settings", icon: "settings" });
+  } else if (!isLoading) {
+    bottomTabs.push({ href: "/login", label: "Login", icon: "login" });
+  }
+  // Login is a shortcut, not a place you "are", so it is never highlighted.
+  const activeTab = isHomePage
+    ? "/"
+    : bottomTabs.find((tab) => tab.href !== "/" && tab.href !== "/login" && tab.href === location)?.href ?? null;
 
   return (
     <>
@@ -252,88 +351,33 @@ export default function Header() {
       )}
 
       {/* Bottom Navigation for Mobile - ALWAYS VISIBLE */}
-      <div 
-        className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-center md:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
-        style={{ 
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          height: 'calc(4rem + env(safe-area-inset-bottom))'
-        }}
-      >
-        {/* Home */}
-        <Button
-          variant="ghost"
-          className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${isHomePage ? 'text-primary' : ''}`}
-          onClick={() => setLocation("/")}
+      {hasNativeBottomNav() ? (
+        // The Android app draws this bar itself, exactly over this placeholder.
+        <NativeBottomNavSlot items={bottomTabs} active={activeTab} />
+      ) : (
+        <div
+          className="app-bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-center md:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+          style={{
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            height: 'calc(4rem + env(safe-area-inset-bottom))'
+          }}
         >
-          <Home className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Home</span>
-        </Button>
-
-        {/* My Bookings */}
-        <Button
-          variant="ghost"
-          className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/my-bookings' ? 'text-primary' : ''}`}
-          onClick={() => setLocation("/my-bookings")}
-        >
-          <Package className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Bookings</span>
-        </Button>
-
-        {isDeliveryPartner && (
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/delivery-partner/dashboard' ? 'text-primary' : ''}`}
-            onClick={() => setLocation("/delivery-partner/dashboard")}
-          >
-            <Truck className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Deliveries</span>
-          </Button>
-        )}
-        {(user?.role === 'provider' || user?.username === 'streetfood_admin') && !isDeliveryPartner && (
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/provider/dashboard' ? 'text-primary' : ''}`}
-            onClick={() => setLocation("/provider/dashboard")}
-          >
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px] font-medium">{user?.username === 'streetfood_admin' ? 'Orders' : 'Dashboard'}</span>
-          </Button>
-        )}
-        {user?.role === 'admin' && user?.username === 'streetfood_admin' && (
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/admin' ? 'text-primary' : ''}`}
-            onClick={() => setLocation("/admin")}
-          >
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Vendors</span>
-          </Button>
-        )}
-
-        {/* Settings (if logged in) */}
-        {user && (
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${location === '/settings' ? 'text-primary' : ''}`}
-            onClick={() => setLocation("/settings")}
-          >
-            <Settings className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Settings</span>
-          </Button>
-        )}
-
-        {/* Login (if not logged in) */}
-        {!user && !isLoading && (
-          <Button
-            variant="ghost"
-            className="flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent"
-            onClick={() => setLocation("/login")}
-          >
-            <UserIcon className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Login</span>
-          </Button>
-        )}
-      </div>
+          {bottomTabs.map((tab) => {
+            const Icon = TAB_ICONS[tab.icon];
+            return (
+              <Button
+                key={tab.href}
+                variant="ghost"
+                className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${activeTab === tab.href ? 'text-primary' : ''}`}
+                onClick={() => setLocation(tab.href)}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium">{tab.label}</span>
+              </Button>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

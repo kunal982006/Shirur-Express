@@ -264,7 +264,7 @@ export default function RestaurantDetail() {
             {!(restaurant.specializations?.some(s => s.toLowerCase().includes('cake') || s.toLowerCase().includes('bakery'))) && (
                 <div className="relative h-48 md:h-72 w-full bg-muted overflow-hidden">
                     {restaurant.profileImageUrl ? (
-                        <img 
+                        <img loading="lazy" decoding="async" 
                             src={restaurant.profileImageUrl} 
                             alt={restaurant.businessName} 
                             className="w-full h-full object-cover"
@@ -580,7 +580,7 @@ export default function RestaurantDetail() {
                                             className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-all border shadow-sm group"
                                             onClick={() => setSelectedImage(img)}
                                         >
-                                            <img 
+                                            <img loading="lazy" decoding="async" 
                                                 src={img} 
                                                 alt={`${restaurant.businessName} photo ${index + 1}`} 
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -639,7 +639,7 @@ export default function RestaurantDetail() {
                         >
                             <X className="h-8 w-8" />
                         </Button>
-                        <img 
+                        <img loading="lazy" decoding="async" 
                             src={selectedImage} 
                             alt="Restaurant gallery full screen" 
                             className="max-h-full max-w-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"

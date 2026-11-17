@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/contentRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
@@ -34,6 +39,33 @@
             android:scrollbars="none" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Native bottom tab bar. It sits exactly over the spot where the website
+         leaves room for its own bar (4rem = 64dp). The website decides what it
+         shows and when; see BottomNavBar.kt. -->
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/bottomNavBorder"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E2E8F0" />
+
+        <LinearLayout
+            android:id="@+id/bottomNavRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp" />
+    </LinearLayout>
 
     <!-- Error View (shown when offline or error occurs) -->
     <LinearLayout
@@ -86,3 +118,13 @@
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- Animated splash, edge to edge, on top of everything until the first
+         screen has loaded underneath. See SplashOverlay.kt. -->
+    <include
+        layout="@layout/activity_splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+</FrameLayout>

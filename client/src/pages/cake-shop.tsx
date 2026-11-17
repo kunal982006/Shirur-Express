@@ -78,7 +78,7 @@ export default function CakeShop() {
                     onClick={() => setLocation(`/cake-shop-menu/${provider.id}`)}
                   >
                     <div className="p-4 flex items-start gap-4 border-b border-gray-50">
-                      <img 
+                      <img loading="lazy" decoding="async" 
                         src={provider.profileImageUrl || provider.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1"} 
                         alt={provider.businessName}
                         className="w-16 h-16 rounded-xl object-cover shadow-sm bg-gray-100"
@@ -105,7 +105,7 @@ export default function CakeShop() {
                           {providerCakes.map(cake => (
                             <div key={cake.id} className="flex-none w-32 group">
                               <div className="relative h-24 w-full rounded-lg overflow-hidden bg-white shadow-sm border border-gray-100 mb-2">
-                                <img 
+                                <img loading="lazy" decoding="async" 
                                   src={cake.imageUrl || "https://images.unsplash.com/photo-1578985545062-69928b1d9587"} 
                                   alt={cake.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -567,7 +567,7 @@ export function CakeWizard({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                                             ) : (
                                                 <div className="flex gap-3 items-center bg-white p-3 rounded-xl border border-blue-100">
                                                     <div className="h-16 w-16 rounded-lg overflow-hidden bg-gray-100 shrink-0 border shadow-sm">
-                                                        <img src={photoUrl} alt="Cake Photo" className="w-full h-full object-cover" />
+                                                        <img loading="lazy" decoding="async" src={photoUrl} alt="Cake Photo" className="w-full h-full object-cover" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-gray-900">✅ Image Ready</p>

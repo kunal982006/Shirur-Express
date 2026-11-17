@@ -602,7 +602,7 @@ function AdminPriceRow({
       <TableCell>
         <div className="w-12 h-12 rounded-lg bg-gray-800 overflow-hidden shrink-0 border border-white/10">
           {item.imageUrl ? (
-            <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={item.imageUrl} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
               🍽️

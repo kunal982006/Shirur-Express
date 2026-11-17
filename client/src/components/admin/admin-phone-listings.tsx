@@ -148,7 +148,7 @@ export default function AdminPhoneListings() {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
                           {listing.images && (Array.isArray(listing.images) ? listing.images.length > 0 : JSON.parse(listing.images).length > 0) ? (
-                            <img src={Array.isArray(listing.images) ? listing.images[0] : JSON.parse(listing.images)[0]} alt="Phone" className="w-full h-full object-cover" />
+                            <img loading="lazy" decoding="async" src={Array.isArray(listing.images) ? listing.images[0] : JSON.parse(listing.images)[0]} alt="Phone" className="w-full h-full object-cover" />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-gray-400" />
                           )}
@@ -254,11 +254,11 @@ function ActionDialog({ listing, onUpdate }: { listing: any, onUpdate: (updates:
             <div className="grid grid-cols-2 gap-2">
               {Array.isArray(listing.images) ? listing.images.map((img: string, i: number) => (
                 <a key={i} href={img} target="_blank" rel="noopener noreferrer">
-                  <img src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
+                  <img loading="lazy" decoding="async" src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
                 </a>
               )) : (typeof listing.images === 'string' ? JSON.parse(listing.images) : []).map((img: string, i: number) => (
                 <a key={i} href={img} target="_blank" rel="noopener noreferrer">
-                  <img src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
+                  <img loading="lazy" decoding="async" src={img} alt={`Phone view ${i+1}`} className="w-full h-32 object-cover rounded-md border" />
                 </a>
               ))}
             </div>

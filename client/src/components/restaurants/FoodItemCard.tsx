@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { RestaurantMenuItem } from "@shared/schema";
 import { badgeText, orderCountText, DishExtrasDialog, useDishHighlights } from "./dish-highlights";
 
@@ -14,7 +14,7 @@ interface FoodItemCardProps {
     disabled?: boolean;
 }
 
-export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false }: FoodItemCardProps) {
+function FoodItemCardInner({ item, quantity, onAdd, onRemove, disabled = false }: FoodItemCardProps) {
     const isVeg = item.isVeg;
     // Same badge, 24-hour counter and add-on popup as the home screen cards.
     const highlight = useDishHighlights()[item.id];
@@ -52,12 +52,12 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
                 <Dialog>
                     <DialogTrigger asChild>
                         <div className="w-32 h-24 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:opacity-90 transition-opacity">
-                            <img src={image} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={image} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         </div>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl w-[95vw] p-0 border-none bg-transparent shadow-none [&>button]:right-2 [&>button]:top-2 [&>button]:text-white [&>button]:bg-black/40 [&>button]:backdrop-blur-md [&>button]:rounded-full [&>button]:h-10 [&>button]:w-10 [&>button]:scale-125 z-[100]">
                         <div className="fixed inset-0 bg-black/80 backdrop-blur-md -z-10" />
-                        <img
+                        <img loading="lazy" decoding="async"
                             src={image}
                             alt={item.name}
                             className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
@@ -99,3 +99,19 @@ export function FoodItemCard({ item, quantity, onAdd, onRemove, disabled = false
         </div>
     );
 }
+
+// A menu can hold a few hundred of these. Without this, every tap on ADD redrew
+// the whole menu; now only the card whose quantity changed is redrawn.
+// onAdd/onRemove are deliberately not compared (the pages pass new functions on
+// every render), so they must only depend on the item, its quantity and the
+// restaurant - which is all they use today.
+export const FoodItemCard = memo(FoodItemCardInner, (prev, next) =>
+    prev.quantity === next.quantity &&
+    prev.disabled === next.disabled &&
+    prev.item.id === next.item.id &&
+    prev.item.name === next.item.name &&
+    prev.item.price === next.item.price &&
+    prev.item.imageUrl === next.item.imageUrl &&
+    prev.item.description === next.item.description &&
+    prev.item.isVeg === next.item.isVeg
+);

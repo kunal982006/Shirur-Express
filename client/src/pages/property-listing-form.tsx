@@ -544,7 +544,7 @@ export default function PropertyListingForm() {
                                     <div className="grid grid-cols-3 gap-2 mt-2">
                                         {imageUrls.map((url, index) => (
                                             <div key={index} className="relative group aspect-4/3 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-                                                <img src={url} alt={`Property ${index}`} className="h-full w-full object-cover" />
+                                                <img loading="lazy" decoding="async" src={url} alt={`Property ${index}`} className="h-full w-full object-cover" />
                                                 {index === 0 && (
                                                     <span className="absolute bottom-1 left-1 bg-black/75 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
                                                         Cover Photo

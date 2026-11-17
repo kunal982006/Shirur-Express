@@ -144,7 +144,7 @@ export function AdminPromotions() {
                     {promotions?.map((promo: any) => (
                         <div key={promo.id} className="bg-[#111827] rounded-2xl border border-white/5 p-4 flex gap-4 group">
                             <div className="w-24 h-16 rounded-lg bg-gray-800 overflow-hidden shrink-0">
-                                <img src={promo.thumbnailImageUrl} alt={promo.title} className="w-full h-full object-cover" />
+                                <img loading="lazy" decoding="async" src={promo.thumbnailImageUrl} alt={promo.title} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">

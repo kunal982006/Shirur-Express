@@ -384,7 +384,7 @@ export default function CafeOfJoyMenu() {
             {cafeOfJoy.profileImageUrl ? (
                 <div className="relative h-48 md:h-64 w-full overflow-hidden cursor-pointer"
                      onClick={() => setSelectedImage(cafeOfJoy.profileImageUrl)}>
-                    <img src={cafeOfJoy.profileImageUrl} alt={cafeOfJoy.businessName} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={cafeOfJoy.profileImageUrl} alt={cafeOfJoy.businessName} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         <h1 className="text-2xl md:text-3xl font-extrabold drop-shadow-lg">{cafeOfJoy.businessName}</h1>
@@ -506,7 +506,7 @@ export default function CafeOfJoyMenu() {
             {selectedImage && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md cursor-pointer"
                      onClick={() => setSelectedImage(null)}>
-                    <img src={selectedImage} alt="Menu item" className="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl"
+                    <img loading="lazy" decoding="async" src={selectedImage} alt="Menu item" className="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl"
                          onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
@@ -552,7 +552,7 @@ function MenuItemCardWithCart({
             <div className="relative w-24 min-w-[96px] flex-shrink-0">
                 <div className="w-24 h-[68px] rounded-xl overflow-hidden shadow-sm cursor-pointer"
                      onClick={() => onImageClick(image)}>
-                    <img src={image} alt={item.name} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 {/* Cart controls */}
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 shadow-lg bg-white rounded-lg border z-10">

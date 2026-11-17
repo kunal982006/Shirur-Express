@@ -27,7 +27,7 @@ export function CakeCategoryCarousel({ onSelect }: { onSelect: (id: string) => v
                         onClick={() => onSelect(cat.id)}
                     >
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-md border-2 border-transparent group-hover:border-primary transition-all duration-300">
-                            <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <img loading="lazy" decoding="async" src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <span className="font-medium text-sm text-muted-foreground group-hover:text-primary transition-colors text-center">{cat.name}</span>
                     </div>

@@ -22,7 +22,7 @@ export function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
             onClick={onClick}
         >
             <div className="relative h-28 sm:h-48 w-full overflow-hidden rounded-t-xl">
-                <img
+                <img loading="lazy" decoding="async"
                     src={image}
                     alt={restaurant.businessName}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

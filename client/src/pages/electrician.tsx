@@ -91,7 +91,7 @@ export default function Electrician() {
                   onClick={() => handleApplianceClick(appliance)}
                 >
                   <div className="w-full h-20 sm:h-28 mb-1 relative flex items-center justify-center">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={imageUrl}
                       alt={appliance.name}
                       className="w-full h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110"

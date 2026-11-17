@@ -64,7 +64,7 @@ export default function AdminProperties() {
               <div key={property.id} className="flex flex-col sm:flex-row bg-white/5 p-4 rounded-xl border border-white/5 gap-4 transition-all hover:bg-white/10">
                 <div className="flex-shrink-0">
                   {property.images && property.images[0] ? (
-                    <img src={property.images[0]} alt={property.title} className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-lg" />
+                    <img loading="lazy" decoding="async" src={property.images[0]} alt={property.title} className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-lg" />
                   ) : (
                     <div className="w-full sm:w-24 h-32 sm:h-24 bg-black/20 rounded-lg flex items-center justify-center">
                       <Home className="h-8 w-8 text-gray-500" />

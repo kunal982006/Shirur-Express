@@ -82,6 +82,13 @@ export function serveStatic(app: Express) {
     immutable: true,
   }));
 
+  // A hashed asset that is not there belongs to an older deploy. Answer 404 so
+  // the app notices and reloads onto the new version, instead of handing it the
+  // HTML page below in place of a script.
+  app.use("/assets", (_req, res) => {
+    res.status(404).end();
+  });
+
   // Other static files — short cache with revalidation
   app.use(express.static(distPath, {
     maxAge: "1h",

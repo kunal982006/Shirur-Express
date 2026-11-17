@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { haptic } from '@/lib/native-app';
 
 // Define the type for a single item in the cart
 interface CartItem {
@@ -53,6 +54,7 @@ export const useCartStore = create<CartState>()(
           get().updateQuantity(newItem.id, 1);
         } else {
           // Naya item hai, quantity 1 ke saath add karo
+          haptic();
           set((state) => ({
             items: [...state.items, { ...newItem, quantity: 1 }],
           }));
@@ -61,6 +63,7 @@ export const useCartStore = create<CartState>()(
 
       // Action to remove an item from the cart
       removeItem: (itemId) => {
+        haptic();
         set((state) => ({
           items: state.items.filter((item) => item.id !== itemId),
         }));
@@ -69,6 +72,7 @@ export const useCartStore = create<CartState>()(
       // --- YEH HAI POORA NAYA LOGIC ---
       // Action to update quantity (increase or decrease)
       updateQuantity: (itemId, amount) => {
+        haptic();
         set((state) => ({
           items: state.items
             .map((item) => {
