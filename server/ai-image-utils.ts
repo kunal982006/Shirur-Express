@@ -14,13 +14,36 @@ export class QuotaError extends Error {}
 
 export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+// Free-tier accounts, used in order: when one runs out of its daily neurons the next one takes over.
+// Add more with CLOUDFLARE_ACCOUNT_ID_3 / CLOUDFLARE_AI_TOKEN_3, etc.
+const ACCOUNTS: { id: string; token: string; label: string }[] = [];
+if (CF_ACCOUNT_ID && CF_AI_TOKEN) ACCOUNTS.push({ id: CF_ACCOUNT_ID, token: CF_AI_TOKEN, label: 'account 1' });
+for (let n = 2; process.env[`CLOUDFLARE_ACCOUNT_ID_${n}`] && process.env[`CLOUDFLARE_AI_TOKEN_${n}`]; n++) {
+  ACCOUNTS.push({ id: process.env[`CLOUDFLARE_ACCOUNT_ID_${n}`]!, token: process.env[`CLOUDFLARE_AI_TOKEN_${n}`]!, label: `account ${n}` });
+}
+let current = 0;
+
 export async function generateImage(prompt: string, steps: number = STEPS): Promise<Buffer> {
-  if (!CF_ACCOUNT_ID || !CF_AI_TOKEN) throw new Error('Missing Cloudflare_Account_ID or CLOUDFLARE_AI_TOKEN in .env');
-  const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${MODEL}`;
+  if (!ACCOUNTS.length) throw new Error('Missing Cloudflare_Account_ID or CLOUDFLARE_AI_TOKEN in .env');
+  while (current < ACCOUNTS.length) {
+    try {
+      return await generateWith(ACCOUNTS[current], prompt, steps);
+    } catch (e) {
+      if (!(e instanceof QuotaError)) throw e;
+      current++;
+      if (current < ACCOUNTS.length) process.stdout.write(`(daily limit reached, switching to Cloudflare ${ACCOUNTS[current].label}) `);
+      else throw e;
+    }
+  }
+  throw new QuotaError('All Cloudflare accounts have used up their daily free allocation');
+}
+
+async function generateWith(acct: { id: string; token: string; label: string }, prompt: string, steps: number): Promise<Buffer> {
+  const url = `https://api.cloudflare.com/client/v4/accounts/${acct.id}/ai/run/${MODEL}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${CF_AI_TOKEN}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${acct.token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, steps }),
     });
     const text = await res.text();
@@ -30,7 +53,7 @@ export async function generateImage(prompt: string, steps: number = STEPS): Prom
       return Buffer.from(b64, 'base64');
     }
     if (res.status === 401 || res.status === 403) {
-      throw new Error(`Cloudflare auth failed (${res.status}). Check CLOUDFLARE_AI_TOKEN has Workers AI permission.`);
+      throw new Error(`Cloudflare auth failed (${res.status}). Check the token for ${acct.label} has Workers AI permission.`);
     }
     if (res.status === 429 || /neuron|quota|limit|capacity/i.test(text)) {
       if (res.status === 429 && attempt < 3 && !/neuron|daily/i.test(text)) {
