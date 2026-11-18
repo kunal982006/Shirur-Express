@@ -149,7 +149,7 @@ export default function AdminStreetFood() {
                             className="bg-[#111827] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.02] hover:border-orange-500/30 transition-all cursor-pointer group shadow-sm"
                         >
                             <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 min-w-0">
                                     <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 overflow-hidden">
                                         {vendor.profileImageUrl ? (
                                             <img loading="lazy" decoding="async" src={vendor.profileImageUrl} alt="Logo" className="w-full h-full object-cover" />
@@ -157,9 +157,15 @@ export default function AdminStreetFood() {
                                             <Store className="h-6 w-6 text-orange-500" />
                                         )}
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold text-lg max-w-[180px] truncate">{vendor.businessName}</h3>
-                                        <p className="text-xs text-gray-500">Created {new Date(vendor.createdAt).toLocaleDateString()}</p>
+                                    <div className="min-w-0">
+                                        <h3 className="font-semibold text-lg leading-snug break-words">{vendor.businessName}</h3>
+                                        <p className="text-xs text-gray-400 flex items-start gap-1 mt-1">
+                                            <MapPin className="h-3 w-3 mt-0.5 shrink-0 text-orange-500" />
+                                            <span className="break-words">{vendor.address || "No location set"}</span>
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-0.5">
+                                            ★ {vendor.rating ? parseFloat(vendor.rating).toFixed(1) : "–"} · {vendor.avgCostPerPerson ? `₹${vendor.avgCostPerPerson} for one` : "Cost not set"}
+                                        </p>
                                     </div>
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-gray-500 group-hover:text-orange-500 transition-colors mt-2" />
@@ -468,7 +474,7 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     <Dialog open={isVendorEditOpen} onOpenChange={setIsVendorEditOpen}>
                         <DialogTrigger asChild>
                             <Button variant="outline" className="border-white/10 hover:bg-white/5 gap-2">
-                                <Edit2 className="h-4 w-4" /> Edit Profile
+                                <Edit2 className="h-4 w-4" /> {isStreetFoodAdmin ? "Edit Profile & Location" : "Edit Profile"}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-md max-h-[85vh] overflow-y-auto">
@@ -555,6 +561,27 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                     </Dialog>
                 </div>
             </div>
+
+            {isStreetFoodAdmin && (
+                <div className="bg-[#111827] border border-orange-500/30 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <h3 className="font-semibold">Location, Rating & Price</h3>
+                        <Button size="sm" onClick={() => setIsVendorEditOpen(true)} className="bg-orange-500 hover:bg-orange-600 gap-1.5 shrink-0">
+                            <Edit2 className="h-3.5 w-3.5" /> Edit
+                        </Button>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                        <p className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-orange-500" />
+                            <span className="break-words">{vendor.address || "No location set"}</span>
+                        </p>
+                        <div className="flex flex-wrap gap-x-5 gap-y-1 text-gray-300">
+                            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-orange-500" /> {vendor.rating ? parseFloat(vendor.rating).toFixed(1) : "Not set"}</span>
+                            <span className="flex items-center gap-1.5"><IndianRupee className="h-4 w-4 text-orange-500" /> {vendor.avgCostPerPerson ? `${vendor.avgCostPerPerson} for one` : "Not set"}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="bg-white/5 border border-white/10 p-1 mb-6">
