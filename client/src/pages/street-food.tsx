@@ -5,18 +5,21 @@ import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ArrowLeft, Flame, MapPin, Star, ChefHat, Sparkles } from "lucide-react";
+import { Search, ArrowLeft, Flame, MapPin, Star, ChefHat, Sparkles, ShieldCheck } from "lucide-react";
 import type { ServiceProvider } from "@shared/schema";
 
 // Compact Street Vendor Card Component for Mobile Grid
 function StreetVendorCard({ vendor, onClick }: { vendor: ServiceProvider; onClick: () => void }) {
   const rating = vendor.rating ? parseFloat(vendor.rating.toString()).toFixed(1) : "New";
   const specializations = vendor.specializations || [];
+  const description = vendor.description?.trim() || specializations.slice(0, 2).join(" • ") || "Street Food";
+  const location = vendor.address && vendor.address !== "Added via Admin Panel" ? vendor.address.split(",")[0] : "Shirur";
+  const costLabel = vendor.avgCostPerPerson ? `₹${vendor.avgCostPerPerson} for one` : "₹50-150";
   const image = vendor.profileImageUrl || vendor.galleryImages?.[0] || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60";
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl cursor-pointer group shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+      className="relative overflow-hidden rounded-2xl cursor-pointer group flex flex-col shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
       style={{ background: "linear-gradient(to bottom right, #fff7ed, #fef3c7)" }}
       onClick={onClick}
     >
@@ -55,27 +58,29 @@ function StreetVendorCard({ vendor, onClick }: { vendor: ServiceProvider; onClic
       </div>
 
       {/* Content */}
-      <div className="p-2.5">
-        <h3 className="font-bold text-sm text-foreground truncate leading-tight mb-1">
+      <div className="p-2.5 flex flex-col flex-1">
+        <h3 className="font-bold text-sm text-foreground leading-snug mb-1 break-words">
           {vendor.businessName}
         </h3>
 
-        <p className="text-[10px] text-muted-foreground truncate mb-1.5">
-          {specializations.slice(0, 2).join(" ΓÇó ") || "Street Food"}
+        <p className="text-[11px] text-muted-foreground leading-snug mb-1.5 break-words">
+          {description}
         </p>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <MapPin className="h-2.5 w-2.5" />
-            <span className="truncate max-w-[60px]">{vendor.address?.split(",")[0] || "Local"}</span>
+        <div className="mt-auto flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground min-w-0">
+            <MapPin className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">{location}</span>
           </div>
-          <Badge
-            variant="secondary"
-            className="text-[9px] px-1.5 py-0 border-0"
-            style={{ background: "#ffedd5", color: "#ea580c" }}
-          >
-            Γé╣50-150
-          </Badge>
+          {costLabel && (
+            <Badge
+              variant="secondary"
+              className="text-[9px] px-1.5 py-0 border-0 shrink-0 whitespace-nowrap"
+              style={{ background: "#ffedd5", color: "#ea580c" }}
+            >
+              {costLabel}
+            </Badge>
+          )}
         </div>
       </div>
     </div>
@@ -118,11 +123,11 @@ export default function StreetFood() {
 
   const categories = [
     { id: "all", label: "All", icon: <Sparkles className="h-3.5 w-3.5" /> },
-    { id: "chaat", label: "Chaat", icon: <span className="text-sm">≡ƒÑù</span> },
-    { id: "snacks", label: "Snacks", icon: <span className="text-sm">≡ƒì┐</span> },
-    { id: "desserts", label: "Desserts", icon: <span className="text-sm">≡ƒìº</span> },
-    { id: "drinks", label: "Drinks", icon: <span className="text-sm">≡ƒºï</span> },
-    { id: "chinese", label: "Chinese", icon: <span className="text-sm">≡ƒì£</span> },
+    { id: "chaat", label: "Chaat", icon: <span className="text-sm">🥗</span> },
+    { id: "snacks", label: "Snacks", icon: <span className="text-sm">🍿</span> },
+    { id: "desserts", label: "Desserts", icon: <span className="text-sm">🍧</span> },
+    { id: "drinks", label: "Drinks", icon: <span className="text-sm">🧋</span> },
+    { id: "chinese", label: "Chinese", icon: <span className="text-sm">🍜</span> },
   ];
 
   const filteredVendors = vendors?.filter(v =>
@@ -163,7 +168,7 @@ export default function StreetFood() {
                 <ChefHat className="h-5 w-5 text-white" />
                 <h1 className="font-bold text-lg text-white leading-none">Street Food</h1>
               </div>
-              <p className="text-white/80 text-xs mt-0.5">The taste of the streets, served at your seat. ≡ƒî¡≡ƒî╢∩╕Å</p>
+              <p className="text-white/80 text-xs mt-0.5">The taste of the streets, served at your seat. 🌭🌶️</p>
             </div>
             <div
               className="h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-sm"
@@ -189,6 +194,19 @@ export default function StreetFood() {
         <svg className="relative -mb-1 w-full" viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ color: "#fff7ed" }}>
           <path fill="currentColor" d="M0,60 L0,30 Q300,0 600,30 T1200,30 L1200,60 Z" />
         </svg>
+      </div>
+
+      {/* Trust Tagline */}
+      <div className="px-4 pt-1" style={{ background: "#fff7ed" }}>
+        <div
+          className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-center shadow-sm"
+          style={{ background: "linear-gradient(to right, #ffedd5, #fef3c7)", border: "1px solid #fdba74" }}
+        >
+          <ShieldCheck className="h-4 w-4 shrink-0" style={{ color: "#16a34a" }} />
+          <p className="text-xs sm:text-sm font-semibold leading-snug" style={{ color: "#9a3412" }}>
+            Street Style Flavors, 5-Star Hygiene: Verified &amp; Trusted Locally! 🔥
+          </p>
+        </div>
       </div>
 
       {/* Category Pills */}

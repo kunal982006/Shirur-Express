@@ -114,6 +114,8 @@ export async function checkDatabaseConnection(): Promise<boolean> {
           ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS source_type TEXT;
           ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS source_id TEXT;
           ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS details JSONB;
+          ALTER TABLE service_providers ADD COLUMN IF NOT EXISTS avg_cost_per_person INTEGER;
+          UPDATE service_providers SET address = 'Shirur' WHERE address = 'Added via Admin Panel';
           CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_bills_source
             ON delivery_bills(source_type, source_id) WHERE source_id IS NOT NULL;
         `);

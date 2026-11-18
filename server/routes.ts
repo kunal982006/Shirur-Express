@@ -5690,7 +5690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: adminUserId.toString(),
         categoryId,
         businessName: name,
-        address: "Added via Admin Panel", // Default required field
+        address: "Shirur", // Default required field; streetfood_admin sets the real location later
         isVerified: true,
         isAvailable: true,
       }).returning();
@@ -5827,6 +5827,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData: any = {};
       if (businessName) updateData.businessName = businessName;
       if (isAvailable !== undefined) updateData.isAvailable = isAvailable === 'true' || isAvailable === true;
+
+      // Location, rating, cost and description are editable only by the streetfood_admin account
+      if (req.user?.username === "streetfood_admin") {
+        const { address, latitude, longitude, rating, avgCostPerPerson, description } = req.body;
+        if (typeof address === "string" && address.trim()) updateData.address = address.trim();
+        if (latitude !== undefined && longitude !== undefined) {
+          const lat = latitude === "" ? null : Number(latitude);
+          const lng = longitude === "" ? null : Number(longitude);
+          if (lat === null || lng === null) {
+            updateData.latitude = null;
+            updateData.longitude = null;
+          } else if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+            updateData.latitude = lat.toString();
+            updateData.longitude = lng.toString();
+          } else {
+            return res.status(400).json({ message: "Invalid latitude/longitude" });
+          }
+        }
+        if (rating !== undefined && rating !== "") {
+          const r = Number(rating);
+          if (!Number.isFinite(r) || r < 0 || r > 5) return res.status(400).json({ message: "Rating must be between 0 and 5" });
+          updateData.rating = r.toFixed(2);
+        }
+        if (avgCostPerPerson !== undefined) {
+          if (avgCostPerPerson === "") {
+            updateData.avgCostPerPerson = null;
+          } else {
+            const c = Math.round(Number(avgCostPerPerson));
+            if (!Number.isFinite(c) || c < 0 || c > 100000) return res.status(400).json({ message: "Invalid average cost per person" });
+            updateData.avgCostPerPerson = c;
+          }
+        }
+        if (typeof description === "string") updateData.description = description.trim() || null;
+      }
 
       if (req.file) {
         try {

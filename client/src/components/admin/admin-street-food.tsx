@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OffersManager } from "@/components/offers/OffersManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Store, Utensils, ChevronRight, Image as ImageIcon, Loader2, ArrowLeft, Edit2, Trash2, Check, X } from "lucide-react";
+import { Plus, Store, Utensils, ChevronRight, Image as ImageIcon, Loader2, ArrowLeft, Edit2, Trash2, Check, X, MapPin, LocateFixed, Star, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +13,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
+import { getAccuratePosition, reverseGeocode } from "@/lib/google-maps";
 
 type Vendor = {
     id: string;
     businessName: string;
     profileImageUrl?: string;
     galleryImages?: string[];
+    description?: string | null;
+    address?: string;
+    latitude?: string | null;
+    longitude?: string | null;
+    rating?: string | null;
+    avgCostPerPerson?: number | null;
     createdAt: string;
 };
 
@@ -175,6 +183,49 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
     const [vendorNameEdit, setVendorNameEdit] = useState(vendor?.businessName || "");
     const [vendorLogoEdit, setVendorLogoEdit] = useState<File | null>(null);
 
+    // Extra profile fields (streetfood_admin only)
+    const { user } = useAuth();
+    const isStreetFoodAdmin = user?.username === "streetfood_admin";
+    const [addressEdit, setAddressEdit] = useState(vendor?.address || "");
+    const [latEdit, setLatEdit] = useState(vendor?.latitude ?? "");
+    const [lngEdit, setLngEdit] = useState(vendor?.longitude ?? "");
+    const [ratingEdit, setRatingEdit] = useState(vendor?.rating ? parseFloat(vendor.rating).toFixed(1) : "");
+    const [avgCostEdit, setAvgCostEdit] = useState(vendor?.avgCostPerPerson != null ? String(vendor.avgCostPerPerson) : "");
+    const [descriptionEdit, setDescriptionEdit] = useState(vendor?.description || "");
+    const [isLocating, setIsLocating] = useState(false);
+
+    // Refill the form from the latest saved values each time the dialog opens
+    useEffect(() => {
+        if (!isVendorEditOpen || !vendor) return;
+        setVendorNameEdit(vendor.businessName);
+        setAddressEdit(vendor.address || "");
+        setLatEdit(vendor.latitude ?? "");
+        setLngEdit(vendor.longitude ?? "");
+        setRatingEdit(vendor.rating ? parseFloat(vendor.rating).toFixed(1) : "");
+        setAvgCostEdit(vendor.avgCostPerPerson != null ? String(vendor.avgCostPerPerson) : "");
+        setDescriptionEdit(vendor.description || "");
+    }, [isVendorEditOpen]);
+
+    const useCurrentLocation = async () => {
+        setIsLocating(true);
+        try {
+            const pos = await getAccuratePosition();
+            const { latitude, longitude } = pos.coords;
+            setLatEdit(latitude.toFixed(6));
+            setLngEdit(longitude.toFixed(6));
+            try {
+                const addr = await reverseGeocode(latitude, longitude);
+                if (addr) setAddressEdit(addr);
+            } catch {
+                toast({ title: "Location found", description: "Couldn't look up the address. Type it in manually." });
+            }
+        } catch (err: any) {
+            toast({ title: "Location unavailable", description: err?.message || "Allow location access and try again.", variant: "destructive" });
+        } finally {
+            setIsLocating(false);
+        }
+    };
+
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const [galleryUploadFile, setGalleryUploadFile] = useState<File | null>(null);
 
@@ -200,6 +251,14 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
         mutationFn: async () => {
             const formData = new FormData();
             formData.append("businessName", vendorNameEdit);
+            if (isStreetFoodAdmin) {
+                formData.append("address", addressEdit);
+                formData.append("latitude", String(latEdit));
+                formData.append("longitude", String(lngEdit));
+                formData.append("rating", ratingEdit);
+                formData.append("avgCostPerPerson", avgCostEdit);
+                formData.append("description", descriptionEdit);
+            }
             if (vendorLogoEdit) {
                 formData.append("image", vendorLogoEdit);
             }
@@ -412,7 +471,7 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                                 <Edit2 className="h-4 w-4" /> Edit Profile
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-md">
+                        <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-md max-h-[85vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Edit Vendor Profile</DialogTitle>
                             </DialogHeader>
@@ -435,10 +494,39 @@ function VendorMenuManager({ vendor, onBack }: { vendor: Vendor | undefined, onB
                                     <Label>Business Name</Label>
                                     <Input value={vendorNameEdit} onChange={e => setVendorNameEdit(e.target.value)} className="bg-white/5 border-white/10" autoFocus />
                                 </div>
+                                {isStreetFoodAdmin && (
+                                    <>
+                                        <div className="space-y-2">
+                                            <Label>Description</Label>
+                                            <Textarea value={descriptionEdit} onChange={e => setDescriptionEdit(e.target.value)} placeholder="e.g. Momos, loaded fries and burgers" className="bg-white/5 border-white/10 resize-none h-20" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-orange-500" /> Location</Label>
+                                            <Textarea value={addressEdit} onChange={e => setAddressEdit(e.target.value)} placeholder="e.g. Near Bus Stand, Shirur" className="bg-white/5 border-white/10 resize-none h-16" />
+                                            <Button type="button" variant="outline" onClick={useCurrentLocation} disabled={isLocating} className="w-full border-white/10 hover:bg-white/5 gap-2">
+                                                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+                                                {isLocating ? "Getting location..." : "Use Current Location"}
+                                            </Button>
+                                            {latEdit && lngEdit && (
+                                                <p className="text-[11px] text-gray-500">Pinned at {latEdit}, {lngEdit}</p>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-2">
+                                                <Label className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-orange-500" /> Rating (0-5)</Label>
+                                                <Input type="number" min="0" max="5" step="0.1" value={ratingEdit} onChange={e => setRatingEdit(e.target.value)} placeholder="4.5" className="bg-white/5 border-white/10" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="flex items-center gap-1.5"><IndianRupee className="h-3.5 w-3.5 text-orange-500" /> Avg cost / person</Label>
+                                                <Input type="number" min="0" step="1" value={avgCostEdit} onChange={e => setAvgCostEdit(e.target.value)} placeholder="100" className="bg-white/5 border-white/10" />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                                 <Button
                                     onClick={() => editVendorM.mutate()}
                                     className="w-full bg-orange-500 hover:bg-orange-600"
-                                    disabled={!vendorNameEdit.trim() || editVendorM.isPending}
+                                    disabled={!vendorNameEdit.trim() || editVendorM.isPending || (isStreetFoodAdmin && (!addressEdit.trim() || (ratingEdit !== "" && (Number(ratingEdit) < 0 || Number(ratingEdit) > 5))))}
                                 >
                                     {editVendorM.isPending ? "Saving..." : "Save Changes"}
                                 </Button>

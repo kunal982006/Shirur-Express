@@ -219,10 +219,11 @@ export default function StreetFoodDetail() {
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <h1 className="text-3xl font-bold mb-1">{vendor.businessName}</h1>
           <p className="text-white/90 text-sm mb-2">{vendor.specializations?.join(", ")}</p>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="bg-green-600 px-1.5 py-0.5 rounded font-bold">{vendor.rating || "New"} ★</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <span className="bg-green-600 px-1.5 py-0.5 rounded font-bold">{vendor.rating ? parseFloat(vendor.rating.toString()).toFixed(1) : "New"} ★</span>
             <span>• 35 mins</span>
-            <span>• {vendor.address}</span>
+            {vendor.avgCostPerPerson ? <span>• ₹{vendor.avgCostPerPerson} for one</span> : null}
+            <span>• {vendor.address && vendor.address !== "Added via Admin Panel" ? vendor.address : "Shirur"}</span>
           </div>
         </div>
       </div>

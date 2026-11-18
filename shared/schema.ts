@@ -65,6 +65,7 @@ export const serviceProviders = pgTable("service_providers", {
   isPopular: boolean("is_popular").default(false), // New field for Popular Restaurants
   displayOrder: integer("display_order").default(0), // Admin-controlled display position (lower = shown first)
   specializations: jsonb("specializations").$type<string[]>(),
+  avgCostPerPerson: integer("avg_cost_per_person"), // Street food: average cost for one person (₹)
   createdAt: timestamp("created_at").defaultNow(),
 });
 
