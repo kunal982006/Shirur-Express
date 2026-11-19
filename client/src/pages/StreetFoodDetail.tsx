@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Search, UtensilsCrossed, SlidersHorizontal, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { ProviderReviews } from "@/components/restaurants/ProviderReviews";
 import { useCartStore } from "@/hooks/use-cart-store";
@@ -32,7 +34,9 @@ const OverviewTab = ({ vendor }: { vendor: ServiceProvider }) => (
       </div>
       <div>
         <h4 className="font-semibold mb-1 text-sm">Average Cost</h4>
-        <p className="text-sm text-muted-foreground">₹100 for two people (approx.)</p>
+        <p className="text-sm text-muted-foreground">
+          {vendor.avgCostPerPerson ? `₹${vendor.avgCostPerPerson} for one person (approx.)` : "₹50-150 for one person (approx.)"}
+        </p>
       </div>
     </div>
     <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3">
@@ -146,6 +150,9 @@ export default function StreetFoodDetail() {
   const [, navigate] = useLocation();
   const { addItem, items, removeItem } = useCartStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
+  const categoryPillsRef = useRef<HTMLDivElement>(null);
 
   // Initialize scroll sound effect
   useScrollSound();
@@ -166,6 +173,68 @@ export default function StreetFoodDetail() {
     queryFn: () => apiRequest("GET", `/api/street-food-items?providerId=${vendorId}`).then(res => res.json()),
     enabled: !!vendorId
   });
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return menuItems?.filter(item =>
+      item.name.toLowerCase().includes(q) ||
+      item.category?.toLowerCase().includes(q)
+    ) || [];
+  }, [menuItems, searchQuery]);
+
+  // Group items by category, keeping the order categories first appear in
+  const categoryEntries = useMemo(() => {
+    const grouped = filteredItems.reduce((acc, item) => {
+      const cat = item.category || "Recommended";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    }, {} as Record<string, StreetFoodItem[]>);
+    return Object.entries(grouped);
+  }, [filteredItems]);
+
+  // Highlight the category currently on screen and keep its chip in view
+  useEffect(() => {
+    if (categoryEntries.length === 0) return;
+    if (!categoryEntries.some(([cat]) => cat === activeCategory)) {
+      setActiveCategory(categoryEntries[0][0]);
+    }
+
+    const handleScroll = () => {
+      const headerOffset = 140;
+      for (let i = categoryEntries.length - 1; i >= 0; i--) {
+        const [cat] = categoryEntries[i];
+        const el = document.getElementById(`cat-${cat}`);
+        if (el && el.getBoundingClientRect().top <= headerOffset) {
+          setActiveCategory(prev => {
+            if (prev !== cat) {
+              const pill = document.getElementById(`pill-${cat}`);
+              const container = categoryPillsRef.current;
+              if (pill && container) {
+                container.scrollTo({ left: pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2, behavior: "smooth" });
+              }
+            }
+            return cat;
+          });
+          return;
+        }
+      }
+      setActiveCategory(categoryEntries[0][0]);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [categoryEntries]);
+
+  const scrollToCategory = (cat: string) => {
+    setActiveCategory(cat);
+    setIsMenuSheetOpen(false);
+    const el = document.getElementById(`cat-${cat}`);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.pageYOffset - 120;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   if (loadingVendor || !vendor) {
     return (
@@ -193,18 +262,7 @@ export default function StreetFoodDetail() {
     });
   };
 
-  const filteredItems = menuItems?.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
-
-  // Group items by category (StreetFoodItem has 'category' field)
-  const groupedItems = filteredItems.reduce((acc, item) => {
-    const cat = item.category || "Recommended";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {} as Record<string, StreetFoodItem[]>);
+  const cartHasThisVendor = items.length > 0 && vendorId === items[0].providerId;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -233,10 +291,115 @@ export default function StreetFoodDetail() {
           <OverviewTab vendor={vendor} />
         </div>
 
+        {/* Sticky search + category navigation */}
+        {menuItems && menuItems.length > 0 && (
+          <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b pt-[env(safe-area-inset-top)]">
+            <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search for dishes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-9 h-10 rounded-xl"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label="Clear search">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {categoryEntries.length > 0 && (
+                <Sheet open={isMenuSheetOpen} onOpenChange={setIsMenuSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 px-3 rounded-xl border-muted-foreground/20 font-bold text-xs flex items-center gap-1.5 shrink-0 bg-background hover:bg-muted"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
+                      <span className="hidden sm:inline">Categories</span>
+                      <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
+                        {categoryEntries.length}
+                      </Badge>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="max-h-[75vh] rounded-t-2xl px-4 py-5 z-50">
+                    <SheetHeader className="pb-3 border-b">
+                      <div className="flex items-center justify-between">
+                        <SheetTitle className="text-base font-extrabold flex items-center gap-2">
+                          <UtensilsCrossed className="h-4 w-4 text-primary" />
+                          Menu Categories
+                        </SheetTitle>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {filteredItems.length} dishes
+                        </span>
+                      </div>
+                    </SheetHeader>
+                    <div className="py-3 space-y-1 overflow-y-auto max-h-[55vh]">
+                      {categoryEntries.map(([cat, catItems]) => (
+                        <button
+                          key={cat}
+                          onClick={() => scrollToCategory(cat)}
+                          className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all ${
+                            activeCategory === cat
+                              ? "bg-primary/10 text-primary font-bold"
+                              : "hover:bg-muted text-foreground/80 font-medium"
+                          }`}
+                        >
+                          <span className="text-sm">{cat}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-semibold">{catItems.length}</span>
+                            {activeCategory === cat && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
+            </div>
+
+            {categoryEntries.length > 0 && (
+              <div
+                ref={categoryPillsRef}
+                className="flex items-center gap-2 overflow-x-auto px-4 pb-2.5 pt-0.5 no-scrollbar scrollbar-hide scroll-smooth"
+              >
+                {categoryEntries.map(([cat, catItems]) => (
+                  <button
+                    key={cat}
+                    id={`pill-${cat}`}
+                    onClick={() => scrollToCategory(cat)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                      activeCategory === cat
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        activeCategory === cat ? "bg-white/20 text-white font-bold" : "bg-background/80 text-muted-foreground font-medium"
+                      }`}
+                    >
+                      {catItems.length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="p-4 space-y-8">
+          {menuItems && menuItems.length > 0 && categoryEntries.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground">No dishes match "{searchQuery}".</div>
+          )}
+
           {/* Menu Categories */}
-          {Object.entries(groupedItems).map(([category, items]) => (
-            <div key={category} id={category} className="scroll-mt-32">
+          {categoryEntries.map(([category, items]) => (
+            <div key={category} id={`cat-${category}`} className="scroll-mt-36">
               <h3 className="font-bold text-xl mb-4 text-foreground">{category} ({items.length})</h3>
               <div className="space-y-4">
                 {items.map(item => {
@@ -274,8 +437,28 @@ export default function StreetFoodDetail() {
         </div>
       </div>
 
+      {/* Floating Quick Menu Button */}
+      {categoryEntries.length > 1 && !isMenuSheetOpen && (
+        <div
+          className={`fixed right-4 z-30 md:hidden animate-in fade-in zoom-in duration-200 ${
+            cartHasThisVendor ? "bottom-[calc(10rem+env(safe-area-inset-bottom))]" : "bottom-[calc(5rem+env(safe-area-inset-bottom))]"
+          }`}
+        >
+          <Button
+            onClick={() => setIsMenuSheetOpen(true)}
+            className="rounded-full bg-slate-950/90 text-white hover:bg-slate-900 shadow-2xl backdrop-blur-md border border-white/20 px-4 h-11 flex items-center gap-2 font-bold text-xs"
+          >
+            <UtensilsCrossed className="h-4 w-4 text-primary" />
+            <span>Menu</span>
+            <Badge className="bg-primary text-primary-foreground text-[10px] h-4 px-1.5">
+              {categoryEntries.length}
+            </Badge>
+          </Button>
+        </div>
+      )}
+
       {/* Cart floating bar */}
-      {items.length > 0 && vendorId === items[0].providerId && (
+      {cartHasThisVendor && (
         <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 p-4 bg-background border-t z-40">
           <div className="max-w-4xl mx-auto">
             <Button className="w-full h-12 text-lg font-bold flex justify-between items-center" onClick={() => navigate('/checkout')}>
