@@ -10,7 +10,100 @@ const mandi = (meat: string) =>
 const scoop = (flavour: string) => `a scoop of ${flavour} ice-cream in a small glass bowl with a wafer`;
 const cone = (flavour: string) => `a crisp waffle ice-cream cone topped with a swirl of ${flavour} ice-cream, held upright in a cone stand`;
 
+// ---------- Dosa & uttapam (Abhiruchi Dosa and similar) ----------
+const SIDES = 'on a plain smooth unmarked round steel plate with small plain steel bowls of white coconut chutney and orange sambar, nothing written or engraved anywhere';
+function describeDosa(n: string): string | null {
+  if (/uttapam|uthappa/.test(n)) {
+    const tops: string[] = [];
+    if (/jain/.test(n)) tops.push('chopped tomato, capsicum, cabbage and grated carrot (no onion)');
+    else if (/special/.test(n)) tops.push('chopped onion, tomato, capsicum, carrot and coriander');
+    else if (/masala/.test(n)) tops.push('spiced yellow potato masala and chopped onion');
+    else {
+      const t = [/onion/.test(n) && 'chopped onion', /tomato/.test(n) && 'chopped tomato'].filter(Boolean) as string[];
+      tops.push(t.length ? t.join(' and ') + ' with green chilli and coriander' : 'chopped onion, tomato and coriander');
+    }
+    if (/cheese/.test(n)) tops.push('lots of melted grated cheese');
+    if (/butter/.test(n)) tops.push('a melting cube of butter');
+    return `uttapam, a thick soft round South Indian rice pancake with a golden underside, topped with ${tops.join(', ')}, ${SIDES}`;
+  }
+  if (!/dosa/.test(n)) return null;
+  let shape = 'a large crisp golden-brown dosa folded in half';
+  if (/jumbo/.test(n)) shape = 'an extremely long crisp golden paper dosa rolled into a tube stretching across a long rectangular steel platter';
+  else if (/paper/.test(n)) shape = 'a very thin, very crisp golden paper dosa rolled into a long tube overhanging the plate';
+  else if (/topi/.test(n)) shape = 'a crisp golden dosa shaped into a tall cone standing upright like a hat';
+  else if (/set/.test(n)) shape = 'three small soft thick spongy set dosas stacked';
+  else if (/sponge/.test(n)) shape = 'two soft thick spongy dosas full of tiny holes';
+  else if (/roll/.test(n)) shape = 'a crisp dosa rolled tight and sliced into short round rolls standing on end';
+  else if (/cut/.test(n)) shape = 'a crisp golden dosa cut into short pieces arranged in a row';
+  else if (/loni/.test(n)) shape = 'a soft golden dosa topped with a big dollop of fresh white homemade butter';
+  const fill: string[] = [];
+  if (/mysore/.test(n)) fill.push('the inside spread with red spicy Mysore chutney');
+  if (/schezwan/.test(n)) fill.push('the inside spread with red spicy schezwan sauce and chopped vegetables');
+  if (/green/.test(n)) fill.push('the inside spread with bright green coriander-mint chutney');
+  if (/chatani|chutney/.test(n)) fill.push('the inside spread with red and white chutney');
+  if (/podi/.test(n)) fill.push('sprinkled with coarse reddish-brown podi gunpowder spice');
+  if (/masala|mysore/.test(n)) fill.push('stuffed with yellow spiced potato masala');
+  if (/cheese/.test(n)) fill.push('topped with lots of grated cheese');
+  if (/butter/.test(n) && !/loni/.test(n)) fill.push('glistening with melting butter');
+  if (/ghee/.test(n)) fill.push('glistening with ghee');
+  const name = n.replace(/\s*\d+\s*(pes|pis|feet).*$/, '');
+  return `${name}, ${shape}${fill.length ? ', ' + fill.join(', ') : ''}, ${SIDES}`;
+}
+
 export const EXTRA: [RegExp, string][] = [
+  // ---------- South Indian breakfast, misal, tea stall (Abhiruchi Dosa) ----------
+  [/^idli wada$/, 'idli wada, two soft white idlis and one crisp golden medu wada on a steel plate with bowls of sambar and coconut chutney'],
+  [/^idli$/, 'idli, three soft fluffy white steamed rice idlis on a steel plate with bowls of sambar and coconut chutney'],
+  [/^medu wada$/, 'medu wada, two crisp golden doughnut-shaped lentil vadas on a steel plate with bowls of sambar and coconut chutney'],
+  [/^mataka misal$/, 'matka misal, spicy red sprouted moth bean curry topped with yellow farsan, chopped onion and coriander, served in a small clay pot with pav and a lemon wedge'],
+  [/^dahi misal$/, 'dahi misal, spicy red sprouted moth bean curry topped with farsan, onion and a dollop of white curd, in a steel bowl with pav'],
+  [/^butter misal$/, 'butter misal pav, spicy red sprouted moth bean curry topped with farsan, onion, coriander and a melting cube of butter, in a steel bowl with butter-toasted pav'],
+  [/^misal$/, 'Puneri misal pav, spicy red sprouted moth bean curry with red oil on top, topped with yellow farsan, chopped onion and coriander, in a plain smooth unmarked steel bowl with two pav and a lemon wedge'],
+  [/extra butter pav/, 'two soft square pav buns toasted golden with lots of butter, on a steel plate'],
+  [/^tak$/, 'Maharashtrian taak, a steel glass of thin white spiced buttermilk with chopped coriander and a pinch of cumin on top'],
+  [/^black tea$/, 'a small glass cup of hot black tea without milk, clear amber-brown, on a saucer'],
+  [/^special tea$/, 'a small glass cup of hot creamy Indian masala chai, light brown with a thin froth, on a saucer'],
+  [/^tea$/, 'a small glass cup of hot milky Indian chai, light brown, on a saucer'],
+  [/^coffee$/, 'a plain white ceramic cup of hot milky Indian coffee with froth on top, on a plain white saucer, cup completely plain with no print or markings'],
+  [/^(milk glass|plain milk)$/, 'a plain steel glass of hot white milk with a little froth'],
+  [/^curd bowl$/, 'a small steel bowl of thick set white curd'],
+  [/^(chocolate|mango|strawberry|vanilla) shake$/, '$1 milkshake, a tall glass of thick creamy $1 milkshake with a straw'],
+  // ---------- Hotel Sangram ----------
+  [/^poha$/, 'kanda poha, yellow flattened rice with onion, mustard seeds, curry leaves and peanuts, topped with sev, coriander and a lemon wedge, on a plate'],
+  [/^sheera$/, 'sheera (sooji halwa), soft grainy golden-yellow semolina pudding cooked in ghee, topped with a few cashews and raisins, in a small steel bowl with a spoon'],
+  [/^rosted papad$/, 'roasted papad, two thin crisp round light-yellow papads with brown blistered roasted spots, very thin and brittle, on a plate'],
+  [/^upma$/, 'upma, soft savoury semolina with mustard seeds, curry leaves, onion and green chilli, garnished with coriander, on a plate'],
+  [/^toast butter$/, 'crisp toasted bread slices spread with melting butter, on a plate'],
+  [/^paneer lasuni$/, 'paneer lasuni, soft paneer cubes in brown garlic gravy topped with golden fried garlic, served in a round steel serving bowl'],
+  [/^paneer ms$/, 'paneer masala, soft paneer cubes in thick reddish-brown onion-tomato masala gravy, served in a round steel serving bowl, garnished with coriander'],
+  [/^paneer tikka ms$/, 'paneer tikka masala, charred tandoori paneer cubes with capsicum and onion in thick orange-red masala gravy, served in a round steel serving bowl'],
+  [/^paneer tikka dry$/, 'paneer tikka, orange-red marinated paneer cubes with capsicum and onion pieces roasted with char marks, on a sizzling plate with mint chutney and onion rings'],
+  [/^veg kholapuri$/, 'veg Kolhapuri, mixed vegetables in fiery dark red spicy Kolhapuri gravy with red chilli oil on top, served in a round steel serving bowl'],
+  [/^butter wheat roti$/, 'soft wheat rotis brushed with melting butter, stacked on a steel plate'],
+  [/^wheat roti$/, 'soft thin wheat rotis stacked on a steel plate'],
+  [/^green salad$/, 'green salad, fresh sliced cucumber, tomato, onion rings, carrot and a lemon wedge arranged on a plate'],
+  [/^mix raita$/, 'mix raita, white curd with chopped cucumber, onion and tomato, sprinkled with cumin and red chilli powder, in a small bowl'],
+  [/^veg manchaow$/, 'veg manchow soup, dark brown spicy soup with chopped vegetables, topped with crispy fried noodles, in a white soup bowl'],
+  [/^mushroom tikka dry$/, 'mushroom tikka, whole button mushrooms marinated in orange-red tandoori masala and roasted with capsicum and onion, char marks, on a plate with mint chutney'],
+  [/^paneer banjara kebab$/, 'paneer banjara kebab, large cubes of soft white paneer with bright white insides visible, coated in orange-red rustic spice marinade with light char marks, with capsicum and onion pieces, on a plate with onion rings and mint chutney'],
+  [/^paneer pahadi kebab$/, 'paneer pahadi kebab, paneer cubes in bright green mint-coriander marinade, roasted with char marks, on a plate with onion rings and lemon'],
+  [/^veg sikh kebab$/, 'veg seekh kebab, long light green and orange kebabs made of mashed potato, green peas, carrot and coriander, with visible bits of vegetables, light char marks, on a plate with onion rings, lemon and mint chutney'],
+  [/^veg sch fride rice$/, 'veg schezwan fried rice, spicy red-orange fried rice with carrot, beans and spring onion, on a white plate'],
+  [/^veg fride rice$/, 'veg fried rice, Indo-Chinese white fried rice with carrot, beans, cabbage and spring onion, on a white plate'],
+  [/^veg hakka noodls$/, 'veg hakka noodles, light brown stir-fried noodles with cabbage, carrot, capsicum and spring onion, on a white plate'],
+  [/^ms kulcha$/, 'masala kulcha, round tandoori flatbread stuffed with spiced potato and onion, brushed with butter, cut in quarters on a plate'],
+  [/^rosted ms papad$/, 'roasted masala papad, crisp roasted papad topped with chopped onion, tomato, coriander and chaat masala, on a plate'],
+  [/^nachani rosted papad$/, 'roasted nachni papad, a crisp round dark brown finger millet papad, on a plate'],
+  // ---------- Hotel Rassa Bhakri ----------
+  [/^chicken biryani$/, 'chicken dum biryani, long-grain saffron and white basmati rice layered with chicken pieces, fried onions and mint, on a plate with raita'],
+  [/^mutton biryani$/, 'mutton dum biryani, long-grain saffron and white basmati rice layered with dark mutton pieces, fried onions and mint, on a plate with raita'],
+  [/^egg biryani$/, 'egg biryani, long-grain saffron and white basmati rice with halved boiled eggs in masala, fried onions and mint, on a plate with raita'],
+  [/^chicken chilli$/, 'chilli chicken dry, Indo-Chinese crispy boneless chicken tossed with green capsicum, onion and soy chilli sauce, on a plate'],
+  [/^chicken (malvani|malabari)$/, 'chicken Malvani, bone-in chicken pieces in reddish-brown coconut Malvani gravy, served in a round steel serving bowl, garnished with coriander'],
+  [/^mutton (malvani|malabari)$/, 'mutton Malvani, dark mutton pieces on the bone in reddish-brown coconut Malvani gravy, served in a round steel serving bowl, garnished with coriander'],
+  [/^boiled egg$/, 'two boiled eggs cut in halves, sprinkled with salt, black pepper and red chilli powder, on a plate with onion'],
+  [/^egg fry$/, 'egg fry, halved boiled eggs shallow-fried in spicy red masala with onion and curry leaves, on a plate'],
+  [/^egg thali$/, 'egg thali, steel plate with a bowl of red egg curry with halved boiled eggs, red rassa, jowar bhakri, rice, onion and lemon'],
   // ---------- Cafe items (Aroma Cafe) ----------
   [/anjeer mastani/, 'Pune style anjeer mastani, a tall glass of thick light pink fig milkshake topped with a big scoop of anjeer ice cream, chopped dry fruits and a cherry'],
   [/anjeer milk shake/, 'anjeer milkshake, a tall glass of thick creamy light pink fig milkshake with a straw'],
@@ -323,6 +416,8 @@ const MEAT_WORD = (n: string) =>
   n.includes('mutton') ? 'tender mutton pieces' : n.includes('fish') ? 'fish pieces' : n.includes('prawn') ? 'prawns' : 'boneless chicken pieces';
 
 export function describeExtra(normName: string): string | null {
+  const dosa = describeDosa(normName);
+  if (dosa) return dosa;
   const coneM = normName.match(/^(.*) cone$/);
   if (coneM && CONE_FLAVOURS[coneM[1]]) return cone(CONE_FLAVOURS[coneM[1]]);
   for (const [re, text] of EXTRA) {

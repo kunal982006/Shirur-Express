@@ -271,5 +271,5 @@ export function describeVeg(name: string, category: string, description: string 
   const style = VEG_STYLES.find(([re]) => re.test(n));
   if (style) return { text: `${clean}, ${style[1](mainIngredient(n))}${cheese}`, fallback: false };
 
-  return { text: `${clean}, vegetarian Indian dish${description ? `, ${description}` : ''}, served on a plate`, fallback: true };
+  return { text: `${clean}, vegetarian Indian dish, served on a plate`, fallback: true };
 }
