@@ -12,6 +12,8 @@ interface HorizontalScrollListProps<T> {
     isLoading?: boolean;
     autoScroll?: boolean;
     autoScrollSpeed?: number;
+    // Shown under the title, e.g. a Veg / Non-Veg switch.
+    headerAction?: React.ReactNode;
 }
 
 export function HorizontalScrollList<T extends { id: string | number }>({
@@ -24,6 +26,7 @@ export function HorizontalScrollList<T extends { id: string | number }>({
     isLoading,
     autoScroll = false,
     autoScrollSpeed = 38,
+    headerAction,
 }: HorizontalScrollListProps<T>) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const isHoveredRef = useRef(false);
@@ -135,6 +138,7 @@ export function HorizontalScrollList<T extends { id: string | number }>({
                 <div className="min-w-0">
                     <h2 className="truncate text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">{title}</h2>
                     {subtitle && <p className="truncate text-[11px] text-slate-500">{subtitle}</p>}
+                    {headerAction && <div className="mt-1">{headerAction}</div>}
                 </div>
                 {onSeeAll && (
                     <Button variant="ghost" size="sm" onClick={onSeeAll} className="h-7 shrink-0 px-1 text-xs font-semibold text-primary hover:text-primary">

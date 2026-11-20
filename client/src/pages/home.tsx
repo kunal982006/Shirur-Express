@@ -25,6 +25,7 @@ import { AddressChip } from "@/components/address/AddressChip";
 import { CategoryCarousel } from "@/components/restaurants/CategoryCarousel";
 import { FoodCollectionRows } from "@/components/restaurants/FoodCollectionRows";
 import { TrendingBanner } from "@/components/restaurants/TrendingBanner";
+import { LocalFavourites } from "@/components/restaurants/LocalFavourites";
 import { useDeliveryEstimate } from "@/hooks/use-delivery-address";
 import { formatDistance } from "@/lib/location";
 
@@ -210,6 +211,8 @@ export default function Home() {
   const { data: popularData, isLoading: isPopularLoading } = useQuery({
     queryKey: ["/api/homepage/popular"],
     queryFn: () => api.get("/homepage/popular").then((response) => response.data),
+    // Order counters move every few minutes.
+    refetchInterval: 60 * 1000,
   });
 
   const search = (term = query) => {
@@ -412,21 +415,7 @@ export default function Home() {
             />
           )}
         />
-        <HorizontalScrollList
-          title="Local favourites"
-          items={popularData?.streetFood || []}
-          isLoading={isPopularLoading}
-          autoScroll={true}
-          onSeeAll={() => navigate("/street-food")}
-          renderItem={(item: any) => (
-            <ProductCard
-              item={item}
-              onOpen={() => navigate(`/street-food?item=${item.id}`)}
-              onAdd={() => addProduct(item, "street_food")}
-              onUpdate={(change) => updateQuantity(item.id, change)}
-            />
-          )}
-        />
+        <LocalFavourites />
         <FoodCollectionRows className="space-y-2.5" />
         <CategoryCarousel className="-mx-3 px-3 sm:-mx-6 sm:px-6" onSelect={(id) => navigate(`/search?term=${id}`)} />
         <HorizontalScrollList title="Top places in Shirur" items={popularData?.restaurants || []} isLoading={isPopularLoading} onSeeAll={() => navigate("/restaurants")} renderItem={(provider: any) => <TopPlaceCard provider={provider} onClick={() => navigate(`/restaurants/${provider.id}`)} />} />

@@ -14,6 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 import { storage } from "./storage";
 import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, isNonVegDish, orderFoodCollectionFeed } from "@shared/food-collections";
 import { PINNED_DISHES, PINNED_ROW_SLUGS, findPinnedIndex, findSpecialtyTag, isExtraFor, rotationRank } from "./food-highlights";
+import { LOCAL_FAVOURITES, LOCAL_FAVOURITE_FIGURES, liveFigure, withoutPortion } from "./local-favourites";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable, isNull, isNotNull } from "drizzle-orm";
 import {
@@ -5157,6 +5158,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let dishHighlights: Record<string, any> = {};
   let dishRotation = new Map<string, number>();
   let timeLimitedDishes = new Map<string, { name: string; untilMinute: number }>();
+  // Every available dish, including ones in no category row (soups...), for the Local favourites row.
+  let dishById = new Map<string, any>();
 
   // Dishes that are past their daily cut-off (e.g. Idli Wada Mix after 1 PM) are hidden.
   const visibleNow = <T extends { availableUntilMinute?: number | null }>(list: T[]): T[] => {
@@ -5203,12 +5206,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const slugs = getFoodCollectionSlugs(base);
       // Featured breakfast dishes belong in the Breakfast row whatever their menu section says.
       if (pinned?.row === "breakfast" && !slugs.includes("breakfast")) slugs.unshift("breakfast");
-      // Orders in the last 24 hours: the figure set for a featured dish plus real orders placed
-      // through the app. Dishes without a figure show real orders only.
+      // Orders in the last 24 hours: the figure set for a featured or Local favourites dish (moving
+      // a little every few minutes) plus real orders placed through the app. Dishes without a
+      // figure show real orders only.
       const realOrders = ordersToday.get(item.id) || 0;
+      const figure = LOCAL_FAVOURITE_FIGURES.get(item.id) ?? pinned?.figure ?? 0;
       return {
         ...base,
-        orderCount: (pinned?.figure || 0) + realOrders,
+        orderCount: liveFigure(item.id, figure, now) + realOrders,
         isMostlySelling: false,
         badge: null as string | null,
         _realOrders: realOrders,
@@ -5277,9 +5282,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
 
     const grouped = new Map<string, any[]>(FOOD_COLLECTIONS.map((c) => [c.slug, []]));
+    const byId = new Map<string, any>();
     for (const { _slugs, _extras, _popularOrder, _displayOrder, _realOrders, _tag, _rotation, ...dish } of dishes) {
+      byId.set(dish.id, dish);
       for (const slug of _slugs) grouped.get(slug)?.push(dish);
     }
+    dishById = byId;
     const isOpen = (dish: any) => dish.provider.isAvailable !== false;
     for (const [slug, list] of Array.from(grouped.entries())) {
       // Themed rows (Non-Veg Special, Biryani, cafe sub-categories) lead with each restaurant's
@@ -5334,6 +5342,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get food collection error:", error);
       res.status(500).json({ message: error.message || "Error fetching food collection" });
+    }
+  });
+
+  // --- LOCAL FAVOURITES (home screen row with a Veg / Non-Veg switch) ---
+  // Hand-picked dishes in a fixed order. Half / Full dishes come as one card whose `variants`
+  // list both portions, so the app can ask which one to add.
+  app.get("/api/local-favourites", async (_req: Request, res: Response) => {
+    try {
+      await getFoodCollectionItems();
+      const minute = getIstMinutes();
+      const build = (list: typeof LOCAL_FAVOURITES.veg) => list.flatMap((fav) => {
+        if (fav.fromMinute != null && minute < fav.fromMinute) return [];
+        if (fav.untilMinute != null && minute >= fav.untilMinute) return [];
+        const portions = fav.ids.map((id) => dishById.get(id)).filter(Boolean);
+        if (!portions.length || portions[0].provider.isAvailable === false) return [];
+        const [first] = portions;
+        if (portions.length === 1) return [first];
+        return [{
+          ...first,
+          name: withoutPortion(first.name),
+          price: Math.min(...portions.map((dish: any) => Number(dish.price))),
+          variants: portions.map((dish: any, index: number) => ({
+            ...dish,
+            label: index === 0 ? "Half" : "Full",
+          })),
+        }];
+      });
+      res.json({ veg: build(LOCAL_FAVOURITES.veg), nonVeg: build(LOCAL_FAVOURITES["non-veg"]) });
+    } catch (error: any) {
+      console.error("Get local favourites error:", error);
+      res.status(500).json({ message: error.message || "Error fetching local favourites" });
     }
   });
 

@@ -41,7 +41,8 @@ export function DishQuantityControl({ dish, quantity, onAdd, onUpdate }: DishQua
 }
 
 // Compact card for the horizontal category rows on the food home screen.
-export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityProps & { onOpen: () => void }) {
+// `priceLabel` and `control` replace the price and the Add button (e.g. "from ₹290" and a Half / Full picker).
+export function CollectionDishCard({ dish, onOpen, priceLabel, control: customControl, ...control }: DishQuantityProps & { onOpen: () => void; priceLabel?: string; control?: React.ReactNode }) {
     return (
         <article className="app-product-card" onClick={onOpen}>
             <div className="relative">
@@ -66,8 +67,8 @@ export function CollectionDishCard({ dish, onOpen, ...control }: DishQuantityPro
                     <p className="mt-0.5 line-clamp-3 text-[10px] leading-snug text-slate-500">{dish.description}</p>
                 )}
                 <div className="app-product-card__footer">
-                    <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">₹{Number(dish.price)}</span>
-                    <DishQuantityControl dish={dish} {...control} />
+                    <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">{priceLabel || `₹${Number(dish.price)}`}</span>
+                    {customControl ?? <DishQuantityControl dish={dish} {...control} />}
                 </div>
             </div>
         </article>
