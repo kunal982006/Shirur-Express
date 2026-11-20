@@ -15,6 +15,7 @@ interface MenuItem {
   tag?: string;
   startsFrom?: boolean;
   perStrip?: boolean;
+  priceOnCall?: boolean; // no price listed yet: show "Price on call" and a Call button instead of ADD
   note?: string;
   variants?: Variant[];
   selectedVariantIdx?: number;
@@ -87,7 +88,31 @@ const INITIAL_MENU: MenuSection[] = [
     subtitle: "SKIN • Glow, cleanup & facial treatments",
     icon: "🧖‍♀️",
     badgeColor: "bg-emerald-100 text-emerald-800",
-    items: [],
+    items: [
+      { id: "fc-1", name: "Acne Facial", marketPrice: null, ourPrice: 699, time: "30 mins", desc: "पिंपल्स (मुरुम) आणि तेलकटपणा कमी करून त्वचा स्वच्छ व शांत करणारा फेशियल." },
+      { id: "fc-2", name: "Silver Facial", marketPrice: null, ourPrice: 799, time: "30 mins", desc: "त्वचेतील घाण व तेल काढून चेहऱ्याला फ्रेश, उजळ आणि थंडावा देणारा सिल्व्हर फेशियल." },
+      { id: "fc-3", name: "Potali Facial", marketPrice: null, ourPrice: 899, time: "30 mins", desc: "गरम हर्बल पोटलीच्या मसाजने त्वचेला पोषण, आराम आणि नैसर्गिक तेज देणारा आयुर्वेदिक फेशियल." },
+      { id: "fc-4", name: "Gold Facial", marketPrice: null, ourPrice: 899, time: "30 mins", desc: "गोल्ड क्रीम व मसाजने चेहऱ्यावर सोनेरी चमक आणि झटपट ग्लो आणणारा फेशियल." },
+      { id: "fc-5", name: "Platinum Facial", marketPrice: null, ourPrice: 899, time: "30 mins", desc: "त्वचा मऊ व घट्ट करून सणासुदीला खास प्रीमियम ग्लो देणारा प्लॅटिनम फेशियल." },
+      { id: "fc-6", name: "Pearl Facial", marketPrice: null, ourPrice: 599, time: "30 mins", desc: "मोत्याच्या अर्काने त्वचेचा रंग उजळवून मोत्यासारखी नितळ चमक देणारा फेशियल." },
+      { id: "fc-7", name: "Papaya Facial", marketPrice: null, ourPrice: 399, time: "30 mins", desc: "पपईतील नैसर्गिक एन्झाइम्सने मृत त्वचा काढून चेहरा स्वच्छ आणि ताजातवाना करणारा फेशियल." },
+      { id: "fc-8", name: "Aryan Veda Facial", marketPrice: null, priceOnCall: true, time: "30 mins", desc: "आयुर्वेदिक वनस्पतींच्या घटकांनी त्वचेला खोलवर पोषण आणि नैसर्गिक तेज देणारा हर्बल फेशियल.", note: "टीप: या फेशियलच्या दरासाठी कृपया ब्युटिशियनला कॉल करा." },
+      { id: "fc-9", name: "Face Cleanup", marketPrice: null, ourPrice: 349, time: "30 mins", desc: "चेहऱ्याची खोलवर स्वच्छता, ब्लॅकहेड्स काढणे आणि झटपट फ्रेशनेससाठी क्लीनअप." },
+      { id: "fc-10", name: "Face D-Tan", marketPrice: null, ourPrice: 199, time: "30 mins", desc: "उन्हामुळे काळवंडलेली त्वचा (टॅनिंग) कमी करून मूळ रंग परत आणणारी डी-टॅन ट्रीटमेंट." },
+      { id: "fc-11", name: "Fruit Facial Regular", marketPrice: null, ourPrice: 499, time: "30 mins", desc: "फळांच्या अर्काने त्वचेला व्हिटॅमिन्स, ओलावा आणि नैसर्गिक चमक देणारा रेग्युलर फेशियल." },
+      { id: "fc-12", name: "Acne / Scar Treatment", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "मुरुम आणि त्यांचे डाग हळूहळू कमी करून त्वचा नितळ बनवणारी खास ट्रीटमेंट.", tag: "Advanced" },
+      { id: "fc-13", name: "Pigmentation Treatment", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "चेहऱ्यावरील काळे डाग, वांग (पिगमेंटेशन) कमी करून त्वचेचा रंग एकसारखा करणारी ट्रीटमेंट.", tag: "Advanced" },
+      { id: "fc-14", name: "Anti-Aging Facial", marketPrice: null, ourPrice: 1999, time: "30 mins", desc: "सुरकुत्या व सैल त्वचा कमी करून चेहऱ्याला तरुण, घट्ट आणि टवटवीत लूक देणारा फेशियल.", tag: "Advanced" },
+      { id: "fc-15", name: "CC Glow Facial Kit", marketPrice: null, ourPrice: 2499, time: "30 mins", desc: "त्वचेचा रंग एकसारखा करून डाग झाकणारा आणि नैसर्गिक मेकअपसारखा ग्लो देणारा CC ग्लो फेशियल.", tag: "Advanced" },
+      { id: "fc-16", name: "Glass Glow / BB Glow", marketPrice: null, ourPrice: 2499, time: "30 mins", desc: "कोरियन पद्धतीचा फेशियल, जो त्वचेला काचेसारखी नितळ, चमकदार आणि एकसारखी बनवतो.", tag: "Advanced" },
+      { id: "fc-17", name: "Fire and Ice Facial", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "गरम आणि थंड मास्कच्या खास पद्धतीने रोमछिद्रे (Pores) लहान करून झटपट ग्लो देणारा फेशियल.", tag: "Advanced" },
+      { id: "fc-18", name: "Hydra Facial", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "मशीनद्वारे त्वचेची खोलवर स्वच्छता, एक्सफोलिएशन आणि भरपूर ओलावा देणारा हायड्रा फेशियल.", tag: "Advanced" },
+      { id: "fc-19", name: "Medi Facial", marketPrice: null, ourPrice: 999, time: "30 mins", desc: "त्वचेच्या समस्येनुसार निवडलेल्या मेडिकेटेड घटकांनी त्वचा निरोगी आणि स्वच्छ करणारा फेशियल." },
+      { id: "fc-20", name: "Diamond Facial", marketPrice: null, ourPrice: 799, time: "30 mins", desc: "डायमंड पावडरच्या मसाजने मृत त्वचा काढून चेहऱ्याला हिऱ्यासारखी चमक देणारा फेशियल." },
+      { id: "fc-21", name: "Bridal Facial", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "लग्नासाठी खास – त्वचा उजळ, मऊ करून दिवसभर टिकणारा ग्लो देणारा ब्रायडल फेशियल.", tag: "Advanced" },
+      { id: "fc-22", name: "O3+ Facial", marketPrice: null, ourPrice: 1499, time: "30 mins", desc: "O3+ प्रोफेशनल प्रॉडक्ट्सने टॅनिंग व निस्तेजपणा कमी करून त्वचेला उजळ, फ्रेश लूक देणारा फेशियल.", tag: "Advanced" },
+      { id: "fc-23", name: "Whitening Facial", marketPrice: null, ourPrice: 799, time: "30 mins", desc: "त्वचेचा काळपटपणा कमी करून रंग उजळवणारा आणि एकसारखा टोन देणारा फेशियल." },
+    ],
   },
   {
     id: "sec-wax",
@@ -417,12 +442,19 @@ function ServiceCard({ section, item, cart, onModify, onVariantChange, onCallMod
             {activeMarket && activeMarket > activeOur && (
               <span className="text-xs text-slate-400 line-through font-semibold">₹{activeMarket}</span>
             )}
-            <span className="text-base font-extrabold text-slate-900">₹{activeOur}</span>
+            <span className="text-base font-extrabold text-slate-900">{item.priceOnCall ? "Price on call" : "₹" + activeOur}</span>
           </div>
-          <span className="text-[9px] uppercase tracking-wider font-extrabold text-rose-600 mb-2">Our Price</span>
+          <span className="text-[9px] uppercase tracking-wider font-extrabold text-rose-600 mb-2">{item.priceOnCall ? "Ask beautician" : "Our Price"}</span>
 
-          {/* ADD / Counter */}
-          {qtyInCart === 0 ? (
+          {/* ADD / Counter (or Call for price-on-call items) */}
+          {item.priceOnCall ? (
+            <button
+              onClick={onCallModal}
+              className="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-2 border-rose-500 font-extrabold text-xs px-4 py-1.5 rounded-xl active:scale-95 transition"
+            >
+              📞 CALL
+            </button>
+          ) : qtyInCart === 0 ? (
             <button
               onClick={() => onModify(section.id, item.id, 1)}
               className="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-2 border-rose-500 font-extrabold text-xs px-4 py-1.5 rounded-xl active:scale-95 transition"
