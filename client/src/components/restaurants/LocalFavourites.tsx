@@ -61,6 +61,7 @@ export function LocalFavourites() {
                     const inCart = variants ? variants.reduce((sum, variant) => sum + cart.getQuantity(variant.id), 0) : 0;
                     return (
                         <CollectionDishCard
+                            detailed
                             dish={dish}
                             onOpen={() => navigate(dishProviderPath(dish))}
                             quantity={cart.getQuantity(dish.id)}

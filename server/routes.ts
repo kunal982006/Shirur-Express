@@ -5357,7 +5357,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (fav.untilMinute != null && minute >= fav.untilMinute) return [];
         const portions = fav.ids.map((id) => dishById.get(id)).filter(Boolean);
         if (!portions.length || portions[0].provider.isAvailable === false) return [];
-        const [first] = portions;
+        const [first] = portions.map((dish: any) => fav.description
+          ? { ...dish, description: fav.description, showDescription: true }
+          : dish);
         if (portions.length === 1) return [first];
         return [{
           ...first,

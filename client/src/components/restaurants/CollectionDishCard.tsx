@@ -42,7 +42,45 @@ export function DishQuantityControl({ dish, quantity, onAdd, onUpdate }: DishQua
 
 // Compact card for the horizontal category rows on the food home screen.
 // `priceLabel` and `control` replace the price and the Add button (e.g. "from ₹290" and a Half / Full picker).
-export function CollectionDishCard({ dish, onOpen, priceLabel, control: customControl, ...control }: DishQuantityProps & { onOpen: () => void; priceLabel?: string; control?: React.ReactNode }) {
+// `detailed` (Local favourites) shows the full name, the order count on its own line and a
+// one-line description, with the price right under them instead of pinned to the card bottom.
+export function CollectionDishCard({ dish, onOpen, priceLabel, control: customControl, detailed, ...control }: DishQuantityProps & { onOpen: () => void; priceLabel?: string; control?: React.ReactNode; detailed?: boolean }) {
+    if (detailed) {
+        const ordered = dish.orderCount && dish.orderCount > 0 ? dish.orderCount : 0;
+        return (
+            <article className="app-product-card" onClick={onOpen}>
+                <div className="relative">
+                    <img
+                        src={dish.imageUrl || FALLBACK_IMAGE}
+                        alt={dish.name}
+                        loading="lazy"
+                        onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }}
+                    />
+                    <span className="app-card-badge">{badgeText(dish) || "Trending in Shirur"}</span>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-1 p-2.5">
+                    <div className="flex min-w-0 items-start gap-1.5">
+                        <span className="mt-[3px]"><VegMark isVeg={dish.isVeg} /></span>
+                        <p className="min-w-0 flex-1 break-words text-xs sm:text-sm font-bold leading-snug text-slate-900">{dish.name}</p>
+                    </div>
+                    <p className="truncate text-[10.5px] text-slate-500">{dish.provider.businessName}</p>
+                    {ordered > 0 && (
+                        <p className="text-[10.5px] leading-snug text-orange-600">
+                            <span className="whitespace-nowrap font-bold">🔥 {ordered} ordered</span>{" "}
+                            <span className="whitespace-nowrap font-medium">in last 24 hrs</span>
+                        </p>
+                    )}
+                    {dish.showDescription && dish.description && (
+                        <p className="line-clamp-2 text-[10.5px] leading-snug text-slate-500">{dish.description}</p>
+                    )}
+                    <div className="mt-auto flex items-center justify-between gap-1.5 pt-1.5">
+                        <span className="truncate text-xs sm:text-sm font-extrabold text-slate-900">{priceLabel || `₹${Number(dish.price)}`}</span>
+                        {customControl ?? <DishQuantityControl dish={dish} {...control} />}
+                    </div>
+                </div>
+            </article>
+        );
+    }
     return (
         <article className="app-product-card" onClick={onOpen}>
             <div className="relative">
