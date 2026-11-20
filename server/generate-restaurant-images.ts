@@ -11,6 +11,7 @@
  *   --only "text"    only dishes whose name contains this text
  *   --force          regenerate even if a preview file exists
  *   --veg            pure-veg restaurant: vegetarian prompts only (never chicken/egg)
+ *   --street         street-food stall: read and update street_food_items instead of restaurant_menu_items
  *   --clear-images   back up the current image URLs to old-image-urls.json, then remove them from the DB
  *
  * (Full)/(Half)/(Plate) variants and spelling variants (Gost/Gosht, Chilly/Chilli…) share one image.
@@ -24,6 +25,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { QuotaError, generateImage, slugify } from './ai-image-utils';
 import { describeVeg } from './veg-dish-prompts';
 import { describeExtra } from './extra-dish-prompts';
+import { describeStreetChinese } from './street-chinese-prompts';
 
 const args = process.argv.slice(2);
 const arg = (f: string) => (args.includes(f) ? args[args.indexOf(f) + 1] : null);
@@ -34,6 +36,8 @@ const STOCK = args.includes('--stock');
 const FORCE = args.includes('--force');
 const CLEAR = args.includes('--clear-images');
 const VEG = args.includes('--veg');
+const STREET = args.includes('--street');
+const TABLE = STREET ? 'street_food_items' : 'restaurant_menu_items';
 const PROVIDER = arg('--provider');
 const ONLY = arg('--only')?.toLowerCase() ?? null;
 const STEPS = 4;
@@ -53,6 +57,7 @@ function dishKey(name: string): string {
     [/tutti[- ]?frutt?i/g, 'tutti frutti'], [/malwar|malvan|malbar/g, 'malabar'], [/steak/g, 'stick'],
     [/thumbs up|thums up/g, 'thums up'],
     [/kabab/g, 'kebab'], [/patiala/g, 'patiyala'], [/lasooni/g, 'lasuni'],
+    [/shejwan/g, 'schezwan'],
   ];
   for (const [re, to] of fixes) n = n.replace(re, to);
   return slugify(n);
@@ -204,7 +209,7 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const { rows } = await pool.query(
-    `SELECT id, name, category, description, image_url, is_veg FROM restaurant_menu_items WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
+    `SELECT id, name, category, description, image_url, is_veg FROM ${TABLE} WHERE provider_id = $1 ORDER BY category NULLS LAST, name`, [providerId]);
   // Bilingual names like "चिकन मंचाव सूप (Chicken Manchow Soup)": prompt and group on the English part only.
   for (const r of rows as any[]) {
     const m = /[^\x00-\x7F]/.test(r.name) && r.name.match(/\(([A-Za-z].*)\)\s*$/);
@@ -214,7 +219,7 @@ async function main() {
   if (ALL && APPLY && !DRY_RUN) {
     const backup = path.join(OUT_DIR, 'old-image-urls-before-ai.json');
     if (!fs.existsSync(backup)) {
-      const orig = await pool.query(`SELECT id, name, image_url FROM restaurant_menu_items WHERE provider_id = $1`, [providerId]);
+      const orig = await pool.query(`SELECT id, name, image_url FROM ${TABLE} WHERE provider_id = $1`, [providerId]);
       fs.writeFileSync(backup, JSON.stringify(orig.rows, null, 2));
       console.log(`💾 Old image links saved to ${path.relative(process.cwd(), backup)}`);
     }
@@ -224,7 +229,7 @@ async function main() {
     const backup = path.join(OUT_DIR, 'old-image-urls.json');
     if (fs.existsSync(backup)) { console.error(`❌ Backup already exists (${backup}); not overwriting.`); process.exit(1); }
     fs.writeFileSync(backup, JSON.stringify(rows.map((r: any) => ({ id: r.id, name: r.name, image_url: r.image_url })), null, 2));
-    const res = await pool.query(`UPDATE restaurant_menu_items SET image_url = NULL WHERE provider_id = $1`, [providerId]);
+    const res = await pool.query(`UPDATE ${TABLE} SET image_url = NULL WHERE provider_id = $1`, [providerId]);
     console.log(`🗑️  ${business_name}: removed images from ${res.rowCount} items (old links saved in ${path.relative(process.cwd(), backup)})`);
     await pool.end();
     return;
@@ -255,7 +260,8 @@ async function main() {
     // Veg items (whole restaurant with --veg, or items flagged is_veg) use the vegetarian prompt builder,
     // so a "Veg Fried Rice" is never drawn with chicken.
     const vegItem = VEG || group.every((g: any) => g.is_veg);
-    const extra = describeExtra(key.replace(/-/g, ' '));
+    const norm = key.replace(/-/g, ' ');
+    const extra = (STREET && describeStreetChinese(norm)) || describeExtra(norm);
     const extraOk = extra && !(vegItem && /chicken|mutton|fish|prawn|\begg|meat/.test(extra));
     let { text, fallback } = extraOk
       ? { text: extra!, fallback: false }
@@ -285,7 +291,7 @@ async function main() {
           transformation: [{ width: 800, height: 800, crop: 'fill', quality: 'auto', fetch_format: 'auto' }],
         });
         for (const it of group) {
-          await pool.query(`UPDATE restaurant_menu_items SET image_url = $1 WHERE id = $2`, [up.secure_url, it.id]);
+          await pool.query(`UPDATE ${TABLE} SET image_url = $1 WHERE id = $2`, [up.secure_url, it.id]);
           applied++;
         }
         console.log(`✅ ${group[0].name} (${group.length})`);

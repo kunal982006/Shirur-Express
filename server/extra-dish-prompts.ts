@@ -24,7 +24,7 @@ function describeDosa(n: string): string | null {
     }
     if (/cheese/.test(n)) tops.push('lots of melted grated cheese');
     if (/butter/.test(n)) tops.push('a melting cube of butter');
-    return `uttapam, a thick soft round South Indian rice pancake with a golden underside, topped with ${tops.join(', ')}, ${SIDES}`;
+    return `uttapam, tight close-up of a thick soft round South Indian rice pancake with a golden underside, topped with ${tops.join(', ')}, filling the frame so the plate edge is out of view, ${SIDES}`;
   }
   if (!/dosa/.test(n)) return null;
   let shape = 'a large crisp golden-brown dosa folded in half';
