@@ -382,6 +382,59 @@ function CartDrawer({ open, onClose, cart, onModify, onConfirm }: {
   );
 }
 
+// ─── Categories Sheet (opened from the floating button) ──────────────────────
+function CategorySheet({ open, onClose, sections, selected, onPick }: {
+  open: boolean; onClose: () => void; sections: MenuSection[];
+  selected: string; onPick: (id: string) => void;
+}) {
+  const total = sections.reduce((s, sec) => s + sec.items.length, 0);
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex flex-col justify-end"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            onClick={e => e.stopPropagation()}
+            className="bg-white w-full max-w-md mx-auto rounded-t-3xl px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl border-t border-rose-100 max-h-[75vh] flex flex-col"
+          >
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-800">💇‍♀️ Salon Categories</h3>
+                <p className="text-[11px] text-slate-500">{total} services • Tap a category to jump to it</p>
+              </div>
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-rose-100 hover:text-rose-600 text-sm">✕</button>
+            </div>
+            <div className="overflow-y-auto py-2 space-y-1">
+              {sections.map(sec => {
+                const isSelected = selected === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    onClick={() => onPick(sec.id)}
+                    className={"w-full flex items-center gap-3 p-3 rounded-2xl text-left transition " + (isSelected ? "bg-rose-50 border border-rose-200" : "hover:bg-rose-50/60 border border-transparent")}
+                  >
+                    <span className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-lg shrink-0">{sec.icon}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className={"block text-sm " + (isSelected ? "font-extrabold text-rose-700" : "font-bold text-slate-800")}>{sec.title}</span>
+                      <span className="block text-[11px] text-slate-500 truncate">{sec.subtitle}</span>
+                    </span>
+                    <span className="text-xs font-extrabold text-rose-600 bg-rose-50 border border-rose-100 rounded-full px-2 py-0.5 shrink-0">{sec.items.length}</span>
+                    {isSelected && <span className="text-rose-600 font-extrabold text-sm shrink-0">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ─── Service Card ──────────────────────────────────────────────────────────────
 function ServiceCard({ section, item, cart, onModify, onVariantChange, onCallModal }: {
   section: MenuSection;
@@ -543,6 +596,8 @@ export default function BeautyDetail() {
   const [cart, setCart] = useState<CartMap>({});
   const [cartOpen, setCartOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
   const [toast, setToast] = useState({ visible: false, msg: "" });
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -660,7 +715,12 @@ export default function BeautyDetail() {
     setSelectedCategory(id);
     if (id === "all") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!el) return;
+    // Land the section title just below the sticky header (its height varies with the
+    // iPhone status bar and the pills row), instead of underneath it.
+    const headerH = headerRef.current?.getBoundingClientRect().height ?? 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   }
 
   // Search filter
@@ -689,7 +749,7 @@ export default function BeautyDetail() {
     <div className="bg-[#FFF8FA] text-[#1E293B] min-h-screen font-sans antialiased flex flex-col">
 
       {/* ── STICKY HEADER ── */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-rose-100 sticky top-0 z-40 shadow-sm">
+      <header ref={headerRef} className="bg-white/95 backdrop-blur-md border-b border-rose-100 sticky top-0 z-40 shadow-sm">
         <div className="max-w-md mx-auto px-4 pt-3 pb-2.5">
           {/* Top Row */}
           <div className="flex justify-between items-center">
@@ -966,6 +1026,20 @@ export default function BeautyDetail() {
         </div>
       )}
 
+      {/* ── FLOATING CATEGORIES BUTTON (home only), sits just above the cart bar ── */}
+      {activeTab === "home" && (
+        <div className="fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] md:bottom-28 right-4 z-40">
+          <button
+            onClick={() => setCategoriesOpen(true)}
+            className="rounded-full bg-slate-950/90 text-white hover:bg-slate-900 active:scale-95 shadow-2xl backdrop-blur-md border border-white/20 px-4 h-11 flex items-center gap-2 font-bold text-xs transition"
+          >
+            <span className="text-base leading-none">💇‍♀️</span>
+            <span>Categories</span>
+            <span className="bg-rose-600 text-white text-[10px] font-extrabold h-4 px-1.5 rounded-full flex items-center">{menuData.length}</span>
+          </button>
+        </div>
+      )}
+
       {/* ── MODALS & TOAST ── */}
       <CartDrawer
         open={cartOpen}
@@ -973,6 +1047,18 @@ export default function BeautyDetail() {
         cart={cart}
         onModify={modifyCartByKey}
         onConfirm={confirmBooking}
+      />
+      <CategorySheet
+        open={categoriesOpen}
+        onClose={() => setCategoriesOpen(false)}
+        sections={menuData}
+        selected={selectedCategory}
+        onPick={id => {
+          setCategoriesOpen(false);
+          setSearchQuery(""); // a search could be hiding the section
+          // wait one frame so the section is back on the page before scrolling to it
+          requestAnimationFrame(() => scrollToSection(id));
+        }}
       />
       <CallModal open={callOpen} onClose={() => setCallOpen(false)} />
       <Toast visible={toast.visible} message={toast.msg} />
