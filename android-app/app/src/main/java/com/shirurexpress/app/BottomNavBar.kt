@@ -2,6 +2,9 @@ package com.shirurexpress.app
 
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.util.TypedValue
 import android.view.HapticFeedbackConstants
 import android.view.View
@@ -9,13 +12,15 @@ import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import org.json.JSONObject
 
 /**
  * The bottom tab bar, drawn natively so taps answer instantly (ripple and a
- * light vibration) even while the page is busy. It looks like a floating dark
- * "island": icons only, with a lighter bubble that slides to the selected tab -
- * the same design as IslandBottomNav on the website.
+ * light vibration) even while the page is busy. It looks like a floating
+ * frosted "island" in the page's own background colour, with a name under each
+ * icon and a soft bubble that slides to the selected tab - the same design as
+ * IslandBottomNav on the website.
  *
  * The website stays in charge of what the bar shows: it sends the list of tabs
  * (they depend on who is logged in), which one is selected, and whether the bar
@@ -25,6 +30,7 @@ import org.json.JSONObject
  */
 class BottomNavBar(
     private val container: View,
+    private val island: View,
     private val indicator: View,
     private val row: LinearLayout,
     private val onNavigate: (href: String) -> Unit,
@@ -34,16 +40,19 @@ class BottomNavBar(
         "bookings" to R.drawable.ic_nav_bookings,
         "deliveries" to R.drawable.ic_nav_deliveries,
         "dashboard" to R.drawable.ic_nav_dashboard,
-        "settings" to R.drawable.ic_nav_settings,
+        // The settings tab is shown as "Profile", so it gets the person icon.
+        "settings" to R.drawable.ic_nav_login,
         "login" to R.drawable.ic_nav_login,
     )
 
-    private class Tab(val href: String, val view: View, val icon: ImageView)
+    private class Tab(val href: String, val view: View, val icon: ImageView, val label: TextView)
 
     private var tabs = listOf<Tab>()
     private var itemsKey = ""
     private var active: String? = null
     private var indicatorPlaced = false
+    private var activeColor = Color.parseColor("#2563EB")
+    private var inactiveColor = Color.parseColor("#0F172A")
 
     // The bar shows only when the website wants it and nothing native is in the way.
     private var wantedByWeb = false
@@ -65,6 +74,15 @@ class BottomNavBar(
 
     private fun dp(value: Float) = (value * container.resources.displayMetrics.density).toInt()
 
+    private fun withAlpha(color: Int, alpha: Int) =
+        Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
+
+    private fun parseColor(value: String?, fallback: Int) = try {
+        if (value.isNullOrEmpty()) fallback else Color.parseColor(value)
+    } catch (e: IllegalArgumentException) {
+        fallback
+    }
+
     /** Applies the state the website sent through AndroidApp.setBottomNav(json). */
     fun update(json: String) {
         val state = try {
@@ -73,7 +91,16 @@ class BottomNavBar(
             return
         }
 
-        // The island keeps its own dark colours, so the "colors" the website sends are not used.
+        state.optJSONObject("colors")?.let { colors ->
+            // Mostly see-through, so the page behind tints the pill.
+            val background = parseColor(colors.optString("background"), Color.WHITE)
+            (island.background.mutate() as? GradientDrawable)
+                ?.setColor(withAlpha(background, 0xC8))
+            activeColor = parseColor(colors.optString("active"), activeColor)
+            inactiveColor = parseColor(colors.optString("inactive"), inactiveColor)
+            (indicator.background.mutate() as? GradientDrawable)
+                ?.setColor(withAlpha(activeColor, 0x26))
+        }
 
         val items = state.optJSONArray("items")
         val newKey = items?.toString() ?: ""
@@ -98,10 +125,21 @@ class BottomNavBar(
         val context = row.context
         val icon = ImageView(context).apply {
             setImageResource(icons[iconName] ?: R.drawable.ic_nav_dashboard)
-            imageTintList = ColorStateList.valueOf(Color.WHITE)
-            layoutParams = FrameLayout.LayoutParams(dp(24f), dp(24f), android.view.Gravity.CENTER)
+            layoutParams = LinearLayout.LayoutParams(dp(20f), dp(20f))
         }
-        val view = FrameLayout(context).apply {
+        val label = TextView(context).apply {
+            text = labelText
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            maxLines = 1
+            includeFontPadding = false
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(3f) }
+        }
+        val view = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
             isClickable = true
             isFocusable = true
             contentDescription = labelText
@@ -110,6 +148,7 @@ class BottomNavBar(
             foreground = context.getDrawable(ripple.resourceId)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
             addView(icon)
+            addView(label)
             setOnTouchListener { v, event ->
                 // Small press-in, like the website's active:scale-90.
                 when (event.actionMasked) {
@@ -129,7 +168,7 @@ class BottomNavBar(
             }
         }
         row.addView(view)
-        return Tab(href, view, icon)
+        return Tab(href, view, icon, label)
     }
 
     private fun applySelection() {
@@ -137,7 +176,13 @@ class BottomNavBar(
         tabs.forEachIndexed { index, tab ->
             val selected = tab.href == active
             if (selected) selectedIndex = index
-            tab.icon.alpha = if (selected) 1f else 0.8f
+            val color = if (selected) activeColor else withAlpha(inactiveColor, 0xBF)
+            tab.icon.imageTintList = ColorStateList.valueOf(color)
+            tab.label.setTextColor(color)
+            tab.label.typeface = Typeface.create(
+                if (selected) "sans-serif" else "sans-serif-medium",
+                if (selected) Typeface.BOLD else Typeface.NORMAL,
+            )
             tab.view.isSelected = selected
         }
 
@@ -148,7 +193,7 @@ class BottomNavBar(
         }
 
         val tabWidth = row.width / tabs.size
-        val inset = dp(4f)
+        val inset = dp(2f)
         val params = indicator.layoutParams
         if (params.width != tabWidth - inset * 2) {
             params.width = tabWidth - inset * 2

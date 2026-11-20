@@ -31,7 +31,8 @@ const TAB_ICONS: Record<NativeNavIcon, typeof Home> = {
   bookings: Package,
   deliveries: Truck,
   dashboard: LayoutDashboard,
-  settings: Settings,
+  // Shown as "Profile": the settings page is where people manage their account.
+  settings: UserIcon,
   login: UserIcon,
 };
 
@@ -101,8 +102,9 @@ function NativeBottomNavSlot({ items, active }: { items: NativeNavItem[]; active
 }
 
 /**
- * Floating "island" tab bar: a dark glass pill with icons only, and a lighter
- * bubble that slides to the selected tab. It never reaches higher than the old
+ * Floating "island" tab bar: a frosted glass pill that takes its tint from
+ * the page scrolling behind it, with a name under each icon and a soft bubble
+ * that slides to the selected tab. It never reaches higher than the old
  * full-width bar (4rem + safe area), so buttons that sit above it still fit.
  */
 function IslandBottomNav({
@@ -120,26 +122,31 @@ function IslandBottomNav({
   if (activeIndex >= 0) lastIndex.current = activeIndex;
   const bubbleIndex = Math.max(lastIndex.current, 0);
 
+  // The app's colours are full hsl() values, so Tailwind's "/45" alpha shorthand
+  // can't apply to them; color-mix() makes the see-through shades instead.
+  // app-bottom-nav (which keeps the bar still during page transitions) sits on
+  // the pill itself: on a wrapper it would cut the pill off from the page
+  // behind and switch off the frosted blur.
   return (
     <nav
       aria-label="Main"
-      className="app-bottom-nav pointer-events-none fixed inset-x-0 z-50 flex justify-center px-3 md:hidden"
+      className="pointer-events-none fixed inset-x-0 z-50 flex justify-center px-3 md:hidden"
       style={{ bottom: "calc(env(safe-area-inset-bottom) * 0.5 + 8px)" }}
     >
       <div
-        className="pointer-events-auto relative flex h-14 w-full max-w-md items-center rounded-full border border-white/15 bg-neutral-900/75 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl backdrop-saturate-150"
+        className="app-bottom-nav pointer-events-auto relative flex h-14 w-full max-w-md items-center rounded-full border border-white/60 bg-[color-mix(in_srgb,var(--background)_55%,transparent)] p-1 shadow-[0_8px_28px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-2xl backdrop-saturate-200 dark:border-white/10 dark:shadow-[0_8px_28px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]"
       >
         {/* Sliding bubble behind the selected tab */}
         <div
           aria-hidden="true"
-          className="absolute inset-y-1.5 left-1.5 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+          className="absolute inset-y-1 left-1 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
           style={{
-            width: `calc((100% - 0.75rem) / ${items.length || 1})`,
+            width: `calc((100% - 0.5rem) / ${items.length || 1})`,
             transform: `translateX(${bubbleIndex * 100}%)`,
             opacity: activeIndex >= 0 ? 1 : 0,
           }}
         >
-          <div className="mx-1 h-full rounded-full bg-white/20" />
+          <div className="mx-0.5 h-full rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,transparent)]" />
         </div>
 
         {items.map((tab) => {
@@ -149,16 +156,12 @@ function IslandBottomNav({
             <button
               key={tab.href}
               type="button"
-              aria-label={tab.label}
-              title={tab.label}
               aria-current={selected ? "page" : undefined}
               onClick={() => onSelect(tab.href)}
-              className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full text-white outline-none transition-transform duration-150 active:scale-90 focus-visible:ring-2 focus-visible:ring-white/60"
+              className={`relative z-10 flex h-full flex-1 flex-col items-center justify-center gap-0.5 rounded-full outline-none transition-[transform,color] duration-150 active:scale-90 focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--primary)_50%,transparent)] ${selected ? "text-primary" : "text-[color-mix(in_srgb,var(--foreground)_72%,transparent)]"}`}
             >
-              <Icon
-                className={`h-6 w-6 transition-opacity duration-200 ${selected ? "opacity-100" : "opacity-80"}`}
-                strokeWidth={selected ? 2.4 : 2}
-              />
+              <Icon className="h-5 w-5" strokeWidth={selected ? 2.4 : 2} />
+              <span className={`text-[10px] leading-none ${selected ? "font-semibold" : "font-medium"}`}>{tab.label}</span>
             </button>
           );
         })}
@@ -240,7 +243,7 @@ export default function Header() {
     bottomTabs.push({ href: "/admin", label: "Vendors", icon: "dashboard" });
   }
   if (user) {
-    bottomTabs.push({ href: "/settings", label: "Settings", icon: "settings" });
+    bottomTabs.push({ href: "/settings", label: "Profile", icon: "settings" });
   } else if (!isLoading) {
     bottomTabs.push({ href: "/login", label: "Login", icon: "login" });
   }

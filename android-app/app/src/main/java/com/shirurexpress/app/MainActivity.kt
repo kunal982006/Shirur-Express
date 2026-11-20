@@ -163,6 +163,7 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         splash = SplashOverlay(findViewById(R.id.splashRoot))
         bottomNav = BottomNavBar(
             findViewById(R.id.bottomNav),
+            findViewById(R.id.bottomNavIsland),
             findViewById(R.id.bottomNavIndicator),
             findViewById(R.id.bottomNavRow),
         ) { href ->
