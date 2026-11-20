@@ -163,8 +163,8 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         splash = SplashOverlay(findViewById(R.id.splashRoot))
         bottomNav = BottomNavBar(
             findViewById(R.id.bottomNav),
+            findViewById(R.id.bottomNavIndicator),
             findViewById(R.id.bottomNavRow),
-            findViewById(R.id.bottomNavBorder),
         ) { href ->
             webView.evaluateJavascript(
                 "window.__nativeNavigate&&window.__nativeNavigate(${JSONObject.quote(href)});",

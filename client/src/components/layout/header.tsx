@@ -100,6 +100,73 @@ function NativeBottomNavSlot({ items, active }: { items: NativeNavItem[]; active
   );
 }
 
+/**
+ * Floating "island" tab bar: a dark glass pill with icons only, and a lighter
+ * bubble that slides to the selected tab. It never reaches higher than the old
+ * full-width bar (4rem + safe area), so buttons that sit above it still fit.
+ */
+function IslandBottomNav({
+  items,
+  active,
+  onSelect,
+}: {
+  items: NativeNavItem[];
+  active: string | null;
+  onSelect: (href: string) => void;
+}) {
+  const activeIndex = items.findIndex((tab) => tab.href === active);
+  const lastIndex = useRef(activeIndex);
+  // When nothing is selected the bubble fades out where it last was.
+  if (activeIndex >= 0) lastIndex.current = activeIndex;
+  const bubbleIndex = Math.max(lastIndex.current, 0);
+
+  return (
+    <nav
+      aria-label="Main"
+      className="app-bottom-nav pointer-events-none fixed inset-x-0 z-50 flex justify-center px-3 md:hidden"
+      style={{ bottom: "calc(env(safe-area-inset-bottom) * 0.5 + 8px)" }}
+    >
+      <div
+        className="pointer-events-auto relative flex h-14 w-full max-w-md items-center rounded-full border border-white/15 bg-neutral-900/75 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl backdrop-saturate-150"
+      >
+        {/* Sliding bubble behind the selected tab */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-y-1.5 left-1.5 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+          style={{
+            width: `calc((100% - 0.75rem) / ${items.length || 1})`,
+            transform: `translateX(${bubbleIndex * 100}%)`,
+            opacity: activeIndex >= 0 ? 1 : 0,
+          }}
+        >
+          <div className="mx-1 h-full rounded-full bg-white/20" />
+        </div>
+
+        {items.map((tab) => {
+          const Icon = TAB_ICONS[tab.icon];
+          const selected = active === tab.href;
+          return (
+            <button
+              key={tab.href}
+              type="button"
+              aria-label={tab.label}
+              title={tab.label}
+              aria-current={selected ? "page" : undefined}
+              onClick={() => onSelect(tab.href)}
+              className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full text-white outline-none transition-transform duration-150 active:scale-90 focus-visible:ring-2 focus-visible:ring-white/60"
+            >
+              <Icon
+                className={`h-6 w-6 transition-opacity duration-200 ${selected ? "opacity-100" : "opacity-80"}`}
+                strokeWidth={selected ? 2.4 : 2}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export default function Header() {
   const [location, setLocation] = useLocation();
 
@@ -355,28 +422,7 @@ export default function Header() {
         // The Android app draws this bar itself, exactly over this placeholder.
         <NativeBottomNavSlot items={bottomTabs} active={activeTab} />
       ) : (
-        <div
-          className="app-bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-center md:hidden px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
-          style={{
-            paddingBottom: 'env(safe-area-inset-bottom)',
-            height: 'calc(4rem + env(safe-area-inset-bottom))'
-          }}
-        >
-          {bottomTabs.map((tab) => {
-            const Icon = TAB_ICONS[tab.icon];
-            return (
-              <Button
-                key={tab.href}
-                variant="ghost"
-                className={`flex flex-col items-center justify-center gap-1 h-full w-full rounded-none active:bg-accent ${activeTab === tab.href ? 'text-primary' : ''}`}
-                onClick={() => setLocation(tab.href)}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
-              </Button>
-            );
-          })}
-        </div>
+        <IslandBottomNav items={bottomTabs} active={activeTab} onSelect={setLocation} />
       )}
     </>
   );

@@ -40,32 +40,45 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Native bottom tab bar. It sits exactly over the spot where the website
-         leaves room for its own bar (4rem = 64dp). The website decides what it
-         shows and when; see BottomNavBar.kt. -->
-    <LinearLayout
+    <!-- Native bottom tab bar: a floating dark "island" pill. Its 64dp strip
+         sits exactly over the spot where the website leaves room for its own
+         bar (4rem = 64dp); the margins around the pill let touches through to
+         the page. The website decides what it shows and when; see BottomNavBar.kt. -->
+    <FrameLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="bottom"
-        android:background="@android:color/white"
-        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="gone">
 
-        <View
-            android:id="@+id/bottomNavBorder"
+        <FrameLayout
+            android:id="@+id/bottomNavIsland"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E2E8F0" />
+            android:layout_height="56dp"
+            android:layout_gravity="bottom"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/nav_island_bg"
+            android:elevation="12dp"
+            android:padding="6dp">
 
-        <LinearLayout
-            android:id="@+id/bottomNavRow"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp" />
-    </LinearLayout>
+            <View
+                android:id="@+id/bottomNavIndicator"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/nav_island_indicator"
+                android:visibility="invisible" />
+
+            <LinearLayout
+                android:id="@+id/bottomNavRow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:baselineAligned="false"
+                android:orientation="horizontal" />
+        </FrameLayout>
+    </FrameLayout>
 
     <!-- Error View (shown when offline or error occurs) -->
     <LinearLayout
