@@ -86,13 +86,42 @@ export const LOCAL_FAVOURITE_FIGURES = new Map<string, number>(
   [...LOCAL_FAVOURITES.veg, ...LOCAL_FAVOURITES["non-veg"]].map((fav) => [fav.ids[0], fav.figure]),
 );
 
-// Order counters move all day: every 3 minutes each dish's figure shifts by -2 … +3 around the
-// supplied number (never below 1), differently per dish, so the rows never look frozen.
+// Share of the listed figure shown at each time of day (IST): low in the morning, medium in the
+// afternoon, the full listed figure in the evening. Straight lines between these points; after
+// 9 PM it eases back down overnight so the next morning starts low again.
+const DAY_CURVE: [minute: number, share: number][] = [
+  [0, 0.85],
+  [6 * 60, 0.3],   // 6 AM
+  [9 * 60, 0.35],  // 9 AM
+  [12 * 60, 0.5],  // noon
+  [15 * 60, 0.65], // 3 PM
+  [18 * 60, 0.85], // 6 PM
+  [20 * 60, 1],    // 8 PM: the listed figure
+  [21 * 60, 1],    // 9 PM
+  [24 * 60, 0.85],
+];
+
+export function dayShare(now: Date = new Date()): number {
+  const ist = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+  const minute = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+  for (let i = 1; i < DAY_CURVE.length; i++) {
+    const [m1, s1] = DAY_CURVE[i];
+    if (minute <= m1) {
+      const [m0, s0] = DAY_CURVE[i - 1];
+      return s0 + ((s1 - s0) * (minute - m0)) / (m1 - m0);
+    }
+  }
+  return DAY_CURVE[DAY_CURVE.length - 1][1];
+}
+
+// Order counters move all day: the listed figure is scaled by the time of day (see DAY_CURVE),
+// and every 3 minutes each dish shifts by -1 … +2 around that, differently per dish, so the
+// rows never look frozen. Never below 1, never above the listed figure.
 export function liveFigure(id: string, figure: number, now: Date = new Date()): number {
   if (figure <= 0) return 0;
   const slot = Math.floor(now.getTime() / (3 * 60 * 1000));
-  const shift = (createHash("sha256").update(`${slot}:${id}`).digest().readUInt32BE(0) % 6) - 2;
-  return Math.max(1, figure + shift);
+  const shift = (createHash("sha256").update(`${slot}:${id}`).digest().readUInt32BE(0) % 4) - 1;
+  return Math.min(figure, Math.max(1, Math.round(figure * dayShare(now)) + shift));
 }
 
 // "Chicken Barra Tandoori (Half)" -> "Chicken Barra Tandoori"; "Veg Biryani Half" -> "Veg Biryani".
