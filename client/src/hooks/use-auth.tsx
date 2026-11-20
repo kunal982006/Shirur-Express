@@ -62,7 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // If the check still couldn't reach the server, keep showing the last known
   // user. The session cookie is still sent, and the server still enforces auth.
-  const fallbackUser = isError && data === undefined ? readLastUser() : null;
+  // While the first check is still on its way (it can take seconds when the
+  // server is waking up), also use the last known user, so the right screen
+  // (e.g. the admin panel) shows straight away instead of the customer home.
+  const fallbackUser = (isError || isLoading) && data === undefined ? readLastUser() : null;
 
   // 💥 BUG FIX #2 IS HERE 💥
   // This is the corrected logout mutation logic.

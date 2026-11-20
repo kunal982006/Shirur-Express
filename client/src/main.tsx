@@ -15,6 +15,17 @@ window.addEventListener("vite:preloadError", (event) => {
   if (navigator.onLine && reloadForNewVersion()) event.preventDefault();
 });
 
+// An admin opening the app goes straight to the admin panel, before the
+// customer home screen is ever drawn. The server still checks the session.
+try {
+  const lastUser = JSON.parse(localStorage.getItem("shirur_last_user") || "null");
+  if (lastUser?.role === "admin" && window.location.pathname === "/") {
+    window.history.replaceState(window.history.state, "", "/admin");
+  }
+} catch {
+  // Storage unavailable: open normally.
+}
+
 createRoot(document.getElementById("root")!).render(<App />);
 
 // Two frames after the first render the home screen is actually painted; the

@@ -13,6 +13,13 @@ export function useLiveOrderTracking(activeOrderId?: string) {
     let reconnectTimeout: any = null;
     let isMounted = true;
 
+    // Only queries that are on screen refetch; for everyone else this is a no-op.
+    const refreshAdminLists = () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+    };
+
     const connect = () => {
       if (!isMounted) return;
       try {
@@ -44,10 +51,15 @@ export function useLiveOrderTracking(activeOrderId?: string) {
             // Invalidate provider orders lists
             queryClient.invalidateQueries({ queryKey: ["providerRestaurantOrders"] });
             queryClient.invalidateQueries({ queryKey: ["providerGroceryOrders"] });
+
+            refreshAdminLists();
           } catch (err) {
             console.error("[LiveOrder SSE] Parse error:", err);
           }
         });
+
+        // A new order or booking was placed: refresh the admin panel's lists.
+        eventSource.addEventListener("admin_refresh", refreshAdminLists);
 
         eventSource.onerror = () => {
           if (eventSource) {

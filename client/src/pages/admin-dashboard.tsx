@@ -269,7 +269,7 @@ function DonutChart({ segments, size = 120 }: {
 // ─── Main Component ─────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-    const { user, logout } = useAuth();
+    const { user, isLoading: authLoading, logout } = useAuth();
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
@@ -309,8 +309,11 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (user && user.role !== 'admin') {
             setLocation("/");
+        } else if (!user && !authLoading) {
+            // Session ended (e.g. logged out elsewhere): sign in again.
+            setLocation("/login");
         }
-    }, [user, setLocation]);
+    }, [user, authLoading, setLocation]);
 
     // Force Dark Mode for Admin Panel
     useEffect(() => {
@@ -346,17 +349,26 @@ export default function AdminDashboard() {
     const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
         queryKey: ["/api/admin/stats"],
         queryFn: () => api.get("/admin/stats").then(r => r.data),
-        refetchInterval: 30000,
+        refetchInterval: 20000,
+        refetchOnWindowFocus: true,
     });
 
     const { data: orders } = useQuery<Order[]>({
         queryKey: ["/api/admin/orders"],
         queryFn: () => api.get("/admin/orders").then(r => r.data),
+        // Backup for the live stream: new orders show up within 20s even if it drops.
+        refetchInterval: 20000,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
     });
 
     const { data: allBookings } = useQuery<Booking[]>({
         queryKey: ["/api/admin/bookings"],
         queryFn: () => api.get("/admin/bookings").then(r => r.data),
+        // Backup for the live stream: new bookings show up within 20s even if it drops.
+        refetchInterval: 20000,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
     });
 
     const { data: providers } = useQuery<Provider[]>({

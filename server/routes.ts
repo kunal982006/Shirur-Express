@@ -86,6 +86,8 @@ async function notifyAdmin(payload: {
   body: string;
   data?: Record<string, string>;
 }) {
+  // Open admin panels refresh their order and booking lists right away.
+  broadcastAdminRefresh();
   try {
     const adminUser = await storage.getUserByUsername('main_branch');
     if (!adminUser) return;
@@ -134,6 +136,18 @@ export function broadcastOrderUpdate(payload: {
   orderSseClients.forEach((client) => {
     try {
       client.res.write(`event: order_update\ndata: ${data}\n\n`);
+    } catch (err) {
+      orderSseClients.delete(client);
+    }
+  });
+}
+
+/** Tells open admin panels that a new order or booking arrived. Carries no order details. */
+function broadcastAdminRefresh() {
+  const data = JSON.stringify({ timestamp: Date.now() });
+  orderSseClients.forEach((client) => {
+    try {
+      client.res.write(`event: admin_refresh\ndata: ${data}\n\n`);
     } catch (err) {
       orderSseClients.delete(client);
     }
