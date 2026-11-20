@@ -3000,7 +3000,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastOrderUpdate({ orderId: id, status, orderType: 'street_food', userId: (updatedOrder as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      if (status === 'preparing') {
+      // Skipped when the admin has already assigned a rider to this order.
+      if (status === 'preparing' && !(updatedOrder as any)?.riderId) {
         try {
           const provider = order.providerId ? await storage.getServiceProvider(order.providerId) : null;
           const providerName = provider?.businessName || 'Street Food Vendor';
@@ -3559,7 +3560,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastOrderUpdate({ orderId, status, orderType: 'restaurant', userId: (order as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      if (status === 'preparing') {
+      // Skipped when the admin has already assigned a rider to this order.
+      if (status === 'preparing' && !(order as any)?.riderId) {
         try {
           const provider = await storage.getServiceProvider(providerId);
           const providerName = provider?.businessName || 'Restaurant';
@@ -3637,7 +3639,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcastOrderUpdate({ orderId, status, orderType: 'grocery', userId: (order as any)?.userId });
 
       // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      if (status === 'preparing') {
+      // Skipped when the admin has already assigned a rider to this order.
+      if (status === 'preparing' && !(order as any)?.riderId) {
         try {
           const provider = await storage.getServiceProvider(providerId);
           const providerName = provider?.businessName || 'Store';
@@ -4164,11 +4167,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /api/admin/orders — All orders (merged)
-  // NOTE: We select specific columns to avoid querying columns (like rider_id)
-  // that exist in the Drizzle schema but haven't been migrated to the DB yet.
+  // Selects specific columns (plus joined customer / provider / rider details) to keep the payload small.
   app.get("/api/admin/orders", isAdmin, async (_req: AuthRequest, res: Response) => {
     try {
       const providerUsers = aliasedTable(users, 'provider_users');
+      const riderUsers = aliasedTable(users, 'rider_users');
       const [gOrders, sfOrders, rOrders] = await Promise.all([
         db.select({
           id: groceryOrders.id,
@@ -4185,11 +4188,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: users.phone,
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
+          riderId: groceryOrders.riderId,
+          riderName: riderUsers.username,
+          riderPhone: riderUsers.phone,
         })
         .from(groceryOrders)
         .leftJoin(users, eq(groceryOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(groceryOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .leftJoin(riderUsers, eq(groceryOrders.riderId, riderUsers.id))
         .where(ne(groceryOrders.status, 'payment_pending'))
         .orderBy(desc(groceryOrders.createdAt)).limit(100),
         
@@ -4208,11 +4215,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: users.phone,
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
+          riderId: streetFoodOrders.riderId,
+          riderName: riderUsers.username,
+          riderPhone: riderUsers.phone,
         })
         .from(streetFoodOrders)
         .leftJoin(users, eq(streetFoodOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(streetFoodOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .leftJoin(riderUsers, eq(streetFoodOrders.riderId, riderUsers.id))
         .where(ne(streetFoodOrders.status, 'payment_pending'))
         .orderBy(desc(streetFoodOrders.createdAt)).limit(100),
         
@@ -4231,11 +4242,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: users.phone,
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
+          riderId: restaurantOrders.riderId,
+          riderName: riderUsers.username,
+          riderPhone: riderUsers.phone,
         })
         .from(restaurantOrders)
         .leftJoin(users, eq(restaurantOrders.userId, users.id))
         .leftJoin(serviceProviders, eq(restaurantOrders.providerId, serviceProviders.id))
         .leftJoin(providerUsers, eq(serviceProviders.userId, providerUsers.id))
+        .leftJoin(riderUsers, eq(restaurantOrders.riderId, riderUsers.id))
         .where(ne(restaurantOrders.status, 'payment_pending'))
         .orderBy(desc(restaurantOrders.createdAt)).limit(100),
       ]);
@@ -4283,6 +4298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.total,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: gProductMap.get(i.productId)?.name || i.name || 'Unknown Item',
@@ -4295,6 +4311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: sfProductMap.get(i.productId || i.itemId)?.name || i.name || 'Unknown Item',
@@ -4307,6 +4324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: rProductMap.get(i.menuItemId)?.name || i.name || 'Unknown Item',
@@ -4449,7 +4467,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Admin Status] Order ${id} (${type}) status updated to '${status}' by admin.`);
 
       // --- RIDER RING: Notify online riders when admin sets status to 'preparing' ---
-      if (status === 'preparing') {
+      // Skipped when the admin has already assigned a rider to this order.
+      if (status === 'preparing' && !updatedOrder.riderId) {
         try {
           let providerName = 'Provider';
           let providerAddress = 'Check App';
@@ -4498,6 +4517,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Admin update order status error:", error);
       res.status(500).json({ message: error.message || "Error updating order status" });
+    }
+  });
+
+  // GET /api/admin/riders — All delivery partners, for the admin's "Assign Rider" picker
+  app.get("/api/admin/riders", isAdmin, async (_req: AuthRequest, res: Response) => {
+    try {
+      const partners = await db.query.deliveryPartners.findMany({ with: { user: true } });
+
+      // How many undelivered orders each rider is currently carrying
+      const loads = await Promise.all(
+        [groceryOrders, streetFoodOrders, restaurantOrders].map(t =>
+          db.select({ riderId: t.riderId, n: count() })
+            .from(t)
+            .where(and(isNotNull(t.riderId), sql`coalesce(${t.status}, '') not in ('delivered','cancelled','declined','completed')`))
+            .groupBy(t.riderId)
+        )
+      );
+      const activeCount = new Map<string, number>();
+      for (const rows of loads) {
+        for (const r of rows) if (r.riderId) activeCount.set(r.riderId, (activeCount.get(r.riderId) || 0) + Number(r.n));
+      }
+
+      const result = partners
+        .filter(p => p.user)
+        .map(p => ({
+          userId: p.userId,
+          partnerId: p.id,
+          username: p.user?.username || 'Rider',
+          phone: p.user?.phone || null,
+          vehicleType: p.vehicleType,
+          vehicleNumber: p.vehicleNumber,
+          profileImageUrl: p.profileImageUrl,
+          isOnline: !!p.isOnline,
+          isActive: p.isActive !== false,
+          totalDeliveries: p.totalDeliveries || 0,
+          rating: p.rating,
+          activeOrders: activeCount.get(p.userId) || 0,
+        }))
+        // Online first, then least busy
+        .sort((a, b) => Number(b.isOnline) - Number(a.isOnline) || a.activeOrders - b.activeOrders);
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Admin riders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching riders" });
+    }
+  });
+
+  // PATCH /api/admin/orders/:type/:id/assign-rider — Admin assigns, reassigns or unassigns a rider.
+  // Body: { riderId: <rider's user id> } to assign, { riderId: null } to unassign.
+  app.patch("/api/admin/orders/:type/:id/assign-rider", isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, id } = req.params;
+      const riderId: string | null = req.body?.riderId || null;
+
+      if (!isCommerceOrderType(type)) {
+        return res.status(400).json({ message: "Invalid order type. Must be grocery, street_food, or restaurant." });
+      }
+      const order: any = await getCommerceOrder(type, id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found." });
+      }
+      if (['delivered', 'cancelled', 'declined', 'completed', 'payment_pending'].includes(order.status || '')) {
+        return res.status(400).json({ message: `Can't change the rider of a ${String(order.status).replace(/_/g, ' ')} order.` });
+      }
+
+      let rider: any;
+      if (riderId) {
+        rider = await db.query.deliveryPartners.findFirst({
+          where: eq(deliveryPartners.userId, riderId),
+          with: { user: true },
+        });
+        if (!rider) {
+          return res.status(404).json({ message: "Rider not found." });
+        }
+        if (rider.isActive === false) {
+          return res.status(400).json({ message: "This rider account is deactivated." });
+        }
+      } else if (order.status === 'out_for_delivery') {
+        return res.status(400).json({ message: "The order is already picked up. Reassign it to another rider instead of removing the rider." });
+      }
+
+      // Status: a ready order becomes "assigned" so the rider can head to pickup straight away.
+      // Kitchen statuses (pending/accepted/preparing) and out_for_delivery are left as they are.
+      // Removing the rider before pickup puts a ready order back into the open pool.
+      let status: string = order.status;
+      if (riderId && status === 'ready_for_pickup') status = 'assigned';
+      if (!riderId && ['assigned', 'arrived_at_pickup'].includes(status)) status = 'ready_for_pickup';
+
+      const table = commerceOrderTables[type];
+      const [updatedOrder] = await db
+        .update(table)
+        .set({ riderId, status, riderAcceptedAt: riderId ? new Date() : null } as any)
+        .where(eq(table.id, id))
+        .returning();
+
+      const previousRiderId: string | null = order.riderId || null;
+      console.log(`[Admin Rider] Order ${id} (${type}) rider ${previousRiderId || 'none'} -> ${riderId || 'none'} by admin.`);
+
+      broadcastOrderUpdate({ orderId: id, status, orderType: type, riderId: riderId || undefined, userId: (updatedOrder as any)?.userId });
+
+      // Ring the newly assigned rider
+      if (rider && riderId !== previousRiderId) {
+        try {
+          const provider = order.providerId ? await storage.getServiceProvider(order.providerId) : null;
+          const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
+          const amount = String(order.totalAmount || order.total || '0');
+          const dropAddress = displayDeliveryAddress(order.deliveryAddress) || 'Check App';
+          const tokens: string[] = [];
+          if (Array.isArray(rider.user?.fcmTokens)) tokens.push(...rider.user.fcmTokens);
+          else if (rider.user?.fcmToken) tokens.push(rider.user.fcmToken);
+
+          for (const token of Array.from(new Set(tokens))) {
+            await sendPushNotification(token, {
+              type: 'ORDER_REQUEST',
+              title: `${orderLabel} Delivery assigned to you!`,
+              body: `${provider?.businessName || 'Pickup'} → ${dropAddress.slice(0, 40)} • ₹${amount}`,
+              data: {
+                orderId: id,
+                orderType: type,
+                customerName: 'Customer',
+                amount,
+                itemsSummary: 'Assigned by admin',
+                pickupAddress: provider?.address || provider?.businessName || 'Check App',
+                dropAddress,
+                navigateTo: '/delivery-partner/dashboard',
+              },
+            });
+          }
+          console.log(`[Admin Rider] Rang ${rider.user?.username || riderId} on ${tokens.length} device(s)`);
+        } catch (ringErr: any) {
+          console.error('[Admin Rider Ring Error]', ringErr?.message || ringErr);
+        }
+      }
+
+      // Let the previous rider know the order was taken off them
+      if (previousRiderId && previousRiderId !== riderId) {
+        try {
+          const prev = await storage.getUser(previousRiderId);
+          const tokens: string[] = [];
+          if (Array.isArray(prev?.fcmTokens)) tokens.push(...(prev!.fcmTokens as string[]));
+          else if (prev?.fcmToken) tokens.push(prev.fcmToken);
+          for (const token of Array.from(new Set(tokens))) {
+            await sendPushNotification(token, {
+              type: 'ORDER_UPDATE',
+              title: 'Order reassigned',
+              body: `Order #${id.slice(0, 8)} has been removed from your deliveries by admin.`,
+              data: { orderId: id, orderType: type, navigateTo: '/delivery-partner/dashboard' },
+            });
+          }
+        } catch (e: any) {
+          console.error('[Admin Rider Unassign Notify Error]', e?.message || e);
+        }
+      }
+
+      res.json({
+        message: rider ? `Order assigned to ${rider.user?.username || 'rider'}.` : "Rider removed from order.",
+        order: updatedOrder,
+      });
+    } catch (error: any) {
+      console.error("Admin assign rider error:", error);
+      res.status(500).json({ message: error.message || "Error assigning rider" });
     }
   });
 

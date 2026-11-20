@@ -68,6 +68,7 @@ import {
     Eye,
     EyeOff,
     Smartphone,
+    Bike,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -120,7 +121,8 @@ interface Order {
     deliveryAddress: string;
     createdAt: string | null;
     user?: { username: string; phone: string | null };
-    provider?: { businessName: string };
+    provider?: { businessName: string; phone?: string | null };
+    rider?: { id: string; username: string; phone: string | null } | null;
     items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
     paymentMethod?: string | null;
     deliveryMode?: string | null;
@@ -304,6 +306,9 @@ export default function AdminDashboard() {
     // Job Assignment State
     const [assignBookingId, setAssignBookingId] = useState<string | null>(null);
     const [assignServiceType, setAssignServiceType] = useState<string>("");
+
+    // Rider Assignment State (order whose rider is being picked)
+    const [assignRiderOrder, setAssignRiderOrder] = useState<Order | null>(null);
 
     // Auth guard
     useEffect(() => {
@@ -539,6 +544,35 @@ export default function AdminDashboard() {
             toast({
                 title: "Error",
                 description: error.response?.data?.message || "Failed to assign provider.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    // --- RIDER ASSIGNMENT: Riders list for the picker dialog ---
+    const { data: riders, isLoading: isLoadingRiders } = useQuery<any[]>({
+        queryKey: ["/api/admin/riders"],
+        queryFn: () => api.get("/admin/riders").then(r => r.data),
+        enabled: !!assignRiderOrder,
+        refetchInterval: assignRiderOrder ? 15000 : false,
+    });
+
+    // --- RIDER ASSIGNMENT: Assign / reassign / remove rider on an order ---
+    const assignRiderMutation = useMutation({
+        mutationFn: async ({ type, id, riderId }: { type: string; id: string; riderId: string | null }) => {
+            const res = await api.patch(`/admin/orders/${type}/${id}/assign-rider`, { riderId });
+            return res.data;
+        },
+        onSuccess: (data: any) => {
+            toast({ title: "🛵 Rider Updated", description: data.message || "Rider assignment saved." });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/riders"] });
+            setAssignRiderOrder(null);
+        },
+        onError: (error: any) => {
+            toast({
+                title: "Error",
+                description: error.response?.data?.message || "Failed to assign rider.",
                 variant: "destructive",
             });
         },
@@ -1116,6 +1150,16 @@ export default function AdminDashboard() {
                                                         PAID Online
                                                     </span>
                                                 )}
+                                                {/* Rider Badge */}
+                                                {o.rider ? (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold inline-flex items-center gap-1">
+                                                        <Bike className="h-3 w-3" /> {o.rider.username}
+                                                    </span>
+                                                ) : o.status && !['cancelled', 'delivered', 'completed', 'declined'].includes(o.status) ? (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/15 text-red-300 border border-red-500/30 font-bold inline-flex items-center gap-1">
+                                                        <Bike className="h-3 w-3" /> No rider
+                                                    </span>
+                                                ) : null}
                                                 {/* Delivery Time Slot Badge */}
                                                 {o.deliveryMode === 'scheduled' && o.scheduledDeliveryTime ? (
                                                     <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
@@ -1309,6 +1353,52 @@ export default function AdminDashboard() {
                                                 ) : null;
                                             })()}
 
+                                            {/* ─── Delivery Rider (admin assigns) ─── */}
+                                            {o.status && !['cancelled', 'delivered', 'completed', 'declined'].includes(o.status) && (
+                                                <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3 flex-wrap">
+                                                    <div className="flex items-center gap-2 text-xs min-w-0">
+                                                        <Bike className="h-4 w-4 text-sky-400 shrink-0" />
+                                                        {o.rider ? (
+                                                            <span className="text-gray-300 flex items-center gap-2 flex-wrap">
+                                                                Rider: <span className="font-semibold text-gray-100">{o.rider.username}</span>
+                                                                {o.rider.phone && (
+                                                                    <a
+                                                                        href={`tel:${o.rider.phone}`}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25"
+                                                                    >
+                                                                        <Phone className="h-3 w-3" />{o.rider.phone}
+                                                                    </a>
+                                                                )}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400">No rider yet: pick one, or let online riders claim it when it's ready.</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {o.rider && o.status !== 'out_for_delivery' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-red-400 hover:text-red-300 hover:bg-red-500/15 border border-red-500/30 rounded-lg px-3 py-1.5 h-auto text-xs font-semibold"
+                                                                disabled={assignRiderMutation.isPending}
+                                                                onClick={() => assignRiderMutation.mutate({ type: o.orderType, id: o.id, riderId: null })}
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            size="sm"
+                                                            className="bg-sky-600 hover:bg-sky-700 text-white rounded-lg h-8 text-xs font-semibold gap-1.5"
+                                                            onClick={() => setAssignRiderOrder(o)}
+                                                        >
+                                                            <UserPlus className="h-3.5 w-3.5" />
+                                                            {o.rider ? 'Change Rider' : 'Assign Rider'}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* ─── Print Bill (Bluetooth printer) ─── */}
                                             {o.status !== 'cancelled' && (
                                                 <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3 flex-wrap">
@@ -1357,6 +1447,88 @@ export default function AdminDashboard() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* ═══ ASSIGN RIDER DIALOG ═══ */}
+                        <Dialog open={!!assignRiderOrder} onOpenChange={(open) => { if (!open) setAssignRiderOrder(null); }}>
+                            <DialogContent className="bg-[#111827] border-white/10 text-white sm:max-w-lg max-h-[80vh] overflow-y-auto">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <Bike className="h-5 w-5 text-sky-400" />
+                                        {assignRiderOrder?.rider ? 'Change Delivery Rider' : 'Assign Delivery Rider'}
+                                    </DialogTitle>
+                                    <p className="text-sm text-gray-400 mt-1">
+                                        Order #{assignRiderOrder?.id.slice(0, 10)} · {assignRiderOrder?.orderType.replace('_', ' ')}
+                                        {assignRiderOrder?.provider?.businessName && assignRiderOrder.provider.businessName !== 'Unknown' ? ` from ${assignRiderOrder.provider.businessName}` : ''}.
+                                        {' '}The rider's phone will ring.
+                                    </p>
+                                </DialogHeader>
+                                <div className="space-y-3 mt-4">
+                                    {isLoadingRiders ? (
+                                        <div className="flex justify-center py-8">
+                                            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                                        </div>
+                                    ) : !Array.isArray(riders) || riders.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500">No delivery riders registered yet.</p>
+                                            <p className="text-xs text-gray-600 mt-1">Riders sign up through delivery partner onboarding.</p>
+                                        </div>
+                                    ) : (
+                                        riders.map((r: any) => {
+                                            const isCurrent = assignRiderOrder?.rider?.id === r.userId;
+                                            return (
+                                                <div
+                                                    key={r.userId}
+                                                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
+                                                        isCurrent ? 'border-sky-500/40 bg-sky-500/10' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05]'
+                                                    } ${!r.isActive ? 'opacity-50' : ''}`}
+                                                >
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="font-medium text-sm text-gray-100">{r.username}</span>
+                                                            {r.isOnline ? (
+                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">ONLINE</span>
+                                                            ) : (
+                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400 border border-gray-500/30 font-bold">OFFLINE</span>
+                                                            )}
+                                                            {!r.isActive && (
+                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 font-bold">DEACTIVATED</span>
+                                                            )}
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
+                                                                r.activeOrders > 0 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/10'
+                                                            }`}>
+                                                                {r.activeOrders > 0 ? `${r.activeOrders} active` : 'Free'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500 flex-wrap">
+                                                            {r.vehicleType && <span className="capitalize">{r.vehicleType}{r.vehicleNumber ? ` · ${r.vehicleNumber}` : ''}</span>}
+                                                            <span>{r.totalDeliveries} deliveries</span>
+                                                            {r.phone && (
+                                                                <a href={`tel:${r.phone}`} className="text-green-400 hover:text-green-300">
+                                                                    <Phone className="h-3 w-3 inline mr-0.5" />{r.phone}
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => {
+                                                            if (assignRiderOrder) {
+                                                                assignRiderMutation.mutate({ type: assignRiderOrder.orderType, id: assignRiderOrder.id, riderId: r.userId });
+                                                            }
+                                                        }}
+                                                        disabled={assignRiderMutation.isPending || isCurrent || !r.isActive}
+                                                        className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white border-0 rounded-xl px-4 py-2 h-auto text-xs font-bold shadow-lg shadow-sky-500/20 shrink-0"
+                                                    >
+                                                        {assignRiderMutation.isPending ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : isCurrent ? 'Assigned' : 'Assign'}
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 )}
 
