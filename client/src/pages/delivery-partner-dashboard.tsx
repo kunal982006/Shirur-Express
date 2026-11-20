@@ -433,7 +433,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 </Button>
                             )}
 
-                            {order.status === 'assigned' && (
+                            {/* 'ready_for_pickup' with a rider set = admin assigned it before the kitchen finished */}
+                            {['assigned', 'ready_for_pickup'].includes(order.status || '') && (
                                 <Button
                                     className="flex-1"
                                     onClick={onArrived}
@@ -476,7 +477,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 </div>
                             )}
 
-                            {['pending', 'accepted', 'preparing', 'ready_for_pickup'].includes(order.status || '') && (
+                            {['pending', 'accepted', 'preparing'].includes(order.status || '') && (
                                 <Button variant="secondary" disabled className="flex-1">
                                     Waiting for Restaurant...
                                 </Button>
