@@ -5371,7 +5371,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })),
         }];
       });
-      res.json({ veg: build(LOCAL_FAVOURITES.veg), nonVeg: build(LOCAL_FAVOURITES["non-veg"]) });
+      // Cheapest first; a Half / Full dish counts at its half price. Equal prices keep list order.
+      const cheapestFirst = (list: any[]) => list.sort((a, b) => Number(a.price) - Number(b.price));
+      res.json({
+        veg: cheapestFirst(build(LOCAL_FAVOURITES.veg)),
+        nonVeg: cheapestFirst(build(LOCAL_FAVOURITES["non-veg"])),
+      });
     } catch (error: any) {
       console.error("Get local favourites error:", error);
       res.status(500).json({ message: error.message || "Error fetching local favourites" });
