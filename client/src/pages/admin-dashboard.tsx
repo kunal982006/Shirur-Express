@@ -703,18 +703,20 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-[#0a0e1a] text-white">
 
             {/* ─── Top Nav ─────────────────────────────────────── */}
-            <header className="sticky top-0 z-50 bg-[#0d1220]/90 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            {/* Header and tabs stick together, below the iPhone status bar / notch. */}
+            <div className="sticky top-0 z-50 bg-[#0d1220]/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+            <header className="border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <div className="w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                             <Crown className="h-5 w-5 text-white" />
                         </div>
-                        <div>
-                            <h1 className="text-lg font-bold tracking-tight">Shirur Express</h1>
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">{user?.username === "streetfood_admin" ? "Street Food Vendor Manager" : "Admin Console"}</p>
+                        <div className="min-w-0">
+                            <h1 className="truncate text-lg font-bold tracking-tight">Shirur Express</h1>
+                            <p className="truncate text-[10px] text-gray-500 uppercase tracking-widest">{user?.username === "streetfood_admin" ? "Street Food Vendor Manager" : "Admin Console"}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                             <Signal className="h-3 w-3 text-emerald-400" />
                             <span className="text-xs text-emerald-400 font-medium">Live</span>
@@ -732,7 +734,7 @@ export default function AdminDashboard() {
             </header>
 
             {/* ─── Tab Nav ─────────────────────────────────────── */}
-            <nav className="sticky top-[57px] z-40 bg-[#0d1220]/90 backdrop-blur-xl border-b border-white/5 overflow-x-auto">
+            <nav className="border-b border-white/5 overflow-x-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1">
                     {tabs.map((t) => (
                         <button
@@ -749,6 +751,7 @@ export default function AdminDashboard() {
                     ))}
                 </div>
             </nav>
+            </div>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 

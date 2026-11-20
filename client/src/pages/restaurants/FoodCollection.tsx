@@ -85,7 +85,7 @@ export default function FoodCollection() {
 
     return (
         <div className="min-h-screen bg-background pb-28">
-            <div className="sticky top-0 z-40 border-b bg-background shadow-sm">
+            <div className="sticky top-0 z-40 border-b bg-background shadow-sm pt-[env(safe-area-inset-top)]">
                 <div className="mx-auto flex h-16 max-w-4xl items-center gap-3 px-4">
                     <Link href="/restaurants">
                         <Button variant="ghost" size="icon" aria-label="Back to food">

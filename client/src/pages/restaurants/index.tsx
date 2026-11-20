@@ -28,7 +28,7 @@ export default function RestaurantsIndex() {
         <div className="min-h-screen bg-background pb-20">
 
             {/* Sticky Search Header */}
-            <div className="sticky top-0 z-40 bg-background shadow-sm">
+            <div className="sticky top-0 z-40 bg-background shadow-sm pt-[env(safe-area-inset-top)]">
                 <div className="p-4 flex flex-col gap-3">
                     <AddressChip className="max-w-full" />
                     {/* Search Bar */}

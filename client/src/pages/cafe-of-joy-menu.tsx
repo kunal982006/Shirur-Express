@@ -198,7 +198,7 @@ export default function CafeOfJoyMenu() {
                 <div className="bg-gradient-to-r from-amber-700 via-amber-600 to-orange-600 text-white py-2 px-4 text-center text-xs font-medium tracking-wider">
                     POWERED BY SHIRUR EXPRESS
                 </div>
-                <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b shadow-sm">
+                <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b shadow-sm pt-[env(safe-area-inset-top)]">
                     <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
                         <button onClick={() => setShowCheckout(false)} className="p-1">
                             <ArrowLeft className="h-5 w-5" />

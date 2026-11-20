@@ -234,7 +234,7 @@ export default function RestaurantDetail() {
         <div className="min-h-screen bg-background pb-20">
             {/* Closed Restaurant Banner */}
             {isRestaurantClosed && (
-                <div className="sticky top-0 z-50 bg-red-600 text-white py-3 px-4 text-center shadow-lg">
+                <div className="sticky top-0 z-50 bg-red-600 text-white pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] px-4 text-center shadow-lg">
                     <div className="flex items-center justify-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-white animate-pulse" />
                         <span className="font-bold">🔴 This restaurant is currently CLOSED</span>
@@ -244,7 +244,7 @@ export default function RestaurantDetail() {
             )}
 
             {/* Sticky Header */}
-            <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
+            <div className="sticky top-0 z-40 bg-background border-b shadow-sm pt-[env(safe-area-inset-top)]">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-4">
                     <Link href="/restaurants">
                         <Button variant="ghost" size="icon">
@@ -337,7 +337,7 @@ export default function RestaurantDetail() {
 
                     <TabsContent value="order" className="m-0 min-h-[60vh]">
                         {/* Sticky Search & Category Navigation Bar (Always Accessible on Mobile) */}
-                        <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-b shadow-sm">
+                        <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 bg-background/95 backdrop-blur-md border-b shadow-sm">
                             {/* Search in Menu + Categories Filter Button */}
                             <div className="px-4 pt-3 pb-2 flex items-center gap-2">
                                 <div className="relative flex-1">
@@ -482,7 +482,7 @@ export default function RestaurantDetail() {
 
                         <div className="flex relative">
                             {/* Sidebar Categories (Desktop) */}
-                            <div className="w-1/4 hidden md:block sticky top-36 h-[calc(100vh-10rem)] overflow-y-auto border-r p-2 space-y-1">
+                            <div className="w-1/4 hidden md:block sticky top-[calc(9rem+env(safe-area-inset-top))] h-[calc(100vh-10rem)] overflow-y-auto border-r p-2 space-y-1">
                                 <p className="px-3 py-2 text-xs font-extrabold uppercase text-muted-foreground tracking-wider">
                                     Categories ({sortedCategoryEntries.length})
                                 </p>
