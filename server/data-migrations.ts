@@ -76,7 +76,8 @@ async function updateRudraMenu() {
     const kept = new Set<string>();
 
     for (const item of RUDRA_MENU) {
-      const existing = item.from ? byName.get(item.from.toLowerCase()) : undefined;
+      // Match the current item by its card name first (a menu already updated), else by its old name.
+      const existing = byName.get(item.name.toLowerCase()) ?? (item.from ? byName.get(item.from.toLowerCase()) : undefined);
       const values = {
         name: item.name,
         category: item.category,
@@ -166,6 +167,8 @@ async function undoCafeOfJoyCardChanges() {
 
 const MIGRATIONS: Migration[] = [
   { name: "2026-11-rudra-new-menu-card-plus-15pct", run: updateRudraMenu },
+  // Applied again (Nov 21): the live menu didn't match the card. Makes it exactly the card +15%.
+  { name: "2026-11-21-rudra-menu-card-reapply", run: updateRudraMenu },
   { name: "2026-11-cafe-of-joy-undo-card-changes", run: undoCafeOfJoyCardChanges },
 ];
 
