@@ -270,6 +270,49 @@ setOrderStateResolver(async (orderType, orderId) => {
 let servicesEnabled = true;
 let groceryEnabled = false; // Grocery service temporarily closed
 
+// ===== FOOD PAUSE (technical update) =====
+// Food orders (street food + restaurants) are paused until this time and reopen on their own.
+// Every order attempt during the pause is logged here and sent to the admin as a push alert.
+const FOOD_PAUSE_UNTIL = new Date("2026-11-21T15:00:00+05:30");
+const FOOD_PAUSE_MESSAGE =
+  "Food ordering is paused until 3:00 PM today for a technical update. Please order again after 3 PM. Sorry for the inconvenience!";
+const isFoodPaused = () => Date.now() < FOOD_PAUSE_UNTIL.getTime();
+
+type FoodPauseAttempt = {
+  at: string;
+  orderType: string;
+  userId: string;
+  name: string;
+  phone: string;
+  amount: string;
+  items: string;
+};
+const foodPauseAttempts: FoodPauseAttempt[] = [];
+
+async function recordFoodPauseAttempt(userId: string, orderType: string, body: any) {
+  const user = await storage.getUser(userId).catch(() => undefined);
+  const items = Array.isArray(body?.items)
+    ? body.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", ")
+    : "";
+  const attempt: FoodPauseAttempt = {
+    at: new Date().toISOString(),
+    orderType,
+    userId,
+    name: (user as any)?.fullName || (user as any)?.name || user?.username || "Unknown",
+    phone: (user as any)?.phone || "N/A",
+    amount: String(body?.totalAmount ?? body?.total ?? ""),
+    items,
+  };
+  foodPauseAttempts.unshift(attempt);
+  if (foodPauseAttempts.length > 500) foodPauseAttempts.length = 500;
+  console.log(`[Food Pause] Blocked ${orderType} order attempt by ${attempt.name} (${attempt.phone}) ₹${attempt.amount}`);
+  void notifyAdmin({
+    title: "Order attempt while food is paused",
+    body: `${attempt.name} • 📞 ${attempt.phone} • ₹${attempt.amount || "?"} • ${items || orderType}`,
+    data: { orderType, type: "food_pause_attempt" },
+  });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
@@ -403,6 +446,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
       }
       const userId = req.userId!;
+      if (isFoodPaused()) {
+        await recordFoodPauseAttempt(userId, "street_food", req.body);
+        return res.status(503).json({ code: "FOOD_PAUSED", message: FOOD_PAUSE_MESSAGE, until: FOOD_PAUSE_UNTIL.toISOString() });
+      }
       // Validate body
       const orderData = insertStreetFoodOrderSchema.parse(req.body);
 
@@ -2919,6 +2966,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
       }
       const userId = req.userId!;
+      if (isFoodPaused()) {
+        await recordFoodPauseAttempt(userId, "restaurant", req.body);
+        return res.status(503).json({ code: "FOOD_PAUSED", message: FOOD_PAUSE_MESSAGE, until: FOOD_PAUSE_UNTIL.toISOString() });
+      }
       const orderData = insertRestaurantOrderSchema.parse(req.body);
 
       // Assign a static rider ID for MVP (e.g., "rider-1") if needed, or leave null
@@ -6300,7 +6351,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public: Check if services and grocery are open (for client banners/modals)
   app.get("/api/platform-status", (_req: Request, res: Response) => {
-    res.json({ servicesEnabled, groceryEnabled });
+    res.json({
+      servicesEnabled,
+      groceryEnabled,
+      foodPause: { active: isFoodPaused(), until: FOOD_PAUSE_UNTIL.toISOString(), message: FOOD_PAUSE_MESSAGE },
+    });
+  });
+
+  // Admin: who tried to order food while it was paused
+  app.get("/api/admin/food-pause-attempts", isAdmin, (_req: AuthRequest, res: Response) => {
+    res.json({ active: isFoodPaused(), until: FOOD_PAUSE_UNTIL.toISOString(), attempts: foodPauseAttempts });
   });
 
   // Admin: Get platform status

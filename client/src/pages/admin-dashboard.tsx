@@ -622,6 +622,12 @@ export default function AdminDashboard() {
         refetchInterval: 15000,
     });
 
+    const { data: foodPause } = useQuery<{ active: boolean; until: string; attempts: { at: string; orderType: string; name: string; phone: string; amount: string; items: string }[] }>({
+        queryKey: ["/api/admin/food-pause-attempts"],
+        queryFn: () => api.get("/admin/food-pause-attempts").then(r => r.data),
+        refetchInterval: 10000,
+    });
+
     const togglePlatformMutation = useMutation({
         mutationFn: (enabled: boolean) =>
             api.put("/admin/platform-status", { servicesEnabled: enabled }).then(r => r.data),
@@ -800,6 +806,39 @@ export default function AdminDashboard() {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+                {/* ═══ FOOD PAUSE: order attempts while food is paused ═══ */}
+                {foodPause && (foodPause.active || foodPause.attempts.length > 0) && (
+                    <div className="rounded-2xl border border-amber-500/40 bg-amber-900/20 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <h3 className="text-base font-bold text-amber-300">
+                                {foodPause.active ? "⏸️ Food ordering paused till 3:00 PM (technical update)" : "✅ Food pause is over: orders are open again"}
+                            </h3>
+                            <span className="text-sm font-semibold text-amber-200">
+                                {foodPause.attempts.length} order attempt{foodPause.attempts.length === 1 ? "" : "s"} blocked
+                            </span>
+                        </div>
+                        {foodPause.attempts.length === 0 ? (
+                            <p className="text-sm text-gray-400">No one has tried to order yet.</p>
+                        ) : (
+                            <div className="space-y-2 max-h-72 overflow-y-auto">
+                                {foodPause.attempts.map((a, i) => (
+                                    <div key={i} className="rounded-xl bg-black/30 px-3 py-2 text-sm text-gray-200">
+                                        <div className="flex flex-wrap justify-between gap-2">
+                                            <span className="font-semibold">{a.name} • <a href={`tel:${a.phone}`} className="text-blue-400">{a.phone}</a></span>
+                                            <span className="text-gray-400">
+                                                {new Date(a.at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" })}
+                                                {" • "}{a.orderType === "restaurant" ? "Restaurant" : "Street food"}
+                                                {a.amount ? ` • ₹${a.amount}` : ""}
+                                            </span>
+                                        </div>
+                                        {a.items && <div className="text-gray-400 mt-0.5">{a.items}</div>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* ═══ OVERVIEW TAB ═══ */}
                 {activeTab === "overview" && (

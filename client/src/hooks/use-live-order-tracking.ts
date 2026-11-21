@@ -18,6 +18,7 @@ export function useLiveOrderTracking(activeOrderId?: string) {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/food-pause-attempts"] });
     };
 
     const connect = () => {

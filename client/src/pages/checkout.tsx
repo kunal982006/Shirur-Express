@@ -22,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CurrentLocationPrompt } from "@/components/address/CurrentLocationPrompt";
 import { withDeliveryPin } from "@shared/delivery-address";
 import { trackEvent, FacebookStandardEvent } from "@/lib/facebook-pixel";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 // --- IMPORTS KHATAM ---
 
 // Delivery Address ke liye Schema
@@ -105,12 +106,15 @@ export default function Checkout() {
   });
 
   // --- PLATFORM STATUS CHECK ---
-  const { data: platformStatus } = useQuery<{ servicesEnabled: boolean }>({
+  const { data: platformStatus } = useQuery<{ servicesEnabled: boolean; foodPause?: { active: boolean; message: string } }>({
     queryKey: ['/api/platform-status'],
     queryFn: () => api.get('/platform-status').then(r => r.data),
     refetchInterval: 30000,
   });
   const servicesClosed = platformStatus?.servicesEnabled === false;
+  const hasFoodItems = items.some(item => item.itemType === 'street_food' || item.itemType === 'restaurant');
+  const foodPaused = hasFoodItems && platformStatus?.foodPause?.active === true;
+  const [foodPauseMessage, setFoodPauseMessage] = useState<string | null>(null);
 
   // Calculate Distance when locations are available
   useEffect(() => {
@@ -495,6 +499,11 @@ export default function Checkout() {
 
     } catch (error: any) {
       console.error("Order placement error:", error);
+      if (error.response?.data?.code === "FOOD_PAUSED") {
+        setFoodPauseMessage(error.response.data.message);
+        setIsPlacingOrder(false);
+        return;
+      }
       const errorMessage = error.response?.data?.message || error.message || "Could not create order. Please try again.";
       toast({
         title: "Order Failed",
@@ -523,6 +532,34 @@ export default function Checkout() {
 
         <h1 className="text-2xl font-bold mb-3">Checkout</h1>
         <CurrentLocationPrompt />
+
+        {/* --- FOOD PAUSED (technical update) POPUP --- */}
+        <Dialog open={!!foodPauseMessage} onOpenChange={(open) => !open && setFoodPauseMessage(null)}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <div className="mx-auto w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-2">
+                <Clock className="h-6 w-6 text-amber-600" />
+              </div>
+              <DialogTitle className="text-center">Food Ordering Paused</DialogTitle>
+              <DialogDescription className="text-center">{foodPauseMessage}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button className="w-full" onClick={() => setFoodPauseMessage(null)}>OK, I'll order after 3 PM</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {foodPaused && (
+          <div className="mb-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700 p-3 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
+              <Clock className="h-6 w-6 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-amber-700 dark:text-amber-400">Food Ordering Paused till 3 PM</h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400/80">We are doing a technical update. Food orders will open again at 3:00 PM today.</p>
+            </div>
+          </div>
+        )}
 
         {/* --- SERVICES CLOSED BANNER --- */}
         {servicesClosed && (
