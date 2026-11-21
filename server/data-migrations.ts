@@ -156,9 +156,32 @@ async function updateCafeOfJoyMenu() {
   });
 }
 
+// Café of Joy: everything not on the new card (pav bhaji, pizza, pasta, Maggi, momos...) is taken
+// off the menu. Items are hidden, not deleted, so they keep their photos and can be switched back on.
+// Kept: the card's hot drinks and cold coffees, French (salted) fries, iced tea, milk shakes, juice,
+// lemon tea and coffee.
+const CAFE_OF_JOY_KEEP = /^(hot coffee|black coffee|haldi milk|normal cold coffee|thick cold coffee|cold coffee with crush|cold coffee with ice cream|salted fries|french fries|iced? tea|lemon tea|orange juice|coffee|espresso|americano|cappuccino|latte|mocha|caramel latte|milk ?shake|.+ shake)$/;
+
+async function hideCafeOfJoyOffCardItems() {
+  const [cafe] = await db.select().from(serviceProviders).where(ilike(serviceProviders.businessName, "%of joy%"));
+  if (!cafe) {
+    console.log("[data-migration] Café of Joy not found here, skipping");
+    return;
+  }
+  const items = await db.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, cafe.id));
+  const hidden: string[] = [];
+  for (const item of items) {
+    if (CAFE_OF_JOY_KEEP.test(item.name.trim().toLowerCase()) || item.isAvailable === false) continue;
+    await db.update(restaurantMenuItems).set({ isAvailable: false }).where(eq(restaurantMenuItems.id, item.id));
+    hidden.push(item.name);
+  }
+  console.log(`[data-migration] Café of Joy: hid ${hidden.length} items not on the card: ${hidden.join(", ")}`);
+}
+
 const MIGRATIONS: Migration[] = [
   { name: "2026-11-rudra-new-menu-card-plus-15pct", run: updateRudraMenu },
   { name: "2026-11-cafe-of-joy-menu-card-plus-15pct", run: updateCafeOfJoyMenu },
+  { name: "2026-11-cafe-of-joy-hide-off-card-items", run: hideCafeOfJoyOffCardItems },
 ];
 
 export async function runDataMigrations() {
