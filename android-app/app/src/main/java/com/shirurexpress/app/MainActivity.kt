@@ -586,6 +586,13 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         val data = intent.data
         if (data != null && data.host == "shirur-express.onrender.com") {
             loadUrl(data.toString())
+            return
+        }
+        // Tapped notification: FCM puts its data fields in the extras. Only in-app paths are followed.
+        val navigateTo = intent.getStringExtra("navigateTo")
+        if (navigateTo != null && navigateTo.startsWith("/") && !navigateTo.startsWith("//")) {
+            intent.removeExtra("navigateTo")
+            loadUrl(WEBSITE_URL + navigateTo)
         }
     }
 

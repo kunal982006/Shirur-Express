@@ -130,7 +130,8 @@ export async function sendPushNotification(fcmToken: string, payload: {
                 defaultSound: true,
                 defaultVibrateTimings: true,
                 visibility: 'public',
-                clickAction: 'OPEN_PROVIDER_DASHBOARD',
+                // Broadcasts open the app's main screen on tap, which then goes to data.navigateTo.
+                ...(payload.data?.type === 'ADMIN_BROADCAST' ? {} : { clickAction: 'OPEN_PROVIDER_DASHBOARD' }),
             };
         }
 

@@ -5182,6 +5182,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/broadcast", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { audience, title, message } = req.body;
+      // Page the app opens when the notification is tapped: an in-app path such as "/?open=shirur-ordering".
+      const navigateTo = typeof req.body.navigateTo === "string" && /^\/(?!\/)/.test(req.body.navigateTo) ? req.body.navigateTo : "/";
 
       if (!audience || !title || !message) {
         return res.status(400).json({ message: "audience, title, and message are required." });
@@ -5289,7 +5291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: 'ADMIN_BROADCAST',
               title: title,
               body: message,
-              navigateTo: '/',
+              navigateTo,
             }
           })
         )

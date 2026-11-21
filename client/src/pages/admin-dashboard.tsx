@@ -291,6 +291,7 @@ export default function AdminDashboard() {
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");
     const [broadcastMessage, setBroadcastMessage] = useState("");
+    const [broadcastOpens, setBroadcastOpens] = useState("/");
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     // Create Provider Form State
@@ -591,7 +592,7 @@ export default function AdminDashboard() {
     });
 
     const broadcastMutation = useMutation({
-        mutationFn: (data: { audience: string; title: string; message: string }) =>
+        mutationFn: (data: { audience: string; title: string; message: string; navigateTo?: string }) =>
             api.post("/admin/broadcast", data).then(r => r.data),
         onSuccess: (data: any) => {
             toast({
@@ -2374,6 +2375,29 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
+                                {/* Page opened on tap */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-300 mb-2 block">When tapped, open</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { path: "/", label: "Home" },
+                                            { path: "/?open=shirur-ordering", label: "What Shirur is Ordering 🔥" },
+                                        ].map((option) => (
+                                            <button
+                                                key={option.path}
+                                                type="button"
+                                                onClick={() => setBroadcastOpens(option.path)}
+                                                className={`px-4 py-3 rounded-xl border text-sm transition-all ${broadcastOpens === option.path
+                                                    ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                                                    : 'bg-white/[0.02] border-white/5 text-gray-400 hover:bg-white/[0.04]'
+                                                    }`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 {/* Preview */}
                                 {broadcastTitle && (
                                     <div className="rounded-xl bg-black/30 border border-white/5 p-4">
@@ -2397,6 +2421,7 @@ export default function AdminDashboard() {
                                         audience: broadcastAudience,
                                         title: broadcastTitle,
                                         message: broadcastMessage,
+                                        navigateTo: broadcastOpens,
                                     })}
                                     disabled={!broadcastTitle || !broadcastMessage || broadcastMutation.isPending}
                                     className={`w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!broadcastTitle || !broadcastMessage

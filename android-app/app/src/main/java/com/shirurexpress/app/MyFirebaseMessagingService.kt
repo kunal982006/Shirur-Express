@@ -50,7 +50,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             showIncomingOrderScreen(data)
         } else {
             // Regular notification
-            sendNotification(data["title"] ?: "New Message", data["body"] ?: "")
+            sendNotification(data["title"] ?: "New Message", data["body"] ?: "", data["navigateTo"])
         }
     }
 
@@ -121,12 +121,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.notify(0, notification)
     }
 
-    private fun sendNotification(title: String, messageBody: String) {
+    private fun sendNotification(title: String, messageBody: String, navigateTo: String? = null) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        if (navigateTo != null) intent.putExtra("navigateTo", navigateTo)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val channelId = getString(R.string.default_notification_channel_id)

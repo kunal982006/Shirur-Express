@@ -32,9 +32,21 @@ const DIETS: { key: Diet; label: string; active: string; idle: string; dot?: str
     { key: "non-veg", label: "Non-Veg", active: "bg-red-600 text-white", idle: "border border-red-200 bg-red-50 text-red-700", dot: "bg-red-600" },
 ];
 
+// Link that opens the Banner Insights view straight away, e.g. from a push notification.
+export const SHIRUR_ORDERING_LINK = "/?open=shirur-ordering";
+
 // Eye-catching entry point below the search bar. Opens the Banner Insights view.
 export function TrendingBanner() {
     const [open, setOpen] = useState(false);
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("open") !== "shirur-ordering") return;
+        setOpen(true);
+        // Drop the parameter so a reload or Back doesn't open it again.
+        params.delete("open");
+        const query = params.toString();
+        window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "") + window.location.hash);
+    }, []);
     return (
         <>
             <button
