@@ -109,79 +109,64 @@ async function updateRudraMenu() {
 }
 
 // ---------------------------------------------------------------------------
-// Café of Joy: new menu card (Nov 2026), prices +15%, rounded half up.
-// Only the items with ₹ prices on the card ("/-") are changed; nothing is removed.
-// The card's coffee list with $2.50 everywhere and the "$" lines are template text, not prices.
+// Café of Joy: undo the Nov 2026 menu-card changes (card prices +15%, Black Coffee added, items not
+// on the card hidden). The owner asked for the menu to stay as it was. Each part is undone only if
+// that change was applied on this database; a price the vendor has changed since is left alone.
 // ---------------------------------------------------------------------------
-const CAFE_OF_JOY_CARD: { name: string; category: string; card: number }[] = [
-  { category: "Hots", name: "Hot Coffee", card: 20 },
-  { category: "Hots", name: "Black Coffee", card: 20 },
-  { category: "Hots", name: "Haldi Milk", card: 25 },
-  { category: "Cold Beverges", name: "Normal Cold Coffee", card: 50 },
-  { category: "Cold Beverges", name: "Thick Cold Coffee", card: 60 },
-  { category: "Cold Beverges", name: "Cold Coffee with Crush", card: 70 },
-  { category: "Cold Beverges", name: "Cold Coffee with Ice Cream", card: 80 },
+const CAFE_OF_JOY_PRICE_CHANGES: { name: string; was: number; changedTo: number }[] = [
+  { name: "Hot Coffee", was: 20, changedTo: 23 },
+  { name: "Haldi Milk", was: 20, changedTo: 29 },
+  { name: "Normal Cold Coffee", was: 50, changedTo: 58 },
+  { name: "Thick Cold Coffee", was: 60, changedTo: 69 },
+  { name: "Cold Coffee with Crush", was: 70, changedTo: 81 },
+  { name: "Cold Coffee with Ice Cream", was: 80, changedTo: 92 },
 ];
+const CAFE_OF_JOY_KEPT = /^(hot coffee|black coffee|haldi milk|normal cold coffee|thick cold coffee|cold coffee with crush|cold coffee with ice cream|salted fries|french fries|iced? tea|lemon tea|orange juice|coffee|espresso|americano|cappuccino|latte|mocha|caramel latte|milk ?shake|.+ shake)$/;
 
-async function updateCafeOfJoyMenu() {
-  await db.transaction(async (tx) => {
-    const [cafe] = await tx.select().from(serviceProviders).where(ilike(serviceProviders.businessName, "%of joy%"));
-    if (!cafe) {
-      console.log("[data-migration] Café of Joy not found here, skipping menu update");
-      return;
-    }
-    const current = await tx.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, cafe.id));
-    const byName = new Map(current.map((i) => [i.name.trim().toLowerCase(), i]));
-    let updated = 0;
-    let added = 0;
-    for (const item of CAFE_OF_JOY_CARD) {
-      const price = String(Math.floor((item.card * 115 + 50) / 100)); // +15%, half up, integer maths
-      const existing = byName.get(item.name.toLowerCase());
-      if (existing) {
-        await tx.update(restaurantMenuItems).set({ price }).where(eq(restaurantMenuItems.id, existing.id));
-        updated++;
-      } else {
-        await tx.insert(restaurantMenuItems).values({
-          providerId: cafe.id,
-          name: item.name,
-          category: item.category,
-          price,
-          isVeg: true,
-          isAvailable: true,
-        });
-        added++;
-      }
-    }
-    console.log(`[data-migration] Café of Joy card: ${updated} updated, ${added} added`);
-  });
-}
+const wasApplied = async (name: string) =>
+  Boolean((await pool.query(`SELECT 1 FROM app_data_migrations WHERE name = $1`, [name])).rowCount);
 
-// Café of Joy: everything not on the new card (pav bhaji, pizza, pasta, Maggi, momos...) is taken
-// off the menu. Items are hidden, not deleted, so they keep their photos and can be switched back on.
-// Kept: the card's hot drinks and cold coffees, French (salted) fries, iced tea, milk shakes, juice,
-// lemon tea and coffee.
-const CAFE_OF_JOY_KEEP = /^(hot coffee|black coffee|haldi milk|normal cold coffee|thick cold coffee|cold coffee with crush|cold coffee with ice cream|salted fries|french fries|iced? tea|lemon tea|orange juice|coffee|espresso|americano|cappuccino|latte|mocha|caramel latte|milk ?shake|.+ shake)$/;
-
-async function hideCafeOfJoyOffCardItems() {
+async function undoCafeOfJoyCardChanges() {
   const [cafe] = await db.select().from(serviceProviders).where(ilike(serviceProviders.businessName, "%of joy%"));
-  if (!cafe) {
-    console.log("[data-migration] Café of Joy not found here, skipping");
+  if (!cafe) return;
+  const pricesChanged = await wasApplied("2026-11-cafe-of-joy-menu-card-plus-15pct");
+  const itemsHidden = await wasApplied("2026-11-cafe-of-joy-hide-off-card-items");
+  if (!pricesChanged && !itemsHidden) {
+    console.log("[data-migration] Café of Joy card changes were never applied here, nothing to undo");
     return;
   }
-  const items = await db.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, cafe.id));
-  const hidden: string[] = [];
-  for (const item of items) {
-    if (CAFE_OF_JOY_KEEP.test(item.name.trim().toLowerCase()) || item.isAvailable === false) continue;
-    await db.update(restaurantMenuItems).set({ isAvailable: false }).where(eq(restaurantMenuItems.id, item.id));
-    hidden.push(item.name);
-  }
-  console.log(`[data-migration] Café of Joy: hid ${hidden.length} items not on the card: ${hidden.join(", ")}`);
+  await db.transaction(async (tx) => {
+    const items = await tx.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, cafe.id));
+    let restored = 0;
+    let shown = 0;
+    if (pricesChanged) {
+      for (const change of CAFE_OF_JOY_PRICE_CHANGES) {
+        const item = items.find((i) => i.name.trim().toLowerCase() === change.name.toLowerCase());
+        if (item && Number(item.price) === change.changedTo) {
+          await tx.update(restaurantMenuItems).set({ price: String(change.was) }).where(eq(restaurantMenuItems.id, item.id));
+          restored++;
+        }
+      }
+      // Black Coffee was added by that change; past orders keep their own copy of the item.
+      for (const item of items.filter((i) => i.name.trim().toLowerCase() === "black coffee")) {
+        await tx.delete(restaurantMenuItems).where(eq(restaurantMenuItems.id, item.id));
+      }
+    }
+    if (itemsHidden) {
+      for (const item of items) {
+        if (item.isAvailable === false && !CAFE_OF_JOY_KEPT.test(item.name.trim().toLowerCase())) {
+          await tx.update(restaurantMenuItems).set({ isAvailable: true }).where(eq(restaurantMenuItems.id, item.id));
+          shown++;
+        }
+      }
+    }
+    console.log(`[data-migration] Café of Joy card changes undone: ${restored} prices restored, ${shown} items shown again`);
+  });
 }
 
 const MIGRATIONS: Migration[] = [
   { name: "2026-11-rudra-new-menu-card-plus-15pct", run: updateRudraMenu },
-  { name: "2026-11-cafe-of-joy-menu-card-plus-15pct", run: updateCafeOfJoyMenu },
-  { name: "2026-11-cafe-of-joy-hide-off-card-items", run: hideCafeOfJoyOffCardItems },
+  { name: "2026-11-cafe-of-joy-undo-card-changes", run: undoCafeOfJoyCardChanges },
 ];
 
 export async function runDataMigrations() {
