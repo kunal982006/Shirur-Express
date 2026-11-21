@@ -21,6 +21,9 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
+
+// A dish with a choice (Half / Full, pizza size, steam / fried): one row, each choice in `variants`.
+type InsightDish = CollectionDish & { choiceTitle?: string; variants?: (CollectionDish & { label: string })[] };
 type Diet = "all" | "veg" | "non-veg";
 
 const DIETS: { key: Diet; label: string; active: string; idle: string; dot?: string }[] = [
@@ -61,6 +64,7 @@ export function TrendingBanner() {
 function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
     const [tab, setTab] = useState<TabKey>("all");
     const [diet, setDiet] = useState<Diet>("all");
+    const [picker, setPicker] = useState<InsightDish | null>(null);
     const [, setLocation] = useLocation();
     const cart = useCollectionCart();
     const path = `/api/food-insights?tab=${tab}&diet=${diet}`;
@@ -83,7 +87,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
     }, [open]);
 
     // Ranked on the server: orders in the last 24 hours first, then each restaurant's specialities.
-    const { data: dishes = [], isLoading } = useQuery<CollectionDish[]>({
+    const { data: dishes = [], isLoading } = useQuery<InsightDish[]>({
         queryKey: [path],
         queryFn: () => apiRequest("GET", path).then((res) => res.json()),
         enabled: open,
@@ -141,6 +145,8 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                                 const badge = badgeText(dish);
                                 const count = orderCountText(dish.orderCount);
                                 const openMenu = () => { onOpenChange(false); setLocation(dishProviderPath(dish)); };
+                                const variants = dish.variants;
+                                const inCart = variants ? variants.reduce((sum, variant) => sum + cart.getQuantity(variant.id), 0) : 0;
                                 return (
                                     <li key={dish.id} className="flex items-center gap-3 py-3">
                                         <span className="w-5 shrink-0 text-center text-sm font-extrabold text-muted-foreground">{index + 1}</span>
@@ -157,7 +163,7 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                                                 <VegMark isVeg={dish.isVeg} />
                                                 <span className="truncate text-sm font-bold">{dish.name}</span>
                                             </span>
-                                            <span className="block truncate text-xs text-muted-foreground">{dish.provider.businessName} · ₹{Number(dish.price)}</span>
+                                            <span className="block truncate text-xs text-muted-foreground">{dish.provider.businessName} · ₹{Number(dish.price)}{variants ? " onwards" : ""}</span>
                                             {(count || badge) && (
                                                 <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-orange-600">
                                                     {count && <span>{count}</span>}
@@ -165,12 +171,24 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                                                 </span>
                                             )}
                                         </button>
-                                        <DishQuantityControl
-                                            dish={dish}
-                                            quantity={cart.getQuantity(dish.id)}
-                                            onAdd={() => cart.add(dish)}
-                                            onUpdate={(change) => cart.updateQuantity(dish.id, change)}
-                                        />
+                                        {variants ? (
+                                            <Button
+                                                size="sm"
+                                                variant={inCart ? "outline" : "default"}
+                                                className="h-8 shrink-0 rounded-lg px-3 text-xs"
+                                                disabled={dish.provider.isAvailable === false}
+                                                onClick={() => setPicker(dish)}
+                                            >
+                                                {inCart ? `${inCart} added` : "Add"}
+                                            </Button>
+                                        ) : (
+                                            <DishQuantityControl
+                                                dish={dish}
+                                                quantity={cart.getQuantity(dish.id)}
+                                                onAdd={() => cart.add(dish)}
+                                                onUpdate={(change) => cart.updateQuantity(dish.id, change)}
+                                            />
+                                        )}
                                     </li>
                                 );
                             })}
@@ -192,6 +210,33 @@ function BannerInsights({ open, onOpenChange }: { open: boolean; onOpenChange: (
                     </div>
                 )}
                 {cart.conflictDialog}
+                <Dialog open={Boolean(picker)} onOpenChange={(isOpen) => !isOpen && setPicker(null)}>
+                    <DialogContent className="max-w-sm rounded-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <VegMark isVeg={picker?.isVeg} /> {picker?.name}
+                            </DialogTitle>
+                            <DialogDescription>{picker?.choiceTitle || "Choose an option"} · {picker?.provider.businessName}</DialogDescription>
+                        </DialogHeader>
+                        <ul className="divide-y">
+                            {picker?.variants?.map((variant) => (
+                                <li key={variant.id} className="flex items-center justify-between gap-3 py-3">
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold">{variant.label}</p>
+                                        <p className="text-sm text-muted-foreground">₹{Number(variant.price)}</p>
+                                    </div>
+                                    <DishQuantityControl
+                                        dish={variant}
+                                        quantity={cart.getQuantity(variant.id)}
+                                        onAdd={() => cart.add(variant)}
+                                        onUpdate={(change) => cart.updateQuantity(variant.id, change)}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                        <Button className="w-full" onClick={() => setPicker(null)}>Done</Button>
+                    </DialogContent>
+                </Dialog>
             </DialogContent>
         </Dialog>
     );

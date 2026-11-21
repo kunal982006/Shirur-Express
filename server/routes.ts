@@ -14,6 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 import { storage } from "./storage";
 import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, isNonVegDish, orderFoodCollectionFeed } from "@shared/food-collections";
 import { PINNED_DISHES, PINNED_ROW_SLUGS, findPinnedIndex, findSpecialtyTag, isExtraFor, rotationRank } from "./food-highlights";
+import { CHOICE_TITLES, displayName, matchShirurOrdering, pickExtras, type OrderingCard, type OrderingEntry, type OrderingTab } from "./shirur-ordering";
 import { LOCAL_FAVOURITES, LOCAL_FAVOURITE_FIGURES, liveFigure, withoutPortion } from "./local-favourites";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable, isNull, isNotNull } from "drizzle-orm";
@@ -5406,6 +5407,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let timeLimitedDishes = new Map<string, { name: string; untilMinute: number }>();
   // Every available dish, including ones in no category row (soups...), for the Local favourites row.
   let dishById = new Map<string, any>();
+  // "What Shirur is Ordering": the hand-picked cards of the Café, Biryani and Street Food tabs,
+  // and the list lines that matched no dish on the live menus.
+  let orderingCards: OrderingCard[] = [];
+  let orderingUnmatched: OrderingEntry[] = [];
 
   // Dishes that are past their daily cut-off (e.g. Idli Wada Mix after 1 PM) are hidden.
   const visibleNow = <T extends { availableUntilMinute?: number | null }>(list: T[]): T[] => {
@@ -5420,6 +5425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       getOrdersToday(),
     ]);
     const now = new Date();
+    const ordering = matchShirurOrdering([...menuItems, ...streetItems], isNonVegDish);
+    orderingCards = ordering.cards;
+    orderingUnmatched = ordering.unmatched;
     const pinIndex = new Map<string, number>();
     const dishes = [
       ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
@@ -5456,19 +5464,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // a little every few minutes) plus real orders placed through the app. Dishes without a
       // figure show real orders only.
       const realOrders = ordersToday.get(item.id) || 0;
-      const figure = LOCAL_FAVOURITE_FIGURES.get(item.id) ?? pinned?.figure ?? 0;
+      // The "What Shirur is Ordering" list is the newest figure for a dish, so it comes first.
+      const figure = ordering.figures.get(item.id) ?? LOCAL_FAVOURITE_FIGURES.get(item.id) ?? pinned?.figure ?? 0;
       return {
         ...base,
         orderCount: liveFigure(item.id, figure, now) + realOrders,
         isMostlySelling: false,
         badge: null as string | null,
         _realOrders: realOrders,
-        _tag: findSpecialtyTag(base),
+        _tag: ordering.badges.get(item.id) ?? findSpecialtyTag(base),
         _rotation: rotationRank(item.id, now),
         availableUntilMinute: pinned?.untilMinute ?? null,
         accompaniments: [] as any[],
         _slugs: slugs,
-        _extras: pinned?.extras,
+        _extras: (ordering.extras.get(item.id) ?? pinned?.extras) as "pav" | "bread" | RegExp[] | undefined,
         _popularOrder: item.popularOrder || 0,
         _displayOrder: item.provider.displayOrder || 0,
       };
@@ -5492,7 +5501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .filter((dish) => dish.availableUntilMinute != null)
       .map((dish) => [dish.id, { name: dish.name, untilMinute: dish.availableUntilMinute! }]));
 
-    // Extras offered in a popup when a featured dish is added: plain pav or breads from the same restaurant.
+    // Extras offered in a popup when a featured dish is added: plain pav or breads, or extra cheese, from the same restaurant.
     const byProvider = new Map<string, typeof dishes>();
     for (const dish of dishes) {
       if (!byProvider.has(dish.providerId)) byProvider.set(dish.providerId, []);
@@ -5500,8 +5509,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     for (const dish of dishes) {
       if (!dish._extras) continue;
-      dish.accompaniments = (byProvider.get(dish.providerId) || [])
-        .filter((other) => other.id !== dish.id && other.itemType === dish.itemType && isExtraFor(dish._extras!, other.name))
+      const menu = (byProvider.get(dish.providerId) || []).filter((other) => other.id !== dish.id && other.itemType === dish.itemType);
+      const kind = dish._extras;
+      // Extra cheese / cheese slice for the "What Shirur is Ordering" dishes; pav or breads otherwise.
+      dish.accompaniments = (Array.isArray(kind) ? pickExtras(kind, menu) : menu.filter((other) => isExtraFor(kind, other.name)))
         // Breads before rice, cheapest first.
         .sort((a, b) => Number(/rice/i.test(a.name)) - Number(/rice/i.test(b.name)) || Number(a.price) - Number(b.price))
         .slice(0, 10)
@@ -5642,9 +5653,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   const INSIGHT_SIZE = 30;
 
+  // Café, Biryani and Street Food show the hand-picked list (server/shirur-ordering.ts), cheapest
+  // first. A dish with a picker (Half / Full, pizza size, steam / fried) is one card whose
+  // `variants` hold each choice; its price is the cheapest choice.
+  const CURATED_TABS = new Set<OrderingTab>(["cafe", "biryani", "street-food"]);
+
+  const getCuratedInsights = (tab: OrderingTab, diet: string) => {
+    const open = visibleNow(Array.from(dishById.values()));
+    const openById = new Map(open.map((dish) => [dish.id, dish]));
+    const cards = orderingCards.filter((card) => card.tab === tab).flatMap((card) => {
+      const choices = card.variants
+        .map((variant) => ({ variant, dish: openById.get(variant.id) }))
+        .filter((choice): choice is { variant: typeof choice.variant; dish: any } => Boolean(choice.dish));
+      if (!choices.length) return [];
+      const first = choices[0].dish;
+      if (first.provider.isAvailable === false) return [];
+      if (diet === "veg" && !first.isVeg) return [];
+      if (diet === "non-veg" && first.isVeg) return [];
+      if (choices.length === 1) return [first];
+      return [{
+        ...first,
+        name: displayName(first.name),
+        price: Math.min(...choices.map(({ dish }) => Number(dish.price))),
+        choiceTitle: CHOICE_TITLES[card.choice!],
+        variants: choices.map(({ variant, dish }) => ({ ...dish, label: variant.label })),
+      }];
+    });
+    // Cheapest first; equal prices keep the most-ordered first.
+    return cards.sort((a, b) => Number(a.price) - Number(b.price) || b.orderCount - a.orderCount);
+  };
+
   const getInsights = async (tab: string, diet: string) => {
     const inTab = INSIGHT_TABS[tab] || INSIGHT_TABS.all;
     const grouped = await getFoodCollectionItems();
+    if (CURATED_TABS.has(tab as OrderingTab) && orderingCards.some((card) => card.tab === tab)) {
+      return getCuratedInsights(tab as OrderingTab, diet);
+    }
     const seen = new Map<string, any>();
     for (const [slug, list] of Array.from(grouped.entries())) {
       if (!inTab(slug)) continue;
@@ -5681,6 +5725,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get food insights error:", error);
       res.status(500).json({ message: error.message || "Error fetching food insights" });
+    }
+  });
+
+  // Which "What Shirur is Ordering" list lines found their dish on the live menus, to check the
+  // list after a menu change. Lines under `unmatched` are not shown in the app.
+  app.get("/api/food-insights/check", async (_req: Request, res: Response) => {
+    try {
+      await getFoodCollectionItems();
+      const describe = (entry: OrderingEntry) => ({ tab: entry.tab, restaurant: entry.provider.source, dish: entry.name.source, figure: entry.figure });
+      res.json({
+        matched: orderingCards.map((card) => ({
+          tab: card.tab,
+          dishes: card.variants.map((variant) => ({ label: variant.label || undefined, name: dishById.get(variant.id)?.name, restaurant: dishById.get(variant.id)?.provider.businessName, price: dishById.get(variant.id)?.price })),
+        })),
+        unmatched: orderingUnmatched.map(describe),
+      });
+    } catch (error: any) {
+      console.error("Food insights check error:", error);
+      res.status(500).json({ message: error.message || "Error checking food insights list" });
     }
   });
 
