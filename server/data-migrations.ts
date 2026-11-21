@@ -3,8 +3,8 @@
 // so later restarts skip it and any edits the vendor makes afterwards are left alone.
 
 import { db, pool } from "./db";
-import { streetFoodItems } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { restaurantMenuItems, serviceProviders, streetFoodItems } from "../shared/schema";
+import { eq, ilike } from "drizzle-orm";
 
 type Migration = { name: string; run: () => Promise<void> };
 
@@ -108,8 +108,57 @@ async function updateRudraMenu() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Café of Joy: new menu card (Nov 2026), prices +15%, rounded half up.
+// Only the items with ₹ prices on the card ("/-") are changed; nothing is removed.
+// The card's coffee list with $2.50 everywhere and the "$" lines are template text, not prices.
+// ---------------------------------------------------------------------------
+const CAFE_OF_JOY_CARD: { name: string; category: string; card: number }[] = [
+  { category: "Hots", name: "Hot Coffee", card: 20 },
+  { category: "Hots", name: "Black Coffee", card: 20 },
+  { category: "Hots", name: "Haldi Milk", card: 25 },
+  { category: "Cold Beverges", name: "Normal Cold Coffee", card: 50 },
+  { category: "Cold Beverges", name: "Thick Cold Coffee", card: 60 },
+  { category: "Cold Beverges", name: "Cold Coffee with Crush", card: 70 },
+  { category: "Cold Beverges", name: "Cold Coffee with Ice Cream", card: 80 },
+];
+
+async function updateCafeOfJoyMenu() {
+  await db.transaction(async (tx) => {
+    const [cafe] = await tx.select().from(serviceProviders).where(ilike(serviceProviders.businessName, "%of joy%"));
+    if (!cafe) {
+      console.log("[data-migration] Café of Joy not found here, skipping menu update");
+      return;
+    }
+    const current = await tx.select().from(restaurantMenuItems).where(eq(restaurantMenuItems.providerId, cafe.id));
+    const byName = new Map(current.map((i) => [i.name.trim().toLowerCase(), i]));
+    let updated = 0;
+    let added = 0;
+    for (const item of CAFE_OF_JOY_CARD) {
+      const price = String(Math.floor((item.card * 115 + 50) / 100)); // +15%, half up, integer maths
+      const existing = byName.get(item.name.toLowerCase());
+      if (existing) {
+        await tx.update(restaurantMenuItems).set({ price }).where(eq(restaurantMenuItems.id, existing.id));
+        updated++;
+      } else {
+        await tx.insert(restaurantMenuItems).values({
+          providerId: cafe.id,
+          name: item.name,
+          category: item.category,
+          price,
+          isVeg: true,
+          isAvailable: true,
+        });
+        added++;
+      }
+    }
+    console.log(`[data-migration] Café of Joy card: ${updated} updated, ${added} added`);
+  });
+}
+
 const MIGRATIONS: Migration[] = [
   { name: "2026-11-rudra-new-menu-card-plus-15pct", run: updateRudraMenu },
+  { name: "2026-11-cafe-of-joy-menu-card-plus-15pct", run: updateCafeOfJoyMenu },
 ];
 
 export async function runDataMigrations() {
