@@ -152,6 +152,7 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyFirebaseMessagingService.createAnnouncementsChannel(this)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 

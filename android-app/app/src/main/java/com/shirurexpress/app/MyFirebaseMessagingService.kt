@@ -50,7 +50,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             showIncomingOrderScreen(data)
         } else {
             // Regular notification
-            sendNotification(data["title"] ?: "New Message", data["body"] ?: "", data["navigateTo"])
+            sendNotification(data["title"] ?: "New Message", data["body"] ?: "", data["navigateTo"], type == "ADMIN_BROADCAST")
         }
     }
 
@@ -121,7 +121,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.notify(0, notification)
     }
 
-    private fun sendNotification(title: String, messageBody: String, navigateTo: String? = null) {
+    private fun sendNotification(title: String, messageBody: String, navigateTo: String? = null, isBroadcast: Boolean = false) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         if (navigateTo != null) intent.putExtra("navigateTo", navigateTo)
@@ -130,7 +130,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val channelId = getString(R.string.default_notification_channel_id)
+        // Offers and announcements: own channel, normal message tone, never the order ringtone.
+        val channelId = if (isBroadcast) ANNOUNCEMENTS_CHANNEL_ID else getString(R.string.default_notification_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -142,7 +143,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (isBroadcast) {
+            createAnnouncementsChannel(this)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
                 "General Notifications",
@@ -156,5 +159,26 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         private const val TAG = "MyFirebaseMsgService"
+        const val ANNOUNCEMENTS_CHANNEL_ID = "announcements_channel"
+
+        // Made at app start too, so broadcasts shown by Android while the app is closed use it.
+        fun createAnnouncementsChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val channel = NotificationChannel(
+                ANNOUNCEMENTS_CHANNEL_ID,
+                "Offers & Announcements",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Offers and news from Shirur Express"
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+            }
+            (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        }
     }
 }

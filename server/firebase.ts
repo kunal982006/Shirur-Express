@@ -124,14 +124,18 @@ export async function sendPushNotification(fcmToken: string, payload: {
                 title: payload.title,
                 body: payload.body,
             };
+            const isBroadcast = payload.data?.type === 'ADMIN_BROADCAST';
             message.android!.notification = {
-                channelId: 'fcm_default_channel',
+                // Broadcasts have their own channel with the normal message tone, so they never share
+                // a sound with order alerts on a provider's phone. On an app without that channel,
+                // Android uses its fallback channel, which also has the normal tone.
+                channelId: isBroadcast ? 'announcements_channel' : 'fcm_default_channel',
                 priority: 'max',
                 defaultSound: true,
                 defaultVibrateTimings: true,
                 visibility: 'public',
                 // Broadcasts open the app's main screen on tap, which then goes to data.navigateTo.
-                ...(payload.data?.type === 'ADMIN_BROADCAST' ? {} : { clickAction: 'OPEN_PROVIDER_DASHBOARD' }),
+                ...(isBroadcast ? {} : { clickAction: 'OPEN_PROVIDER_DASHBOARD' }),
             };
         }
 
