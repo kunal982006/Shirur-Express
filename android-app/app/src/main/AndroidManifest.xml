@@ -117,6 +117,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
         
+        <!-- Status-bar icon and colour for notifications Android shows itself (app closed) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_accent" />
+
         <!-- Facebook SDK Configuration for Meta Ads -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
