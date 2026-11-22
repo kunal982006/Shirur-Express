@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { RestaurantOrder } from "@shared/schema";
@@ -181,6 +181,22 @@ export default function DeliveryPartnerDashboard() {
     });
 
     const activeMyOrders = myOrders?.filter(o => !['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [];
+
+    // Open "My Active" when the rider has a delivery, and jump there (with a toast) whenever a new
+    // one lands on them, e.g. when the admin assigns an order and the phone rings.
+    const seenActiveIds = useRef<Set<string> | null>(null);
+    const activeIdsKey = activeMyOrders.map(o => o.id).sort().join(",");
+    useEffect(() => {
+        if (!myOrders) return;
+        const ids = activeIdsKey ? activeIdsKey.split(",") : [];
+        if (seenActiveIds.current === null) {
+            if (ids.length > 0) setTab("active");
+        } else if (ids.some(id => !seenActiveIds.current!.has(id))) {
+            setTab("active");
+            toast({ title: "🛵 New delivery assigned to you", description: "Pick it up from the restaurant shown." });
+        }
+        seenActiveIds.current = new Set(ids);
+    }, [activeIdsKey, myOrders]);
     // Latest delivery first, so the order just delivered is on top with its Print Bill button.
     const finishedAt = (o: any) => new Date(o.deliveredAt || o.createdAt || 0).getTime();
     const historyMyOrders = (myOrders?.filter(o => ['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [])
@@ -311,7 +327,7 @@ export default function DeliveryPartnerDashboard() {
 }
 
 interface OrderCardProps {
-    order: any; // Supports both RestaurantOrder and GroceryOrder with orderType
+    order: any; // Restaurant, street food or grocery order, tagged with orderType
     type: 'available' | 'active' | 'history';
     onAccept?: () => void;
     onArrived?: () => void;
@@ -319,6 +335,16 @@ interface OrderCardProps {
     onDeliver?: () => void;
     isProcessing?: boolean;
 }
+
+// Statuses before the rider has the food in hand. Once an order is assigned to a rider, all of
+// these mean "go and collect it": many restaurants never tap Accept / Preparing / Ready.
+const PRE_PICKUP_STATUSES = ['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup', 'assigned'];
+
+const ORDER_TYPE_BADGE: Record<string, { label: string; className: string }> = {
+    restaurant: { label: "🍽️ Restaurant", className: "bg-orange-100 text-orange-800" },
+    street_food: { label: "🌮 Street Food", className: "bg-amber-100 text-amber-800" },
+    grocery: { label: "🛒 Grocery", className: "bg-green-100 text-green-800" },
+};
 
 const OrderCard: React.FC<OrderCardProps> = ({
     order,
@@ -329,69 +355,103 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onDeliver,
     isProcessing,
 }) => {
-    const orderType = order.orderType || 'restaurant';
-    const isGrocery = orderType === 'grocery';
-    const restaurantName = isGrocery ? "Grocery Order" : (order.provider?.businessName || "Unknown Restaurant");
-    const restaurantAddress = order.provider?.address || "Unknown Address";
+    const orderType: 'restaurant' | 'street_food' | 'grocery' = order.orderType || 'restaurant';
+    const typeBadge = ORDER_TYPE_BADGE[orderType] || ORDER_TYPE_BADGE.restaurant;
+    const provider = order.provider;
+    const pickupName = provider?.businessName || (orderType === 'grocery' ? "Grocery Store" : "Restaurant");
+    const pickupAddress = provider?.address || "";
+    const pickupPhone: string | null = provider?.user?.phone || null;
     // A real link (not window.open): the Android app hands it to Google Maps.
     const dropMapsUrl = deliveryDirectionsUrl(order.deliveryAddress);
-    const customerPhone = order.user?.phone;
-    const totalAmount = isGrocery ? order.total : order.totalAmount;
+    const customerName: string = order.user?.username || "Customer";
+    const customerPhone: string | null = order.user?.phone || null;
+    const totalAmount = orderType === 'grocery' ? order.total : order.totalAmount;
+    const isCod = order.paymentMethod === 'cod';
+    const status: string = order.status || 'pending';
+    const isPrePickup = type === 'active' && PRE_PICKUP_STATUSES.includes(status);
+    // For the rider, an assigned order is ready to collect whatever the kitchen last tapped.
+    const statusLabel = isPrePickup ? "READY TO PICK UP" : formatStatus(status);
+    const showContacts = type === 'active';
 
     return (
         <Card className="shadow-md overflow-hidden">
-            <div className={`h-2 w-full ${getStatusColor(order.status || 'pending')}`} />
+            <div className={`h-2 w-full ${isPrePickup ? 'bg-green-500' : getStatusColor(status)}`} />
             <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            {restaurantName}
-                            <Badge variant={isGrocery ? "secondary" : "outline"} className={isGrocery ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}>
-                                {isGrocery ? "🛒 Grocery" : "🍽️ Food"}
-                            </Badge>
-                        </CardTitle>
-                        <CardDescription className="flex items-center mt-1">
-                            <MapPin className="h-3 w-3 mr-1" /> {restaurantAddress}
-                        </CardDescription>
+                <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                        <p className="text-xs text-slate-500">Order #{String(order.id).slice(0, 8)}</p>
+                        <Badge variant="outline" className={`mt-1 ${typeBadge.className}`}>{typeBadge.label}</Badge>
                     </div>
-                    <Badge variant="outline" className="bg-slate-50">
-                        {formatStatus(order.status || 'pending')}
+                    <Badge variant="outline" className={isPrePickup ? "bg-green-50 text-green-700 border-green-300 shrink-0" : "bg-slate-50 shrink-0"}>
+                        {statusLabel}
                     </Badge>
                 </div>
             </CardHeader>
-            <CardContent className="pb-3">
-                <div className="bg-slate-50 p-3 rounded-md mb-3 text-sm">
-                    <div className="font-medium mb-2 flex items-center text-slate-700">
-                        <UserIcon className="h-3 w-3 mr-2" /> Customer: {order.user?.username}
+            <CardContent className="pb-3 space-y-3 text-sm">
+                {/* Pick up from */}
+                <div className="rounded-md border border-orange-200 bg-orange-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-orange-700 mb-1">Pick up from</p>
+                    <p className="font-semibold text-base text-slate-900">{pickupName}</p>
+                    {pickupAddress && (
+                        <p className="text-slate-600 flex items-start gap-1 mt-0.5">
+                            <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> <span className="break-words">{pickupAddress}</span>
+                        </p>
+                    )}
+                    {/* No restaurant maps button: many restaurants have no map pin, and riders know them. */}
+                    {showContacts && pickupPhone && (
+                        <Button size="sm" variant="outline" className="w-full mt-2 bg-white" asChild>
+                            <a href={`tel:${pickupPhone}`}>
+                                <Phone className="h-4 w-4 mr-1.5" /> Call Restaurant
+                            </a>
+                        </Button>
+                    )}
+                </div>
+
+                {/* Customer + items */}
+                <div className="rounded-md bg-slate-50 p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Customer</p>
+                            <p className="font-semibold text-slate-900 flex items-center gap-1.5">
+                                <UserIcon className="h-3.5 w-3.5" /> {customerName}
+                            </p>
+                            {showContacts && customerPhone && (
+                                <a href={`tel:${customerPhone}`} className="text-blue-700 font-medium">{customerPhone}</a>
+                            )}
+                        </div>
+                        {showContacts && customerPhone && (
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700 shrink-0" asChild>
+                                <a href={`tel:${customerPhone}`}>
+                                    <Phone className="h-4 w-4 mr-1.5" /> Call
+                                </a>
+                            </Button>
+                        )}
                     </div>
                     <div className="space-y-1">
                         {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
-                            <div key={idx} className="flex justify-between">
+                            <div key={idx} className="flex justify-between gap-2">
                                 <span>{item.quantity} x {item.name}</span>
-                                <span className="text-slate-500">₹{item.price * item.quantity}</span>
+                                <span className="text-slate-500 shrink-0">₹{item.price * item.quantity}</span>
                             </div>
                         ))}
                     </div>
                     <div className="border-t border-slate-200 mt-2 pt-2 flex justify-between font-bold">
-                        <span>Total Bill</span>
-                        <span>₹{totalAmount}</span>
+                        <span>{isCod ? "Collect Cash" : "Total (Paid Online)"}</span>
+                        <span className={isCod ? "text-orange-700" : ""}>₹{totalAmount}</span>
                     </div>
                 </div>
 
-                <div className="text-sm">
-                    <div>
-                        <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
-                        <div className="text-slate-600 bg-slate-100 p-2 rounded">
-                            <p className="break-words">{displayDeliveryAddress(order.deliveryAddress) || "No address given - call the customer"}</p>
-                            {dropMapsUrl && (
-                                <Button size="sm" className="w-full mt-2 bg-blue-600 hover:bg-blue-700" asChild>
-                                    <a href={dropMapsUrl} target="_blank" rel="noopener noreferrer">
-                                        <Navigation className="h-4 w-4 mr-2" /> Open Delivery Location in Maps
-                                    </a>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                {/* Deliver to */}
+                <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-1">Deliver to</p>
+                    <p className="break-words text-slate-700">{displayDeliveryAddress(order.deliveryAddress) || "No address given - call the customer"}</p>
+                    {dropMapsUrl && (
+                        <Button size="sm" className="w-full mt-2 bg-blue-600 hover:bg-blue-700" asChild>
+                            <a href={dropMapsUrl} target="_blank" rel="noopener noreferrer">
+                                <Navigation className="h-4 w-4 mr-2" /> Customer Location in Maps
+                            </a>
+                        </Button>
+                    )}
                 </div>
             </CardContent>
 
@@ -419,17 +479,9 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
                     {type === 'active' && (
                         <>
-                            {customerPhone && (
-                                <Button variant="outline" size="icon" asChild>
-                                    <a href={`tel:${customerPhone}`}>
-                                        <Phone className="h-4 w-4" />
-                                    </a>
-                                </Button>
-                            )}
-
-                            {/* 'ready_for_pickup' with a rider set = admin assigned it before the kitchen finished */}
-                            {['assigned', 'ready_for_pickup'].includes(order.status || '') && (
+                            {isPrePickup && (
                                 <Button
+                                    variant="outline"
                                     className="flex-1"
                                     onClick={onArrived}
                                     disabled={isProcessing}
@@ -438,19 +490,19 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 </Button>
                             )}
 
-                            {order.status === 'arrived_at_pickup' && (
+                            {(isPrePickup || status === 'arrived_at_pickup') && (
                                 <Button
-                                    className="flex-1 bg-blue-600"
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700"
                                     onClick={onPickup}
                                     disabled={isProcessing}
                                 >
-                                    <Package className="mr-2 h-4 w-4" /> Pick Up Order
+                                    <Package className="mr-2 h-4 w-4" /> Picked Up
                                 </Button>
                             )}
 
-                            {order.status === 'out_for_delivery' && (
+                            {status === 'out_for_delivery' && (
                                 <Button
-                                    className="flex-1 bg-green-600 hover:bg-green-700"
+                                    className="w-full bg-green-600 hover:bg-green-700"
                                     onClick={onDeliver}
                                     disabled={isProcessing}
                                 >
@@ -458,7 +510,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 </Button>
                             )}
 
-                            {order.status === 'out_for_delivery' && (
+                            {status === 'out_for_delivery' && (
                                 <div className="w-full">
                                     <PrintOrderBillButton
                                         orderType={orderType}
@@ -469,12 +521,6 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                         className="w-full"
                                     />
                                 </div>
-                            )}
-
-                            {['pending', 'accepted', 'preparing'].includes(order.status || '') && (
-                                <Button variant="secondary" disabled className="flex-1">
-                                    Waiting for Restaurant...
-                                </Button>
                             )}
                         </>
                     )}

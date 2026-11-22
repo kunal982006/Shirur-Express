@@ -22,7 +22,8 @@ import {
   Wrench,
   ShoppingBag,
   Navigation,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Phone
 } from "lucide-react";
 import { useLiveOrderTracking } from "@/hooks/use-live-order-tracking";
 import { apiRequest } from "@/lib/queryClient";
@@ -632,6 +633,26 @@ export default function MyBookings() {
                             <span>{displayDeliveryAddress(order.deliveryAddress)}</span>
                           </div>
                         </div>
+
+                        {/* Delivery partner (rider) — shown once one is assigned */}
+                        {(order as any).rider && !['delivered', 'cancelled', 'declined'].includes(order.status || '') && (
+                          <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">Your delivery partner</p>
+                              <p className="font-semibold">{(order as any).rider.username || "Delivery partner"}</p>
+                              {(order as any).rider.phone && (
+                                <p className="text-sm text-blue-700">{(order as any).rider.phone}</p>
+                              )}
+                            </div>
+                            {(order as any).rider.phone && (
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700 shrink-0" asChild>
+                                <a href={`tel:${(order as any).rider.phone}`}>
+                                  <Phone className="mr-1.5 h-4 w-4" /> Call Rider
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+                        )}
 
                         {/* Track Order Button */}
                         {!['delivered', 'cancelled', 'declined'].includes(order.status || '') && (

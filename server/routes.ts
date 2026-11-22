@@ -4538,11 +4538,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "The order is already picked up. Reassign it to another rider instead of removing the rider." });
       }
 
-      // Status: a ready order becomes "assigned" so the rider can head to pickup straight away.
-      // Kitchen statuses (pending/accepted/preparing) and out_for_delivery are left as they are.
-      // Removing the rider before pickup puts a ready order back into the open pool.
+      // Status: assigning before pickup moves the order straight to "assigned" so the rider can go
+      // and collect it. Many restaurants never tap Accept / Preparing / Ready, so we don't wait on them.
+      // out_for_delivery is left as it is. Removing the rider before pickup puts the order back into
+      // the open pool as ready_for_pickup.
       let status: string = order.status;
-      if (riderId && status === 'ready_for_pickup') status = 'assigned';
+      if (riderId && ['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup'].includes(status)) status = 'assigned';
       if (!riderId && ['assigned', 'arrived_at_pickup'].includes(status)) status = 'ready_for_pickup';
 
       const table = commerceOrderTables[type];
@@ -4564,6 +4565,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
           const amount = String(order.totalAmount || order.total || '0');
           const dropAddress = displayDeliveryAddress(order.deliveryAddress) || 'Check App';
+          const customer = await storage.getUser(order.userId).catch(() => undefined);
+          const customerPhone = customer?.phone || 'Check App';
           const tokens: string[] = [];
           if (Array.isArray(rider.user?.fcmTokens)) tokens.push(...rider.user.fcmTokens);
           else if (rider.user?.fcmToken) tokens.push(rider.user.fcmToken);
@@ -4572,11 +4575,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await sendPushNotification(token, {
               type: 'ORDER_REQUEST',
               title: `${orderLabel} Delivery assigned to you!`,
-              body: `${provider?.businessName || 'Pickup'} → ${dropAddress.slice(0, 40)} • ₹${amount}`,
+              body: `Pick up: ${provider?.businessName || 'Check App'} • 📞 ${customerPhone} • ₹${amount}`,
               data: {
                 orderId: id,
                 orderType: type,
-                customerName: 'Customer',
+                customerName: customer?.username || 'Customer',
+                customerPhone,
                 amount,
                 itemsSummary: 'Assigned by admin',
                 pickupAddress: provider?.address || provider?.businessName || 'Check App',
