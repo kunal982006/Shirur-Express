@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
+import { deliveryDirectionsUrl, displayDeliveryAddress, placeDirectionsUrl } from "@shared/delivery-address";
 import { PrintOrderBillButton } from "@/components/print-order-bill-button";
 
 const getStatusColor = (status: string) => {
@@ -180,11 +180,6 @@ export default function DeliveryPartnerDashboard() {
         },
     });
 
-    // Navigates to the exact pin the customer confirmed (falls back to the address text)
-    const openGoogleMaps = (address: string) => {
-        window.open(deliveryMapsUrl(address, 'directions'), '_blank');
-    };
-
     const activeMyOrders = myOrders?.filter(o => !['delivered', 'cancelled', 'declined'].includes(o.status || '')) || [];
     // Latest delivery first, so the order just delivered is on top with its Print Bill button.
     const finishedAt = (o: any) => new Date(o.deliveredAt || o.createdAt || 0).getTime();
@@ -268,7 +263,6 @@ export default function DeliveryPartnerDashboard() {
                                     type="available"
                                     onAccept={() => acceptOrderMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     isProcessing={acceptOrderMutation.isPending}
-                                    openGoogleMaps={openGoogleMaps}
                                 />
                             ))
                         )}
@@ -290,7 +284,6 @@ export default function DeliveryPartnerDashboard() {
                                     onPickup={() => pickupMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onDeliver={() => markDeliveredMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     isProcessing={arrivedMutation.isPending || pickupMutation.isPending || markDeliveredMutation.isPending}
-                                    openGoogleMaps={openGoogleMaps}
                                 />
                             ))
                         )}
@@ -307,7 +300,6 @@ export default function DeliveryPartnerDashboard() {
                                     key={order.id}
                                     order={order}
                                     type="history"
-                                    openGoogleMaps={openGoogleMaps}
                                 />
                             ))
                         )}
@@ -326,7 +318,6 @@ interface OrderCardProps {
     onPickup?: () => void;
     onDeliver?: () => void;
     isProcessing?: boolean;
-    openGoogleMaps: (address: string) => void;
 }
 
 const OrderCard: React.FC<OrderCardProps> = ({
@@ -337,12 +328,19 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onPickup,
     onDeliver,
     isProcessing,
-    openGoogleMaps
 }) => {
     const orderType = order.orderType || 'restaurant';
     const isGrocery = orderType === 'grocery';
     const restaurantName = isGrocery ? "Grocery Order" : (order.provider?.businessName || "Unknown Restaurant");
     const restaurantAddress = order.provider?.address || "Unknown Address";
+    // Real links (not window.open): the Android app hands them to Google Maps.
+    const pickupMapsUrl = order.provider ? placeDirectionsUrl({
+        latitude: order.provider.latitude,
+        longitude: order.provider.longitude,
+        address: order.provider.address,
+        name: order.provider.businessName,
+    }) : null;
+    const dropMapsUrl = deliveryDirectionsUrl(order.deliveryAddress);
     const customerPhone = order.user?.phone;
     const totalAmount = isGrocery ? order.total : order.totalAmount;
 
@@ -386,18 +384,33 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </div>
                 </div>
 
-                <div className="text-sm">
-                    <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
-                    <p className="text-slate-600 bg-slate-100 p-2 rounded flex items-center justify-between">
-                        <span>{displayDeliveryAddress(order.deliveryAddress)}</span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openGoogleMaps(order.deliveryAddress)}
-                        >
-                            <Navigation className="h-4 w-4" />
-                        </Button>
-                    </p>
+                <div className="text-sm space-y-3">
+                    <div>
+                        <p className="font-medium text-slate-700 mb-1">Pickup From:</p>
+                        <div className="text-slate-600 bg-slate-100 p-2 rounded">
+                            <p className="break-words">{restaurantName} - {restaurantAddress}</p>
+                            {pickupMapsUrl && (
+                                <Button variant="outline" size="sm" className="w-full mt-2" asChild>
+                                    <a href={pickupMapsUrl} target="_blank" rel="noopener noreferrer">
+                                        <Navigation className="h-4 w-4 mr-2" /> Open Pickup in Maps
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
+                        <div className="text-slate-600 bg-slate-100 p-2 rounded">
+                            <p className="break-words">{displayDeliveryAddress(order.deliveryAddress) || "No address given - call the customer"}</p>
+                            {dropMapsUrl && (
+                                <Button size="sm" className="w-full mt-2 bg-blue-600 hover:bg-blue-700" asChild>
+                                    <a href={dropMapsUrl} target="_blank" rel="noopener noreferrer">
+                                        <Navigation className="h-4 w-4 mr-2" /> Open Delivery Location in Maps
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </CardContent>
 
