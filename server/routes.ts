@@ -3887,7 +3887,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const trackingInfo = await storage.getOrderTrackingInfo(orderId, userId);
       const etaMinutes = await arrivalMinutesForOrder(trackingInfo.order).catch(() => null);
-      res.json({ ...trackingInfo, etaMinutes });
+      // The rider is a full user row: send the customer only the name and phone, never the rest.
+      const rider = trackingInfo.order?.rider;
+      const order = { ...trackingInfo.order, rider: rider ? { id: rider.id, username: rider.username, phone: rider.phone } : null };
+      // Restaurant / store number for the customer's "Call restaurant" button.
+      const shop = order.providerId ? await storage.getServiceProvider(order.providerId).catch(() => undefined) : undefined;
+      res.json({ ...trackingInfo, order, etaMinutes, shopPhone: shop?.user?.phone || null });
     } catch (error: any) {
       console.error("Track order error:", error);
       res.status(400).json({ message: error.message || "Error tracking order" });

@@ -165,6 +165,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setOnlyAlertOnce(!makeSound)
             .setSilent(!makeSound)
 
+        // "Call restaurant" / "Call rider" buttons: open the phone's dialer with the number filled in.
+        fun dialAction(label: String, phone: String?, requestCode: Int) {
+            if (phone.isNullOrBlank()) return
+            val dial = Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val pi = PendingIntent.getActivity(this, requestCode, dial,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            builder.addAction(0, label, pi)
+        }
+        if (!isFinal) {
+            dialAction(if (data["orderType"] == "grocery") "Call store" else "Call restaurant", data["shopPhone"], notificationId + 1)
+            dialAction("Call rider", data["riderPhone"], notificationId + 2)
+        }
+
         if (isFinal) {
             builder.setOngoing(false)
                 .setAutoCancel(true)

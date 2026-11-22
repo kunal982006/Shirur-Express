@@ -133,6 +133,9 @@ async function send(order: any, orderType: OrderType, status: string, eta: numbe
   if (!text) return;
 
   const final = ["delivered", "cancelled", "declined"].includes(status);
+  // Numbers for the notification's "Call restaurant" / "Call rider" buttons (only while it's useful).
+  const shopPhone = !final ? (provider?.user?.phone || "") : "";
+  const riderPhone = !final && order.riderId ? ((await storage.getUser(order.riderId))?.phone || "") : "";
   for (const token of tokens) {
     if (isApnsToken(token)) {
       // iPhones get a normal notification on each status change (no pinned one).
@@ -159,6 +162,8 @@ async function send(order: any, orderType: OrderType, status: string, eta: numbe
         steps: String(STEPS.length),
         etaMinutes: eta ? String(eta) : "",
         shopName: shop,
+        shopPhone,
+        riderPhone,
         final: final ? "1" : "0",
         // Status changes make a sound; arrival-time refreshes update silently.
         alert: etaRefreshOnly ? "0" : "1",
