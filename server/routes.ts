@@ -3065,50 +3065,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedOrder = await storage.updateStreetFoodOrderStatus(id, status);
       broadcastOrderUpdate({ orderId: id, status, orderType: 'street_food', userId: (updatedOrder as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(updatedOrder as any)?.riderId) {
-        try {
-          const provider = order.providerId ? await storage.getServiceProvider(order.providerId) : null;
-          const providerName = provider?.businessName || 'Street Food Vendor';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Street food order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `🌮 ${providerName} is Preparing!`,
-                body: `Street Food Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: updatedOrder.id,
-                  orderType: 'street_food',
-                  customerName: 'Customer',
-                  amount: String((updatedOrder as any).totalAmount || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(updatedOrder);
     } catch (error: any) {
@@ -3625,50 +3582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.updateProviderOrderStatus(orderId, providerId, status);
       broadcastOrderUpdate({ orderId, status, orderType: 'restaurant', userId: (order as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(order as any)?.riderId) {
-        try {
-          const provider = await storage.getServiceProvider(providerId);
-          const providerName = provider?.businessName || 'Restaurant';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `🍳 ${providerName} is Preparing!`,
-                body: `Order #${orderId.slice(0, 8)} • ₹${(order as any).totalAmount} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: order.id,
-                  orderType: 'restaurant',
-                  customerName: 'Customer',
-                  amount: String((order as any).totalAmount || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(order);
     } catch (error: any) {
@@ -3704,50 +3618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.updateGroceryOrderStatusByProvider(orderId, providerId, status);
       broadcastOrderUpdate({ orderId, status, orderType: 'grocery', userId: (order as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(order as any)?.riderId) {
-        try {
-          const provider = await storage.getServiceProvider(providerId);
-          const providerName = provider?.businessName || 'Store';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Grocery order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `📦 ${providerName} is Preparing!`,
-                body: `Grocery Order #${orderId.slice(0, 8)} • ₹${order.total} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: order.id,
-                  orderType: 'grocery',
-                  customerName: 'Customer',
-                  amount: String(order.total || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(order);
     } catch (error: any) {
@@ -4532,52 +4403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[Admin Status] Order ${id} (${type}) status updated to '${status}' by admin.`);
 
-      // --- RIDER RING: Notify online riders when admin sets status to 'preparing' ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !updatedOrder.riderId) {
-        try {
-          let providerName = 'Provider';
-          let providerAddress = 'Check App';
-          if (updatedOrder.providerId) {
-            const provider = await storage.getServiceProvider(updatedOrder.providerId);
-            providerName = provider?.businessName || 'Provider';
-            providerAddress = provider?.address || 'Check App';
-          }
-
-          const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Admin Rider Ring] Order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `${orderLabel} ${providerName} is Preparing!`,
-                body: `Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: updatedOrder.id,
-                  orderType: type,
-                  customerName: 'Customer',
-                  amount: String((updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'),
-                  pickupAddress: providerAddress,
-                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Admin Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json({ message: `Order status updated to '${status}'.`, order: updatedOrder });
     } catch (error: any) {
