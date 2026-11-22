@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { deliveryDirectionsUrl, displayDeliveryAddress, placeDirectionsUrl } from "@shared/delivery-address";
+import { deliveryDirectionsUrl, displayDeliveryAddress } from "@shared/delivery-address";
 import { PrintOrderBillButton } from "@/components/print-order-bill-button";
 
 const getStatusColor = (status: string) => {
@@ -333,13 +333,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const isGrocery = orderType === 'grocery';
     const restaurantName = isGrocery ? "Grocery Order" : (order.provider?.businessName || "Unknown Restaurant");
     const restaurantAddress = order.provider?.address || "Unknown Address";
-    // Real links (not window.open): the Android app hands them to Google Maps.
-    const pickupMapsUrl = order.provider ? placeDirectionsUrl({
-        latitude: order.provider.latitude,
-        longitude: order.provider.longitude,
-        address: order.provider.address,
-        name: order.provider.businessName,
-    }) : null;
+    // A real link (not window.open): the Android app hands it to Google Maps.
     const dropMapsUrl = deliveryDirectionsUrl(order.deliveryAddress);
     const customerPhone = order.user?.phone;
     const totalAmount = isGrocery ? order.total : order.totalAmount;
@@ -384,20 +378,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </div>
                 </div>
 
-                <div className="text-sm space-y-3">
-                    <div>
-                        <p className="font-medium text-slate-700 mb-1">Pickup From:</p>
-                        <div className="text-slate-600 bg-slate-100 p-2 rounded">
-                            <p className="break-words">{restaurantName} - {restaurantAddress}</p>
-                            {pickupMapsUrl && (
-                                <Button variant="outline" size="sm" className="w-full mt-2" asChild>
-                                    <a href={pickupMapsUrl} target="_blank" rel="noopener noreferrer">
-                                        <Navigation className="h-4 w-4 mr-2" /> Open Pickup in Maps
-                                    </a>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                <div className="text-sm">
                     <div>
                         <p className="font-medium text-slate-700 mb-1">Delivery Address:</p>
                         <div className="text-slate-600 bg-slate-100 p-2 rounded">
