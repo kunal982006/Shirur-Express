@@ -16,6 +16,16 @@ function readAndroidToken(): string {
   }
 }
 
+// App versions that show the pinned live order-status notification say so through the bridge.
+function supportsLiveOrderStatus(): boolean {
+  try {
+    const bridge = (window as any).AndroidApp;
+    return typeof bridge?.supportsLiveOrderStatus === "function" && !!bridge.supportsLiveOrderStatus();
+  } catch {
+    return false;
+  }
+}
+
 export function AndroidPushSync() {
   const { user } = useAuth();
 
@@ -37,7 +47,7 @@ export function AndroidPushSync() {
         return;
       }
       try {
-        await api.post("/users/fcm-token", { token });
+        await api.post("/users/fcm-token", { token, liveStatus: supportsLiveOrderStatus() });
         console.log("[Android Push] Token saved:", token.substring(0, 12) + "...");
       } catch (err) {
         console.error("[Android Push] Failed to save token:", err);

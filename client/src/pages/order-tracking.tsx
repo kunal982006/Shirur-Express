@@ -73,7 +73,7 @@ export default function OrderTracking() {
         );
     }
 
-    const { order, riderLocation, statusTimeline } = trackingInfo;
+    const { order, riderLocation, statusTimeline, etaMinutes } = trackingInfo;
     const isOutForDelivery = order.status === 'out_for_delivery';
     const isDelivered = order.status === 'delivered';
     const isStopped = order.status === 'cancelled' || order.status === 'declined';
@@ -108,6 +108,20 @@ export default function OrderTracking() {
                         </div>
                     </CardHeader>
                 </Card>
+
+                {isOutForDelivery && (
+                    <Card className="border-0 shadow-lg bg-blue-600 text-white">
+                        <CardContent className="py-5 text-center">
+                            <p className="text-sm opacity-90">Your order is on the way</p>
+                            <p className="text-3xl font-bold mt-1">
+                                {etaMinutes ? `Arriving in ${etaMinutes} min` : "Arriving soon"}
+                            </p>
+                            {etaMinutes ? (
+                                <p className="text-xs opacity-80 mt-1">Based on your delivery partner's live location</p>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {isStopped ? (
                     <Card className="border-0 shadow-lg bg-red-50">

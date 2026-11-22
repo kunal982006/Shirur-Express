@@ -12,6 +12,7 @@ import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
+import { arrivalMinutesForOrder, markLiveStatusCapable, pushOrderStatusToCustomer, refreshArrivalTimesForRider } from "./order-status-push";
 import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, isNonVegDish, orderFoodCollectionFeed } from "@shared/food-collections";
 import { PINNED_DISHES, PINNED_ROW_SLUGS, findPinnedIndex, findSpecialtyTag, isExtraFor, rotationRank } from "./food-highlights";
 import { CHOICE_TITLES, displayName, matchShirurOrdering, pickExtras, type OrderingCard, type OrderingEntry, type OrderingTab } from "./shirur-ordering";
@@ -133,6 +134,9 @@ export function broadcastOrderUpdate(payload: {
     timestamp: Date.now(),
   });
   console.log(`[SSE Broadcast] Order ${payload.orderId} status changed to '${payload.status}' — notifying ${orderSseClients.size} live client(s)`);
+
+  // Update the customer's live order-status notification (fire and forget).
+  void pushOrderStatusToCustomer(payload);
 
   orderSseClients.forEach((client) => {
     try {
@@ -828,10 +832,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/fcm-token", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const { token } = req.body;
+      const { token, liveStatus } = req.body;
       if (!token) return res.status(400).json({ message: "Token is required" });
 
       await storage.updateUserFcmToken(userId, token);
+      // The Android app can show the pinned live order-status notification.
+      if (liveStatus === true) markLiveStatusCapable(token);
       res.json({ message: "FCM token updated" });
     } catch (error: any) {
       console.error("FCM Token save error:", error);
@@ -3531,6 +3537,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =========================================
 
   // Get Customer's Grocery Orders
+  // Orders on their way to the customer, for the live order bar at the bottom of the app.
+  app.get("/api/customer/active-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const active = ['accepted', 'preparing', 'ready_for_pickup', 'assigned', 'arrived_at_pickup', 'out_for_delivery'];
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // ignore stale orders that never got closed
+      const result: any[] = [];
+      for (const type of commerceOrderTypes) {
+        const t = commerceOrderTables[type];
+        const rows: any[] = await db.select().from(t)
+          .where(and(eq(t.userId, userId), inArray(t.status, active), gte(t.createdAt, since)))
+          .orderBy(desc(t.createdAt));
+        for (const o of rows) {
+          const provider = o.providerId ? await storage.getServiceProvider(o.providerId) : null;
+          result.push({
+            id: o.id,
+            orderType: type,
+            status: o.status,
+            shopName: provider?.businessName || (type === 'grocery' ? 'Store' : 'Restaurant'),
+            createdAt: o.createdAt,
+            etaMinutes: await arrivalMinutesForOrder(o).catch(() => null),
+          });
+        }
+      }
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      res.json(result);
+    } catch (error: any) {
+      console.error("Get active orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching active orders" });
+    }
+  });
+
   app.get("/api/customer/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
@@ -3688,6 +3726,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updated = await storage.updateDeliveryPartnerLocation(partnerId, latitude, longitude);
       res.json({ message: "Location updated", partner: updated });
+      // Refresh "Arriving in X min" on the phones of this rider's customers.
+      void refreshArrivalTimesForRider(req.userId!);
     } catch (error: any) {
       console.error("Update delivery partner location error:", error);
       res.status(500).json({ message: error.message || "Error updating location" });
@@ -3846,7 +3886,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId!;
 
       const trackingInfo = await storage.getOrderTrackingInfo(orderId, userId);
-      res.json(trackingInfo);
+      const etaMinutes = await arrivalMinutesForOrder(trackingInfo.order).catch(() => null);
+      res.json({ ...trackingInfo, etaMinutes });
     } catch (error: any) {
       console.error("Track order error:", error);
       res.status(400).json({ message: error.message || "Error tracking order" });
@@ -4402,6 +4443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`[Admin Status] Order ${id} (${type}) status updated to '${status}' by admin.`);
+      broadcastOrderUpdate({ orderId: id, status, orderType: type, riderId: (updatedOrder as any).riderId || undefined, userId: (updatedOrder as any).userId });
 
       // Riders are rung only when the admin assigns them an order (see assign-rider).
 

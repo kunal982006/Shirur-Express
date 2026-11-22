@@ -11,6 +11,7 @@ import Header from "@/components/layout/header";
 import OrderNotificationPopup from "@/components/OrderNotificationPopup";
 import { IosPushSync } from "@/components/IosPushSync";
 import { AndroidPushSync } from "@/components/AndroidPushSync";
+import { ActiveOrderBar } from "@/components/ActiveOrderBar";
 import AppUpdatePopup from "@/components/AppUpdatePopup";
 import OfflineBanner from "@/components/OfflineBanner";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
@@ -233,6 +234,7 @@ function App() {
             <OrderNotificationPopup />
             <IosPushSync />
             <AndroidPushSync />
+            <ActiveOrderBar />
             <AppUpdatePopup />
             <OfflineBanner />
             <Toaster />

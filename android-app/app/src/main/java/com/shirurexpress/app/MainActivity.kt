@@ -780,6 +780,10 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         @android.webkit.JavascriptInterface
         fun isNativeApp(): Boolean = true
 
+        // The website asks this before sending live order-status updates (pinned notification).
+        @android.webkit.JavascriptInterface
+        fun supportsLiveOrderStatus(): Boolean = true
+
         // The website compares this with the latest Play Store version to show the update popup.
         @android.webkit.JavascriptInterface
         fun getAppVersionCode(): Int = BuildConfig.VERSION_CODE
