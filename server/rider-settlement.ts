@@ -302,11 +302,18 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         if (r1.length || r2.length) dishesRenamed += 1;
       }
 
-      // { itemId, imageUrl } sets a dish photo (e.g. borrowed from another restaurant).
+      // { itemId, imageUrl } sets a dish photo; { itemId, imageFrom: otherItemId }
+      // copies the photo of another dish (e.g. from another restaurant).
       let imagesSet = 0;
       for (const entry of list) {
-        if (entry?.remove === true || typeof entry?.itemId !== "string" || typeof entry?.imageUrl !== "string" || !entry.imageUrl.trim()) continue;
-        const imageUrl = entry.imageUrl.trim();
+        if (entry?.remove === true || typeof entry?.itemId !== "string") continue;
+        let imageUrl = typeof entry?.imageUrl === "string" ? entry.imageUrl.trim() : "";
+        if (!imageUrl && typeof entry?.imageFrom === "string") {
+          const [a] = await db.select({ u: restaurantMenuItems.imageUrl }).from(restaurantMenuItems).where(eq(restaurantMenuItems.id, entry.imageFrom));
+          const [b] = a?.u ? [] : await db.select({ u: streetFoodItems.imageUrl }).from(streetFoodItems).where(eq(streetFoodItems.id, entry.imageFrom));
+          imageUrl = (a?.u || b?.u || "").trim();
+        }
+        if (!imageUrl) continue;
         const r1 = await db.update(restaurantMenuItems).set({ imageUrl }).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
         const r2 = r1.length ? [] : await db.update(streetFoodItems).set({ imageUrl }).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
         if (r1.length || r2.length) imagesSet += 1;
