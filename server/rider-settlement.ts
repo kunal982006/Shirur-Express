@@ -292,13 +292,16 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         if (r1.length || r2.length) dishesRemoved += 1;
       }
 
-      // { itemId, name } renames a dish to match the menu card.
+      // { itemId, name?, category? } renames a dish or moves it to another category.
       let dishesRenamed = 0;
       for (const entry of list) {
-        if (entry?.remove === true || typeof entry?.itemId !== "string" || typeof entry?.name !== "string" || !entry.name.trim()) continue;
-        const name = entry.name.trim();
-        const r1 = await db.update(restaurantMenuItems).set({ name }).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
-        const r2 = r1.length ? [] : await db.update(streetFoodItems).set({ name }).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
+        if (entry?.remove === true || typeof entry?.itemId !== "string") continue;
+        const changes: { name?: string; category?: string } = {};
+        if (typeof entry?.name === "string" && entry.name.trim()) changes.name = entry.name.trim();
+        if (typeof entry?.category === "string" && entry.category.trim()) changes.category = entry.category.trim();
+        if (!changes.name && !changes.category) continue;
+        const r1 = await db.update(restaurantMenuItems).set(changes).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
+        const r2 = r1.length ? [] : await db.update(streetFoodItems).set(changes).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
         if (r1.length || r2.length) dishesRenamed += 1;
       }
 

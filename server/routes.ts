@@ -1,5 +1,6 @@
 import { registerAnalyticsRoutes } from "./analytics-routes";
 import { registerBillRoutes } from "./bill-routes";
+import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
 import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
 // server/routes.ts (FIXED FOR DATE BUG)
 
@@ -468,6 +469,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hour = Math.floor(expired.untilMinute / 60);
         const label = `${hour % 12 || 12}:${String(expired.untilMinute % 60).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
         return res.status(400).json({ message: `${expired.name} is available only until ${label}.` });
+      }
+
+      // Add-on dishes (single idli, single wada…) need a main dish in the same order.
+      const orderedIds = ((orderData.items as any[]) || []).map((item) => item?.productId).filter((id): id is string => typeof id === "string");
+      if (orderedIds.length > 0) {
+        const ordered = await db.select({ category: streetFoodItems.category }).from(streetFoodItems).where(inArray(streetFoodItems.id, orderedIds));
+        if (ordered.length > 0 && ordered.every((row) => isAddOnCategory(row.category))) {
+          return res.status(400).json({ message: ADD_ON_ONLY_MESSAGE });
+        }
       }
 
       // Assign a static runner ID for MVP (e.g., "runner-1")

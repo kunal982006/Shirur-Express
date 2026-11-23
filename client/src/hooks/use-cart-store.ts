@@ -13,7 +13,12 @@ interface CartItem {
   quantity: number;
   providerId?: string;
   itemType?: 'grocery' | 'street_food' | 'service' | 'restaurant' | 'cake'; // Added itemType
+  /** Add-on dish: can only stay in the cart next to a main dish. */
+  addOn?: boolean;
 }
+
+// When the last main dish leaves the cart, its add-ons go with it.
+const dropOrphanAddOns = (items: CartItem[]) => (items.some((i) => !i.addOn) ? items : []);
 
 // Define the state and actions for our cart store
 interface CartState {
@@ -65,7 +70,7 @@ export const useCartStore = create<CartState>()(
       removeItem: (itemId) => {
         haptic();
         set((state) => ({
-          items: state.items.filter((item) => item.id !== itemId),
+          items: dropOrphanAddOns(state.items.filter((item) => item.id !== itemId)),
         }));
       },
 
@@ -88,6 +93,7 @@ export const useCartStore = create<CartState>()(
             })
             .filter((item): item is CartItem => item !== null), // null items ko hata do
         }));
+        set((state) => ({ items: dropOrphanAddOns(state.items) }));
       },
       // --- NAYA LOGIC YAHAN KHATAM ---
 
