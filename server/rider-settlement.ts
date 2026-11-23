@@ -260,6 +260,26 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         dishesAdded += 1;
       }
 
+      // { itemId, remove: true } deletes a dish that is no longer on the menu card.
+      // Past orders keep their own copy of the dish name and price.
+      let dishesRemoved = 0;
+      for (const entry of list) {
+        if (entry?.remove !== true || typeof entry?.itemId !== "string") continue;
+        const r1 = await db.delete(restaurantMenuItems).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
+        const r2 = r1.length ? [] : await db.delete(streetFoodItems).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
+        if (r1.length || r2.length) dishesRemoved += 1;
+      }
+
+      // { itemId, name } renames a dish to match the menu card.
+      let dishesRenamed = 0;
+      for (const entry of list) {
+        if (entry?.remove === true || typeof entry?.itemId !== "string" || typeof entry?.name !== "string" || !entry.name.trim()) continue;
+        const name = entry.name.trim();
+        const r1 = await db.update(restaurantMenuItems).set({ name }).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
+        const r2 = r1.length ? [] : await db.update(streetFoodItems).set({ name }).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
+        if (r1.length || r2.length) dishesRenamed += 1;
+      }
+
       // { itemId, clearRestaurantPrice: true, customerPrice? } undoes a wrong entry:
       // the dish loses its restaurant price (partner asks at the counter again).
       let restaurantPricesCleared = 0;
@@ -280,7 +300,7 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       const wanted = new Map<string, number>();
       const customerPrices = new Map<string, number>();
       for (const entry of list) {
-        if (typeof entry?.itemId !== "string" || entry?.clearRestaurantPrice === true) continue;
+        if (typeof entry?.itemId !== "string" || entry?.clearRestaurantPrice === true || entry?.remove === true) continue;
         const price = toNumber(entry?.restaurantPrice);
         if (price !== null && price >= 0) wanted.set(entry.itemId, price);
         const customerPrice = toNumber(entry?.customerPrice);
@@ -288,8 +308,8 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
       const ids = Array.from(wanted.keys());
       if (ids.length === 0) {
-        if (restaurantsRenamed > 0 || restaurantPricesCleared > 0) {
-          return res.json({ restaurantsRenamed, restaurantPricesCleared, dishesAdded, customerPricesChanged: clearedCustomerPrices, saved: 0, unchanged: 0, notFound: 0 });
+        if (restaurantsRenamed > 0 || restaurantPricesCleared > 0 || dishesRemoved > 0 || dishesRenamed > 0) {
+          return res.json({ restaurantsRenamed, restaurantPricesCleared, dishesRemoved, dishesRenamed, dishesAdded, customerPricesChanged: clearedCustomerPrices, saved: 0, unchanged: 0, notFound: 0 });
         }
         return res.status(400).json({ message: "No valid prices in the list" });
       }
@@ -323,6 +343,8 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
 
       res.json({
+        dishesRemoved,
+        dishesRenamed,
         restaurantsRenamed,
         restaurantPricesCleared,
         dishesAdded,
