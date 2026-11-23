@@ -302,6 +302,16 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         if (r1.length || r2.length) dishesRenamed += 1;
       }
 
+      // { itemId, imageUrl } sets a dish photo (e.g. borrowed from another restaurant).
+      let imagesSet = 0;
+      for (const entry of list) {
+        if (entry?.remove === true || typeof entry?.itemId !== "string" || typeof entry?.imageUrl !== "string" || !entry.imageUrl.trim()) continue;
+        const imageUrl = entry.imageUrl.trim();
+        const r1 = await db.update(restaurantMenuItems).set({ imageUrl }).where(eq(restaurantMenuItems.id, entry.itemId)).returning({ id: restaurantMenuItems.id });
+        const r2 = r1.length ? [] : await db.update(streetFoodItems).set({ imageUrl }).where(eq(streetFoodItems.id, entry.itemId)).returning({ id: streetFoodItems.id });
+        if (r1.length || r2.length) imagesSet += 1;
+      }
+
       // { itemId, clearRestaurantPrice: true, customerPrice? } undoes a wrong entry:
       // the dish loses its restaurant price (partner asks at the counter again).
       let restaurantPricesCleared = 0;
@@ -330,8 +340,8 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
       const ids = Array.from(wanted.keys());
       if (ids.length === 0) {
-        if (restaurantsRenamed > 0 || restaurantPricesCleared > 0 || dishesRemoved > 0 || dishesRenamed > 0) {
-          return res.json({ restaurantsRenamed, restaurantPricesCleared, dishesRemoved, dishesRenamed, dishesAdded, customerPricesChanged: clearedCustomerPrices, saved: 0, unchanged: 0, notFound: 0 });
+        if (restaurantsRenamed > 0 || restaurantPricesCleared > 0 || dishesRemoved > 0 || dishesRenamed > 0 || imagesSet > 0) {
+          return res.json({ imagesSet, restaurantsRenamed, restaurantPricesCleared, dishesRemoved, dishesRenamed, dishesAdded, customerPricesChanged: clearedCustomerPrices, saved: 0, unchanged: 0, notFound: 0 });
         }
         return res.status(400).json({ message: "No valid prices in the list" });
       }
@@ -365,6 +375,7 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
 
       res.json({
+        imagesSet,
         dishesRemoved,
         dishesRenamed,
         restaurantsRenamed,
