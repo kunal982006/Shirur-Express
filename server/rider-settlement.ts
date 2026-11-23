@@ -210,12 +210,43 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
 
   // Many dishes at once (a whole menu card): [{ itemId, restaurantPrice, customerPrice? }].
   // customerPrice, when given, also changes the price customers pay.
+  // An entry with `create` instead of itemId adds a new restaurant dish
+  // ({ providerId, name, category, price, imageUrl?, description?, isVeg? }); a dish
+  // with the same name at that restaurant is reused, so pasting twice is safe.
   app.post("/api/admin/restaurant-prices/import", mw.isAdmin, async (req: any, res: Response) => {
     try {
       const list = Array.isArray(req.body?.prices) ? req.body.prices : null;
       if (!list || list.length === 0 || list.length > 2000) {
         return res.status(400).json({ message: "Paste the price list you were given" });
       }
+      let dishesAdded = 0;
+      for (const entry of list) {
+        const c = entry?.create;
+        if (!c || typeof c !== "object") continue;
+        const price = toNumber(c.price);
+        if (typeof c.providerId !== "string" || typeof c.name !== "string" || !c.name.trim() || price === null || price <= 0) {
+          return res.status(400).json({ message: "A new dish in the list is missing its restaurant, name or price" });
+        }
+        const [existing] = await db.select({ id: restaurantMenuItems.id }).from(restaurantMenuItems)
+          .where(and(eq(restaurantMenuItems.providerId, c.providerId), eq(restaurantMenuItems.name, c.name.trim())));
+        if (existing) {
+          entry.itemId = existing.id;
+          continue;
+        }
+        const [created] = await db.insert(restaurantMenuItems).values({
+          providerId: c.providerId,
+          name: c.name.trim(),
+          category: typeof c.category === "string" ? c.category : null,
+          description: typeof c.description === "string" ? c.description : null,
+          imageUrl: typeof c.imageUrl === "string" ? c.imageUrl : null,
+          price: price.toFixed(2),
+          isVeg: c.isVeg !== false,
+          isAvailable: true,
+        }).returning({ id: restaurantMenuItems.id });
+        entry.itemId = created.id;
+        dishesAdded += 1;
+      }
+
       const wanted = new Map<string, number>();
       const customerPrices = new Map<string, number>();
       for (const entry of list) {
@@ -257,6 +288,7 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
 
       res.json({
+        dishesAdded,
         customerPricesChanged,
         saved: rows.length,
         unchanged: ids.filter((id) => known.has(id)).length - rows.length,

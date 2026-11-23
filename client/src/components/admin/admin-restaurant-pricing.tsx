@@ -122,10 +122,10 @@ export default function AdminRestaurantPricing() {
       const prices = Array.isArray(parsed) ? parsed : parsed?.prices;
       return api.post("/admin/restaurant-prices/import", { prices }).then((r) => r.data);
     },
-    onSuccess: (result: { saved: number; unchanged: number; notFound: number; customerPricesChanged?: number }) => {
+    onSuccess: (result: { saved: number; unchanged: number; notFound: number; customerPricesChanged?: number; dishesAdded?: number }) => {
       toast({
         title: `Restaurant prices saved: ${result.saved}`,
-        description: `${result.unchanged} already correct${result.customerPricesChanged ? `, ${result.customerPricesChanged} customer prices updated` : ""}${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
+        description: `${result.unchanged} already correct${result.dishesAdded ? `, ${result.dishesAdded} new dishes added` : ""}${result.customerPricesChanged ? `, ${result.customerPricesChanged} customer prices updated` : ""}${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
       });
       setImportText("");
       setIsImportOpen(false);
