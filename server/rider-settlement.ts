@@ -7,7 +7,7 @@
 import type { Express, Response, NextFunction } from "express";
 import { and, asc, desc, eq, gte, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "./db";
-import { menuItemRestaurantPrices, restaurantMenuItems, restaurantOrders, streetFoodItems, streetFoodOrders } from "@shared/schema";
+import { menuItemRestaurantPrices, restaurantMenuItems, restaurantOrders, serviceProviders, streetFoodItems, streetFoodOrders } from "@shared/schema";
 import { addUpSettlements, istToday, settleOrder, type OrderSettlement } from "@shared/rider-settlement";
 
 type Middleware = (req: any, res: Response, next: NextFunction) => unknown;
@@ -219,6 +219,19 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       if (!list || list.length === 0 || list.length > 2000) {
         return res.status(400).json({ message: "Paste the price list you were given" });
       }
+      // { rename: { providerId, businessName } } changes a restaurant's name.
+      let restaurantsRenamed = 0;
+      for (const entry of list) {
+        const r = entry?.rename;
+        if (!r || typeof r !== "object") continue;
+        if (typeof r.providerId !== "string" || typeof r.businessName !== "string" || !r.businessName.trim()) {
+          return res.status(400).json({ message: "A rename in the list is missing the restaurant or the new name" });
+        }
+        const [renamed] = await db.update(serviceProviders).set({ businessName: r.businessName.trim() })
+          .where(eq(serviceProviders.id, r.providerId)).returning({ id: serviceProviders.id });
+        if (renamed) restaurantsRenamed += 1;
+      }
+
       let dishesAdded = 0;
       for (const entry of list) {
         const c = entry?.create;
@@ -257,7 +270,10 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         if (customerPrice !== null && customerPrice > 0) customerPrices.set(entry.itemId, customerPrice);
       }
       const ids = Array.from(wanted.keys());
-      if (ids.length === 0) return res.status(400).json({ message: "No valid prices in the list" });
+      if (ids.length === 0) {
+        if (restaurantsRenamed > 0) return res.json({ restaurantsRenamed, dishesAdded, customerPricesChanged: 0, saved: 0, unchanged: 0, notFound: 0 });
+        return res.status(400).json({ message: "No valid prices in the list" });
+      }
 
       const [restaurantRows, streetRows] = await Promise.all([
         db.select({ id: restaurantMenuItems.id }).from(restaurantMenuItems).where(inArray(restaurantMenuItems.id, ids)),
@@ -288,6 +304,7 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
       }
 
       res.json({
+        restaurantsRenamed,
         dishesAdded,
         customerPricesChanged,
         saved: rows.length,
