@@ -208,6 +208,47 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
     }
   });
 
+  // Many dishes at once (a whole menu card): [{ itemId, restaurantPrice }].
+  app.post("/api/admin/restaurant-prices/import", mw.isAdmin, async (req: any, res: Response) => {
+    try {
+      const list = Array.isArray(req.body?.prices) ? req.body.prices : null;
+      if (!list || list.length === 0 || list.length > 2000) {
+        return res.status(400).json({ message: "Paste the price list you were given" });
+      }
+      const wanted = new Map<string, number>();
+      for (const entry of list) {
+        const price = toNumber(entry?.restaurantPrice);
+        if (typeof entry?.itemId === "string" && price !== null && price >= 0) wanted.set(entry.itemId, price);
+      }
+      const ids = Array.from(wanted.keys());
+      if (ids.length === 0) return res.status(400).json({ message: "No valid prices in the list" });
+
+      const [restaurantRows, streetRows] = await Promise.all([
+        db.select({ id: restaurantMenuItems.id }).from(restaurantMenuItems).where(inArray(restaurantMenuItems.id, ids)),
+        db.select({ id: streetFoodItems.id }).from(streetFoodItems).where(inArray(streetFoodItems.id, ids)),
+      ]);
+      const known = new Set([...restaurantRows, ...streetRows].map((r) => r.id));
+      const history = await loadPriceHistory(ids);
+      const now = new Date();
+      const rows = ids
+        .filter((id) => known.has(id))
+        .filter((id) => {
+          const h = history.get(id);
+          return !h || h[h.length - 1].price !== wanted.get(id);
+        })
+        .map((id) => ({ itemId: id, restaurantPrice: wanted.get(id)!.toFixed(2), effectiveFrom: now }));
+      if (rows.length > 0) await db.insert(menuItemRestaurantPrices).values(rows);
+      res.json({
+        saved: rows.length,
+        unchanged: ids.filter((id) => known.has(id)).length - rows.length,
+        notFound: ids.filter((id) => !known.has(id)).length,
+      });
+    } catch (error: any) {
+      console.error("Import restaurant prices error:", error);
+      res.status(500).json({ message: error.message || "Could not import prices" });
+    }
+  });
+
   // Set what Shirur Express pays the restaurant for a dish from now on.
   // An empty value removes the dish's restaurant price completely (for a mistake).
   app.patch("/api/admin/menu-items/:itemId/restaurant-price", mw.isAdmin, async (req: any, res: Response) => {

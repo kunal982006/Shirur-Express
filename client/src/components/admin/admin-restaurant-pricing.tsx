@@ -108,6 +108,34 @@ export default function AdminRestaurantPricing() {
     },
   });
 
+  // Paste a whole menu card's restaurant prices at once.
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const importMutation = useMutation({
+    mutationFn: async () => {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(importText);
+      } catch {
+        throw new Error("This is not the price list. Copy the whole list again and paste it.");
+      }
+      const prices = Array.isArray(parsed) ? parsed : parsed?.prices;
+      return api.post("/admin/restaurant-prices/import", { prices }).then((r) => r.data);
+    },
+    onSuccess: (result: { saved: number; unchanged: number; notFound: number }) => {
+      toast({
+        title: `Restaurant prices saved: ${result.saved}`,
+        description: `${result.unchanged} already correct${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
+      });
+      setImportText("");
+      setIsImportOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurant-prices"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Import failed", description: err.response?.data?.message || err.message, variant: "destructive" });
+    },
+  });
+
   // Single price update mutation
   const updateSinglePriceMutation = useMutation({
     mutationFn: async ({
@@ -253,6 +281,13 @@ export default function AdminRestaurantPricing() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => setIsImportOpen(true)}
+                variant="outline"
+                className="bg-white/5 border-white/15 text-white font-bold gap-2"
+              >
+                Import Restaurant Prices
+              </Button>
               <Button
                 onClick={() => {
                   setBulkScope(selectedRestaurantId === "all" ? "all_restaurants" : "current_restaurant");
@@ -404,6 +439,37 @@ export default function AdminRestaurantPricing() {
           )}
         </CardContent>
       </Card>
+
+      {/* ─── Import Restaurant Prices Dialog ─────────────────────── */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="bg-[#1f2937] border-white/10 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white">Import Restaurant Prices</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Paste the price list prepared from a restaurant's menu card. Only restaurant prices change; customer prices stay the same.
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder='[{"itemId":"...","restaurantPrice":120}, ...]'
+            className="w-full h-48 rounded-md bg-white/5 border border-white/15 p-2 text-xs font-mono text-white"
+          />
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsImportOpen(false)} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => importMutation.mutate()}
+              disabled={!importText.trim() || importMutation.isPending}
+              className="bg-sky-600 hover:bg-sky-500 text-white font-bold"
+            >
+              {importMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Prices
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ─── Bulk Price Update Dialog ────────────────────────────── */}
       <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
