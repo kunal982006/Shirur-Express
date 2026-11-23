@@ -86,6 +86,28 @@ export default function AdminRestaurantPricing() {
     queryFn: () => api.get("/admin/restaurants-pricing").then((r) => r.data),
   });
 
+  // What we pay each restaurant per dish (admin only; customers never see it).
+  const { data: restaurantPrices } = useQuery<Record<string, number | null>>({
+    queryKey: ["/api/admin/restaurant-prices"],
+    queryFn: () => api.get("/admin/restaurant-prices").then((r) => r.data),
+  });
+
+  const saveRestaurantPriceMutation = useMutation({
+    mutationFn: async ({ itemId, restaurantPrice, categorySlug }: { itemId: string; restaurantPrice: string; categorySlug: string }) =>
+      api.patch(`/admin/menu-items/${itemId}/restaurant-price`, { restaurantPrice: restaurantPrice === "" ? null : restaurantPrice, categorySlug }),
+    onSuccess: (_, vars) => {
+      toast({
+        title: "Restaurant price saved",
+        description: vars.restaurantPrice === "" ? "Removed" : `We pay ₹${vars.restaurantPrice}`,
+        duration: 2000,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurant-prices"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Could not save", description: err.response?.data?.message || err.message, variant: "destructive" });
+    },
+  });
+
   // Single price update mutation
   const updateSinglePriceMutation = useMutation({
     mutationFn: async ({
@@ -343,6 +365,10 @@ export default function AdminRestaurantPricing() {
                     <TableHead className="text-gray-400 font-semibold min-w-[220px]">
                       Instant Price Update (₹)
                     </TableHead>
+                    <TableHead className="text-gray-400 font-semibold min-w-[190px]">
+                      Restaurant Price (₹)
+                      <span className="block text-[10px] font-normal normal-case text-gray-500">What the partner pays</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -361,6 +387,14 @@ export default function AdminRestaurantPricing() {
                       isUpdating={
                         updateSinglePriceMutation.isPending &&
                         (updateSinglePriceMutation.variables as any)?.itemId === item.id
+                      }
+                      restaurantPrice={restaurantPrices?.[item.id] ?? null}
+                      onSaveRestaurantPrice={(value) =>
+                        saveRestaurantPriceMutation.mutate({ itemId: item.id, restaurantPrice: value, categorySlug: item.categorySlug })
+                      }
+                      isSavingRestaurantPrice={
+                        saveRestaurantPriceMutation.isPending &&
+                        saveRestaurantPriceMutation.variables?.itemId === item.id
                       }
                     />
                   ))}
@@ -564,11 +598,27 @@ function AdminPriceRow({
   item,
   onUpdatePrice,
   isUpdating,
+  restaurantPrice,
+  onSaveRestaurantPrice,
+  isSavingRestaurantPrice,
 }: {
   item: MenuItem & { providerName: string; categorySlug: string };
   onUpdatePrice: (newPrice: string) => void;
   isUpdating: boolean;
+  restaurantPrice: number | null;
+  onSaveRestaurantPrice: (value: string) => void;
+  isSavingRestaurantPrice: boolean;
 }) {
+  const savedCost = restaurantPrice === null ? "" : String(restaurantPrice);
+  const [cost, setCost] = useState(savedCost);
+  React.useEffect(() => setCost(savedCost), [savedCost]);
+  const costChanged = cost !== savedCost;
+  const saveCost = () => {
+    if (cost !== "" && isNaN(parseFloat(cost))) return;
+    onSaveRestaurantPrice(cost);
+  };
+  const margin = restaurantPrice === null ? null : (parseFloat(item.price) || 0) - restaurantPrice;
+
   const [val, setVal] = useState(item.price?.toString() || "");
   const [isChanged, setIsChanged] = useState(false);
 
@@ -694,6 +744,46 @@ function AdminPriceRow({
               -10
             </button>
           </div>
+        </div>
+      </TableCell>
+
+      {/* What we pay the restaurant */}
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex items-center">
+            <span className="absolute left-2.5 text-xs font-bold text-gray-400">₹</span>
+            <Input
+              type="number"
+              min="0"
+              inputMode="decimal"
+              placeholder="Not set"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveCost();
+              }}
+              className={`h-9 w-24 pl-6 text-sm font-bold bg-white/5 border-white/20 text-white ${
+                costChanged ? "border-sky-500 ring-2 ring-sky-500/30 bg-sky-500/10" : restaurantPrice === null ? "border-amber-500/40" : ""
+              }`}
+            />
+          </div>
+          {costChanged ? (
+            <Button
+              size="sm"
+              onClick={saveCost}
+              disabled={isSavingRestaurantPrice}
+              className="h-9 px-3 bg-sky-600 hover:bg-sky-500 text-white font-bold gap-1 text-xs"
+            >
+              {isSavingRestaurantPrice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 stroke-[3]" />}
+              Save
+            </Button>
+          ) : margin !== null ? (
+            <span className={`text-xs font-semibold ${margin >= 0 ? "text-emerald-400" : "text-red-400"}`} title="Customer price minus restaurant price">
+              {margin >= 0 ? "+" : ""}₹{margin.toFixed(0)}
+            </span>
+          ) : (
+            <span className="text-[10px] text-amber-400">Missing</span>
+          )}
         </div>
       </TableCell>
     </TableRow>

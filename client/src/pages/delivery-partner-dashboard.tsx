@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { deliveryDirectionsUrl, displayDeliveryAddress } from "@shared/delivery-address";
 import { PrintOrderBillButton } from "@/components/print-order-bill-button";
+import type { OrderSettlement, SettlementTotals } from "@shared/rider-settlement";
+import { rupees, settleLine } from "@/components/settlement/money";
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -240,6 +242,7 @@ export default function DeliveryPartnerDashboard() {
                             </span>
                         </div>
                     )}
+                    <TodaySettlementCard />
                     <Button className="mt-4 w-full" onClick={() => setLocation("/billing")}>
                         <ReceiptText className="h-4 w-4 mr-2" /> Print Bill
                     </Button>
@@ -441,6 +444,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </div>
                 </div>
 
+                {order.settlement && <OrderMoneyBox settlement={order.settlement} />}
+
                 {/* Deliver to */}
                 <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-1">Deliver to</p>
@@ -529,3 +534,76 @@ const OrderCard: React.FC<OrderCardProps> = ({
         </Card>
     );
 };
+
+/** What to pay at the counter, what to collect, and what the partner earns on one order. */
+function OrderMoneyBox({ settlement }: { settlement: OrderSettlement }) {
+    const billKnown = settlement.missingPrices === 0;
+    return (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 space-y-1.5">
+            <div className="flex justify-between items-baseline gap-2">
+                <span className="font-semibold text-slate-900">Pay restaurant</span>
+                <span className="text-lg font-bold text-emerald-800">
+                    {billKnown ? rupees(settlement.restaurantBill) : settlement.restaurantBill > 0 ? `${rupees(settlement.restaurantBill)} +` : "Ask restaurant"}
+                </span>
+            </div>
+            {!billKnown && (
+                <p className="text-xs text-amber-700">
+                    {settlement.missingPrices} dish{settlement.missingPrices > 1 ? "es have" : " has"} no restaurant price yet — check the bill at the counter.
+                </p>
+            )}
+            <div className="flex justify-between gap-2 text-slate-700">
+                <span>{settlement.isCod ? "Collect from customer" : "Paid online — collect"}</span>
+                <span className="font-semibold">{rupees(settlement.collectFromCustomer)}</span>
+            </div>
+            <div className="flex justify-between gap-2 text-slate-700">
+                <span>Your earning</span>
+                <span className="font-semibold text-emerald-700">{rupees(settlement.partnerEarning)}</span>
+            </div>
+        </div>
+    );
+}
+
+/** Today's earnings and the amount to settle with Shirur Express. */
+function TodaySettlementCard() {
+    const { data } = useQuery<{ date: string; totals: SettlementTotals }>({
+        queryKey: ["riderSettlement"],
+        queryFn: () => api.get("/rider/settlement").then((r) => r.data),
+        refetchInterval: 30000,
+        refetchOnWindowFocus: true,
+    });
+    const t = data?.totals;
+    if (!t) return null;
+    const line = settleLine(t.partnerOwes, "partner");
+    return (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+            <div className="flex justify-between items-baseline mb-2">
+                <p className="font-semibold text-slate-900">Today</p>
+                <p className="text-xs text-slate-500">{t.orders} order{t.orders === 1 ? "" : "s"} picked up</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-md bg-white p-2 border border-slate-200">
+                    <p className="text-xs text-slate-500">Your earnings</p>
+                    <p className="text-lg font-bold text-emerald-700">{rupees(t.partnerEarnings)}</p>
+                </div>
+                <div className="rounded-md bg-white p-2 border border-slate-200">
+                    <p className="text-xs text-slate-500">Paid to restaurants</p>
+                    <p className="text-lg font-bold text-slate-900">{rupees(t.paidToRestaurants)}</p>
+                </div>
+                <div className="rounded-md bg-white p-2 border border-slate-200 col-span-2 flex justify-between">
+                    <span className="text-slate-600">Cash collected from customers</span>
+                    <span className="font-semibold">{rupees(t.collectedFromCustomers)}</span>
+                </div>
+            </div>
+            <div className={`mt-2 rounded-md p-2.5 text-center font-bold ${
+                line.tone === "partnerPays" ? "bg-orange-100 text-orange-800" : line.tone === "shirurPays" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"
+            }`}>
+                {line.text}
+            </div>
+            {t.ordersMissingPrices > 0 && (
+                <p className="mt-1.5 text-xs text-amber-700">
+                    {t.ordersMissingPrices} order{t.ordersMissingPrices > 1 ? "s" : ""} had dishes without a restaurant price, so this may change.
+                </p>
+            )}
+        </div>
+    );
+}

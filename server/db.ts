@@ -115,6 +115,14 @@ export async function checkDatabaseConnection(): Promise<boolean> {
           ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS source_id TEXT;
           ALTER TABLE delivery_bills ADD COLUMN IF NOT EXISTS details JSONB;
           ALTER TABLE service_providers ADD COLUMN IF NOT EXISTS avg_cost_per_person INTEGER;
+          CREATE TABLE IF NOT EXISTS menu_item_restaurant_prices (
+            id SERIAL PRIMARY KEY,
+            item_id TEXT NOT NULL,
+            restaurant_price DECIMAL(10,2) NOT NULL,
+            effective_from TIMESTAMP NOT NULL DEFAULT NOW()
+          );
+          CREATE INDEX IF NOT EXISTS idx_menu_item_restaurant_prices_item
+            ON menu_item_restaurant_prices(item_id, effective_from);
           UPDATE service_providers SET address = 'Shirur' WHERE address = 'Added via Admin Panel';
           CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_bills_source
             ON delivery_bills(source_type, source_id) WHERE source_id IS NOT NULL;

@@ -1,5 +1,6 @@
 import { registerAnalyticsRoutes } from "./analytics-routes";
 import { registerBillRoutes } from "./bill-routes";
+import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
 // server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
@@ -3738,7 +3739,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/rider/orders/available", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
       const availableOrders = await storage.getAllAvailableOrdersForRider();
-      res.json(availableOrders);
+      // Each restaurant order carries what to pay at the counter and what the partner earns.
+      res.json(await attachSettlements(availableOrders));
     } catch (error: any) {
       console.error("Get available orders error:", error);
       res.status(500).json({ message: error.message || "Error fetching available orders" });
@@ -3750,7 +3752,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const riderId = req.userId!;
       const myOrders = await storage.getAllRiderOrders(riderId);
-      res.json(myOrders);
+      res.json(await attachSettlements(myOrders));
     } catch (error: any) {
       console.error("Get rider orders error:", error);
       res.status(500).json({ message: error.message || "Error fetching orders" });
@@ -6747,6 +6749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Register User Analytics & Behavior Routes
   registerAnalyticsRoutes(app, isAdmin);
   registerBillRoutes(app);
+  registerSettlementRoutes(app, { isAdmin, isDeliveryPartner });
 
   return httpServer;
 }
