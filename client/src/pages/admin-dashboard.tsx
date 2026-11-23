@@ -387,6 +387,8 @@ export default function AdminDashboard() {
     const { data: allUsers } = useQuery<AppUser[]>({
         queryKey: ["/api/admin/users"],
         queryFn: () => api.get("/admin/users").then(r => r.data),
+        // The full user list is large: load it only when the Users tab is opened.
+        enabled: activeTab === "users",
     });
 
     // Service categories for provider creation

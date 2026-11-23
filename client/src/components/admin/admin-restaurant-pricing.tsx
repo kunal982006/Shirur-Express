@@ -225,6 +225,11 @@ export default function AdminRestaurantPricing() {
     return Array.from(cats).sort();
   }, [restaurants, activeRestaurant]);
 
+  // Drawing thousands of editable rows freezes phones: show a page at a time.
+  const PAGE_SIZE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  React.useEffect(() => setVisibleCount(PAGE_SIZE), [selectedRestaurantId, selectedCategory, searchQuery]);
+
   const allDisplayItems = useMemo(() => {
     if (!restaurants) return [];
     let items: Array<MenuItem & { providerName: string; categorySlug: string }> = [];
@@ -408,7 +413,7 @@ export default function AdminRestaurantPricing() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allDisplayItems.map((item) => (
+                  {allDisplayItems.slice(0, visibleCount).map((item) => (
                     <AdminPriceRow
                       key={item.id}
                       item={item}
@@ -436,6 +441,20 @@ export default function AdminRestaurantPricing() {
                   ))}
                 </TableBody>
               </Table>
+              {allDisplayItems.length > visibleCount && (
+                <div className="p-4 flex flex-col items-center gap-1 border-t border-white/5">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((n) => n + PAGE_SIZE * 2)}
+                    className="bg-white/5 border-white/15 text-white"
+                  >
+                    Show more dishes
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    Showing {visibleCount} of {allDisplayItems.length}. Pick a restaurant or search to find a dish faster.
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
