@@ -122,14 +122,15 @@ export default function AdminRestaurantPricing() {
       const prices = Array.isArray(parsed) ? parsed : parsed?.prices;
       return api.post("/admin/restaurant-prices/import", { prices }).then((r) => r.data);
     },
-    onSuccess: (result: { saved: number; unchanged: number; notFound: number }) => {
+    onSuccess: (result: { saved: number; unchanged: number; notFound: number; customerPricesChanged?: number }) => {
       toast({
         title: `Restaurant prices saved: ${result.saved}`,
-        description: `${result.unchanged} already correct${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
+        description: `${result.unchanged} already correct${result.customerPricesChanged ? `, ${result.customerPricesChanged} customer prices updated` : ""}${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
       });
       setImportText("");
       setIsImportOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurant-prices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurants-pricing"] });
     },
     onError: (err: any) => {
       toast({ title: "Import failed", description: err.response?.data?.message || err.message, variant: "destructive" });
@@ -446,7 +447,7 @@ export default function AdminRestaurantPricing() {
           <DialogHeader>
             <DialogTitle className="text-white">Import Restaurant Prices</DialogTitle>
             <DialogDescription className="text-gray-400">
-              Paste the price list prepared from a restaurant's menu card. Only restaurant prices change; customer prices stay the same.
+              Paste the price list prepared from a restaurant's menu card. Restaurant prices are saved. Customer prices change only for dishes the list gives a new customer price.
             </DialogDescription>
           </DialogHeader>
           <textarea

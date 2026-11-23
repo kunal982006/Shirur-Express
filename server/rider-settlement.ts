@@ -208,7 +208,8 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
     }
   });
 
-  // Many dishes at once (a whole menu card): [{ itemId, restaurantPrice }].
+  // Many dishes at once (a whole menu card): [{ itemId, restaurantPrice, customerPrice? }].
+  // customerPrice, when given, also changes the price customers pay.
   app.post("/api/admin/restaurant-prices/import", mw.isAdmin, async (req: any, res: Response) => {
     try {
       const list = Array.isArray(req.body?.prices) ? req.body.prices : null;
@@ -216,9 +217,13 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         return res.status(400).json({ message: "Paste the price list you were given" });
       }
       const wanted = new Map<string, number>();
+      const customerPrices = new Map<string, number>();
       for (const entry of list) {
+        if (typeof entry?.itemId !== "string") continue;
         const price = toNumber(entry?.restaurantPrice);
-        if (typeof entry?.itemId === "string" && price !== null && price >= 0) wanted.set(entry.itemId, price);
+        if (price !== null && price >= 0) wanted.set(entry.itemId, price);
+        const customerPrice = toNumber(entry?.customerPrice);
+        if (customerPrice !== null && customerPrice > 0) customerPrices.set(entry.itemId, customerPrice);
       }
       const ids = Array.from(wanted.keys());
       if (ids.length === 0) return res.status(400).json({ message: "No valid prices in the list" });
@@ -238,7 +243,21 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         })
         .map((id) => ({ itemId: id, restaurantPrice: wanted.get(id)!.toFixed(2), effectiveFrom: now }));
       if (rows.length > 0) await db.insert(menuItemRestaurantPrices).values(rows);
+
+      const restaurantIds = new Set(restaurantRows.map((r) => r.id));
+      let customerPricesChanged = 0;
+      for (const [id, price] of Array.from(customerPrices.entries())) {
+        if (!known.has(id)) continue;
+        if (restaurantIds.has(id)) {
+          await db.update(restaurantMenuItems).set({ price: price.toFixed(2) }).where(eq(restaurantMenuItems.id, id));
+        } else {
+          await db.update(streetFoodItems).set({ price: String(price) }).where(eq(streetFoodItems.id, id));
+        }
+        customerPricesChanged += 1;
+      }
+
       res.json({
+        customerPricesChanged,
         saved: rows.length,
         unchanged: ids.filter((id) => known.has(id)).length - rows.length,
         notFound: ids.filter((id) => !known.has(id)).length,
