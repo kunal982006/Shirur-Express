@@ -240,6 +240,28 @@ export function registerSettlementRoutes(app: Express, mw: { isAdmin: Middleware
         if (typeof c.providerId !== "string" || typeof c.name !== "string" || !c.name.trim() || price === null || price <= 0) {
           return res.status(400).json({ message: "A new dish in the list is missing its restaurant, name or price" });
         }
+        // { create: { streetFood: true, ... } } adds the dish to a street food vendor's menu.
+        if (c.streetFood === true) {
+          const [existingStreet] = await db.select({ id: streetFoodItems.id }).from(streetFoodItems)
+            .where(and(eq(streetFoodItems.providerId, c.providerId), eq(streetFoodItems.name, c.name.trim())));
+          if (existingStreet) {
+            entry.itemId = existingStreet.id;
+            continue;
+          }
+          const [createdStreet] = await db.insert(streetFoodItems).values({
+            providerId: c.providerId,
+            name: c.name.trim(),
+            category: typeof c.category === "string" ? c.category : null,
+            description: typeof c.description === "string" ? c.description : null,
+            imageUrl: typeof c.imageUrl === "string" ? c.imageUrl : null,
+            price: String(price),
+            isVeg: c.isVeg !== false,
+            isAvailable: true,
+          }).returning({ id: streetFoodItems.id });
+          entry.itemId = createdStreet.id;
+          dishesAdded += 1;
+          continue;
+        }
         const [existing] = await db.select({ id: restaurantMenuItems.id }).from(restaurantMenuItems)
           .where(and(eq(restaurantMenuItems.providerId, c.providerId), eq(restaurantMenuItems.name, c.name.trim())));
         if (existing) {
