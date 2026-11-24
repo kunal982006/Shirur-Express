@@ -1,0 +1,234 @@
+DRINKS
+Tea - 28
+Coffee - 39
+Cold Coffee - 72
+Milk Glass - 67
+Bournvita Glass - 72
+
+SODA
+Fresh Lime Water - 39
+Fresh Lime Soda - 44
+Butter Milk - 56
+Butter Milk M/s. - 67
+Lassi - 72
+
+BREAKFAST
+Poha - 72
+Upma - 72
+Sheera - 78
+Plain Dosa - 89
+Masala Dosa - 100
+Paper Plain Dosa - 106
+Paper Masala Dosa - 112
+Cheese Dosa - 140
+Cut Dosa - 123
+Plain Uttappa - 100
+Onion Uttappa - 106
+Tomato Uttappa - 106
+Idli Samber - 84
+Medu Wada - 128
+Puri Bhaji - 145
+Finger Chips - 84
+Aloo Paratha - 112
+Paneer Paratha - 134
+Pakoda Mix/Onion/Aloo - 112
+Bread Butter - 61
+Toast Butter - 78
+Veg Sandwich - 89
+Toast Sandwich - 95
+Veg Cheese Grilled Sandwich - 134
+
+SOUP
+Veg Sweet Corn Soup - 100
+Veg Manchow Soup - 106
+Cream of Tomato - 106
+Lemon Coriander Soup - 123
+Veg Shorba - 123
+Cream of Veg Soup - 128
+Cream of Mushroom - 156
+
+STARTER
+Rosted Papad - 28
+Fry Papad - 39
+Masala Papad - 44
+Nachani Fry Papad - 50
+Nachani Masala Papad - 61
+Veg Harabhara Kebab - 235
+Dragon Roll - 235
+Cheese Potato Roll - 235
+Kaju Methi Roll - 246
+Cheese Corn Roll - 246
+Paneer in Lemon Sauce - 246
+Cheese Tokari Dry - 263
+Paneer Unik Sauce - 257
+Cheese Cigar Roll - 268
+Veg Febica Roll - 268
+Paneer in Honey Sauce - 268
+
+TANDOOR STARTER
+Mushroom Tikka Dry - 224
+Paneer Tikka Dry - 224
+Veg Sikh Kebab - 235
+Paneer Pahadi Kebab - 268
+Paneer Banjara Kebab - 268
+Paneer Hara Mutter Tikka Dry - 268
+Mushroom Paneer Tikka Dry - 280
+Paneer Akhabari Tikka Dry - 291
+Paneer Multani Kebab Dry - 291
+Chandani Tikka Dry - 291
+Paneer Tiranga Tikka Dry - 336
+
+STARTER (CHINESE)
+Veg Fried Rice - 173
+Veg Hakka Noodles - 173
+Veg Manchurian Dry - 184
+Veg 65 - 196
+Veg Schezwan Noodles - 190
+Baby Corn Chilly - 201
+Mushroom Chilly - 201
+Veg Crispy - 201
+Veg Schezwan Fried Rice - 196
+Paneer Chilly - 207
+Paneer Hot Pan - 224
+Paneer Saute - 224
+Paneer Crispy - 246
+Veg Crunchi - 280
+Veg Triple Schezwan Noodles - 246
+Veg Triple Schezwan Rice - 246
+Veg Sizzler - 403
+
+SALAD & RAITA
+Dahi Wati Plain - 33
+Dahi Bowl Plain - 67
+Mix Veg Raita - 84
+Boondi Raita - 95
+Green Salad - 89
+
+MAHARASHTRIAN MENU
+Thecha - 67
+Aamti - 128
+Pithala - 162
+Tomato Chutney - 162
+Shev Bhaji - 162
+Methi Fry - 162
+Lasuni Methi - 179
+Methi Masala - 168
+Bhendi Fry - 173
+Bhendi Masala - 162
+Bharaleli Vangi - 156
+Baigan Masala - 162
+Baigan Bharata - 201
+Matki Dry - 162
+Matki Usal - 156
+Batata Bhaji (Yellow Dry) - 162
+Plain Palak - 156
+Lasuni Palak - 168
+
+SPECIALS VEG
+Aloo Jeera - 156
+Green Peas Masala - 156
+Mix Veg - 162
+Veg Kolhapuri - 168
+Veg Bhuna (Medium Sweet) - 201
+Mix Veg Tawa (Dry) - 201
+Veg Makhanwala (Medium Sweet) - 196
+Kaju Masala - 246
+Veg Kadai (Medium Sweet) - 212
+Veg Maratha - 212
+Veg Kofta - 235
+Mushroom Masala - 224
+Mushroom Kadai (Medium Sweet) - 224
+Kaju Curry (White Gravy Medium Sweet) - 263
+Veg Angara - 235
+Veg Patiyala - 257
+Veg Chingari - 257
+Dum Aloo Punjabi - 246
+Veg Tarkari - 246
+Veg Majedar - 246
+Veg Malavani - 246
+Veg Hydrabadi - 246
+Creamy Corn Masala - 257
+Veg Zarena - 246
+Veg Chandgad - 280
+Cheese Tokari Masala - 291
+Veg Nawabi - 308
+Shev Bhaji Handi Half - 246
+Shev Bhaji Handi Full - 459
+Veg Handi Half - 313
+Veg Handi Full - 593
+Veg Maratha Handi Half - 336
+Veg Maratha Handi Full - 627
+
+PANEER
+Paneer Masala - 224
+Paneer Butter Masala - 235
+Paneer Tikka Masala - 235
+Paneer Bhatinda - 257
+Paneer Rajwadi - 257
+Paneer Peshawari - 252
+Paneer Lajawab - 252
+Paneer Maharaja - 257
+Paneer Chatpata - 252
+Paneer Malvani - 268
+Paneer Lasuni - 268
+Paneer Kadmbari - 280
+Paneer Angara - 280
+Paneer Lababdar - 274
+Paneer Ra Ra - 274
+Paneer Kalyani - 291
+Paneer Pasanda - 291
+Paneer Hill Top - 324
+Paneer Handi Half - 358
+Paneer Handi Full - 649
+
+DAL
+Plain Dal - 112
+Dal Fry - 134
+Dal Tadaka - 145
+Dal Kolhapuri - 156
+Dal Wati - 56
+
+RICE
+Steam Rice Full - 106
+Steam Rice Half - 61
+Jeera Rice Full - 123
+Jeera Rice Half - 72
+Curd Rice - 156
+Veg Pulao - 168
+Veg Biryani - 201
+Ghee Rice - 179
+Dal Khichadi - 168
+Veg Dum Biryani - 246
+
+ROTI
+Roti - 16
+Butter Roti - 22
+Wheat Roti - 22
+Butter Wheat Roti - 28
+Missi Roti - 50
+Naan - 44
+Butter Naan - 50
+Garlic Naan - 78
+Butter Garlic Naan - 84
+Paratha - 44
+Butter Paratha - 56
+Kulcha - 50
+Butter Kulcha - 61
+Masala Kulcha - 67
+Chapati - 22
+Butter Chapati - 28
+Jewari Bhakari - 33
+Bajari Bhakari - 28
+Butter Bhakari - 39
+Cheese Garlic Naan - 123
+Butter Cheese Garlic Naan - 123
+
+JUICE
+Seasonal Fresh Fruits Juice - (keep current price)
+
+ICE-CREAM
+Butter Scotch Ice Cream - (keep current price)
+Vanilla Ice Cream - (keep current price)
+Mango Ice Cream - (keep current price)
+Strawberry Ice Cream - (keep current price)
+Kulfi - (keep current price)
