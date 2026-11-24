@@ -61,6 +61,15 @@ const PgStore = connectPgSimple(session);
 // Gzip/deflate compression for all HTTP responses (~70% size reduction)
 app.use(compression());
 
+// API reads: the browser keeps a copy and asks "has this changed?" (ETag) on the
+// next poll. When nothing changed the server answers 304 with no body, so
+// dashboards that poll every few seconds stop re-downloading the same data.
+// "private" keeps shared caches from storing per-user responses.
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") res.setHeader("Cache-Control", "private, no-cache");
+  next();
+});
+
 // Baseline browser protections. CSP runs in report-only mode first so payment and
 // analytics integrations can be observed before it is enforced in production.
 app.use((_req, res, next) => {

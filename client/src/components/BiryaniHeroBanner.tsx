@@ -20,7 +20,7 @@ export function BiryaniHeroBanner() {
       {/* Banner Image with responsive 3:1 to 4:1 display */}
       <div className="relative aspect-[3/1] w-full min-h-[110px] sm:min-h-[140px] md:min-h-[160px]">
         <img
-          src="/images/food-banner-biryani.png"
+          src="/images/food-banner-biryani.jpg"
           alt="Order Food Online - From your favorite local restaurants"
           className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
           loading="eager"
