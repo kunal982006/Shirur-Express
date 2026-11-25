@@ -18,6 +18,8 @@ export function useLiveOrderTracking(activeOrderId?: string) {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/food-pause-attempts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/rider-settlements"] });
     };
 
     const connect = () => {
@@ -43,10 +45,12 @@ export function useLiveOrderTracking(activeOrderId?: string) {
             queryClient.invalidateQueries({ queryKey: ["/api/customer/restaurant-orders"] });
             queryClient.invalidateQueries({ queryKey: ["/api/customer/grocery-orders"] });
             queryClient.invalidateQueries({ queryKey: ["/api/customer/my-bookings"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/customer/active-orders"] });
 
             // Invalidate rider orders lists
             queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
             queryClient.invalidateQueries({ queryKey: ["riderAvailableOrders"] });
+            queryClient.invalidateQueries({ queryKey: ["riderSettlement"] });
 
             // Invalidate provider orders lists
             queryClient.invalidateQueries({ queryKey: ["providerRestaurantOrders"] });

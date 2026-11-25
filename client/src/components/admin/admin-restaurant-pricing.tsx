@@ -86,6 +86,57 @@ export default function AdminRestaurantPricing() {
     queryFn: () => api.get("/admin/restaurants-pricing").then((r) => r.data),
   });
 
+  // What we pay each restaurant per dish (admin only; customers never see it).
+  const { data: restaurantPrices } = useQuery<Record<string, number | null>>({
+    queryKey: ["/api/admin/restaurant-prices"],
+    queryFn: () => api.get("/admin/restaurant-prices").then((r) => r.data),
+  });
+
+  const saveRestaurantPriceMutation = useMutation({
+    mutationFn: async ({ itemId, restaurantPrice, categorySlug }: { itemId: string; restaurantPrice: string; categorySlug: string }) =>
+      api.patch(`/admin/menu-items/${itemId}/restaurant-price`, { restaurantPrice: restaurantPrice === "" ? null : restaurantPrice, categorySlug }),
+    onSuccess: (_, vars) => {
+      toast({
+        title: "Restaurant price saved",
+        description: vars.restaurantPrice === "" ? "Removed" : `We pay ₹${vars.restaurantPrice}`,
+        duration: 2000,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurant-prices"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Could not save", description: err.response?.data?.message || err.message, variant: "destructive" });
+    },
+  });
+
+  // Paste a whole menu card's restaurant prices at once.
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const importMutation = useMutation({
+    mutationFn: async () => {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(importText);
+      } catch {
+        throw new Error("This is not the price list. Copy the whole list again and paste it.");
+      }
+      const prices = Array.isArray(parsed) ? parsed : parsed?.prices;
+      return api.post("/admin/restaurant-prices/import", { prices }).then((r) => r.data);
+    },
+    onSuccess: (result: { saved: number; unchanged: number; notFound: number; customerPricesChanged?: number; dishesAdded?: number; restaurantsRenamed?: number; restaurantPricesCleared?: number; dishesRemoved?: number; dishesRenamed?: number; imagesSet?: number }) => {
+      toast({
+        title: `Restaurant prices saved: ${result.saved}`,
+        description: `${result.unchanged} already correct${result.dishesRemoved ? `, ${result.dishesRemoved} dishes removed` : ""}${result.dishesRenamed ? `, ${result.dishesRenamed} dishes renamed/moved` : ""}${result.imagesSet ? `, ${result.imagesSet} images added` : ""}${result.restaurantPricesCleared ? `, ${result.restaurantPricesCleared} restaurant prices removed` : ""}${result.restaurantsRenamed ? `, ${result.restaurantsRenamed} restaurant renamed` : ""}${result.dishesAdded ? `, ${result.dishesAdded} new dishes added` : ""}${result.customerPricesChanged ? `, ${result.customerPricesChanged} customer prices updated` : ""}${result.notFound ? `, ${result.notFound} dishes not found` : ""}.`,
+      });
+      setImportText("");
+      setIsImportOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurant-prices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/restaurants-pricing"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Import failed", description: err.response?.data?.message || err.message, variant: "destructive" });
+    },
+  });
+
   // Single price update mutation
   const updateSinglePriceMutation = useMutation({
     mutationFn: async ({
@@ -174,6 +225,11 @@ export default function AdminRestaurantPricing() {
     return Array.from(cats).sort();
   }, [restaurants, activeRestaurant]);
 
+  // Drawing thousands of editable rows freezes phones: show a page at a time.
+  const PAGE_SIZE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  React.useEffect(() => setVisibleCount(PAGE_SIZE), [selectedRestaurantId, selectedCategory, searchQuery]);
+
   const allDisplayItems = useMemo(() => {
     if (!restaurants) return [];
     let items: Array<MenuItem & { providerName: string; categorySlug: string }> = [];
@@ -231,6 +287,13 @@ export default function AdminRestaurantPricing() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => setIsImportOpen(true)}
+                variant="outline"
+                className="bg-white/5 border-white/15 text-white font-bold gap-2"
+              >
+                Import Restaurant Prices
+              </Button>
               <Button
                 onClick={() => {
                   setBulkScope(selectedRestaurantId === "all" ? "all_restaurants" : "current_restaurant");
@@ -343,10 +406,14 @@ export default function AdminRestaurantPricing() {
                     <TableHead className="text-gray-400 font-semibold min-w-[220px]">
                       Instant Price Update (₹)
                     </TableHead>
+                    <TableHead className="text-gray-400 font-semibold min-w-[190px]">
+                      Restaurant Price (₹)
+                      <span className="block text-[10px] font-normal normal-case text-gray-500">What the partner pays</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allDisplayItems.map((item) => (
+                  {allDisplayItems.slice(0, visibleCount).map((item) => (
                     <AdminPriceRow
                       key={item.id}
                       item={item}
@@ -362,14 +429,67 @@ export default function AdminRestaurantPricing() {
                         updateSinglePriceMutation.isPending &&
                         (updateSinglePriceMutation.variables as any)?.itemId === item.id
                       }
+                      restaurantPrice={restaurantPrices?.[item.id] ?? null}
+                      onSaveRestaurantPrice={(value) =>
+                        saveRestaurantPriceMutation.mutate({ itemId: item.id, restaurantPrice: value, categorySlug: item.categorySlug })
+                      }
+                      isSavingRestaurantPrice={
+                        saveRestaurantPriceMutation.isPending &&
+                        saveRestaurantPriceMutation.variables?.itemId === item.id
+                      }
                     />
                   ))}
                 </TableBody>
               </Table>
+              {allDisplayItems.length > visibleCount && (
+                <div className="p-4 flex flex-col items-center gap-1 border-t border-white/5">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((n) => n + PAGE_SIZE * 2)}
+                    className="bg-white/5 border-white/15 text-white"
+                  >
+                    Show more dishes
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    Showing {visibleCount} of {allDisplayItems.length}. Pick a restaurant or search to find a dish faster.
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* ─── Import Restaurant Prices Dialog ─────────────────────── */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="bg-[#1f2937] border-white/10 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white">Import Restaurant Prices</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Paste the price list prepared from a restaurant's menu card. Restaurant prices are saved. Customer prices change only for dishes the list gives a new customer price.
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder='[{"itemId":"...","restaurantPrice":120}, ...]'
+            className="w-full h-48 rounded-md bg-white/5 border border-white/15 p-2 text-xs font-mono text-white"
+          />
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsImportOpen(false)} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => importMutation.mutate()}
+              disabled={!importText.trim() || importMutation.isPending}
+              className="bg-sky-600 hover:bg-sky-500 text-white font-bold"
+            >
+              {importMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Prices
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ─── Bulk Price Update Dialog ────────────────────────────── */}
       <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
@@ -564,11 +684,27 @@ function AdminPriceRow({
   item,
   onUpdatePrice,
   isUpdating,
+  restaurantPrice,
+  onSaveRestaurantPrice,
+  isSavingRestaurantPrice,
 }: {
   item: MenuItem & { providerName: string; categorySlug: string };
   onUpdatePrice: (newPrice: string) => void;
   isUpdating: boolean;
+  restaurantPrice: number | null;
+  onSaveRestaurantPrice: (value: string) => void;
+  isSavingRestaurantPrice: boolean;
 }) {
+  const savedCost = restaurantPrice === null ? "" : String(restaurantPrice);
+  const [cost, setCost] = useState(savedCost);
+  React.useEffect(() => setCost(savedCost), [savedCost]);
+  const costChanged = cost !== savedCost;
+  const saveCost = () => {
+    if (cost !== "" && isNaN(parseFloat(cost))) return;
+    onSaveRestaurantPrice(cost);
+  };
+  const margin = restaurantPrice === null ? null : (parseFloat(item.price) || 0) - restaurantPrice;
+
   const [val, setVal] = useState(item.price?.toString() || "");
   const [isChanged, setIsChanged] = useState(false);
 
@@ -694,6 +830,46 @@ function AdminPriceRow({
               -10
             </button>
           </div>
+        </div>
+      </TableCell>
+
+      {/* What we pay the restaurant */}
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex items-center">
+            <span className="absolute left-2.5 text-xs font-bold text-gray-400">₹</span>
+            <Input
+              type="number"
+              min="0"
+              inputMode="decimal"
+              placeholder="Not set"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveCost();
+              }}
+              className={`h-9 w-24 pl-6 text-sm font-bold bg-white/5 border-white/20 text-white ${
+                costChanged ? "border-sky-500 ring-2 ring-sky-500/30 bg-sky-500/10" : restaurantPrice === null ? "border-amber-500/40" : ""
+              }`}
+            />
+          </div>
+          {costChanged ? (
+            <Button
+              size="sm"
+              onClick={saveCost}
+              disabled={isSavingRestaurantPrice}
+              className="h-9 px-3 bg-sky-600 hover:bg-sky-500 text-white font-bold gap-1 text-xs"
+            >
+              {isSavingRestaurantPrice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 stroke-[3]" />}
+              Save
+            </Button>
+          ) : margin !== null ? (
+            <span className={`text-xs font-semibold ${margin >= 0 ? "text-emerald-400" : "text-red-400"}`} title="Customer price minus restaurant price">
+              {margin >= 0 ? "+" : ""}₹{margin.toFixed(0)}
+            </span>
+          ) : (
+            <span className="text-[10px] text-amber-400">Missing</span>
+          )}
         </div>
       </TableCell>
     </TableRow>

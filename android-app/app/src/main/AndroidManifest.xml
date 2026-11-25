@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Android 16+: lets the live order-status notification show as a "Live Update" -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
@@ -115,6 +117,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
         
+        <!-- Status-bar icon and colour for notifications Android shows itself (app closed) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_accent" />
+
         <!-- Facebook SDK Configuration for Meta Ads -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

@@ -11,6 +11,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { FoodItemCard } from "@/components/restaurants/FoodItemCard";
 import { ProviderReviews } from "@/components/restaurants/ProviderReviews";
 import { useCartStore } from "@/hooks/use-cart-store";
+import { toast } from "@/hooks/use-toast";
+import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
 import type { StreetFoodItem, ServiceProvider, RestaurantMenuItem } from "@shared/schema";
 
 // Helper components for placeholder tabs
@@ -251,8 +253,14 @@ export default function StreetFoodDetail() {
   const getQuantity = (itemId: string) => items.find(i => i.id === itemId)?.quantity || 0;
 
   const handleAdd = (item: StreetFoodItem) => {
+    const addOn = isAddOnCategory(item.category);
+    if (addOn && !items.some((i) => i.providerId === vendor.id && !i.addOn)) {
+      toast({ title: "Add a main dish first", description: ADD_ON_ONLY_MESSAGE });
+      return;
+    }
     // Explicitly format price as number for cart
     addItem({
+      addOn,
       id: item.id,
       name: item.name,
       price: parseFloat(item.price.toString()),
@@ -400,7 +408,10 @@ export default function StreetFoodDetail() {
           {/* Menu Categories */}
           {categoryEntries.map(([category, items]) => (
             <div key={category} id={`cat-${category}`} className="scroll-mt-36">
-              <h3 className="font-bold text-xl mb-4 text-foreground">{category} ({items.length})</h3>
+              <h3 className={`font-bold text-xl text-foreground ${isAddOnCategory(category) ? "mb-1" : "mb-4"}`}>{category} ({items.length})</h3>
+              {isAddOnCategory(category) && (
+                <p className="text-sm text-muted-foreground mb-4">Can be ordered only with a main dish.</p>
+              )}
               <div className="space-y-4">
                 {items.map(item => {
                   // SAFELY convert StreetFoodItem to RestaurantMenuItem shape for the component

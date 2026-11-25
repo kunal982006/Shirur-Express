@@ -10,6 +10,7 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -48,9 +49,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (type == "ORDER_REQUEST") {
             // This is the "Ring" trigger!
             showIncomingOrderScreen(data)
+        } else if (type == "ORDER_STATUS") {
+            // Customer's pinned live order status (accepted → preparing → ready → on the way → delivered)
+            showOrderStatusNotification(data)
         } else {
             // Regular notification
-            sendNotification(data["title"] ?: "New Message", data["body"] ?: "")
+            sendNotification(data["title"] ?: "New Message", data["body"] ?: "", data["navigateTo"], type == "ADMIN_BROADCAST")
         }
     }
 
@@ -81,7 +85,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_notification)
+            .setColor(ContextCompat.getColor(this, R.color.notification_accent))
             .setContentTitle("New Order Request")
             .setContentText("Tap to view order details")
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -121,18 +126,95 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.notify(0, notification)
     }
 
-    private fun sendNotification(title: String, messageBody: String) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    /**
+     * One notification per order that stays pinned and updates in place until the order is
+     * delivered or cancelled, like Blinkit. Status changes make a sound; arrival-time
+     * refreshes ("Arriving in 6 min") update silently.
+     */
+    private fun showOrderStatusNotification(data: Map<String, String>) {
+        val orderId = data["orderId"] ?: return
+        val title = data["title"] ?: "Order update"
+        val body = data["body"] ?: ""
+        val isFinal = data["final"] == "1"
+        val makeSound = data["alert"] == "1"
+        val step = data["step"]?.toIntOrNull() ?: 0
+        val steps = data["steps"]?.toIntOrNull() ?: 5
+        val status = data["status"] ?: ""
+        val notificationId = ORDER_STATUS_ID_BASE + (orderId.hashCode() and 0xFFFFF)
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra("navigateTo", data["navigateTo"] ?: "/order/$orderId/track")
+        }
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
+            this, notificationId, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val channelId = getString(R.string.default_notification_channel_id)
+        createOrderStatusChannel(this)
+
+        val builder = NotificationCompat.Builder(this, ORDER_STATUS_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_notification)
+            .setColor(ContextCompat.getColor(this, R.color.notification_accent))
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSubText(data["shopName"])
+            .setContentIntent(pendingIntent)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setShowWhen(true)
+            .setOnlyAlertOnce(!makeSound)
+            .setSilent(!makeSound)
+
+        // "Call restaurant" / "Call rider" buttons: open the phone's dialer with the number filled in.
+        fun dialAction(label: String, phone: String?, requestCode: Int) {
+            if (phone.isNullOrBlank()) return
+            val dial = Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val pi = PendingIntent.getActivity(this, requestCode, dial,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            builder.addAction(0, label, pi)
+        }
+        if (!isFinal) {
+            dialAction(if (data["orderType"] == "grocery") "Call store" else "Call restaurant", data["shopPhone"], notificationId + 1)
+            dialAction("Call rider", data["riderPhone"], notificationId + 2)
+        }
+
+        if (isFinal) {
+            builder.setOngoing(false)
+                .setAutoCancel(true)
+                .setTimeoutAfter(60 * 60 * 1000L) // clears itself an hour after delivery
+            if (status == "delivered") builder.setProgress(steps, steps, false)
+        } else {
+            builder.setOngoing(true)
+                .setAutoCancel(false)
+                .setProgress(steps, step.coerceIn(0, steps), false)
+            // Android 16+: ask for a "Live Update" (status-bar chip, top of the shade, like
+            // Blinkit). Older Android versions ignore this extra.
+            builder.addExtras(android.os.Bundle().apply { putBoolean("android.requestPromotedOngoing", true) })
+        }
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(notificationId, builder.build())
+    }
+
+    private fun sendNotification(title: String, messageBody: String, navigateTo: String? = null, isBroadcast: Boolean = false) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        if (navigateTo != null) intent.putExtra("navigateTo", navigateTo)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        // Offers and announcements: own channel, normal message tone, never the order ringtone.
+        val channelId = if (isBroadcast) ANNOUNCEMENTS_CHANNEL_ID else getString(R.string.default_notification_channel_id)
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_notification)
+            .setColor(ContextCompat.getColor(this, R.color.notification_accent))
             .setContentTitle(title)
             .setContentText(messageBody)
             .setAutoCancel(true)
@@ -141,7 +223,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (isBroadcast) {
+            createAnnouncementsChannel(this)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
                 "General Notifications",
@@ -155,5 +239,48 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         private const val TAG = "MyFirebaseMsgService"
+        const val ANNOUNCEMENTS_CHANNEL_ID = "announcements_channel"
+        const val ORDER_STATUS_CHANNEL_ID = "order_status_channel"
+        private const val ORDER_STATUS_ID_BASE = 0x4000000
+
+        fun createOrderStatusChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val channel = NotificationChannel(
+                ORDER_STATUS_CHANNEL_ID,
+                "Order Status",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Live status of your order until it is delivered"
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+            }
+            (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        }
+
+        // Made at app start too, so broadcasts shown by Android while the app is closed use it.
+        fun createAnnouncementsChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val channel = NotificationChannel(
+                ANNOUNCEMENTS_CHANNEL_ID,
+                "Offers & Announcements",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Offers and news from Shirur Express"
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+            }
+            (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        }
     }
 }

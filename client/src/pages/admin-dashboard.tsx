@@ -69,6 +69,7 @@ import {
     EyeOff,
     Smartphone,
     Bike,
+    Wallet,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -96,6 +97,7 @@ import AdminProperties from "@/components/admin/admin-properties";
 import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
+import AdminRiderSettlements from "@/components/admin/admin-rider-settlements";
 import { ProviderLocationDialog } from "@/components/admin/ProviderLocationDialog";
 import { ProviderPhoneDialog } from "@/components/admin/ProviderPhoneDialog";
 import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
@@ -275,7 +277,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings">(
+    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings" | "restaurant_pricing" | "rider_settlements">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -291,6 +293,7 @@ export default function AdminDashboard() {
     const [broadcastAudience, setBroadcastAudience] = useState("everyone");
     const [broadcastTitle, setBroadcastTitle] = useState("");
     const [broadcastMessage, setBroadcastMessage] = useState("");
+    const [broadcastOpens, setBroadcastOpens] = useState("/");
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     // Create Provider Form State
@@ -384,6 +387,8 @@ export default function AdminDashboard() {
     const { data: allUsers } = useQuery<AppUser[]>({
         queryKey: ["/api/admin/users"],
         queryFn: () => api.get("/admin/users").then(r => r.data),
+        // The full user list is large: load it only when the Users tab is opened.
+        enabled: activeTab === "users",
     });
 
     // Service categories for provider creation
@@ -591,7 +596,7 @@ export default function AdminDashboard() {
     });
 
     const broadcastMutation = useMutation({
-        mutationFn: (data: { audience: string; title: string; message: string }) =>
+        mutationFn: (data: { audience: string; title: string; message: string; navigateTo?: string }) =>
             api.post("/admin/broadcast", data).then(r => r.data),
         onSuccess: (data: any) => {
             toast({
@@ -620,6 +625,12 @@ export default function AdminDashboard() {
         queryKey: ["/api/admin/platform-status"],
         queryFn: () => api.get("/admin/platform-status").then(r => r.data),
         refetchInterval: 15000,
+    });
+
+    const { data: foodPause } = useQuery<{ active: boolean; until: string; attempts: { at: string; orderType: string; name: string; phone: string; amount: string; items: string }[] }>({
+        queryKey: ["/api/admin/food-pause-attempts"],
+        queryFn: () => api.get("/admin/food-pause-attempts").then(r => r.data),
+        refetchInterval: 10000,
     });
 
     const togglePlatformMutation = useMutation({
@@ -722,6 +733,7 @@ export default function AdminDashboard() {
         { id: "broadcast", label: "Broadcast", icon: Send },
         { id: "featured", label: "Featured", icon: Star },
         { id: "restaurant_pricing", label: "⚡ Restaurant Pricing", icon: UtensilsCrossed },
+        { id: "rider_settlements", label: "Rider Settlements", icon: Wallet },
         { id: "properties", label: "Properties", icon: Home },
         { id: "phone_listings", label: "Phone Listings", icon: Smartphone },
         { id: "street_food", label: "Street Food", icon: Sandwich },
@@ -800,6 +812,39 @@ export default function AdminDashboard() {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+                {/* ═══ FOOD PAUSE: order attempts while food is paused ═══ */}
+                {foodPause && (foodPause.active || foodPause.attempts.length > 0) && (
+                    <div className="rounded-2xl border border-amber-500/40 bg-amber-900/20 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <h3 className="text-base font-bold text-amber-300">
+                                {foodPause.active ? "⏸️ Food ordering paused till 3:00 PM (technical update)" : "✅ Food pause is over: orders are open again"}
+                            </h3>
+                            <span className="text-sm font-semibold text-amber-200">
+                                {foodPause.attempts.length} order attempt{foodPause.attempts.length === 1 ? "" : "s"} blocked
+                            </span>
+                        </div>
+                        {foodPause.attempts.length === 0 ? (
+                            <p className="text-sm text-gray-400">No one has tried to order yet.</p>
+                        ) : (
+                            <div className="space-y-2 max-h-72 overflow-y-auto">
+                                {foodPause.attempts.map((a, i) => (
+                                    <div key={i} className="rounded-xl bg-black/30 px-3 py-2 text-sm text-gray-200">
+                                        <div className="flex flex-wrap justify-between gap-2">
+                                            <span className="font-semibold">{a.name} • <a href={`tel:${a.phone}`} className="text-blue-400">{a.phone}</a></span>
+                                            <span className="text-gray-400">
+                                                {new Date(a.at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" })}
+                                                {" • "}{a.orderType === "restaurant" ? "Restaurant" : "Street food"}
+                                                {a.amount ? ` • ₹${a.amount}` : ""}
+                                            </span>
+                                        </div>
+                                        {a.items && <div className="text-gray-400 mt-0.5">{a.items}</div>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* ═══ OVERVIEW TAB ═══ */}
                 {activeTab === "overview" && (
@@ -1066,7 +1111,7 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && activeTab !== "analytics" && (
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && activeTab !== "analytics" && activeTab !== "rider_settlements" && activeTab !== "restaurant_pricing" && (
                     <div className="relative max-w-5xl mx-auto mb-6">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -2335,6 +2380,29 @@ export default function AdminDashboard() {
                                     />
                                 </div>
 
+                                {/* Page opened on tap */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-300 mb-2 block">When tapped, open</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { path: "/", label: "Home" },
+                                            { path: "/?open=shirur-ordering", label: "What Shirur is Ordering 🔥" },
+                                        ].map((option) => (
+                                            <button
+                                                key={option.path}
+                                                type="button"
+                                                onClick={() => setBroadcastOpens(option.path)}
+                                                className={`px-4 py-3 rounded-xl border text-sm transition-all ${broadcastOpens === option.path
+                                                    ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                                                    : 'bg-white/[0.02] border-white/5 text-gray-400 hover:bg-white/[0.04]'
+                                                    }`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 {/* Preview */}
                                 {broadcastTitle && (
                                     <div className="rounded-xl bg-black/30 border border-white/5 p-4">
@@ -2358,6 +2426,7 @@ export default function AdminDashboard() {
                                         audience: broadcastAudience,
                                         title: broadcastTitle,
                                         message: broadcastMessage,
+                                        navigateTo: broadcastOpens,
                                     })}
                                     disabled={!broadcastTitle || !broadcastMessage || broadcastMutation.isPending}
                                     className={`w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!broadcastTitle || !broadcastMessage
@@ -2449,6 +2518,8 @@ export default function AdminDashboard() {
                 {activeTab === "restaurant_pricing" && (
                      <AdminRestaurantPricing />
                 )}
+
+                {activeTab === "rider_settlements" && <AdminRiderSettlements />}
 
                 {/* ═══ STREET FOOD TAB ═══ */}
                 {activeTab === "street_food" && (

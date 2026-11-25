@@ -32,8 +32,17 @@ export function displayDeliveryAddress(text: string | null | undefined): string 
 // Google Maps link to the exact pin; older orders without a pin fall back to a text search.
 export function deliveryMapsUrl(text: string | null | undefined, mode: "search" | "directions" = "search"): string {
   const { address, pin } = parseDeliveryAddress(text);
-  const target = encodeURIComponent(pin ? `${pin.lat},${pin.lng}` : address);
+  // Without a pin, add the town: a bare "Sai Nagar, near temple" otherwise lands in another city.
+  const textTarget = address && !/shirur/i.test(address) ? `${address}, Shirur` : address;
+  const target = encodeURIComponent(pin ? `${pin.lat},${pin.lng}` : textTarget);
   return mode === "directions"
     ? `https://www.google.com/maps/dir/?api=1&destination=${target}`
     : `https://www.google.com/maps/search/?api=1&query=${target}`;
+}
+
+// Directions to the customer, or null when the order has neither a pin nor an address.
+export function deliveryDirectionsUrl(text: string | null | undefined): string | null {
+  const { address, pin } = parseDeliveryAddress(text);
+  if (!pin && !address.trim()) return null;
+  return deliveryMapsUrl(text, "directions");
 }

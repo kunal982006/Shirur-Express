@@ -73,7 +73,7 @@ export default function OrderTracking() {
         );
     }
 
-    const { order, riderLocation, statusTimeline } = trackingInfo;
+    const { order, riderLocation, statusTimeline, etaMinutes, shopPhone } = trackingInfo;
     const isOutForDelivery = order.status === 'out_for_delivery';
     const isDelivered = order.status === 'delivered';
     const isStopped = order.status === 'cancelled' || order.status === 'declined';
@@ -108,6 +108,20 @@ export default function OrderTracking() {
                         </div>
                     </CardHeader>
                 </Card>
+
+                {isOutForDelivery && (
+                    <Card className="border-0 shadow-lg bg-blue-600 text-white">
+                        <CardContent className="py-5 text-center">
+                            <p className="text-sm opacity-90">Your order is on the way</p>
+                            <p className="text-3xl font-bold mt-1">
+                                {etaMinutes ? `Arriving in ${etaMinutes} min` : "Arriving soon"}
+                            </p>
+                            {etaMinutes ? (
+                                <p className="text-xs opacity-80 mt-1">Based on your delivery partner's live location</p>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {isStopped ? (
                     <Card className="border-0 shadow-lg bg-red-50">
@@ -170,6 +184,33 @@ export default function OrderTracking() {
                         </ol>
                     </CardContent>
                 </Card>
+                )}
+
+                {/* Call the restaurant / rider */}
+                {!isStopped && (shopPhone || order.rider?.phone) && (
+                    <Card className="border-0 shadow-lg">
+                        <CardContent className="pt-6">
+                            <p className="font-semibold mb-3">Need help with your order?</p>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {shopPhone && (
+                                    <Button variant="outline" className="h-12" asChild>
+                                        <a href={`tel:${shopPhone}`}>
+                                            <ChefHat className="mr-2 h-4 w-4" />
+                                            Call {order.provider?.businessName || "restaurant"}
+                                        </a>
+                                    </Button>
+                                )}
+                                {order.rider?.phone && (
+                                    <Button className="h-12 bg-blue-600 hover:bg-blue-700" asChild>
+                                        <a href={`tel:${order.rider.phone}`}>
+                                            <Phone className="mr-2 h-4 w-4" />
+                                            Call delivery partner
+                                        </a>
+                                    </Button>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
 
                 {/* Delivery Partner Info (shown when assigned) */}

@@ -726,6 +726,10 @@ export const groceryOrdersRelations = relations(groceryOrders, ({ one }) => ({
     fields: [groceryOrders.providerId],
     references: [serviceProviders.id],
   }),
+  rider: one(users, {
+    fields: [groceryOrders.riderId],
+    references: [users.id],
+  }),
 }));
 
 export const restaurantOrdersRelations = relations(restaurantOrders, ({ one }) => ({
@@ -857,3 +861,13 @@ export const deliveryBills = pgTable("delivery_bills", {
 });
 
 export type DeliveryBill = typeof deliveryBills.$inferSelect;
+
+// What Shirur Express pays the restaurant / vendor for one of a dish, from their
+// own menu card. Kept apart from the menu and orders so customers never receive
+// it. Each change adds a row, so past orders keep the price that applied then.
+export const menuItemRestaurantPrices = pgTable("menu_item_restaurant_prices", {
+  id: serial("id").primaryKey(),
+  itemId: text("item_id").notNull(), // restaurant_menu_items.id or street_food_items.id
+  restaurantPrice: decimal("restaurant_price", { precision: 10, scale: 2 }).notNull(),
+  effectiveFrom: timestamp("effective_from").defaultNow().notNull(),
+});

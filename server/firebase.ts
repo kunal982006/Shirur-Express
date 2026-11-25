@@ -79,7 +79,8 @@ function initializeFirebase(): boolean {
 isInitialized = initializeFirebase();
 
 export async function sendPushNotification(fcmToken: string, payload: {
-    type: 'ORDER_REQUEST' | 'ORDER_UPDATE';
+    // ORDER_STATUS: the customer's pinned live order-status notification (Android, data-only).
+    type: 'ORDER_REQUEST' | 'ORDER_UPDATE' | 'ORDER_STATUS';
     title?: string;
     body?: string;
     data?: Record<string, string>;
@@ -87,10 +88,11 @@ export async function sendPushNotification(fcmToken: string, payload: {
 
     // iOS devices register raw APNs tokens; deliver those directly through Apple.
     if (fcmToken && isApnsToken(fcmToken)) {
-        const result = await sendApnsNotification(fcmToken, payload);
+        if (payload.type === 'ORDER_STATUS') return { success: false, error: "ORDER_STATUS is Android-only" };
+        const result = await sendApnsNotification(fcmToken, payload as any);
         // iOS plays the ring once (max 30s); keep re-ringing until the order is accepted or the app is opened.
         if (result.success && payload.type === 'ORDER_REQUEST') {
-            scheduleRepeatRing(fcmToken, payload).catch(() => {});
+            scheduleRepeatRing(fcmToken, payload as any).catch(() => {});
         }
         return result;
     }
@@ -112,7 +114,7 @@ export async function sendPushNotification(fcmToken: string, payload: {
             }
         };
 
-        if (payload.type === 'ORDER_REQUEST') {
+        if (payload.type === 'ORDER_REQUEST' || payload.type === 'ORDER_STATUS') {
             // For ORDER_REQUEST, send data-only to bypass system tray.
             // This allows Android's IncomingOrderActivity to loop the ringtone continuously
             // instead of playing a single short system beep!
@@ -124,13 +126,18 @@ export async function sendPushNotification(fcmToken: string, payload: {
                 title: payload.title,
                 body: payload.body,
             };
+            const isBroadcast = payload.data?.type === 'ADMIN_BROADCAST';
             message.android!.notification = {
-                channelId: 'fcm_default_channel',
+                // Broadcasts have their own channel with the normal message tone, so they never share
+                // a sound with order alerts on a provider's phone. On an app without that channel,
+                // Android uses its fallback channel, which also has the normal tone.
+                channelId: isBroadcast ? 'announcements_channel' : 'fcm_default_channel',
                 priority: 'max',
                 defaultSound: true,
                 defaultVibrateTimings: true,
                 visibility: 'public',
-                clickAction: 'OPEN_PROVIDER_DASHBOARD',
+                // Broadcasts open the app's main screen on tap, which then goes to data.navigateTo.
+                ...(isBroadcast ? {} : { clickAction: 'OPEN_PROVIDER_DASHBOARD' }),
             };
         }
 

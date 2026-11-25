@@ -152,6 +152,7 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyFirebaseMessagingService.createAnnouncementsChannel(this)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
@@ -586,6 +587,13 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         val data = intent.data
         if (data != null && data.host == "shirur-express.onrender.com") {
             loadUrl(data.toString())
+            return
+        }
+        // Tapped notification: FCM puts its data fields in the extras. Only in-app paths are followed.
+        val navigateTo = intent.getStringExtra("navigateTo")
+        if (navigateTo != null && navigateTo.startsWith("/") && !navigateTo.startsWith("//")) {
+            intent.removeExtra("navigateTo")
+            loadUrl(WEBSITE_URL + navigateTo)
         }
     }
 
@@ -771,6 +779,10 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
 
         @android.webkit.JavascriptInterface
         fun isNativeApp(): Boolean = true
+
+        // The website asks this before sending live order-status updates (pinned notification).
+        @android.webkit.JavascriptInterface
+        fun supportsLiveOrderStatus(): Boolean = true
 
         // The website compares this with the latest Play Store version to show the update popup.
         @android.webkit.JavascriptInterface

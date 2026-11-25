@@ -93,9 +93,13 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath, {
     maxAge: "1h",
     setHeaders: (res, filePath) => {
-      // HTML files should always revalidate to pick up new deploys
-      if (filePath.endsWith(".html")) {
+      // HTML, the service worker and the manifest should always revalidate to pick up new deploys
+      if (/\.html$|[\\/]sw\.js$|manifest\.json$/.test(filePath)) {
         res.setHeader("Cache-Control", "no-cache");
+      } else if (/\.(jpe?g|png|webp|gif|svg|ico)$/i.test(filePath)) {
+        // Photos rarely change: let phones keep them for a week instead of
+        // downloading them again every hour (saves Render bandwidth).
+        res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
       }
     },
   }));

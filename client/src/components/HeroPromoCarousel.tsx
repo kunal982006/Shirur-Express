@@ -69,7 +69,7 @@ export function HeroPromoCarousel() {
         >
           <div className="group relative aspect-[3/1] w-full min-h-[110px] sm:min-h-[140px] md:min-h-[160px] overflow-hidden">
             <img
-              src="/images/food-banner-biryani.png"
+              src="/images/food-banner-biryani.jpg"
               alt="Order Food Online - From your favorite local restaurants"
               className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
               loading="eager"
@@ -227,7 +227,7 @@ export function HeroPromoCarousel() {
         >
           <div className="group relative aspect-[3/1] w-full min-h-[110px] sm:min-h-[140px] md:min-h-[160px] overflow-hidden">
             <img
-              src="/images/homecare-repairs-banner.png"
+              src="/images/homecare-repairs-banner.jpg"
               alt="HomeCare Repairs - Trusted Home Appliance Repair Services Near You"
               className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
               loading="eager"
@@ -262,7 +262,7 @@ export function HeroPromoCarousel() {
         >
           <div className="group relative aspect-[3/1] w-full min-h-[110px] sm:min-h-[140px] md:min-h-[160px] overflow-hidden">
             <img
-              src="/images/beauty-salon-banner.png"
+              src="/images/beauty-salon-banner.jpg"
               alt="Professional Beauty & Salon Services at Your Home - Book certified beauticians"
               className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.015]"
               loading="eager"

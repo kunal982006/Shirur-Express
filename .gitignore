@@ -23,3 +23,6 @@ generated-images/
 
 # Website files copied into the Android app by `npm run android:bundle`
 android-app/app/src/main/assets/web/
+
+# Restaurant price lists made from menu cards: private, never commit (repo is public)
+restaurant-prices/

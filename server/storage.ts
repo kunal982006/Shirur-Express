@@ -1851,12 +1851,12 @@ export class DatabaseStorage implements IStorage {
   async getRestaurantOrdersByUserId(userId: string): Promise<any[]> {
     const rOrders = await db.query.restaurantOrders.findMany({
       where: eq(restaurantOrders.userId, userId),
-      with: { provider: true },
+      with: { provider: true, rider: { columns: { id: true, username: true, phone: true } } },
     });
 
     const sOrders = await db.query.streetFoodOrders.findMany({
       where: eq(streetFoodOrders.userId, userId),
-      with: { provider: true },
+      with: { provider: true, rider: { columns: { id: true, username: true, phone: true } } },
     });
 
     const combined = [
@@ -2253,6 +2253,16 @@ export class DatabaseStorage implements IStorage {
     }) as any;
   }
 
+  // What a rider may see about the people on an order: name + phone only, never the full user row.
+  // Restaurant: name, address, map pin and the owner's phone (for "Call restaurant").
+  private riderOrderRelations = {
+    user: { columns: { id: true, username: true, phone: true } },
+    provider: {
+      columns: { id: true, businessName: true, address: true, latitude: true, longitude: true },
+      with: { user: { columns: { phone: true } } },
+    },
+  } as const;
+
   async getAllAvailableOrdersForRider(): Promise<any[]> {
     // Get available restaurant orders
     const restaurantOrdersList = await db.query.restaurantOrders.findMany({
@@ -2260,7 +2270,7 @@ export class DatabaseStorage implements IStorage {
         eq(restaurantOrders.status, 'ready_for_pickup'),
         sql`${restaurantOrders.riderId} IS NULL`
       ),
-      with: { user: true, provider: true },
+      with: this.riderOrderRelations,
       orderBy: [desc(restaurantOrders.createdAt)],
     });
 
@@ -2270,6 +2280,7 @@ export class DatabaseStorage implements IStorage {
         eq(groceryOrders.status, 'ready_for_pickup'),
         sql`${groceryOrders.riderId} IS NULL`
       ),
+      with: this.riderOrderRelations,
       orderBy: [desc(groceryOrders.createdAt)],
     });
 
@@ -2279,6 +2290,7 @@ export class DatabaseStorage implements IStorage {
         eq(streetFoodOrders.status, 'ready_for_pickup'),
         sql`${streetFoodOrders.riderId} IS NULL`
       ),
+      with: this.riderOrderRelations,
       orderBy: [desc(streetFoodOrders.createdAt)],
     });
 
@@ -2302,17 +2314,19 @@ export class DatabaseStorage implements IStorage {
   async getAllRiderOrders(riderId: string): Promise<any[]> {
     const restaurantOrdersList = await db.query.restaurantOrders.findMany({
       where: eq(restaurantOrders.riderId, riderId),
-      with: { user: true, provider: true },
+      with: this.riderOrderRelations,
       orderBy: [desc(restaurantOrders.createdAt)],
     });
 
     const groceryOrdersList = await db.query.groceryOrders.findMany({
       where: eq(groceryOrders.riderId, riderId),
+      with: this.riderOrderRelations,
       orderBy: [desc(groceryOrders.createdAt)],
     });
 
     const streetFoodOrdersList = await db.query.streetFoodOrders.findMany({
       where: eq(streetFoodOrders.riderId, riderId),
+      with: this.riderOrderRelations,
       orderBy: [desc(streetFoodOrders.createdAt)],
     });
 

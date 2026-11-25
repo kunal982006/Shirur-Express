@@ -1,5 +1,7 @@
 import { registerAnalyticsRoutes } from "./analytics-routes";
 import { registerBillRoutes } from "./bill-routes";
+import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
+import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
 // server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
@@ -12,8 +14,10 @@ import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
 import { storage } from "./storage";
+import { arrivalMinutesForOrder, markLiveStatusCapable, pushOrderStatusToCustomer, refreshArrivalTimesForRider } from "./order-status-push";
 import { FOOD_COLLECTIONS, getFoodCollection, getFoodCollectionSlugs, getIstMinutes, isNonVegDish, orderFoodCollectionFeed } from "@shared/food-collections";
 import { PINNED_DISHES, PINNED_ROW_SLUGS, findPinnedIndex, findSpecialtyTag, isExtraFor, rotationRank } from "./food-highlights";
+import { CHOICE_TITLES, displayName, matchShirurOrdering, pickExtras, type OrderingCard, type OrderingEntry, type OrderingTab } from "./shirur-ordering";
 import { LOCAL_FAVOURITES, LOCAL_FAVOURITE_FIGURES, liveFigure, withoutPortion } from "./local-favourites";
 import { db } from "./db";
 import { eq, ne, and, or, inArray, ilike, gt, desc, asc, count, gte, sql, aliasedTable, isNull, isNotNull } from "drizzle-orm";
@@ -132,6 +136,9 @@ export function broadcastOrderUpdate(payload: {
     timestamp: Date.now(),
   });
   console.log(`[SSE Broadcast] Order ${payload.orderId} status changed to '${payload.status}' — notifying ${orderSseClients.size} live client(s)`);
+
+  // Update the customer's live order-status notification (fire and forget).
+  void pushOrderStatusToCustomer(payload);
 
   orderSseClients.forEach((client) => {
     try {
@@ -270,6 +277,49 @@ setOrderStateResolver(async (orderType, orderId) => {
 let servicesEnabled = true;
 let groceryEnabled = false; // Grocery service temporarily closed
 
+// ===== FOOD PAUSE (technical update) =====
+// Food orders (street food + restaurants) are paused until this time and reopen on their own.
+// Every order attempt during the pause is logged here and sent to the admin as a push alert.
+const FOOD_PAUSE_UNTIL = new Date("2026-11-21T15:00:00+05:30");
+const FOOD_PAUSE_MESSAGE =
+  "Food ordering is paused until 3:00 PM today for a technical update. Please order again after 3 PM. Sorry for the inconvenience!";
+const isFoodPaused = () => Date.now() < FOOD_PAUSE_UNTIL.getTime();
+
+type FoodPauseAttempt = {
+  at: string;
+  orderType: string;
+  userId: string;
+  name: string;
+  phone: string;
+  amount: string;
+  items: string;
+};
+const foodPauseAttempts: FoodPauseAttempt[] = [];
+
+async function recordFoodPauseAttempt(userId: string, orderType: string, body: any) {
+  const user = await storage.getUser(userId).catch(() => undefined);
+  const items = Array.isArray(body?.items)
+    ? body.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", ")
+    : "";
+  const attempt: FoodPauseAttempt = {
+    at: new Date().toISOString(),
+    orderType,
+    userId,
+    name: (user as any)?.fullName || (user as any)?.name || user?.username || "Unknown",
+    phone: (user as any)?.phone || "N/A",
+    amount: String(body?.totalAmount ?? body?.total ?? ""),
+    items,
+  };
+  foodPauseAttempts.unshift(attempt);
+  if (foodPauseAttempts.length > 500) foodPauseAttempts.length = 500;
+  console.log(`[Food Pause] Blocked ${orderType} order attempt by ${attempt.name} (${attempt.phone}) ₹${attempt.amount}`);
+  void notifyAdmin({
+    title: "Order attempt while food is paused",
+    body: `${attempt.name} • 📞 ${attempt.phone} • ₹${attempt.amount || "?"} • ${items || orderType}`,
+    data: { orderType, type: "food_pause_attempt" },
+  });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
@@ -403,6 +453,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
       }
       const userId = req.userId!;
+      if (isFoodPaused()) {
+        await recordFoodPauseAttempt(userId, "street_food", req.body);
+        return res.status(503).json({ code: "FOOD_PAUSED", message: FOOD_PAUSE_MESSAGE, until: FOOD_PAUSE_UNTIL.toISOString() });
+      }
       // Validate body
       const orderData = insertStreetFoodOrderSchema.parse(req.body);
 
@@ -415,6 +469,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hour = Math.floor(expired.untilMinute / 60);
         const label = `${hour % 12 || 12}:${String(expired.untilMinute % 60).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
         return res.status(400).json({ message: `${expired.name} is available only until ${label}.` });
+      }
+
+      // Add-on dishes (single idli, single wada…) need a main dish in the same order.
+      const orderedIds = ((orderData.items as any[]) || []).map((item) => item?.productId).filter((id): id is string => typeof id === "string");
+      if (orderedIds.length > 0) {
+        const ordered = await db.select({ category: streetFoodItems.category }).from(streetFoodItems).where(inArray(streetFoodItems.id, orderedIds));
+        if (ordered.length > 0 && ordered.every((row) => isAddOnCategory(row.category))) {
+          return res.status(400).json({ message: ADD_ON_ONLY_MESSAGE });
+        }
       }
 
       // Assign a static runner ID for MVP (e.g., "runner-1")
@@ -780,10 +843,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/fcm-token", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
-      const { token } = req.body;
+      const { token, liveStatus } = req.body;
       if (!token) return res.status(400).json({ message: "Token is required" });
 
       await storage.updateUserFcmToken(userId, token);
+      // The Android app can show the pinned live order-status notification.
+      if (liveStatus === true) markLiveStatusCapable(token);
       res.json({ message: "FCM token updated" });
     } catch (error: any) {
       console.error("FCM Token save error:", error);
@@ -2919,6 +2984,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Services are currently closed. Please try again during business hours." });
       }
       const userId = req.userId!;
+      if (isFoodPaused()) {
+        await recordFoodPauseAttempt(userId, "restaurant", req.body);
+        return res.status(503).json({ code: "FOOD_PAUSED", message: FOOD_PAUSE_MESSAGE, until: FOOD_PAUSE_UNTIL.toISOString() });
+      }
       const orderData = insertRestaurantOrderSchema.parse(req.body);
 
       // Assign a static rider ID for MVP (e.g., "rider-1") if needed, or leave null
@@ -3013,50 +3082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedOrder = await storage.updateStreetFoodOrderStatus(id, status);
       broadcastOrderUpdate({ orderId: id, status, orderType: 'street_food', userId: (updatedOrder as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(updatedOrder as any)?.riderId) {
-        try {
-          const provider = order.providerId ? await storage.getServiceProvider(order.providerId) : null;
-          const providerName = provider?.businessName || 'Street Food Vendor';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Street food order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `🌮 ${providerName} is Preparing!`,
-                body: `Street Food Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: updatedOrder.id,
-                  orderType: 'street_food',
-                  customerName: 'Customer',
-                  amount: String((updatedOrder as any).totalAmount || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(updatedOrder);
     } catch (error: any) {
@@ -3522,6 +3548,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =========================================
 
   // Get Customer's Grocery Orders
+  // Orders on their way to the customer, for the live order bar at the bottom of the app.
+  app.get("/api/customer/active-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const active = ['accepted', 'preparing', 'ready_for_pickup', 'assigned', 'arrived_at_pickup', 'out_for_delivery'];
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // ignore stale orders that never got closed
+      const result: any[] = [];
+      for (const type of commerceOrderTypes) {
+        const t = commerceOrderTables[type];
+        const rows: any[] = await db.select().from(t)
+          .where(and(eq(t.userId, userId), inArray(t.status, active), gte(t.createdAt, since)))
+          .orderBy(desc(t.createdAt));
+        for (const o of rows) {
+          const provider = o.providerId ? await storage.getServiceProvider(o.providerId) : null;
+          result.push({
+            id: o.id,
+            orderType: type,
+            status: o.status,
+            shopName: provider?.businessName || (type === 'grocery' ? 'Store' : 'Restaurant'),
+            createdAt: o.createdAt,
+            etaMinutes: await arrivalMinutesForOrder(o).catch(() => null),
+          });
+        }
+      }
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      res.json(result);
+    } catch (error: any) {
+      console.error("Get active orders error:", error);
+      res.status(500).json({ message: error.message || "Error fetching active orders" });
+    }
+  });
+
   app.get("/api/customer/grocery-orders", isLoggedIn, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId!;
@@ -3573,50 +3631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.updateProviderOrderStatus(orderId, providerId, status);
       broadcastOrderUpdate({ orderId, status, orderType: 'restaurant', userId: (order as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(order as any)?.riderId) {
-        try {
-          const provider = await storage.getServiceProvider(providerId);
-          const providerName = provider?.businessName || 'Restaurant';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `🍳 ${providerName} is Preparing!`,
-                body: `Order #${orderId.slice(0, 8)} • ₹${(order as any).totalAmount} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: order.id,
-                  orderType: 'restaurant',
-                  customerName: 'Customer',
-                  amount: String((order as any).totalAmount || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(order);
     } catch (error: any) {
@@ -3652,50 +3667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.updateGroceryOrderStatusByProvider(orderId, providerId, status);
       broadcastOrderUpdate({ orderId, status, orderType: 'grocery', userId: (order as any)?.userId });
 
-      // --- RIDER RING: Notify all online riders when provider starts preparing ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !(order as any)?.riderId) {
-        try {
-          const provider = await storage.getServiceProvider(providerId);
-          const providerName = provider?.businessName || 'Store';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Rider Ring] Grocery order ${orderId} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              const result = await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `📦 ${providerName} is Preparing!`,
-                body: `Grocery Order #${orderId.slice(0, 8)} • ₹${order.total} • ${displayDeliveryAddress(order.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: order.id,
-                  orderType: 'grocery',
-                  customerName: 'Customer',
-                  amount: String(order.total || '0'),
-                  pickupAddress: provider?.address || 'Check App',
-                  dropAddress: displayDeliveryAddress(order.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-              if (result.success) {
-                console.log(`✅ Rider ring sent to ${token.substring(0, 15)}...`);
-              } else {
-                console.error(`❌ Rider ring failed:`, result.error);
-              }
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json(order);
     } catch (error: any) {
@@ -3765,6 +3737,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updated = await storage.updateDeliveryPartnerLocation(partnerId, latitude, longitude);
       res.json({ message: "Location updated", partner: updated });
+      // Refresh "Arriving in X min" on the phones of this rider's customers.
+      void refreshArrivalTimesForRider(req.userId!);
     } catch (error: any) {
       console.error("Update delivery partner location error:", error);
       res.status(500).json({ message: error.message || "Error updating location" });
@@ -3775,7 +3749,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/rider/orders/available", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
       const availableOrders = await storage.getAllAvailableOrdersForRider();
-      res.json(availableOrders);
+      // Each restaurant order carries what to pay at the counter and what the partner earns.
+      res.json(await attachSettlements(availableOrders));
     } catch (error: any) {
       console.error("Get available orders error:", error);
       res.status(500).json({ message: error.message || "Error fetching available orders" });
@@ -3787,7 +3762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const riderId = req.userId!;
       const myOrders = await storage.getAllRiderOrders(riderId);
-      res.json(myOrders);
+      res.json(await attachSettlements(myOrders));
     } catch (error: any) {
       console.error("Get rider orders error:", error);
       res.status(500).json({ message: error.message || "Error fetching orders" });
@@ -3923,7 +3898,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId!;
 
       const trackingInfo = await storage.getOrderTrackingInfo(orderId, userId);
-      res.json(trackingInfo);
+      const etaMinutes = await arrivalMinutesForOrder(trackingInfo.order).catch(() => null);
+      // The rider is a full user row: send the customer only the name and phone, never the rest.
+      const rider = trackingInfo.order?.rider;
+      const order = { ...trackingInfo.order, rider: rider ? { id: rider.id, username: rider.username, phone: rider.phone } : null };
+      // Restaurant / store number for the customer's "Call restaurant" button.
+      const shop = order.providerId ? await storage.getServiceProvider(order.providerId).catch(() => undefined) : undefined;
+      res.json({ ...trackingInfo, order, etaMinutes, shopPhone: shop?.user?.phone || null });
     } catch (error: any) {
       console.error("Track order error:", error);
       res.status(400).json({ message: error.message || "Error tracking order" });
@@ -4479,53 +4460,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`[Admin Status] Order ${id} (${type}) status updated to '${status}' by admin.`);
+      broadcastOrderUpdate({ orderId: id, status, orderType: type, riderId: (updatedOrder as any).riderId || undefined, userId: (updatedOrder as any).userId });
 
-      // --- RIDER RING: Notify online riders when admin sets status to 'preparing' ---
-      // Skipped when the admin has already assigned a rider to this order.
-      if (status === 'preparing' && !updatedOrder.riderId) {
-        try {
-          let providerName = 'Provider';
-          let providerAddress = 'Check App';
-          if (updatedOrder.providerId) {
-            const provider = await storage.getServiceProvider(updatedOrder.providerId);
-            providerName = provider?.businessName || 'Provider';
-            providerAddress = provider?.address || 'Check App';
-          }
-
-          const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
-          const onlineRiders = await storage.getOnlineDeliveryPartnersWithTokens();
-          console.log(`[Admin Rider Ring] Order ${id} preparing — notifying ${onlineRiders.length} online rider(s)`);
-
-          for (const rider of onlineRiders) {
-            const allTokens: string[] = [];
-            if (rider.fcmTokens && Array.isArray(rider.fcmTokens)) {
-              allTokens.push(...rider.fcmTokens);
-            } else if (rider.fcmToken) {
-              allTokens.push(rider.fcmToken);
-            }
-            const uniqueTokens = Array.from(new Set(allTokens));
-            for (const token of uniqueTokens) {
-              await sendPushNotification(token, {
-                type: 'ORDER_REQUEST',
-                title: `${orderLabel} ${providerName} is Preparing!`,
-                body: `Order #${id.slice(0, 8)} • ₹${(updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'} • ${displayDeliveryAddress(updatedOrder.deliveryAddress).slice(0, 40) || 'Check App'}`,
-                data: {
-                  orderId: updatedOrder.id,
-                  orderType: type,
-                  customerName: 'Customer',
-                  amount: String((updatedOrder as any).totalAmount || (updatedOrder as any).total || '0'),
-                  pickupAddress: providerAddress,
-                  dropAddress: displayDeliveryAddress(updatedOrder.deliveryAddress) || 'Check App',
-                  navigateTo: '/delivery-partner/dashboard',
-                }
-              });
-            }
-          }
-        } catch (ringErr: any) {
-          console.error('[Admin Rider Ring Error]', ringErr?.message || ringErr);
-        }
-      }
-      // --- END RIDER RING ---
+      // Riders are rung only when the admin assigns them an order (see assign-rider).
 
       res.json({ message: `Order status updated to '${status}'.`, order: updatedOrder });
     } catch (error: any) {
@@ -4613,11 +4550,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "The order is already picked up. Reassign it to another rider instead of removing the rider." });
       }
 
-      // Status: a ready order becomes "assigned" so the rider can head to pickup straight away.
-      // Kitchen statuses (pending/accepted/preparing) and out_for_delivery are left as they are.
-      // Removing the rider before pickup puts a ready order back into the open pool.
+      // Status: assigning before pickup moves the order straight to "assigned" so the rider can go
+      // and collect it. Many restaurants never tap Accept / Preparing / Ready, so we don't wait on them.
+      // out_for_delivery is left as it is. Removing the rider before pickup puts the order back into
+      // the open pool as ready_for_pickup.
       let status: string = order.status;
-      if (riderId && status === 'ready_for_pickup') status = 'assigned';
+      if (riderId && ['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup'].includes(status)) status = 'assigned';
       if (!riderId && ['assigned', 'arrived_at_pickup'].includes(status)) status = 'ready_for_pickup';
 
       const table = commerceOrderTables[type];
@@ -4639,6 +4577,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const orderLabel = type === 'restaurant' ? '🍳' : type === 'street_food' ? '🌮' : '📦';
           const amount = String(order.totalAmount || order.total || '0');
           const dropAddress = displayDeliveryAddress(order.deliveryAddress) || 'Check App';
+          const customer = await storage.getUser(order.userId).catch(() => undefined);
+          const customerPhone = customer?.phone || 'Check App';
           const tokens: string[] = [];
           if (Array.isArray(rider.user?.fcmTokens)) tokens.push(...rider.user.fcmTokens);
           else if (rider.user?.fcmToken) tokens.push(rider.user.fcmToken);
@@ -4647,11 +4587,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await sendPushNotification(token, {
               type: 'ORDER_REQUEST',
               title: `${orderLabel} Delivery assigned to you!`,
-              body: `${provider?.businessName || 'Pickup'} → ${dropAddress.slice(0, 40)} • ₹${amount}`,
+              body: `Pick up: ${provider?.businessName || 'Check App'} • 📞 ${customerPhone} • ₹${amount}`,
               data: {
                 orderId: id,
                 orderType: type,
-                customerName: 'Customer',
+                customerName: customer?.username || 'Customer',
+                customerPhone,
                 amount,
                 itemsSummary: 'Assigned by admin',
                 pickupAddress: provider?.address || provider?.businessName || 'Check App',
@@ -5130,6 +5071,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/broadcast", isAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { audience, title, message } = req.body;
+      // Page the app opens when the notification is tapped: an in-app path such as "/?open=shirur-ordering".
+      const navigateTo = typeof req.body.navigateTo === "string" && /^\/(?!\/)/.test(req.body.navigateTo) ? req.body.navigateTo : "/";
 
       if (!audience || !title || !message) {
         return res.status(400).json({ message: "audience, title, and message are required." });
@@ -5237,7 +5180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: 'ADMIN_BROADCAST',
               title: title,
               body: message,
-              navigateTo: '/',
+              navigateTo,
             }
           })
         )
@@ -5355,6 +5298,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let timeLimitedDishes = new Map<string, { name: string; untilMinute: number }>();
   // Every available dish, including ones in no category row (soups...), for the Local favourites row.
   let dishById = new Map<string, any>();
+  // "What Shirur is Ordering": the hand-picked cards of the Café, Biryani and Street Food tabs,
+  // and the list lines that matched no dish on the live menus.
+  let orderingCards: OrderingCard[] = [];
+  let orderingUnmatched: OrderingEntry[] = [];
 
   // Dishes that are past their daily cut-off (e.g. Idli Wada Mix after 1 PM) are hidden.
   const visibleNow = <T extends { availableUntilMinute?: number | null }>(list: T[]): T[] => {
@@ -5369,6 +5316,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       getOrdersToday(),
     ]);
     const now = new Date();
+    const ordering = matchShirurOrdering([...menuItems, ...streetItems], isNonVegDish);
+    orderingCards = ordering.cards;
+    orderingUnmatched = ordering.unmatched;
     const pinIndex = new Map<string, number>();
     const dishes = [
       ...menuItems.map((item) => ({ item, itemType: "restaurant" as const })),
@@ -5405,19 +5355,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // a little every few minutes) plus real orders placed through the app. Dishes without a
       // figure show real orders only.
       const realOrders = ordersToday.get(item.id) || 0;
-      const figure = LOCAL_FAVOURITE_FIGURES.get(item.id) ?? pinned?.figure ?? 0;
+      // The "What Shirur is Ordering" list is the newest figure for a dish, so it comes first.
+      const figure = ordering.figures.get(item.id) ?? LOCAL_FAVOURITE_FIGURES.get(item.id) ?? pinned?.figure ?? 0;
       return {
         ...base,
         orderCount: liveFigure(item.id, figure, now) + realOrders,
         isMostlySelling: false,
         badge: null as string | null,
         _realOrders: realOrders,
-        _tag: findSpecialtyTag(base),
+        _tag: ordering.badges.get(item.id) ?? findSpecialtyTag(base),
         _rotation: rotationRank(item.id, now),
         availableUntilMinute: pinned?.untilMinute ?? null,
         accompaniments: [] as any[],
         _slugs: slugs,
-        _extras: pinned?.extras,
+        _extras: (ordering.extras.get(item.id) ?? pinned?.extras) as "pav" | "bread" | RegExp[] | undefined,
         _popularOrder: item.popularOrder || 0,
         _displayOrder: item.provider.displayOrder || 0,
       };
@@ -5441,7 +5392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .filter((dish) => dish.availableUntilMinute != null)
       .map((dish) => [dish.id, { name: dish.name, untilMinute: dish.availableUntilMinute! }]));
 
-    // Extras offered in a popup when a featured dish is added: plain pav or breads from the same restaurant.
+    // Extras offered in a popup when a featured dish is added: plain pav or breads, or extra cheese, from the same restaurant.
     const byProvider = new Map<string, typeof dishes>();
     for (const dish of dishes) {
       if (!byProvider.has(dish.providerId)) byProvider.set(dish.providerId, []);
@@ -5449,8 +5400,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     for (const dish of dishes) {
       if (!dish._extras) continue;
-      dish.accompaniments = (byProvider.get(dish.providerId) || [])
-        .filter((other) => other.id !== dish.id && other.itemType === dish.itemType && isExtraFor(dish._extras!, other.name))
+      const menu = (byProvider.get(dish.providerId) || []).filter((other) => other.id !== dish.id && other.itemType === dish.itemType);
+      const kind = dish._extras;
+      // Extra cheese / cheese slice for the "What Shirur is Ordering" dishes; pav or breads otherwise.
+      dish.accompaniments = (Array.isArray(kind) ? pickExtras(kind, menu) : menu.filter((other) => isExtraFor(kind, other.name)))
         // Breads before rice, cheapest first.
         .sort((a, b) => Number(/rice/i.test(a.name)) - Number(/rice/i.test(b.name)) || Number(a.price) - Number(b.price))
         .slice(0, 10)
@@ -5591,9 +5544,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   const INSIGHT_SIZE = 30;
 
+  // Café, Biryani and Street Food show the hand-picked list (server/shirur-ordering.ts), cheapest
+  // first. A dish with a picker (Half / Full, pizza size, steam / fried) is one card whose
+  // `variants` hold each choice; its price is the cheapest choice.
+  const CURATED_TABS = new Set<OrderingTab>(["cafe", "biryani", "street-food"]);
+
+  const getCuratedInsights = (tab: OrderingTab, diet: string) => {
+    const open = visibleNow(Array.from(dishById.values()));
+    const openById = new Map(open.map((dish) => [dish.id, dish]));
+    const cards = orderingCards.filter((card) => card.tab === tab).flatMap((card) => {
+      const choices = card.variants
+        .map((variant) => ({ variant, dish: openById.get(variant.id) }))
+        .filter((choice): choice is { variant: typeof choice.variant; dish: any } => Boolean(choice.dish));
+      if (!choices.length) return [];
+      const first = choices[0].dish;
+      if (first.provider.isAvailable === false) return [];
+      if (diet === "veg" && !first.isVeg) return [];
+      if (diet === "non-veg" && first.isVeg) return [];
+      if (choices.length === 1) return [first];
+      return [{
+        ...first,
+        name: displayName(first.name),
+        price: Math.min(...choices.map(({ dish }) => Number(dish.price))),
+        choiceTitle: CHOICE_TITLES[card.choice!],
+        variants: choices.map(({ variant, dish }) => ({ ...dish, label: variant.label })),
+      }];
+    });
+    // Cheapest first; equal prices keep the most-ordered first.
+    return cards.sort((a, b) => Number(a.price) - Number(b.price) || b.orderCount - a.orderCount);
+  };
+
   const getInsights = async (tab: string, diet: string) => {
     const inTab = INSIGHT_TABS[tab] || INSIGHT_TABS.all;
     const grouped = await getFoodCollectionItems();
+    if (CURATED_TABS.has(tab as OrderingTab) && orderingCards.some((card) => card.tab === tab)) {
+      return getCuratedInsights(tab as OrderingTab, diet);
+    }
     const seen = new Map<string, any>();
     for (const [slug, list] of Array.from(grouped.entries())) {
       if (!inTab(slug)) continue;
@@ -5630,6 +5616,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Get food insights error:", error);
       res.status(500).json({ message: error.message || "Error fetching food insights" });
+    }
+  });
+
+  // Which "What Shirur is Ordering" list lines found their dish on the live menus, to check the
+  // list after a menu change. Lines under `unmatched` are not shown in the app.
+  app.get("/api/food-insights/check", async (_req: Request, res: Response) => {
+    try {
+      await getFoodCollectionItems();
+      const describe = (entry: OrderingEntry) => ({ tab: entry.tab, restaurant: entry.provider.source, dish: entry.name.source, figure: entry.figure });
+      res.json({
+        matched: orderingCards.map((card) => ({
+          tab: card.tab,
+          dishes: card.variants.map((variant) => ({ label: variant.label || undefined, name: dishById.get(variant.id)?.name, restaurant: dishById.get(variant.id)?.provider.businessName, price: dishById.get(variant.id)?.price })),
+        })),
+        unmatched: orderingUnmatched.map(describe),
+      });
+    } catch (error: any) {
+      console.error("Food insights check error:", error);
+      res.status(500).json({ message: error.message || "Error checking food insights list" });
     }
   });
 
@@ -6300,7 +6305,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public: Check if services and grocery are open (for client banners/modals)
   app.get("/api/platform-status", (_req: Request, res: Response) => {
-    res.json({ servicesEnabled, groceryEnabled });
+    res.json({
+      servicesEnabled,
+      groceryEnabled,
+      foodPause: { active: isFoodPaused(), until: FOOD_PAUSE_UNTIL.toISOString(), message: FOOD_PAUSE_MESSAGE },
+    });
+  });
+
+  // Admin: who tried to order food while it was paused
+  app.get("/api/admin/food-pause-attempts", isAdmin, (_req: AuthRequest, res: Response) => {
+    res.json({ active: isFoodPaused(), until: FOOD_PAUSE_UNTIL.toISOString(), attempts: foodPauseAttempts });
   });
 
   // Admin: Get platform status
@@ -6745,6 +6759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Register User Analytics & Behavior Routes
   registerAnalyticsRoutes(app, isAdmin);
   registerBillRoutes(app);
+  registerSettlementRoutes(app, { isAdmin, isDeliveryPartner });
 
   return httpServer;
 }
