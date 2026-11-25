@@ -233,8 +233,9 @@ export default function Electrician() {
       {/* Call Now Sticky Bottom Bar */}
       <CallNowBar
         variant="electrician"
-        title="Direct Call Specialist"
-        tagline="Hume call karein aur apni problem batayein"
+        requestCallFor="electrician"
+        title="Instant Call Back"
+        tagline="Request a call, we will call you in a few minutes"
       />
     </div>
   );
