@@ -89,6 +89,8 @@ async function notifyAdmin(payload: {
   title: string;
   body: string;
   data?: Record<string, string>;
+  /** ORDER_REQUEST rings like a new order (default); ORDER_UPDATE is a normal notification. */
+  pushType?: 'ORDER_REQUEST' | 'ORDER_UPDATE';
 }) {
   // Open admin panels refresh their order and booking lists right away.
   broadcastAdminRefresh();
@@ -108,7 +110,7 @@ async function notifyAdmin(payload: {
     console.log(`[FCM Admin] Sending notification to main_branch (${uniqueTokens.length} device(s))`);
     for (const deviceToken of uniqueTokens) {
       await sendPushNotification(deviceToken, {
-        type: 'ORDER_REQUEST',
+        type: payload.pushType || 'ORDER_REQUEST',
         title: `👑 ${payload.title}`,
         body: payload.body,
         data: { ...payload.data, navigateTo: '/admin' },
@@ -143,6 +145,18 @@ export function broadcastOrderUpdate(payload: {
   orderSseClients.forEach((client) => {
     try {
       client.res.write(`event: order_update\ndata: ${data}\n\n`);
+    } catch (err) {
+      orderSseClients.delete(client);
+    }
+  });
+}
+
+/** Tells open admin panels that a delivery partner accepted or turned down an order. Only the order id. */
+function broadcastRiderResponse(payload: { orderId: string; accepted: boolean }) {
+  const data = JSON.stringify({ ...payload, timestamp: Date.now() });
+  orderSseClients.forEach((client) => {
+    try {
+      client.res.write(`event: rider_response\ndata: ${data}\n\n`);
     } catch (err) {
       orderSseClients.delete(client);
     }
@@ -3769,6 +3783,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ----- Delivery partner accepts / turns down an order the admin assigned -----
+  // riderAcceptedAt is empty from the moment the admin assigns until the partner taps Accept.
+
+  /** Tells the admin (push + open admin panels) how the partner answered. Never throws. */
+  async function notifyAdminOfRiderResponse(orderType: CommerceOrderType, order: any, riderId: string, accepted: boolean) {
+    try {
+      broadcastRiderResponse({ orderId: order.id, accepted });
+      const rider = await storage.getUser(riderId).catch(() => undefined);
+      const provider = order.providerId ? await storage.getServiceProvider(order.providerId).catch(() => undefined) : undefined;
+      const riderName = rider?.username || 'Delivery partner';
+      const shop = provider?.businessName || 'the shop';
+      await notifyAdmin({
+        pushType: 'ORDER_UPDATE',
+        title: accepted ? `✅ ${riderName} accepted the order` : `❌ ${riderName} can't take the order`,
+        body: accepted
+          ? `Order #${String(order.id).slice(0, 8)} from ${shop}. They are on the way to pick it up.`
+          : `Order #${String(order.id).slice(0, 8)} from ${shop} has no rider now. Assign someone else.`,
+        data: { orderId: String(order.id), orderType },
+      });
+    } catch (err: any) {
+      console.error('[Rider Response] Admin notification failed:', err?.message || err);
+    }
+  }
+
+  /** Records that the partner accepted, if not already recorded. Returns true when it was new. */
+  async function markRiderAccepted(orderType: CommerceOrderType, orderId: string, riderId: string): Promise<boolean> {
+    const table: any = commerceOrderTables[orderType];
+    const rows = await db.update(table)
+      .set({ riderAcceptedAt: new Date() } as any)
+      .where(and(eq(table.id, orderId), eq(table.riderId, riderId), isNull(table.riderAcceptedAt)))
+      .returning({ id: table.id });
+    return rows.length > 0;
+  }
+
+  /** For rider actions that also mean "I've taken this order" (arrived, picked up). Never throws. */
+  async function acceptImplicitly(orderType: unknown, orderId: string, riderId: string) {
+    try {
+      const type: CommerceOrderType = isCommerceOrderType(orderType) ? orderType : 'restaurant';
+      if (await markRiderAccepted(type, orderId, riderId)) {
+        const order = await getCommerceOrder(type, orderId);
+        if (order) await notifyAdminOfRiderResponse(type, order, riderId, true);
+      }
+    } catch (err: any) {
+      console.error('[Rider Response] Implicit accept failed:', err?.message || err);
+    }
+  }
+
+  // The partner taps Accept on an order the admin assigned to them.
+  app.post("/api/rider/orders/:id/confirm", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+      const orderType: CommerceOrderType = isCommerceOrderType(req.body?.orderType) ? req.body.orderType : 'restaurant';
+      const order: any = await getCommerceOrder(orderType, orderId);
+      if (!order || order.riderId !== riderId) {
+        return res.status(404).json({ message: "This order is no longer assigned to you." });
+      }
+      if (['delivered', 'cancelled', 'declined', 'completed'].includes(order.status || '')) {
+        return res.status(400).json({ message: `This order is ${String(order.status).replace(/_/g, ' ')}.` });
+      }
+      if (await markRiderAccepted(orderType, orderId, riderId)) {
+        broadcastOrderUpdate({ orderId, status: order.status, orderType, riderId, userId: order.userId });
+        await notifyAdminOfRiderResponse(orderType, order, riderId, true);
+      }
+      res.json({ message: "Order accepted. Go and pick it up." });
+    } catch (error: any) {
+      console.error("Rider confirm order error:", error);
+      res.status(500).json({ message: error.message || "Could not accept the order" });
+    }
+  });
+
+  // The partner can't take an order the admin assigned: it goes back without a rider.
+  app.post("/api/rider/orders/:id/decline", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
+    try {
+      const orderId = req.params.id;
+      const riderId = req.userId!;
+      const orderType: CommerceOrderType = isCommerceOrderType(req.body?.orderType) ? req.body.orderType : 'restaurant';
+      const order: any = await getCommerceOrder(orderType, orderId);
+      if (!order || order.riderId !== riderId) {
+        return res.status(404).json({ message: "This order is no longer assigned to you." });
+      }
+      if (order.riderAcceptedAt) {
+        return res.status(400).json({ message: "You already accepted this order. Call the admin to hand it over." });
+      }
+      if (!['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup', 'assigned', 'arrived_at_pickup'].includes(order.status || '')) {
+        return res.status(400).json({ message: "This order can't be handed back now." });
+      }
+      const status = ['assigned', 'arrived_at_pickup'].includes(order.status) ? 'ready_for_pickup' : order.status;
+      const table: any = commerceOrderTables[orderType];
+      await db.update(table).set({ riderId: null, riderAcceptedAt: null, status } as any)
+        .where(and(eq(table.id, orderId), eq(table.riderId, riderId)));
+      broadcastOrderUpdate({ orderId, status, orderType, userId: order.userId });
+      await notifyAdminOfRiderResponse(orderType, order, riderId, false);
+      res.json({ message: "Order handed back. The admin will assign someone else." });
+    } catch (error: any) {
+      console.error("Rider decline order error:", error);
+      res.status(500).json({ message: error.message || "Could not hand back the order" });
+    }
+  });
+
   // Accept/Claim an Order (works for both restaurant and grocery orders)
   app.post("/api/rider/orders/:id/accept", isDeliveryPartner, async (req: DeliveryPartnerRequest, res: Response) => {
     try {
@@ -3785,6 +3899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         order = await storage.acceptOrderAsRider(orderId, riderId);
       }
       broadcastOrderUpdate({ orderId, status: 'assigned', orderType: orderType || 'restaurant', riderId, userId: order?.userId });
+      if (order) void notifyAdminOfRiderResponse(isCommerceOrderType(orderType) ? orderType : 'restaurant', order, riderId, true);
       res.json({ message: "Order accepted!", order });
     } catch (error: any) {
       console.error("Accept order error:", error);
@@ -3798,6 +3913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderId = req.params.id;
       const riderId = req.userId!;
       const { orderType } = req.body;
+      await acceptImplicitly(orderType, orderId, riderId);
 
       let order: any;
       if (orderType === 'grocery') {
@@ -3821,6 +3937,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderId = req.params.id;
       const riderId = req.userId!;
       const { orderType } = req.body;
+      await acceptImplicitly(orderType, orderId, riderId);
 
       let result: any;
       if (orderType === 'grocery') {
@@ -4184,6 +4301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
           riderId: groceryOrders.riderId,
+          riderAcceptedAt: groceryOrders.riderAcceptedAt,
           riderName: riderUsers.username,
           riderPhone: riderUsers.phone,
         })
@@ -4211,6 +4329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
           riderId: streetFoodOrders.riderId,
+          riderAcceptedAt: streetFoodOrders.riderAcceptedAt,
           riderName: riderUsers.username,
           riderPhone: riderUsers.phone,
         })
@@ -4238,6 +4357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           businessName: serviceProviders.businessName,
           providerPhone: providerUsers.phone,
           riderId: restaurantOrders.riderId,
+          riderAcceptedAt: restaurantOrders.riderAcceptedAt,
           riderName: riderUsers.username,
           riderPhone: riderUsers.phone,
         })
@@ -4293,7 +4413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.total,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
-            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone, acceptedAt: o.riderAcceptedAt } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: gProductMap.get(i.productId)?.name || i.name || 'Unknown Item',
@@ -4306,7 +4426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
-            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone, acceptedAt: o.riderAcceptedAt } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: sfProductMap.get(i.productId || i.itemId)?.name || i.name || 'Unknown Item',
@@ -4319,7 +4439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: o.totalAmount,
             user: { username: o.username || 'Unknown', phone: o.phone },
             provider: { businessName: o.businessName || 'Unknown', phone: o.providerPhone },
-            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone } : null,
+            rider: o.riderId ? { id: o.riderId, username: o.riderName || 'Rider', phone: o.riderPhone, acceptedAt: o.riderAcceptedAt } : null,
             items: Array.isArray(o.items) ? o.items.map((i: any) => ({
                 ...i,
                 name: rProductMap.get(i.menuItemId)?.name || i.name || 'Unknown Item',
@@ -4561,7 +4681,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const table = commerceOrderTables[type];
       const [updatedOrder] = await db
         .update(table)
-        .set({ riderId, status, riderAcceptedAt: riderId ? new Date() : null } as any)
+        // A newly assigned rider has not accepted yet: riderAcceptedAt stays empty until they tap Accept.
+        .set({ riderId, status, ...(riderId !== (order.riderId || null) ? { riderAcceptedAt: null } : {}) } as any)
         .where(eq(table.id, id))
         .returning();
 

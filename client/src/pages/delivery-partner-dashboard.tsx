@@ -140,6 +140,31 @@ export default function DeliveryPartnerDashboard() {
         },
     });
 
+    // Accept / hand back an order the admin assigned (the admin sees the answer straight away)
+    const confirmMutation = useMutation({
+        mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
+            api.post(`/rider/orders/${orderId}/confirm`, { orderType }),
+        onSuccess: () => {
+            toast({ title: "✅ Order accepted", description: "Go to the shop and pick it up." });
+            queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
+        },
+        onError: (error: any) => {
+            toast({ title: "Error", description: error.response?.data?.message || "Could not accept the order", variant: "destructive" });
+            queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
+        },
+    });
+    const declineMutation = useMutation({
+        mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
+            api.post(`/rider/orders/${orderId}/decline`, { orderType }),
+        onSuccess: () => {
+            toast({ title: "Order handed back", description: "The admin will give it to someone else." });
+            queryClient.invalidateQueries({ queryKey: ["riderMyOrders"] });
+        },
+        onError: (error: any) => {
+            toast({ title: "Error", description: error.response?.data?.message || "Could not hand back the order", variant: "destructive" });
+        },
+    });
+
     // Arrived at Pickup
     const arrivedMutation = useMutation({
         mutationFn: ({ orderId, orderType }: { orderId: string; orderType: string }) =>
@@ -299,10 +324,16 @@ export default function DeliveryPartnerDashboard() {
                                     key={order.id}
                                     order={order}
                                     type="active"
+                                    onConfirm={() => confirmMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
+                                    onDecline={() => {
+                                        if (window.confirm("Hand this order back? The admin will give it to someone else.")) {
+                                            declineMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' });
+                                        }
+                                    }}
                                     onArrived={() => arrivedMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onPickup={() => pickupMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
                                     onDeliver={() => markDeliveredMutation.mutate({ orderId: order.id, orderType: order.orderType || 'restaurant' })}
-                                    isProcessing={arrivedMutation.isPending || pickupMutation.isPending || markDeliveredMutation.isPending}
+                                    isProcessing={arrivedMutation.isPending || pickupMutation.isPending || markDeliveredMutation.isPending || confirmMutation.isPending || declineMutation.isPending}
                                 />
                             ))
                         )}
@@ -333,6 +364,8 @@ interface OrderCardProps {
     order: any; // Restaurant, street food or grocery order, tagged with orderType
     type: 'available' | 'active' | 'history';
     onAccept?: () => void;
+    onConfirm?: () => void;
+    onDecline?: () => void;
     onArrived?: () => void;
     onPickup?: () => void;
     onDeliver?: () => void;
@@ -353,6 +386,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
     order,
     type,
     onAccept,
+    onConfirm,
+    onDecline,
     onArrived,
     onPickup,
     onDeliver,
@@ -372,8 +407,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const isCod = order.paymentMethod === 'cod';
     const status: string = order.status || 'pending';
     const isPrePickup = type === 'active' && PRE_PICKUP_STATUSES.includes(status);
+    // Assigned by the admin and not accepted yet: the partner must Accept (or hand it back) first.
+    const needsAccept = isPrePickup && !order.riderAcceptedAt;
     // For the rider, an assigned order is ready to collect whatever the kitchen last tapped.
-    const statusLabel = isPrePickup ? "READY TO PICK UP" : formatStatus(status);
+    const statusLabel = isPrePickup ? (!order.riderAcceptedAt ? "NEW - ACCEPT IT" : "READY TO PICK UP") : formatStatus(status);
     const showContacts = type === 'active';
 
     return (
@@ -482,7 +519,19 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         </Button>
                     )}
 
-                    {type === 'active' && (
+                    {type === 'active' && needsAccept && (
+                        <>
+                            <p className="w-full text-center text-sm font-semibold text-amber-700">New delivery for you. Can you take it?</p>
+                            <Button variant="outline" className="flex-1 border-red-300 text-red-700" onClick={onDecline} disabled={isProcessing}>
+                                Can't take it
+                            </Button>
+                            <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={onConfirm} disabled={isProcessing}>
+                                <CheckCircle className="mr-2 h-4 w-4" /> Accept Order
+                            </Button>
+                        </>
+                    )}
+
+                    {type === 'active' && !needsAccept && (
                         <>
                             {isPrePickup && (
                                 <Button

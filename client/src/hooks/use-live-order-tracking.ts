@@ -65,6 +65,14 @@ export function useLiveOrderTracking(activeOrderId?: string) {
         // A new order or booking was placed: refresh the admin panel's lists.
         eventSource.addEventListener("admin_refresh", refreshAdminLists);
 
+        // A delivery partner accepted or turned down an assigned order: the admin panel shows a toast.
+        eventSource.addEventListener("rider_response", (event: MessageEvent) => {
+          refreshAdminLists();
+          try {
+            window.dispatchEvent(new CustomEvent("shirur:rider-response", { detail: JSON.parse(event.data) }));
+          } catch { /* ignore */ }
+        });
+
         eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
