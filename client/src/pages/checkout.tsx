@@ -154,7 +154,39 @@ export default function Checkout() {
     // DISTANCE LIMIT DISABLED FOR LAUNCH - Previously: if (distanceInKm > 10) isDeliverable = false;
   }
 
-  const total = subtotal + convenienceFee + deliveryFee;
+  const orderTotal = subtotal + convenienceFee + deliveryFee;
+
+  // Coupon code (checked by the server again when the order is placed)
+  const couponOrderType = items.some(item => item.itemType === 'street_food') ? 'street_food'
+    : items.some(item => item.itemType === 'restaurant') ? 'restaurant' : 'grocery';
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountType: string; value: number; maxDiscount: number | null; minOrder: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+  const couponDiscount = (() => {
+    if (!appliedCoupon || orderTotal < appliedCoupon.minOrder) return 0;
+    let d = appliedCoupon.discountType === "percent" ? (orderTotal * appliedCoupon.value) / 100 : appliedCoupon.value;
+    if (appliedCoupon.maxDiscount) d = Math.min(d, appliedCoupon.maxDiscount);
+    return Math.round(Math.max(0, Math.min(d, orderTotal)) * 100) / 100;
+  })();
+  const total = Math.max(0, Math.round((orderTotal - couponDiscount) * 100) / 100);
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setIsCheckingCoupon(true);
+    setCouponError(null);
+    try {
+      const res = await api.post("/coupons/check", { code, orderType: couponOrderType, total: orderTotal });
+      setAppliedCoupon(res.data);
+      setCouponInput(res.data.code);
+      toast({ title: "🎉 Coupon applied", description: `You save ₹${Number(res.data.discount).toFixed(2)}` });
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponError(err.response?.data?.message || (user ? "Could not check the coupon." : "Log in to use a coupon."));
+    } finally {
+      setIsCheckingCoupon(false);
+    }
+  };
 
   // Form setup
   const form = useForm<CheckoutFormValues>({
@@ -266,7 +298,8 @@ export default function Checkout() {
             providerId: item.providerId || "unknown",
             name: item.name
           })),
-          totalAmount: total.toFixed(2), // Schema expects totalAmount
+          totalAmount: orderTotal.toFixed(2), // Schema expects totalAmount; the server takes off the coupon
+          couponCode: appliedCoupon && couponDiscount > 0 ? appliedCoupon.code : undefined,
           deliveryAddress,
           providerId: items[0]?.providerId || "unknown", // Both restaurant and street food need it at root
           paymentMethod: paymentMethod === "cod" ? "cod" : "online",
@@ -287,7 +320,8 @@ export default function Checkout() {
           subtotal: subtotal.toFixed(2),
           platformFee: convenienceFee.toFixed(2), // Stored in the platform_fee column
           deliveryFee: deliveryFee.toFixed(2),
-          total: total.toFixed(2),
+          total: orderTotal.toFixed(2), // the server takes off the coupon
+          couponCode: appliedCoupon && couponDiscount > 0 ? appliedCoupon.code : undefined,
           deliveryAddress,
           providerId: items[0]?.providerId || null,
           paymentMethod: paymentMethod === "cod" ? "cod" : "online",
@@ -321,7 +355,8 @@ export default function Checkout() {
 
       const databaseOrderId = dbOrder.id;
 
-      if (paymentMethod === "cod") {
+      // A coupon that covers the whole order leaves nothing to pay online.
+      if (paymentMethod === "cod" || dbOrder.paymentMethod === "cod") {
         toast({
           title: "✅ Order Placed!",
           description: "Your Cash on Delivery order has been successfully placed.",
@@ -936,6 +971,43 @@ export default function Checkout() {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Convenience Fee</span>
                       <span>₹{convenienceFee.toFixed(2)}</span>
+                    </div>
+                    {couponDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-green-700 font-semibold">
+                        <span>Coupon {appliedCoupon?.code}</span>
+                        <span>-₹{couponDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="pt-1">
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between gap-2 rounded-md border border-green-300 bg-green-50 px-2 py-1.5 text-sm">
+                          <span className="text-green-800 font-medium min-w-0 break-words">
+                            {couponDiscount > 0 ? `✅ ${appliedCoupon.code} applied` : `${appliedCoupon.code} needs an order of ₹${appliedCoupon.minOrder} or more`}
+                          </span>
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-red-600 shrink-0"
+                            onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            value={couponInput}
+                            onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }}
+                            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
+                            placeholder="Coupon code"
+                            autoCapitalize="characters"
+                            className="flex-1 min-w-0 h-9 rounded-md border border-input bg-background px-3 text-sm uppercase"
+                          />
+                          <Button type="button" variant="outline" size="sm" className="h-9" onClick={applyCoupon} disabled={!couponInput.trim() || isCheckingCoupon}>
+                            {isCheckingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                          </Button>
+                        </div>
+                      )}
+                      {couponError && <p className="text-xs text-red-600 mt-1">{couponError}</p>}
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold text-lg">

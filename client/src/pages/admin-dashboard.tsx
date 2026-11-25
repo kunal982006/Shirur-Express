@@ -71,6 +71,7 @@ import {
     Smartphone,
     Bike,
     Wallet,
+    Ticket,
 } from "lucide-react";
 
 import { AdminPromotions } from "@/components/admin-promotions";
@@ -99,6 +100,7 @@ import AdminPhoneListings from "@/components/admin/admin-phone-listings";
 import AdminUserAnalytics from "@/components/admin/admin-user-analytics";
 import AdminRestaurantPricing from "@/components/admin/admin-restaurant-pricing";
 import AdminRiderSettlements from "@/components/admin/admin-rider-settlements";
+import AdminCoupons from "@/components/admin/admin-coupons";
 import { ProviderLocationDialog } from "@/components/admin/ProviderLocationDialog";
 import { ProviderPhoneDialog } from "@/components/admin/ProviderPhoneDialog";
 import { deliveryMapsUrl, displayDeliveryAddress } from "@shared/delivery-address";
@@ -293,7 +295,7 @@ export default function AdminDashboard() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const queryClient = useQueryClient(); // ADDED
-    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings" | "restaurant_pricing" | "rider_settlements">(
+    const [activeTab, setActiveTab] = useState<"overview" | "analytics" | "orders" | "bookings" | "providers" | "users" | "broadcast" | "featured" | "street_food" | "promotions" | "display_order" | "properties" | "phone_listings" | "restaurant_pricing" | "rider_settlements" | "coupons">(
         user?.username === "streetfood_admin" ? "street_food" : "overview"
     );
 
@@ -766,6 +768,7 @@ export default function AdminDashboard() {
         { id: "featured", label: "Featured", icon: Star },
         { id: "restaurant_pricing", label: "⚡ Restaurant Pricing", icon: UtensilsCrossed },
         { id: "rider_settlements", label: "Rider Settlements", icon: Wallet },
+        { id: "coupons", label: "Coupons", icon: Ticket },
         { id: "properties", label: "Properties", icon: Home },
         { id: "phone_listings", label: "Phone Listings", icon: Smartphone },
         { id: "street_food", label: "Street Food", icon: Sandwich },
@@ -1143,7 +1146,7 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══ NON-OVERVIEW TABS: Search Bar (Exclude Broadcast and Featured) ═══ */}
-                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && activeTab !== "analytics" && activeTab !== "rider_settlements" && activeTab !== "restaurant_pricing" && (
+                {activeTab !== "overview" && activeTab !== "broadcast" && activeTab !== "featured" && activeTab !== "street_food" && activeTab !== "display_order" && activeTab !== "promotions" && activeTab !== "analytics" && activeTab !== "rider_settlements" && activeTab !== "restaurant_pricing" && activeTab !== "coupons" && (
                     <div className="relative max-w-5xl mx-auto mb-6">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -2560,6 +2563,7 @@ export default function AdminDashboard() {
                 )}
 
                 {activeTab === "rider_settlements" && <AdminRiderSettlements />}
+                {activeTab === "coupons" && <AdminCoupons />}
 
                 {/* ═══ STREET FOOD TAB ═══ */}
                 {activeTab === "street_food" && (

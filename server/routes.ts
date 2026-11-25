@@ -4,6 +4,7 @@ import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
 import { isCallRequest } from "@shared/call-request";
 import { registerReviewPromptRoutes } from "./review-prompt";
 import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
+import { ensureCouponTables, registerCouponRoutes, reserveCoupon, releaseCouponForOrder, isCouponError } from "./coupons";
 // server/routes.ts (FIXED FOR DATE BUG)
 
 import type { Express, Request, Response, NextFunction } from "express";
@@ -271,6 +272,17 @@ const commerceOrderTables = {
 // an app that was closed before it could report back), so both stay eligible for confirmation.
 const UNSETTLED_PAYMENT_STATUSES = ["payment_pending", "cancelled"];
 
+/**
+ * Applies the coupon in the request (if any) to a new order's total. Returns the total to save,
+ * whether the order is now free (nothing to pay online), and hooks to link or undo the coupon use.
+ */
+async function applyOrderCoupon(req: any, userId: string, orderType: CommerceOrderType, total: number) {
+  if (!req.body?.couponCode) return { total, free: false, attach: async (_id: string) => {}, release: async () => {} };
+  const reserved = await reserveCoupon(req.body.couponCode, userId, orderType, total);
+  const newTotal = Math.max(0, Math.round((total - reserved.discount) * 100) / 100);
+  return { total: newTotal, free: newTotal <= 0, attach: async (id: string) => { await reserved.attach(id); }, release: reserved.release };
+}
+
 async function getCommerceOrder(orderType: CommerceOrderType, orderId: string) {
   if (orderType === "street_food") return storage.getStreetFoodOrder(orderId);
   if (orderType === "restaurant") return storage.getRestaurantOrder(orderId);
@@ -447,8 +459,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
+      let coupon;
+      try {
+        coupon = await applyOrderCoupon(req, userId, 'grocery', parseFloat(orderData.total || '0'));
+      } catch (err) {
+        if (isCouponError(err)) return res.status(400).json({ message: err.message });
+        throw err;
+      }
+      orderData.total = coupon.total.toFixed(2);
+      // A fully covered order has nothing to pay online.
+      if (coupon.free) orderData.paymentMethod = 'cod';
+
       const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
-      const order = await storage.createGroceryOrder({ ...orderData, userId, status: initialStatus } as any);
+      let order;
+      try {
+        order = await storage.createGroceryOrder({ ...orderData, userId, status: initialStatus } as any);
+      } catch (err) {
+        await coupon.release();
+        throw err;
+      }
+      await coupon.attach(order.id);
       
       if (orderData.paymentMethod === 'cod') {
         await sendOrderNotifications(order, 'grocery', order.id);
@@ -500,13 +530,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderWithRunner = { ...orderData, runnerId: "runner-1" };
 
       // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
-      const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
-      const order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId, status: initialStatus } as any);
+      let coupon;
+      try {
+        coupon = await applyOrderCoupon(req, userId, 'street_food', parseFloat(String(orderData.totalAmount || '0')));
+      } catch (err) {
+        if (isCouponError(err)) return res.status(400).json({ message: err.message });
+        throw err;
+      }
+      orderWithRunner.totalAmount = coupon.total.toFixed(2);
+      if (coupon.free) orderWithRunner.paymentMethod = 'cod';
+
+      const initialStatus = orderWithRunner.paymentMethod === 'online' ? 'payment_pending' : 'pending';
+      let order;
+      try {
+        order = await storage.createStreetFoodOrder({ ...orderWithRunner, userId, status: initialStatus } as any);
+      } catch (err) {
+        await coupon.release();
+        throw err;
+      }
+      await coupon.attach(order.id);
       console.log("Created Street Food Order:", order); // DEBUG LOG
       apiCache.delete('food_collections'); // counters pick up the new order on the next fetch
 
       // Ringing system for Street Food Admin and Main Admin
-      if (orderData.paymentMethod === 'cod') {
+      if (orderWithRunner.paymentMethod === 'cod') {
         await sendOrderNotifications(order, 'street_food', order.id);
       }
 
@@ -2983,6 +3030,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning({ id: table.id });
       if (cancelled) {
         console.log(`[Payment Cancel] ${orderType} order ${orderId} cancelled (payment dismissed)`);
+        await releaseCouponForOrder(orderId); // the customer can use their coupon again
       }
 
       res.json({ status: "cancelled" });
@@ -3013,8 +3061,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Let's keep it simple: created with status 'pending', no rider yet.
 
       // For online payment, create with 'payment_pending' status so it doesn't show in admin/provider panels
+      let coupon;
+      try {
+        coupon = await applyOrderCoupon(req, userId, 'restaurant', parseFloat(String(orderData.totalAmount || '0')));
+      } catch (err) {
+        if (isCouponError(err)) return res.status(400).json({ message: err.message });
+        throw err;
+      }
+      orderData.totalAmount = coupon.total.toFixed(2);
+      if (coupon.free) orderData.paymentMethod = 'cod';
+
       const initialStatus = orderData.paymentMethod === 'online' ? 'payment_pending' : 'pending';
-      const order = await storage.createRestaurantOrder({ ...orderData, userId, status: initialStatus } as any);
+      let order;
+      try {
+        order = await storage.createRestaurantOrder({ ...orderData, userId, status: initialStatus } as any);
+      } catch (err) {
+        await coupon.release();
+        throw err;
+      }
+      await coupon.attach(order.id);
       console.log("Created Restaurant Order:", order);
       apiCache.delete('food_collections'); // counters pick up the new order on the next fetch
 
@@ -6884,6 +6949,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAnalyticsRoutes(app, isAdmin);
   registerBillRoutes(app);
   registerSettlementRoutes(app, { isAdmin, isDeliveryPartner });
+  await ensureCouponTables().catch((err) => console.error("[Coupons] Could not create tables:", err?.message || err));
+  registerCouponRoutes(app, { isLoggedIn, isAdmin });
   registerReviewPromptRoutes(app, isLoggedIn as any);
 
   return httpServer;

@@ -871,3 +871,37 @@ export const menuItemRestaurantPrices = pgTable("menu_item_restaurant_prices", {
   restaurantPrice: decimal("restaurant_price", { precision: 10, scale: 2 }).notNull(),
   effectiveFrom: timestamp("effective_from").defaultNow().notNull(),
 });
+
+
+// =========================================
+// COUPONS (e.g. ₹500 food coupon for a creator collaboration)
+// =========================================
+
+export const coupons = pgTable("coupons", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  code: text("code").notNull().unique(), // upper case, no spaces
+  label: text("label"), // admin note, e.g. "Instagram creator collab"
+  discountType: text("discount_type").notNull().default("flat"), // flat (₹) or percent
+  value: decimal("value", { precision: 10, scale: 2 }).notNull(),
+  maxDiscount: decimal("max_discount", { precision: 10, scale: 2 }), // cap for percent coupons
+  minOrder: decimal("min_order", { precision: 10, scale: 2 }).notNull().default("0"),
+  orderTypes: text("order_types").array(), // restaurant / street_food / grocery; empty = all
+  maxUses: integer("max_uses"), // total uses allowed; empty = no limit
+  usedCount: integer("used_count").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// One row per use. Each customer can use a coupon once.
+export const couponRedemptions = pgTable("coupon_redemptions", {
+  id: text("id").$defaultFn(() => createId()).primaryKey(),
+  couponId: text("coupon_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  orderType: text("order_type").notNull(),
+  orderId: text("order_id"),
+  discount: decimal("discount", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Coupon = typeof coupons.$inferSelect;
