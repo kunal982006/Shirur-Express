@@ -64,7 +64,7 @@ export function CallNowBar({
       setOpen(false);
       setProblem("");
       queryClient.invalidateQueries({ queryKey: ["customerBookings"] });
-      toast({ title: "Request sent!", description: `We will call you on ${phone} in a few minutes.` });
+      toast({ title: "Request sent!", description: `We will call you on ${phone} within 5 minutes.` });
     },
     onError: (error: any) => {
       toast({ title: "Request failed", description: error.message || "Please try again.", variant: "destructive" });
@@ -185,7 +185,7 @@ export function CallNowBar({
             <DialogHeader>
               <DialogTitle>Request a call</DialogTitle>
               <DialogDescription>
-                Our team will call you in a few minutes to understand the problem and confirm your address, then send a {requestCallFor}.
+                Our team will call you within 5 minutes to understand the problem and confirm your address, then send a {requestCallFor}.
               </DialogDescription>
             </DialogHeader>
             <form

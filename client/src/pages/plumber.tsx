@@ -203,8 +203,8 @@ export default function Plumber() {
       <CallNowBar
         variant="plumber"
         requestCallFor="plumber"
-        title="Instant Call Back"
-        tagline="Request a call, we will call you in a few minutes"
+        title="Call Back in 5 Minutes"
+        tagline="Request a call, we will call you within 5 minutes"
       />
     </div>
   );
