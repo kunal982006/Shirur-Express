@@ -124,11 +124,25 @@ interface Order {
     createdAt: string | null;
     user?: { username: string; phone: string | null };
     provider?: { businessName: string; phone?: string | null };
-    rider?: { id: string; username: string; phone: string | null } | null;
+    // acceptedAt is empty while the assigned partner hasn't tapped Accept yet.
+    rider?: { id: string; username: string; phone: string | null; acceptedAt?: string | null } | null;
     items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
     paymentMethod?: string | null;
     deliveryMode?: string | null;
     scheduledDeliveryTime?: string | null;
+}
+
+/** The assigned delivery partner's progress on an order, for the admin's order list. */
+function riderAcceptanceBadge(o: Order): { label: string; className: string } {
+    const status = o.status || "";
+    if (status === "delivered" || status === "completed") return { label: "Delivered", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" };
+    if (status === "out_for_delivery") return { label: "Picked up, on the way", className: "bg-sky-500/20 text-sky-300 border-sky-500/30" };
+    if (status === "arrived_at_pickup") return { label: "At the shop", className: "bg-sky-500/20 text-sky-300 border-sky-500/30" };
+    if (o.rider?.acceptedAt) {
+        const at = new Date(o.rider.acceptedAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+        return { label: `Accepted ${at}`, className: "bg-green-500/15 text-green-300 border-green-500/30" };
+    }
+    return { label: "⏳ Not accepted yet", className: "bg-amber-500/15 text-amber-300 border-amber-500/40" };
 }
 
 interface Booking {
@@ -369,6 +383,22 @@ export default function AdminDashboard() {
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
     });
+
+    // Toast when a delivery partner accepts or turns down an order (their phone pushes too).
+    useEffect(() => {
+        const onRiderResponse = (e: Event) => {
+            const { orderId, accepted } = (e as CustomEvent).detail || {};
+            if (!orderId) return;
+            const order = queryClient.getQueryData<Order[]>(["/api/admin/orders"])?.find(o => o.id === orderId);
+            const who = order?.rider?.username || "The delivery partner";
+            const shop = order?.provider?.businessName ? ` from ${order.provider.businessName}` : "";
+            toast(accepted
+                ? { title: `✅ ${who} accepted the order`, description: `Order #${String(orderId).slice(0, 10)}${shop}.` }
+                : { title: `❌ ${who} can't take the order`, description: `Order #${String(orderId).slice(0, 10)}${shop} needs another rider.`, variant: "destructive" });
+        };
+        window.addEventListener("shirur:rider-response", onRiderResponse);
+        return () => window.removeEventListener("shirur:rider-response", onRiderResponse);
+    }, [queryClient, toast]);
 
     const { data: allBookings } = useQuery<Booking[]>({
         queryKey: ["/api/admin/bookings"],
@@ -1209,8 +1239,8 @@ export default function AdminDashboard() {
                                                 )}
                                                 {/* Rider Badge */}
                                                 {o.rider ? (
-                                                    <span className="text-[10px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold inline-flex items-center gap-1">
-                                                        <Bike className="h-3 w-3" /> {o.rider.username}
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded border font-bold inline-flex items-center gap-1 ${riderAcceptanceBadge(o).className}`}>
+                                                        <Bike className="h-3 w-3" /> {o.rider.username} · {riderAcceptanceBadge(o).label}
                                                     </span>
                                                 ) : o.status && !['cancelled', 'delivered', 'completed', 'declined'].includes(o.status) ? (
                                                     <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/15 text-red-300 border border-red-500/30 font-bold inline-flex items-center gap-1">
@@ -1418,6 +1448,9 @@ export default function AdminDashboard() {
                                                         {o.rider ? (
                                                             <span className="text-gray-300 flex items-center gap-2 flex-wrap">
                                                                 Rider: <span className="font-semibold text-gray-100">{o.rider.username}</span>
+                                                                <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${riderAcceptanceBadge(o).className}`}>
+                                                                    {riderAcceptanceBadge(o).label}
+                                                                </span>
                                                                 {o.rider.phone && (
                                                                     <a
                                                                         href={`tel:${o.rider.phone}`}
