@@ -1,7 +1,8 @@
 // Asks Android app customers to rate Shirur Express on the Play Store after a
 // good experience: a food order delivered in under 26 minutes, or a finished
 // booking (electrician, plumber, beauty parlour, …). The server picks the
-// orders and bookings; each one asks only once on this phone.
+// orders and bookings. On this phone it asks at most once every 30 days, never
+// again after "Rate now", and stops after "Later" three times.
 //
 // App 1.5.3+ shows Google's own rating sheet inside the app. Older app versions
 // get a small popup that opens the Play Store page.
@@ -25,6 +26,35 @@ import {
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.shirurexpress.app";
 const ASKED_KEY = "reviewPromptAsked";
+const STATE_KEY = "reviewPromptState";
+const GAP_MS = 30 * 24 * 60 * 60 * 1000; // at most once every 30 days
+const MAX_LATER = 3; // stop asking after "Later" three times
+
+interface PromptState {
+  lastShownAt: number;
+  rated: boolean; // tapped "Rate now": never ask again
+  laterCount: number;
+}
+
+function readState(): PromptState {
+  try {
+    const v = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+    return { lastShownAt: Number(v.lastShownAt) || 0, rated: v.rated === true, laterCount: Number(v.laterCount) || 0 };
+  } catch {
+    return { lastShownAt: 0, rated: false, laterCount: 0 };
+  }
+}
+
+function saveState(patch: Partial<PromptState>) {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify({ ...readState(), ...patch }));
+  } catch {}
+}
+
+function mayAsk(): boolean {
+  const st = readState();
+  return !st.rated && st.laterCount < MAX_LATER && Date.now() - st.lastShownAt >= GAP_MS;
+}
 
 function askedIds(): string[] {
   try {
@@ -60,7 +90,12 @@ export default function ReviewPrompt() {
     const asked = new Set(askedIds());
     const next = data?.candidates?.find((c) => !asked.has(c.id));
     if (!next) return;
-    markAsked(next.id);
+    // Orders and bookings that come while we may not ask are skipped for good,
+    // so an old order never pops up weeks later.
+    const fresh = data!.candidates.filter((c) => !asked.has(c.id));
+    fresh.forEach((c) => markAsked(c.id));
+    if (!mayAsk()) return;
+    saveState({ lastShownAt: Date.now() });
     waiting.current = true;
     // A short pause so the "Delivered" / "Completed" screen is seen first.
     setTimeout(() => {
@@ -83,9 +118,17 @@ export default function ReviewPrompt() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setPrompt(null)}>Later</AlertDialogCancel>
+          <AlertDialogCancel
+            onClick={() => {
+              saveState({ laterCount: readState().laterCount + 1 });
+              setPrompt(null);
+            }}
+          >
+            Later
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
+              saveState({ rated: true });
               setPrompt(null);
               // The app opens non-Shirur links outside the WebView, so this lands in the Play Store app.
               window.location.href = PLAY_STORE_URL;
