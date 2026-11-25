@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isCallRequest } from "@shared/call-request";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -155,6 +156,7 @@ interface Booking {
     estimatedCost: string | null;
     createdAt: string | null;
     notes?: string | null;
+    preferredTimeSlots?: string[] | null;
     paymentMethod?: string | null;
     user?: { username: string; phone: string | null };
     provider?: { businessName: string; address: string };
@@ -1679,15 +1681,20 @@ export default function AdminDashboard() {
                                                                     <span className="text-[11px] px-2.5 py-0.5 rounded-full border font-bold bg-red-500/20 text-red-400 border-red-500/30">
                                                                         ⚠️ UNASSIGNED
                                                                     </span>
+                                                                    {isCallRequest(b.preferredTimeSlots) && (
+                                                                        <span className="text-[11px] px-2.5 py-0.5 rounded-full border font-bold bg-sky-500/20 text-sky-300 border-sky-500/30">
+                                                                            📞 CALL REQUEST: call customer first
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                                 {b.user && (
                                                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                                         <span className="text-sm text-gray-300 font-medium">{b.user.username}</span>
-                                                                        {(b.user.phone || b.userPhone) && (
-                                                                            <a href={`tel:${b.user.phone || b.userPhone}`}
+                                                                        {(b.userPhone || b.user.phone) && (
+                                                                            <a href={`tel:${b.userPhone || b.user.phone}`}
                                                                                 className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
                                                                                 <Phone className="h-3 w-3" />
-                                                                                {b.user.phone || b.userPhone}
+                                                                                {b.userPhone || b.user.phone}
                                                                             </a>
                                                                         )}
                                                                     </div>

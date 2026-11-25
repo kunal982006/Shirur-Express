@@ -1,6 +1,8 @@
 import { registerAnalyticsRoutes } from "./analytics-routes";
 import { registerBillRoutes } from "./bill-routes";
 import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
+import { isCallRequest } from "@shared/call-request";
+import { registerReviewPromptRoutes } from "./review-prompt";
 import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
 // server/routes.ts (FIXED FOR DATE BUG)
 
@@ -2116,8 +2118,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const providerName = booking.providerId
           ? (await storage.getServiceProvider(booking.providerId))?.businessName || 'Unknown'
           : 'Unassigned';
+        const callRequest = isCallRequest(booking.preferredTimeSlots);
         await notifyAdmin({
-          title: `New ${booking.serviceType} Booking`,
+          title: callRequest ? `📞 Call request: ${booking.serviceType}` : `New ${booking.serviceType} Booking`,
           body: `Provider: ${providerName} • 📞 ${booking.userPhone || 'N/A'} • 📍 ${booking.userAddress || 'N/A'}`,
           data: {
             orderId: booking.id,
@@ -6881,6 +6884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAnalyticsRoutes(app, isAdmin);
   registerBillRoutes(app);
   registerSettlementRoutes(app, { isAdmin, isDeliveryPartner });
+  registerReviewPromptRoutes(app, isLoggedIn as any);
 
   return httpServer;
 }

@@ -31,6 +31,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.io.File
+import com.google.android.play.core.review.ReviewManagerFactory
 import com.razorpay.Checkout
 import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
@@ -787,6 +788,19 @@ class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
         // The website compares this with the latest Play Store version to show the update popup.
         @android.webkit.JavascriptInterface
         fun getAppVersionCode(): Int = BuildConfig.VERSION_CODE
+
+        // Google's own "Rate this app" sheet, shown over the app. Google decides
+        // whether it actually appears (it limits how often a user sees it).
+        @android.webkit.JavascriptInterface
+        fun requestReview() {
+            runOnUiThread {
+                if (isDestroyed) return@runOnUiThread
+                val manager = ReviewManagerFactory.create(this@MainActivity)
+                manager.requestReviewFlow().addOnCompleteListener { task ->
+                    if (task.isSuccessful && !isDestroyed) manager.launchReviewFlow(this@MainActivity, task.result)
+                }
+            }
+        }
 
         @android.webkit.JavascriptInterface
         fun showToast(message: String) {

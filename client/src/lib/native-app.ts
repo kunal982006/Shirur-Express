@@ -23,6 +23,13 @@ export function isAndroidApp(): boolean {
   return !!bridge();
 }
 
+// ---------- Play Store rating ----------
+
+/** Opens Google's own "Rate this app" sheet (app 1.5.3+). False when the app is older. */
+export function requestNativeReview(): boolean {
+  return call("requestReview");
+}
+
 // ---------- haptics ----------
 
 export type HapticKind = "tap" | "success" | "warning";
