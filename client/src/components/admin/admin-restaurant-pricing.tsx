@@ -266,8 +266,71 @@ export default function AdminRestaurantPricing() {
     return items;
   }, [restaurants, activeRestaurant, selectedCategory, searchQuery]);
 
+  // Restaurants and street food shops with dishes that have no restaurant price (menu-card price)
+  // yet, so the delivery partner doesn't know what to pay there. Worst first.
+  const shopsMissingPrices = useMemo(() => {
+    if (!restaurants || !restaurantPrices) return [];
+    return restaurants
+      .filter((r) => r.items.length > 0)
+      .map((r) => {
+        const priced = r.items.filter((i) => restaurantPrices[i.id] != null).length;
+        return { id: r.id, name: r.businessName, isStreetFood: r.categorySlug === "street-food", priced, total: r.items.length };
+      })
+      .filter((r) => r.priced < r.total)
+      .sort((a, b) => a.priced / a.total - b.priced / b.total || a.name.localeCompare(b.name));
+  }, [restaurants, restaurantPrices]);
+
+  const copyMissingList = () => {
+    const text = shopsMissingPrices
+      .map((r) => `${r.name}${r.isStreetFood ? " (street food)" : ""}: ${r.priced === 0 ? "no prices" : `${r.total - r.priced} of ${r.total} dishes missing`}`)
+      .join("\n");
+    navigator.clipboard?.writeText(text).then(
+      () => toast({ title: "List copied", description: `${shopsMissingPrices.length} shops` }),
+      () => toast({ title: "Could not copy", variant: "destructive" }),
+    );
+  };
+
   return (
     <div className="space-y-6">
+      {/* ─── Shops still missing menu-card prices ───────────────── */}
+      {restaurants && restaurantPrices && (
+        <Card className="bg-[#111827] border-white/10 text-white">
+          <CardContent className="pt-5">
+            {shopsMissingPrices.length === 0 ? (
+              <p className="text-sm text-emerald-300 font-semibold">✅ Every restaurant and street food dish has its menu-card price.</p>
+            ) : (
+              <details>
+                <summary className="cursor-pointer text-sm font-semibold text-amber-300">
+                  ⚠️ {shopsMissingPrices.length} shops still need menu-card prices (riders don't know what to pay there)
+                </summary>
+                <div className="mt-3 flex justify-end">
+                  <Button size="sm" variant="outline" className="bg-white/5 border-white/15 text-white" onClick={copyMissingList}>
+                    Copy list
+                  </Button>
+                </div>
+                <ul className="mt-2 divide-y divide-white/5 text-sm">
+                  {shopsMissingPrices.map((r) => (
+                    <li key={r.id} className="py-2 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        className="text-left text-gray-100 hover:text-orange-300 min-w-0 break-words"
+                        onClick={() => setSelectedRestaurantId(r.id)}
+                      >
+                        {r.name}
+                        {r.isStreetFood && <span className="ml-2 text-[10px] text-amber-300">street food</span>}
+                      </button>
+                      <span className={`shrink-0 text-xs font-semibold ${r.priced === 0 ? "text-red-300" : "text-amber-300"}`}>
+                        {r.priced === 0 ? "No prices" : `${r.total - r.priced} of ${r.total} missing`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* ─── Top Header Card ─────────────────────────────────────── */}
       <Card className="bg-[#111827] border-white/10 text-white">
         <CardHeader className="pb-4">

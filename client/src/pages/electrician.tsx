@@ -125,7 +125,7 @@ export default function Electrician() {
             {/* The uploaded man image */}
             <div className="w-[45%] absolute right-0 top-0 bottom-0 flex items-end justify-end pointer-events-none mix-blend-multiply overflow-visible">
               <img 
-                src="/electrician-expert.png" 
+                src="/electrician-expert.jpg" 
                 alt="Expert Technician" 
                 className="h-full w-full object-contain object-right-bottom transition-transform group-hover:scale-105 origin-bottom mix-blend-multiply drop-shadow-sm pr-2 sm:pr-4"
               />
