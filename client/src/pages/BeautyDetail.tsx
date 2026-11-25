@@ -260,7 +260,7 @@ function ArtistAwards() {
         {ARTIST_AWARDS.map(a => (
           <button key={a.img} onClick={() => setZoom(a.img)}
             className="shrink-0 w-32 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden text-left">
-            <img src={`/images/beauty/awards/${a.img}.jpg`} alt={a.title} loading="lazy"
+            <img src={`/images/beauty/awards/thumb/${a.img}.jpg`} alt={a.title} loading="lazy"
               className="w-32 h-32 object-contain bg-white" />
             <div className="p-2 space-y-1">
               <span className={"inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full border " + AWARD_KIND_STYLE[a.kind]}>{a.kind}</span>
@@ -275,7 +275,7 @@ function ArtistAwards() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setZoom(null)}
             className="fixed inset-0 z-[60] bg-black/85 flex items-center justify-center p-5">
-            <img src={`/images/beauty/awards/${zoom}.jpg`} alt="" className="max-w-full max-h-[80vh] rounded-2xl bg-white" />
+            <img src={`/images/beauty/awards/${zoom}.jpg`} alt="" className="w-full max-h-[85vh] object-contain rounded-2xl bg-white" />
             <button className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/90 text-slate-800 font-bold">✕</button>
           </motion.div>
         )}
