@@ -876,9 +876,10 @@ export default function BeautyDetail() {
                 <div className="min-w-0 space-y-1">
                   <p className="text-[10px] font-extrabold uppercase tracking-wider text-rose-500">Our team is led by</p>
                   <h3 className="font-extrabold text-base text-slate-800 leading-tight">{ARTIST.name}</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Professional Makeup Artist</p>
+                  <p className="text-[11px] font-extrabold text-amber-600">Beauty Expert · Since 2008</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Makeup Artist · Beautician · Nail Artist</p>
                   <div className="flex flex-wrap gap-1 pt-0.5">
-                    <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full">🏆 Best Makeup Artist · Hotel Taj, Mumbai</span>
+                    <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full">🏆 MBC Pune Best Beauty Award</span>
                     <span className="bg-rose-50 text-rose-700 border border-rose-100 text-[10px] font-bold px-2 py-0.5 rounded-full">✨ Fashion Show Guest</span>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-snug">Every beautician in our team is trained under her guidance.</p>
