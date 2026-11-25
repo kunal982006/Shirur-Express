@@ -864,6 +864,28 @@ export default function BeautyDetail() {
               </div>
             </div>
 
+            {/* Lead Artist Card: hidden while searching so results stay on top */}
+            {!searchQuery && (
+              <div className="bg-white border border-rose-100 rounded-2xl p-3 shadow-sm flex gap-3 items-center">
+                <img
+                  src="/images/beauty/sujata-kale.jpg"
+                  alt={ARTIST.name + ", professional makeup artist"}
+                  loading="lazy"
+                  className="w-24 h-28 rounded-xl object-cover object-top shrink-0 bg-rose-50"
+                />
+                <div className="min-w-0 space-y-1">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-rose-500">Our team is led by</p>
+                  <h3 className="font-extrabold text-base text-slate-800 leading-tight">{ARTIST.name}</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Professional Makeup Artist</p>
+                  <div className="flex flex-wrap gap-1 pt-0.5">
+                    <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full">🏆 Best Makeup Artist · Hotel Taj, Mumbai</span>
+                    <span className="bg-rose-50 text-rose-700 border border-rose-100 text-[10px] font-bold px-2 py-0.5 rounded-full">✨ Fashion Show Guest</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-snug">Every beautician in our team is trained under her guidance.</p>
+                </div>
+              </div>
+            )}
+
             {/* Trust Bar */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-white border border-rose-100 rounded-xl p-2 shadow-sm">
