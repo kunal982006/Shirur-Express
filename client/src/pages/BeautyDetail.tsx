@@ -228,6 +228,62 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
 const ARTIST = { name: "Sujata Kale", phone: "9665763204", altPhone: "9130113956" };
 const formatPhone = (p: string) => p.slice(0, 5) + " " + p.slice(5);
 
+// ─── Lead artist's awards, recognitions and training (photos of the real trophies) ──
+type AwardKind = "Award" | "Recognition" | "Training";
+const ARTIST_AWARDS: { img: string; title: string; by: string; kind: AwardKind }[] = [
+  { img: "dsr-best-beautician", title: "Best Beautician Award 2025", by: "DSR · Brand Ambassador", kind: "Award" },
+  { img: "bhee-gem-of-beauty", title: "Gem of Beauty Award", by: "BHEE India", kind: "Award" },
+  { img: "district-bridal-3rd", title: "3rd Winner, District Level Bridal Makeup", by: "Competition · 2019", kind: "Award" },
+  { img: "asian-bridal-show", title: "Asian Biggest Bridal Show 2023", by: "Nirankar Exhibition", kind: "Recognition" },
+  { img: "miracal-fest-vip", title: "Fest 2023 VIP", by: "Miracal Events", kind: "Recognition" },
+  { img: "district-bridal-participation", title: "District Bridal Makeup Competition", by: "Shrirampur · Participation", kind: "Recognition" },
+  { img: "beauty-olympiad-2022", title: "Biggest Beauty Olympiad & Expo 2022", by: "Pune · Participation", kind: "Recognition" },
+  { img: "mirror-academy-diploma", title: "Advance Cosmetology Diploma", by: "Mirror Academy, Nashik", kind: "Training" },
+  { img: "krystal-airbrush", title: "International & Airbrush Makeup", by: "Krystal Academy, Mumbai", kind: "Training" },
+  { img: "parag-best-student", title: "Best Student Award 2023", by: "Parag Makeover · Makeup & Hair", kind: "Training" },
+];
+const AWARD_KIND_STYLE: Record<AwardKind, string> = {
+  Award: "bg-amber-50 text-amber-700 border-amber-200",
+  Recognition: "bg-rose-50 text-rose-700 border-rose-100",
+  Training: "bg-sky-50 text-sky-700 border-sky-100",
+};
+
+function ArtistAwards() {
+  const [zoom, setZoom] = useState<string | null>(null);
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between px-0.5">
+        <h3 className="font-extrabold text-sm text-slate-800">🏆 Awards &amp; Training</h3>
+        <span className="text-[10px] text-slate-400 font-medium">Tap a photo to zoom</span>
+      </div>
+      <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4" style={{ scrollbarWidth: "none" }}>
+        {ARTIST_AWARDS.map(a => (
+          <button key={a.img} onClick={() => setZoom(a.img)}
+            className="shrink-0 w-32 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden text-left">
+            <img src={`/images/beauty/awards/${a.img}.jpg`} alt={a.title} loading="lazy"
+              className="w-32 h-32 object-contain bg-white" />
+            <div className="p-2 space-y-1">
+              <span className={"inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full border " + AWARD_KIND_STYLE[a.kind]}>{a.kind}</span>
+              <p className="text-[11px] font-bold text-slate-800 leading-tight line-clamp-2">{a.title}</p>
+              <p className="text-[10px] text-slate-500 leading-tight line-clamp-1">{a.by}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+      <AnimatePresence>
+        {zoom && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[60] bg-black/85 flex items-center justify-center p-5">
+            <img src={`/images/beauty/awards/${zoom}.jpg`} alt="" className="max-w-full max-h-[80vh] rounded-2xl bg-white" />
+            <button className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/90 text-slate-800 font-bold">✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Call Modal ────────────────────────────────────────────────────────────────
 function CallModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
@@ -886,6 +942,8 @@ export default function BeautyDetail() {
                 </div>
               </div>
             )}
+
+            {!searchQuery && <ArtistAwards />}
 
             {/* Trust Bar */}
             <div className="grid grid-cols-3 gap-2 text-center">
