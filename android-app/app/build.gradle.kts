@@ -12,8 +12,8 @@ android {
         applicationId = "com.shirurexpress.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 19
-        versionName = "1.5.2"
+        versionCode = 20
+        versionName = "1.5.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -57,6 +57,8 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.webkit:webkit:1.9.0")
+    // Google Play In-App Review ("Rate this app" sheet after a good order)
+    implementation("com.google.android.play:review-ktx:2.0.2")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     // tez-client-api (Google Pay) is excluded: Razorpay Checkout bundles it via com.razorpay:gpay

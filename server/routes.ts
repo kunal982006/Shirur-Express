@@ -2,6 +2,7 @@ import { registerAnalyticsRoutes } from "./analytics-routes";
 import { registerBillRoutes } from "./bill-routes";
 import { isAddOnCategory, ADD_ON_ONLY_MESSAGE } from "@shared/add-ons";
 import { isCallRequest } from "@shared/call-request";
+import { registerReviewPromptRoutes } from "./review-prompt";
 import { attachSettlements, registerSettlementRoutes } from "./rider-settlement";
 // server/routes.ts (FIXED FOR DATE BUG)
 
@@ -6883,6 +6884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAnalyticsRoutes(app, isAdmin);
   registerBillRoutes(app);
   registerSettlementRoutes(app, { isAdmin, isDeliveryPartner });
+  registerReviewPromptRoutes(app, isLoggedIn as any);
 
   return httpServer;
 }

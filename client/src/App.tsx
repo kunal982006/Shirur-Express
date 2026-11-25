@@ -13,6 +13,7 @@ import { IosPushSync } from "@/components/IosPushSync";
 import { AndroidPushSync } from "@/components/AndroidPushSync";
 import { ActiveOrderBar } from "@/components/ActiveOrderBar";
 import AppUpdatePopup from "@/components/AppUpdatePopup";
+import ReviewPrompt from "@/components/ReviewPrompt";
 import OfflineBanner from "@/components/OfflineBanner";
 import SwipeBackGesture from "@/components/SwipeBackGesture";
 import PullToRefreshGuard from "@/components/PullToRefreshGuard";
@@ -236,6 +237,7 @@ function App() {
             <AndroidPushSync />
             <ActiveOrderBar />
             <AppUpdatePopup />
+            <ReviewPrompt />
             <OfflineBanner />
             <Toaster />
           </TooltipProvider>
