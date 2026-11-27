@@ -228,6 +228,109 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
 const ARTIST = { name: "Sujata Kale", phone: "9665763204", altPhone: "9130113956" };
 const formatPhone = (p: string) => p.slice(0, 5) + " " + p.slice(5);
 
+// ─── Lead artist's awards, recognitions and training (photos of the real trophies) ──
+type AwardKind = "Award" | "Recognition" | "Training";
+const ARTIST_AWARDS: { img: string; title: string; by: string; kind: AwardKind }[] = [
+  { img: "dsr-best-beautician", title: "Best Beautician Award 2025", by: "DSR · Brand Ambassador", kind: "Award" },
+  { img: "bhee-gem-of-beauty", title: "Gem of Beauty Award", by: "BHEE India", kind: "Award" },
+  { img: "district-bridal-3rd", title: "3rd Winner, District Level Bridal Makeup", by: "Competition · 2019", kind: "Award" },
+  { img: "asian-bridal-show", title: "Asian Biggest Bridal Show 2023", by: "Nirankar Exhibition", kind: "Recognition" },
+  { img: "miracal-fest-vip", title: "Fest 2023 VIP", by: "Miracal Events", kind: "Recognition" },
+  { img: "district-bridal-participation", title: "District Bridal Makeup Competition", by: "Shrirampur · Participation", kind: "Recognition" },
+  { img: "beauty-olympiad-2022", title: "Biggest Beauty Olympiad & Expo 2022", by: "Pune · Participation", kind: "Recognition" },
+  { img: "mirror-academy-diploma", title: "Advance Cosmetology Diploma", by: "Mirror Academy, Nashik", kind: "Training" },
+  { img: "krystal-airbrush", title: "International & Airbrush Makeup", by: "Krystal Academy, Mumbai", kind: "Training" },
+  { img: "parag-best-student", title: "Best Student Award 2023", by: "Parag Makeover · Makeup & Hair", kind: "Training" },
+];
+const AWARD_KIND_STYLE: Record<AwardKind, string> = {
+  Award: "bg-amber-50 text-amber-700 border-amber-200",
+  Recognition: "bg-rose-50 text-rose-700 border-rose-100",
+  Training: "bg-sky-50 text-sky-700 border-sky-100",
+};
+
+// Compact card on the menu (services stay the focus); "View Profile" opens a sheet
+// with her full profile and every award / certificate.
+function ArtistCard() {
+  const [open, setOpen] = useState(false);
+  const [zoom, setZoom] = useState<string | null>(null);
+  return (
+    <>
+      <div className="bg-white border border-rose-100 rounded-2xl px-3 py-2.5 shadow-sm flex items-center gap-3">
+        <img src="/images/beauty/sujata-kale.jpg" alt={ARTIST.name} loading="lazy"
+          className="w-12 h-12 rounded-full object-cover object-top shrink-0 bg-rose-50 border-2 border-rose-100" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold text-slate-400 leading-tight">Our team is led by</p>
+          <p className="font-extrabold text-sm text-slate-800 leading-tight truncate">{ARTIST.name}</p>
+          <p className="text-[10px] font-bold text-amber-600 leading-tight truncate">Beauty Expert · Since 2008 · {ARTIST_AWARDS.length} awards</p>
+        </div>
+        <button onClick={() => setOpen(true)}
+          className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold px-3 py-2 rounded-xl shadow-sm">
+          View Profile
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[60] bg-slate-900/50 flex items-end justify-center">
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#FFF8FA] w-full max-w-md rounded-t-3xl max-h-[88vh] overflow-y-auto pb-8">
+              <div className="sticky top-0 bg-[#FFF8FA] pt-2.5 pb-2 px-4 flex items-center justify-between z-10">
+                <span className="w-10 h-1 rounded-full bg-slate-300 absolute left-1/2 -translate-x-1/2 top-2" />
+                <span />
+                <button onClick={() => setOpen(false)} className="mt-2 w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 font-bold">✕</button>
+              </div>
+              <div className="px-4 space-y-4">
+                <div className="bg-white border border-rose-100 rounded-2xl p-3 shadow-sm flex gap-3 items-center">
+                  <img src="/images/beauty/sujata-kale.jpg" alt={ARTIST.name}
+                    className="w-24 h-28 rounded-xl object-cover object-top shrink-0 bg-rose-50" />
+                  <div className="min-w-0 space-y-1">
+                    <h3 className="font-extrabold text-base text-slate-800 leading-tight">{ARTIST.name}</h3>
+                    <p className="text-[11px] font-extrabold text-amber-600">Beauty Expert · Since 2008</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Makeup Artist · Beautician · Nail Artist</p>
+                    <p className="text-[11px] text-slate-600 leading-snug">Every beautician in our team is trained under her guidance.</p>
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between px-0.5">
+                  <h3 className="font-extrabold text-sm text-slate-800">🏆 Awards &amp; Training</h3>
+                  <span className="text-[10px] text-slate-400 font-medium">Tap a photo to zoom</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {ARTIST_AWARDS.map(a => (
+                    <button key={a.img} onClick={() => setZoom(a.img)}
+                      className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden text-left">
+                      <img src={`/images/beauty/awards/thumb/${a.img}.jpg`} alt={a.title} loading="lazy"
+                        className="w-full aspect-square object-contain bg-white" />
+                      <div className="p-2 space-y-1">
+                        <span className={"inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full border " + AWARD_KIND_STYLE[a.kind]}>{a.kind}</span>
+                        <p className="text-[11px] font-bold text-slate-800 leading-tight">{a.title}</p>
+                        <p className="text-[10px] text-slate-500 leading-tight">{a.by}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {zoom && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[70] bg-black/85 flex items-center justify-center p-5">
+            <img src={`/images/beauty/awards/${zoom}.jpg`} alt="" className="w-full max-h-[85vh] object-contain rounded-2xl bg-white" />
+            <button className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/90 text-slate-800 font-bold">✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 // ─── Call Modal ────────────────────────────────────────────────────────────────
 function CallModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
@@ -863,6 +966,9 @@ export default function BeautyDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Lead artist: compact so the services stay the focus */}
+            {!searchQuery && <ArtistCard />}
 
             {/* Trust Bar */}
             <div className="grid grid-cols-3 gap-2 text-center">
