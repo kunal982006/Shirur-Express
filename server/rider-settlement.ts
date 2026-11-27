@@ -73,12 +73,14 @@ export async function attachSettlements<T extends Record<string, any>>(orders: T
     const placedAt = new Date(order.createdAt || Date.now()).getTime();
     let restaurantBill = 0;
     let missingPrices = 0;
-    for (const item of Array.isArray(order.items) ? order.items : []) {
+    // Each dish also gets its restaurant (menu card) price per piece at the time of the order.
+    const items = (Array.isArray(order.items) ? order.items : []).map((item: any) => {
       const quantity = toNumber(item?.quantity) ?? 1;
       const price = priceAt(history.get(itemIdOf(item) || ""), placedAt);
       if (price === null) missingPrices += 1;
       else restaurantBill += price * quantity;
-    }
+      return { ...item, restaurantPrice: price };
+    });
     const settlement = settleOrder({
       customerTotal: orderTotal(order),
       isCod: order.paymentMethod === "cod",
@@ -86,7 +88,7 @@ export async function attachSettlements<T extends Record<string, any>>(orders: T
       missingPrices,
       restaurantName: order.provider?.businessName,
     });
-    return { ...order, settlement };
+    return { ...order, items: Array.isArray(order.items) ? items : order.items, settlement };
   });
 }
 

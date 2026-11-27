@@ -127,7 +127,9 @@ interface Order {
     provider?: { businessName: string; phone?: string | null };
     // acceptedAt is empty while the assigned partner hasn't tapped Accept yet.
     rider?: { id: string; username: string; phone: string | null; acceptedAt?: string | null } | null;
-    items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string }>;
+    // restaurantPrice: what we pay the restaurant per piece (menu card price); null = not entered yet.
+    items?: Array<{ name: string; quantity: number; price: number; imageUrl?: string; restaurantPrice?: number | null }>;
+    settlement?: { restaurantBill: number; missingPrices: number };
     paymentMethod?: string | null;
     deliveryMode?: string | null;
     scheduledDeliveryTime?: string | null;
@@ -1510,6 +1512,19 @@ export default function AdminDashboard() {
                                                 </div>
                                             )}
 
+                                            {o.settlement && (
+                                                <div className="mb-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-2 text-sm">
+                                                    <span className="text-amber-200">Pay restaurant (menu card)</span>
+                                                    <span className="font-bold text-amber-300 text-right">
+                                                        ₹{o.settlement.restaurantBill.toFixed(2)}
+                                                        {o.settlement.missingPrices > 0 && (
+                                                            <span className="block text-[11px] font-medium text-red-300">
+                                                                + {o.settlement.missingPrices} dish{o.settlement.missingPrices > 1 ? "es" : ""} without a price
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
                                             {!o.items || o.items.length === 0 ? (
                                                 <p className="text-sm text-gray-500 italic">No items details available.</p>
                                             ) : (
@@ -1529,6 +1544,16 @@ export default function AdminDashboard() {
                                                                     <span className="text-xs text-gray-400">Qty: {item.quantity}</span>
                                                                     <span className="text-xs font-semibold text-gray-300">₹{parseFloat(item.price as unknown as string).toFixed(2)}</span>
                                                                 </div>
+                                                                {item.restaurantPrice !== undefined && (
+                                                                    <div className="flex items-center justify-between mt-0.5">
+                                                                        <span className="text-[11px] text-amber-300/80">Menu card price</span>
+                                                                        {item.restaurantPrice === null ? (
+                                                                            <span className="text-[11px] font-semibold text-red-300">Not entered</span>
+                                                                        ) : (
+                                                                            <span className="text-[11px] font-semibold text-amber-300">₹{Number(item.restaurantPrice).toFixed(2)}</span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
