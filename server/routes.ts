@@ -4520,7 +4520,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return dB - dA;
       });
 
-      res.json(merged);
+      // Restaurant (menu card) price of each dish and the restaurant bill, for the admin.
+      res.json(await attachSettlements(merged));
     } catch (error: any) {
       console.error("Admin orders error:", error);
       res.status(500).json({ message: error.message });
